@@ -241,7 +241,7 @@ class Blockcart extends Module
                     $objProduct->id,
                     $addedProduct['date_from'],
                     $addedProduct['date_to'],
-                    $addedProduct['req_rm']
+                    $addedProduct['occupancy']
                 );
                 if ($priceDisplayMethod == PS_TAX_EXC) {
                     $addedProduct['price'] = Tools::displayPrice($price['total_price_tax_excl']);

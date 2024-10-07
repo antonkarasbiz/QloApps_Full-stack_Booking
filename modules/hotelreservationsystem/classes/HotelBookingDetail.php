@@ -1699,14 +1699,14 @@ class HotelBookingDetail extends ObjectModel
                             continue;
                         }
                     }
-                    $productFeaturePrice = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, self::useTax());
+                    $productFeaturePrice = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, self::useTax(), 0, 0, 0, 0, 1, 1, $bookingParams['occupancy']);
                     if (!empty($price) && ($price['from'] > $productFeaturePrice || $price['to'] < $productFeaturePrice)) {
                         unset($bookingData['rm_data'][$key]);
                         continue;
                     }
                     if (count($value['data']['available'])) {
                         $prod_price = Product::getPriceStatic($value['id_product'], self::useTax());
-                        $productPriceWithoutReduction = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, self::useTax(), 0, 0, 0, 0, 1, 0);
+                        $productPriceWithoutReduction = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, self::useTax(), 0, 0, 0, 0, 1, 0, $bookingParams['occupancy']);
                         $cover_image_arr = Product::getCover($value['id_product']);
                         if (!empty($cover_image_arr)) {
                             $cover_img = $this->context->link->getImageLink($value['link_rewrite'], $value['id_product'].'-'.$cover_image_arr['id_image'], 'home_default');
@@ -2061,11 +2061,19 @@ class HotelBookingDetail extends ObjectModel
                         $objBookingDetail->children = $objCartBookingData->children;
                         $objBookingDetail->child_ages = $objCartBookingData->child_ages;
 
+                        $occupancy = array(
+                            array(
+                                'adults' => $objCartBookingData->adults,
+                                'children' => $objCartBookingData->children,
+                                'child_ages' => json_decode($objCartBookingData->child_ages)
+                            )
+                        );
+
                         $totalRoomTypePrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
                             $idNewRoomType,
                             $objCartBookingData->date_from,
                             $objCartBookingData->date_to,
-                            0,
+                            $occupancy,
                             Group::getCurrent()->id,
                             $this->context->cart->id,
                             $this->context->cookie->id_guest,

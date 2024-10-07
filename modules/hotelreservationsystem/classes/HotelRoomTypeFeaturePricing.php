@@ -638,7 +638,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         $id_product,
         $date_from,
         $date_to,
-        $quantity = 0,
+        $occupancy = null,
         $id_group = 0,
         $id_cart = 0,
         $id_guest = 0,
@@ -657,6 +657,12 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             $taxRate = (($productPriceTI-$productPriceTE)/$productPriceTE)*100;
         } else {
             $taxRate = 0;
+        }
+
+        if (is_array($occupancy) && count($occupancy)) {
+            $quantity = count($occupancy);
+        } else {
+            $quantity = 1;
         }
 
         // Initializations
@@ -728,7 +734,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
                 'id_guest' => $id_guest,
                 'id_group' => $id_group,
                 'use_reduc' => $use_reduc,
-                'tax_rate' => $taxRate
+                'tax_rate' => $taxRate,
+                'occupancy' => $occupancy
             )
         );
         if ($with_auto_room_services) {
@@ -807,7 +814,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         $id_guest = 0,
         $id_room = 0,
         $with_auto_room_services = 1,
-        $use_reduc = 1
+        $use_reduc = 1,
+        $occupancy = array()
     ) {
         $dateFrom = date('Y-m-d H:i:s', strtotime($date_from));
         $dateTo = date('Y-m-d H:i:s', strtotime($date_to));
@@ -815,7 +823,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             $id_product,
             $dateFrom,
             $dateTo,
-            0,
+            $occupancy,
             $id_group,
             $id_cart,
             $id_guest,

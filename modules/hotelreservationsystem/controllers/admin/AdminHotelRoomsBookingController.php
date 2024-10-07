@@ -198,7 +198,7 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
                             $this->errors[] = $this->l('Selected room is not available for reallocation.');
                         } elseif (!in_array($idRoomToReallocate, array_column($availableRooms, 'id_room'))) {
                             $this->errors[] = $this->l('Selected room is not available for reallocation.');
-                        } elseif (!Validate::isFloat($priceDiff)) {
+                        } elseif (!Validate::isPrice($priceDiff)) {
                             $this->errors[] = $this->l('Invalid price difference of the room types.');
                         }
                     } else {
@@ -874,11 +874,18 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
                 // if room is changing in the reallocation
                 if ($objHotelBooking->id_product != $idNewRoomType) {
                     $result['has_room_type_change'] = 1;
+                    $occupancy = array(
+                        array(
+                            'adults' => $objHotelBooking->adults,
+                            'children' => $objHotelBooking->children,
+                            'child_ages' => json_decode($objHotelBooking->child_ages)
+                        )
+                    );
                     $newRoomTotalPrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
                         $idNewRoomType,
                         $objHotelBooking->date_from,
                         $objHotelBooking->date_to,
-                        0,
+                        $occupancy,
                         0,
                         0,
                         0,
