@@ -4886,10 +4886,6 @@ class AdminOrdersControllerCore extends AdminController
             $order->total_products_wt += (float)$diff_price_tax_incl;
             $order->total_products_wt = $order->total_products_wt > 0 ? $order->total_products_wt : 0;
 
-            $order->total_paid = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
-            $order->total_paid_tax_incl = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
-            $order->total_paid_tax_excl = Tools::ps_round($order->getOrderTotal(false), _PS_PRICE_COMPUTE_PRECISION_);
-
             $res &= $order->update();
         }
 
@@ -5043,7 +5039,6 @@ class AdminOrdersControllerCore extends AdminController
         )) {
             // update extra demands total prices if dates are changes (price calc method for each day)
             if ($extraDemands) {
-                $order = new Order($id_order);
                 foreach ($extraDemands as $demand) {
                     if (isset($demand['extra_demands']) && $demand['extra_demands']) {
                         foreach ($demand['extra_demands'] as $rDemand) {
@@ -5072,19 +5067,13 @@ class AdminOrdersControllerCore extends AdminController
                         }
                     }
                 }
-                // change order total save
-                $order->total_paid = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
-                $order->total_paid_tax_incl = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
-                $order->total_paid_tax_excl = Tools::ps_round($order->getOrderTotal(false), _PS_PRICE_COMPUTE_PRECISION_);
 
-                $order->save();
             }
 
             if (isset($orderServiceProducts)
                 && is_array($orderServiceProducts)
                 && count($orderServiceProducts)
             ) {
-                $order = new Order((int) $id_order);
                 foreach ($orderServiceProducts as $orderServiceProduct) {
                     if (isset($orderServiceProduct['additional_services'])
                         && is_array($orderServiceProduct['additional_services'])
@@ -5140,12 +5129,14 @@ class AdminOrdersControllerCore extends AdminController
                     }
                 }
 
-                $order->total_paid = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
-                $order->total_paid_tax_incl = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
-                $order->total_paid_tax_excl = Tools::ps_round($order->getOrderTotal(false), _PS_PRICE_COMPUTE_PRECISION_);
-                $order->save();
             }
         }
+
+        $order = new Order((int) $id_order);
+        $order->total_paid = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
+        $order->total_paid_tax_incl = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
+        $order->total_paid_tax_excl = Tools::ps_round($order->getOrderTotal(false), _PS_PRICE_COMPUTE_PRECISION_);
+        $order->save();
 
         if (is_array(Tools::getValue('product_quantity'))) {
             $view = $this->createTemplate('_customized_data.tpl')->fetch();
