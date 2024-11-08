@@ -4826,7 +4826,7 @@ class AdminOrdersControllerCore extends AdminController
                 $id_product,
                 $new_date_from,
                 $new_date_to,
-                array($occupancy),
+                0,
                 Group::getCurrent()->id,
                 $cart->id,
                 $cart->id_guest,
