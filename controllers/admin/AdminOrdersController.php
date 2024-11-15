@@ -3501,7 +3501,7 @@ class AdminOrdersControllerCore extends AdminController
                 }
             }
         }
-        $this->content = json_encode($to_return);
+        $this->ajaxDie(json_encode($to_return));
     }
 
     // public function ajaxProcessSearchProducts()
