@@ -662,7 +662,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         if (is_array($occupancy) && count($occupancy)) {
             $quantity = count($occupancy);
         } else {
-            $quantity = 1;
+            $quantity = $occupancy;
         }
 
         // Initializations
