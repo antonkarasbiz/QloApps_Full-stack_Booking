@@ -894,89 +894,92 @@ class AdminOrdersControllerCore extends AdminController
             && ($productLineData = Tools::getValue('product_line_data'))
         ) {
             $productLineData = json_decode($productLineData, true);
+            if (Validate::isLoadedObject($objOrderDetail = new OrderDetail($productLineData['id_order_detail']))) {
+                $productLineData['id_order_invoice'] = $objOrderDetail->id_order_invoice;
+                $smartyVars = array(
+                        'order' => $objOrder,
+                        'data' => $productLineData,
+                        'currency' => new Currency($objOrder->id_currency),
+                        'max_child_age' => Configuration::get('WK_GLOBAL_CHILD_MAX_AGE'),
+                        'orderEdit' => 1,
+                );
 
-            $smartyVars = array(
-                    'order' => $objOrder,
-                    'data' => $productLineData,
-                    'currency' => new Currency($objOrder->id_currency),
-                    'max_child_age' => Configuration::get('WK_GLOBAL_CHILD_MAX_AGE'),
-                    'orderEdit' => 1,
-            );
+                $objCurrency = new Currency($objOrder->id_currency);
+                $smartyVars['orderCurrency'] = $objOrder->id_currency;
+                $smartyVars['currencySign'] = $objCurrency->sign;
+                $smartyVars['link'] = $this->context->link;
 
-            $objCurrency = new Currency($objOrder->id_currency);
-            $smartyVars['orderCurrency'] = $objOrder->id_currency;
-            $smartyVars['currencySign'] = $objCurrency->sign;
-            $smartyVars['link'] = $this->context->link;
+                $smartyVars['id_booking_detail'] = $productLineData['id'];
 
-            $smartyVars['id_booking_detail'] = $productLineData['id'];
+                $objBookingDemand = new HotelBookingDemands();
 
-            $objBookingDemand = new HotelBookingDemands();
+                // set context currency So that we can get prices in the order currency
+                $this->context->currency = $objCurrency;
 
-            // set context currency So that we can get prices in the order currency
-            $this->context->currency = $objCurrency;
-
-            if ($extraDemands = $objBookingDemand->getRoomTypeBookingExtraDemands(
-                $idOrder,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-                1,
-                $productLineData['id']
-            )) {
-                $smartyVars['extraDemands'] = $extraDemands;
-            }
-
-            // get room type additional demands
-            $objRoomDemands = new HotelRoomTypeDemand();
-            if ($roomTypeDemands = $objRoomDemands->getRoomTypeDemands($idProduct)) {
-                foreach ($roomTypeDemands as &$demand) {
-                    // if demand has advance options then set demand price as first advance option price.
-                    if (isset($demand['adv_option']) && $demand['adv_option']) {
-                        $demand['price'] = current($demand['adv_option'])['price'];
-                    }
+                if ($extraDemands = $objBookingDemand->getRoomTypeBookingExtraDemands(
+                    $idOrder,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    1,
+                    $productLineData['id']
+                )) {
+                    $smartyVars['extraDemands'] = $extraDemands;
                 }
-                $smartyVars['roomTypeDemands'] = $roomTypeDemands;
-            }
 
-            $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
-            if ($additionalServices = $objRoomTypeServiceProductOrderDetail->getSelectedServicesForRoom(
-                $productLineData['id']
-            )) {
-                $smartyVars['additionalServices'] = $additionalServices;
-            }
-
-            // get room type additional demands
-            $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
-            if ($roomTypeServiceProducts = $objRoomTypeServiceProduct->getServiceProductsData($idProduct, 1, 0, false, 2, null)) {
-                if ($additionalServices) {
-                    foreach ($roomTypeServiceProducts as $key => $product) {
-                        if (in_array($product['id_product'], array_column($additionalServices['additional_services'], 'id_product'))) {
-                            unset($roomTypeServiceProducts[$key]);
+                // get room type additional demands
+                $objRoomDemands = new HotelRoomTypeDemand();
+                if ($roomTypeDemands = $objRoomDemands->getRoomTypeDemands($idProduct)) {
+                    foreach ($roomTypeDemands as &$demand) {
+                        // if demand has advance options then set demand price as first advance option price.
+                        if (isset($demand['adv_option']) && $demand['adv_option']) {
+                            $demand['price'] = current($demand['adv_option'])['price'];
                         }
                     }
+                    $smartyVars['roomTypeDemands'] = $roomTypeDemands;
                 }
-                $smartyVars['roomTypeServiceProducts'] = $roomTypeServiceProducts;
+
+                $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
+                if ($additionalServices = $objRoomTypeServiceProductOrderDetail->getSelectedServicesForRoom(
+                    $productLineData['id']
+                )) {
+                    $smartyVars['additionalServices'] = $additionalServices;
+                }
+
+                // get room type additional demands
+                $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
+                if ($roomTypeServiceProducts = $objRoomTypeServiceProduct->getServiceProductsData($idProduct, 1, 0, false, 2, null)) {
+                    if ($additionalServices) {
+                        foreach ($roomTypeServiceProducts as $key => $product) {
+                            if (in_array($product['id_product'], array_column($additionalServices['additional_services'], 'id_product'))) {
+                                unset($roomTypeServiceProducts[$key]);
+                            }
+                        }
+                    }
+                    $smartyVars['roomTypeServiceProducts'] = $roomTypeServiceProducts;
+                }
+
+                $objOrderReturn = new OrderReturn();
+                $refundReqBookings = $objOrderReturn->getOrderRefundRequestedBookings($objOrder->id, 0, 1);
+                $smartyVars['refundReqBookings'] = $refundReqBookings;
+                $smartyVars['invoices_collection'] = $objOrder->getInvoicesCollection();
+
+                $this->context->smarty->assign($smartyVars);
+
+                $modal = array(
+                    'modal_id' => 'edit-room-booking-modal',
+                    'modal_class' => 'modal-lg order_detail_modal',
+                    'modal_title' => '<i class="icon icon-bed"></i> &nbsp'.$this->l('Edit Room'),
+                    'modal_content' => $this->context->smarty->fetch('controllers/orders/modals/_edit_room_booking.tpl'),
+                );
+
+                $this->context->smarty->assign($modal);
+                $response['hasError'] = 0;
+                $response['modalHtml'] = $this->context->smarty->fetch('modal.tpl');
             }
-
-            $objOrderReturn = new OrderReturn();
-            $refundReqBookings = $objOrderReturn->getOrderRefundRequestedBookings($objOrder->id, 0, 1);
-            $smartyVars['refundReqBookings'] = $refundReqBookings;
-
-            $this->context->smarty->assign($smartyVars);
-
-            $modal = array(
-                'modal_id' => 'edit-room-booking-modal',
-                'modal_class' => 'modal-lg order_detail_modal',
-                'modal_title' => '<i class="icon icon-bed"></i> &nbsp'.$this->l('Edit Room'),
-                'modal_content' => $this->context->smarty->fetch('controllers/orders/modals/_edit_room_booking.tpl'),
-            );
-
-            $this->context->smarty->assign($modal);
-            $response['hasError'] = 0;
-            $response['modalHtml'] = $this->context->smarty->fetch('modal.tpl');
         }
 
         die(Tools::jsonEncode($response));
@@ -4873,8 +4876,6 @@ class AdminOrdersControllerCore extends AdminController
 
             if (isset($order_invoice)) {
                 // Apply changes on OrderInvoice
-                $order_invoice->total_products += (float)$diff_price_tax_excl;
-                $order_invoice->total_products_wt += (float)$diff_price_tax_incl;
                 $order_invoice->total_paid_tax_excl += (float)$diff_price_tax_excl;
                 $order_invoice->total_paid_tax_incl += (float)$diff_price_tax_incl;
             }
@@ -4910,10 +4911,6 @@ class AdminOrdersControllerCore extends AdminController
             }
         }
 
-        // Save order invoice
-        if (isset($order_invoice)) {
-            $res &= $order_invoice->update();
-        }
 
         if ($qty_diff != 0) {
             $cartQty = $qty_diff;
@@ -5063,6 +5060,12 @@ class AdminOrdersControllerCore extends AdminController
                                 $objBookingDemand->total_price_tax_incl = $demandPriceTI;
 
                                 $objBookingDemand->save();
+
+                                $order_invoice->total_paid_tax_excl -= $rDemand['total_price_tax_excl'];
+                                $order_invoice->total_paid_tax_incl -= $rDemand['total_price_tax_incl'];
+
+                                $order_invoice->total_paid_tax_excl += (float)$objBookingDemand->total_price_tax_excl;
+                                $order_invoice->total_paid_tax_incl += (float)$objBookingDemand->total_price_tax_incl;
                             }
                         }
                     }
@@ -5119,6 +5122,12 @@ class AdminOrdersControllerCore extends AdminController
                                 $objOrderDetail->product_quantity += ($newProductQuantity - $oldProductQuantity);
                                 $objOrderDetail->save();
 
+                                $order_invoice->total_paid_tax_excl -= $objRoomTypeServiceProductOrderDetail->total_price_tax_excl;
+                                $order_invoice->total_paid_tax_incl -= $objRoomTypeServiceProductOrderDetail->total_price_tax_incl;
+
+                                $order_invoice->total_paid_tax_excl += (float)$newTotalPriceTaxExcl;
+                                $order_invoice->total_paid_tax_incl += (float)$newTotalPriceTaxIncl;
+
                                 $objRoomTypeServiceProductOrderDetail->unit_price_tax_excl = $unitPriceTaxExcl;
                                 $objRoomTypeServiceProductOrderDetail->unit_price_tax_incl = $unitPriceTaxIncl;
                                 $objRoomTypeServiceProductOrderDetail->total_price_tax_excl = $newTotalPriceTaxExcl;
@@ -5128,15 +5137,20 @@ class AdminOrdersControllerCore extends AdminController
                         }
                     }
                 }
-
             }
         }
 
-        $order = new Order((int) $id_order);
         $order->total_paid = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
         $order->total_paid_tax_incl = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
         $order->total_paid_tax_excl = Tools::ps_round($order->getOrderTotal(false), _PS_PRICE_COMPUTE_PRECISION_);
         $order->save();
+
+        // Save order invoice
+        if (isset($order_invoice)) {
+            $order_invoice->total_products = $order_invoice->total_paid_tax_excl;
+            $order_invoice->total_products_wt = $order_invoice->total_paid_tax_incl;
+            $res &= $order_invoice->update();
+        }
 
         if (is_array(Tools::getValue('product_quantity'))) {
             $view = $this->createTemplate('_customized_data.tpl')->fetch();
