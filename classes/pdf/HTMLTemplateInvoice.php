@@ -483,7 +483,7 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
 
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['paid_unit_price_tax_excl'] = $data_v['total_price_tax_excl']/$num_days;
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['paid_unit_price_tax_incl'] = $data_v['total_price_tax_excl']/$num_days;
-                                $cart_htl_data[$type_key]['date_diff'][$date_join]['avg_paid_unit_price_tax_excl'] = $cart_htl_data[$type_key]['date_diff'][$date_join]['paid_unit_price_tax_excl'] + $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_auto_add_te'];
+                                $cart_htl_data[$type_key]['date_diff'][$date_join]['avg_paid_unit_price_tax_excl'] = $cart_htl_data[$type_key]['date_diff'][$date_join]['paid_unit_price_tax_excl'] + ($cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_auto_add_te']/$num_days);
 
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['amount'] = ($data_v['total_price_tax_excl'] + $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_auto_add_te']);
 
