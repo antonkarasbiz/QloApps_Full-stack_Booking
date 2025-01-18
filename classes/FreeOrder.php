@@ -25,11 +25,11 @@ class FreeOrder extends PaymentModule
 {
     public $active = 1;
     public $name = 'free_order';
-    public $displayName = 'free_order';
 
     public function __construct()
     {
         // Default payment type for Free order should be online
+        $this->displayName = $this->l('Free order');
         $this->payment_type = OrderPayment::PAYMENT_TYPE_ONLINE;
     }
 }
