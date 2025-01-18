@@ -18,16 +18,15 @@
 *  @license   https://store.webkul.com/license.html
 */
 
-class BoOrder extends PaymentModule
+class FreeOrder extends PaymentModule
 {
     public $active = 1;
-    public $name = 'bo_order';
+    public $name = 'free_order';
+    public $displayName = 'free_order';
 
     public function __construct()
     {
-        $this->displayName = $this->l('Back office order');
-        $this->validateOrderAmount = false;
-        // Default payment type for backoffice order should be PAY_AT_HOTEL
-        $this->payment_type = OrderPayment::PAYMENT_TYPE_PAY_AT_HOTEL;
+        // Default payment type for Free order should be online
+        $this->payment_type = OrderPayment::PAYMENT_TYPE_ONLINE;
     }
 }
