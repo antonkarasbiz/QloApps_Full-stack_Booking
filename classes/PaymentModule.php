@@ -976,9 +976,6 @@ abstract class PaymentModuleCore extends Module
                         }
                     }
 
-                    // delete cart feature prices after booking creation success
-                    HotelRoomTypeFeaturePricing::deleteByIdCart($id_cart);
-
                     if (self::DEBUG_MODE) {
                         PrestaShopLogger::addLog('PaymentModule::validateOrder - Hook validateOrder is about to be called', 1, null, 'Cart', (int)$id_cart, true);
                     }
@@ -1381,6 +1378,9 @@ abstract class PaymentModuleCore extends Module
                     die($error);
                 }
             } // End foreach $order_detail_list
+
+            // delete cart feature prices after booking creation success
+            HotelRoomTypeFeaturePricing::deleteByIdCart($id_cart);
 
             if (count($cart_rules)) {
                 foreach ($cart_rules as $idCartRule => $cartRule) {
