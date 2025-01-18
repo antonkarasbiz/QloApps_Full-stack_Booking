@@ -274,7 +274,7 @@ class WebserviceSpecificManagementHotelAri extends ObjectModel implements Webser
                                                         $currentDate < date('Y-m-d', strtotime($unavailableDetail['date_to']));
                                                         $currentDate = date('Y-m-d', strtotime('+1 day', strtotime($currentDate)))
                                                     ) {
-                                                        $unavailableDates[$currentDate][$roomType['id_product']][$bookedRoom['id_room']] = $bookedRoom['id_room'];
+                                                        $unavailableDates[$currentDate][$roomType['id_product']][$unavailableRooms['id_room']] = $unavailableRooms['id_room'];
                                                     }
                                                 }
                                             }
@@ -328,12 +328,12 @@ class WebserviceSpecificManagementHotelAri extends ObjectModel implements Webser
                                                 unset($roomDetail['available']);
                                             }
                                             if ($getUnavai) {
-                                                $ariDateInfo['total_unavailable_rooms'] += count($roomDetail['available']);
+                                                $ariDateInfo['total_unavailable_rooms'] += count($roomDetail['unavailable']);
                                             } else {
                                                 unset($roomDetail['unavailable']);
                                             }
                                             if ($getBooked) {
-                                                $ariDateInfo['total_booked_rooms'] += count($roomDetail['available']);
+                                                $ariDateInfo['total_booked_rooms'] += count($roomDetail['booked']);
                                             } else {
                                                 unset($roomDetail['booked']);
                                             }
