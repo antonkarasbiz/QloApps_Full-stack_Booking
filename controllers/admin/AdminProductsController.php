@@ -3556,7 +3556,7 @@ class AdminProductsControllerCore extends AdminController
                         $this->errors[] = sprintf(Tools::displayError('Please add disable dates for room %s.'), $roomIndex);
                     }
                 }
-                Hook::exec('actionValidateRoomInformation', array('room_information', $roomInfo));
+                Hook::exec('actionValidateRoomInformation', array('room_information' => $roomInfo));
             }
         } else {
             $this->errors[] = Tools::displayError('Please add at least one room.');
@@ -5070,7 +5070,7 @@ class AdminProductsControllerCore extends AdminController
                     'date_to' => $dateTo,
                     'id_room' => $idRoom
                 );
-                Hook::exec('actionRoomDisableDatesRemoveBefore', array('disable_dates', $params));
+                Hook::exec('actionRoomDisableDatesRemoveBefore', array('disable_dates' => $params));
                 if (empty($this->errors)
                     && ($disableDates = $objRoomDisableDates->checkIfRoomAlreadyDisabled($params))
                 ) {
@@ -5150,7 +5150,7 @@ class AdminProductsControllerCore extends AdminController
         $response = array('status' => false);
         if ($this->tabAccess['edit'] === '1') {
             $idDisableDate = Tools::getValue('id_disable_date');
-            Hook::exec('actionDisableDateDeleteBefore', array('id_disable_date', $idDisableDate));
+            Hook::exec('actionDisableDateDeleteBefore', array('id_disable_date' => $idDisableDate));
             if (empty($this->errors)
                 && (int) $idDisableDate
                 && Validate::isLoadedObject($objRoomDisableDates = new HotelRoomDisableDates($idDisableDate))
