@@ -1281,6 +1281,7 @@ function disableRoomTypeDemands(show) {
     if (show) {
         $('.room_demands_container_overlay').show();
         $('.room_demands_container').find('input:checkbox.id_room_type_demand').prop('checked', false);
+        $('.room_demand_block').find('.id_room_type_demand').prop('checked', false).parent().removeClass('checked');
         $('.room_demands_container').find('input:checkbox.id_room_type_demand').attr('disabled', 'disabled');
     } else {
         $('.room_demands_container_overlay').hide();
