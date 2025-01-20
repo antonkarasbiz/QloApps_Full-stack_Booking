@@ -3849,7 +3849,7 @@ class CartCore extends ObjectModel
                 $product['advanced_stock_management'] && (bool)Context::getContext()->customer->isLogged() && ($delivery = $this->getDeliveryOption()) && !empty($delivery)) {
                 $product['stock_quantity'] = StockManager::getStockByCarrier((int)$product['id_product'], (int)$product['id_product_attribute'], $delivery);
             }
-            if (!$product['active'] || !$product['available_for_order']
+            if (!$product['active'] || (!$product['auto_add_to_cart'] && !$product['available_for_order'])
                 || (!$product['allow_oosp'] && $product['stock_quantity'] < $product['cart_quantity'])) {
                 return $return_product ? $product : false;
             }
