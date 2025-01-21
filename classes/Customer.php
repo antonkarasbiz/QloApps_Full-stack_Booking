@@ -324,10 +324,12 @@ class CustomerCore extends ObjectModel
             $objHtlCartData = new HotelCartBookingData();
             foreach ($carts as $cart) {
                 $objCart = new Cart($cart['id_cart']);
-                Db::getInstance()->execute('DELETE FROM '._DB_PREFIX_.'cart WHERE id_cart='.(int)$cart['id_cart']);
-                Db::getInstance()->execute('DELETE FROM '._DB_PREFIX_.'cart_product WHERE id_cart='.(int)$cart['id_cart']);
-                // delete rows from hotel booking cart table
-                $objHtlCartData->deleteCartBookingData($cart['id_cart'], 0, 0, 0, 0, 0);
+                if ($cart['id_cart']) {
+                    Db::getInstance()->execute('DELETE FROM '._DB_PREFIX_.'cart WHERE id_cart='.(int)$cart['id_cart']);
+                    Db::getInstance()->execute('DELETE FROM '._DB_PREFIX_.'cart_product WHERE id_cart='.(int)$cart['id_cart']);
+                    // delete rows from hotel booking cart table
+                    $objHtlCartData->deleteCartBookingData($cart['id_cart'], 0, 0, 0, 0, 0);
+                }
             }
         }
 
