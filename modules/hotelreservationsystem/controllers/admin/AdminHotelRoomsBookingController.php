@@ -746,13 +746,13 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
             }
         } else {
             // remove room from cart
-            $objHotelCartBookingData = new HotelCartBookingData($id_cart_book_data);
-            if ($objHotelCartBookingData->deleteCartBookingData(
-                0,
-                $objHotelCartBookingData->id_product,
-                $objHotelCartBookingData->id_room,
-                $objHotelCartBookingData->date_from,
-                $objHotelCartBookingData->date_to
+            if ((Validate::isLoadedObject($objHotelCartBookingData = new HotelCartBookingData((int) $id_cart_book_data)))
+                && $objHotelCartBookingData->deleteCartBookingData(
+                    0,
+                    $objHotelCartBookingData->id_product,
+                    $objHotelCartBookingData->id_room,
+                    $objHotelCartBookingData->date_from,
+                    $objHotelCartBookingData->date_to
             )) {
                 $response['success'] = true;
                 if ($ajax_delete) {
