@@ -19,7 +19,9 @@
 
 <div class="panel">
 	<div class="panel-heading">
-		{if isset($edit)}
+		{if isset($bulk_add) && $bulk_add}
+			<i class='icon-list'></i>&nbsp{l s='Bulk Create Advanced Price Rule' mod='hotelreservationsystem'}
+		{else if isset($edit)}
 			<i class='icon-pencil'></i>&nbsp{l s='Edit Advanced Price Rule' mod='hotelreservationsystem'}
 		{else}
 			<i class='icon-plus'></i>&nbsp{l s='Add New Advanced Price Rule' mod='hotelreservationsystem'}
@@ -57,23 +59,33 @@
 			{/if}
 		</div>
 
-		<div class="form-group room-type-name">
-			<label class="col-sm-3 control-label required" for="feature_price_name" >
-				{l s='Room Type :' mod='hotelreservationsystem'}
-			</label>
-			<div class="col-sm-3">
-				<input autocomplete="off" type="text" id="room_type_name" name="room_type_name" class="form-control" placeholder= "{l s='Enter room type name' mod='hotelreservationsystem'}" value="{if isset($productName)}{$productName}{/if}"/>
-				<input type="hidden" id="room_type_id" name="room_type_id" class="form-control" value="{if isset($objFeaturePrice->id_product)}{$objFeaturePrice->id_product}{else}0{/if}"/>
-				<div class="dropdown">
-	                <ul class="room_type_search_results_ul"></ul>
-	            </div>
-				<p class="error-block" style="display:none; color: #CD5D5D;">{l s='No match found for this search. Please try with an existing name.' mod='hotelreservationsystem'}</p>
-				<div class="help-block">
-					{l s='Enter room type name and select the room for which you are going to create this advanced price rule.' mod='hotelreservationsystem'}
+		{if isset($bulk_add) && $bulk_add}
+			<div class="form-group room-type-name">
+				<label class="col-sm-3 control-label required" for="feature_price_name" >
+					{l s='Select Room Types:' mod='hotelreservationsystem'}
+				</label>
+				<div class="col-sm-7">
+					{$hotel_tree}
 				</div>
 			</div>
-
-		</div>
+		{else}
+			<div class="form-group room-type-name">
+				<label class="col-sm-3 control-label required" for="feature_price_name" >
+					{l s='Room Type :' mod='hotelreservationsystem'}
+				</label>
+				<div class="col-sm-3">
+					<input autocomplete="off" type="text" id="room_type_name" name="room_type_name" class="form-control" placeholder= "{l s='Enter room type name' mod='hotelreservationsystem'}" value="{if isset($productName)}{$productName}{/if}"/>
+					<input type="hidden" id="room_type_id" name="room_type_id" class="form-control" value="{if isset($objFeaturePrice->id_product)}{$objFeaturePrice->id_product}{else}0{/if}"/>
+					<div class="dropdown">
+						<ul class="room_type_search_results_ul"></ul>
+					</div>
+					<p class="error-block" style="display:none; color: #CD5D5D;">{l s='No match found for this search. Please try with an existing name.' mod='hotelreservationsystem'}</p>
+					<div class="help-block">
+						{l s='Enter room type name and select the room for which you are going to create this advanced price rule.' mod='hotelreservationsystem'}
+					</div>
+				</div>
+			</div>
+		{/if}
 
 		<div class="form-group">
             <label for="date_selection_type" class="control-label col-lg-3">
@@ -313,12 +325,18 @@
 			<a href="{$link->getAdminLink('AdminHotelFeaturePricesSettings')|escape:'html':'UTF-8'}" class="btn btn-default">
 				<i class="process-icon-cancel"></i>{l s='Cancel' mod='hotelreservationsystem'}
 			</a>
-			<button type="submit" name="submitAdd{$table|escape:'html':'UTF-8'}" class="btn btn-default pull-right">
-				<i class="process-icon-save"></i> {l s='Save' mod='hotelreservationsystem'}
-			</button>
-			<button type="submit" name="submitAdd{$table|escape:'html':'UTF-8'}AndStay" class="btn btn-default pull-right">
-				<i class="process-icon-save"></i> {l s='Save and stay' mod='hotelreservationsystem'}
-			</button>
+			{if isset($bulk_add) && $bulk_add}
+				<button type="submit" name="submitBulkAdd{$table|escape:'html':'UTF-8'}" class="btn btn-default pull-right">
+					<i class="process-icon-save"></i> {l s='Save' mod='hotelreservationsystem'}
+				</button>
+			{else}
+				<button type="submit" name="submitAdd{$table|escape:'html':'UTF-8'}" class="btn btn-default pull-right">
+					<i class="process-icon-save"></i> {l s='Save' mod='hotelreservationsystem'}
+				</button>
+				<button type="submit" name="submitAdd{$table|escape:'html':'UTF-8'}AndStay" class="btn btn-default pull-right">
+					<i class="process-icon-save"></i> {l s='Save and stay' mod='hotelreservationsystem'}
+				</button>
+			{/if}
 		</div>
 	</form>
 </div>
