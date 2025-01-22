@@ -7172,6 +7172,10 @@ class AdminOrdersControllerCore extends AdminController
                     || (strtotime($statusDate) > strtotime($dateTo))
                 ) {
                     $this->errors[] = Tools::displayError('Date should be between booking from date and to date.');
+                } else if (date('Y-m-d', strtotime($objHotelBookingDetail->check_out)) != date('Y-m-d', strtotime($objHotelBookingDetail->date_to))
+                    && ($booked = $objHotelBookingDetail->chechRoomBooked($objHotelBookingDetail->id_room, $objHotelBookingDetail->check_out, $objHotelBookingDetail->date_to))
+                ) {
+                    $this->errors[] = Tools::displayError('You cannot update this room\'s booking status as a new booking has been created for this room. Please change the room to update the status.');
                 }
             }
             if ($newStatus == HotelBookingDetail::STATUS_CHECKED_OUT) {

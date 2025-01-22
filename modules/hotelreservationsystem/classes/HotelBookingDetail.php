@@ -1427,6 +1427,10 @@ class HotelBookingDetail extends ObjectModel
         pSQL($date_to).'\' AND date_to >= \''.pSQL($date_to).'\') OR (date_from < \''.pSQL($date_from).
         '\' AND date_to > \''.pSQL($date_to).'\'))';
 
+        if ($this->id) {
+            $sql .= ' AND `id` !='.(int) $this->id;
+        }
+
         return Db::getInstance()->getRow($sql);
     }
 

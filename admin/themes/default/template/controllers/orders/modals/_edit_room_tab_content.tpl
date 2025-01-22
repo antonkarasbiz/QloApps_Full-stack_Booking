@@ -37,7 +37,7 @@
                     {if isset($refundReqBookings) && $refundReqBookings && $data.id|in_array:$refundReqBookings && $data.is_refunded}
                         {dateFormat date=$data.date_from}
                     {else}
-                        <input type="text" class="form-control edit_product_date_from" readonly/>
+                        <input type="text" class="form-control edit_product_date_from" readonly {if isset($data.id_status) && ($data.id_status != HotelBookingDetail::STATUS_ALLOTED)}disabled{/if}/>
                         <div class="input-group-addon"><i class="icon-calendar"></i></div>
                     {/if}
                 </div>
@@ -49,7 +49,7 @@
                     {if isset($refundReqBookings) && $refundReqBookings && $data.id|in_array:$refundReqBookings && $data.is_refunded}
                         {dateFormat date=$data.date_to}
                     {else}
-                        <input type="text" class="form-control edit_product_date_to" readonly/>
+                        <input type="text" class="form-control edit_product_date_to" readonly {if isset($data.id_status) && ($data.id_status != HotelBookingDetail::STATUS_CHECKED_OUT)}disabled{/if}/>
                         <div class="input-group-addon"><i class="icon-calendar"></i></div>
                     {/if}
                 </div>
