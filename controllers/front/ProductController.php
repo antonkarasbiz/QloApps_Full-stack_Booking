@@ -334,15 +334,15 @@ class ProductControllerCore extends FrontController
                     $date_from = Tools::getValue('date_from');
                     $date_to = Tools::getValue('date_to');
 
-                    $preparationTime = (int) HotelOrderRestrictDate::getPreparationTime($hotel_id);
+                    $minBookingOffset = (int) HotelOrderRestrictDate::getMinBookingOffset($hotel_id);
                     if (!($date_from = Tools::getValue('date_from'))) {
                         $date_from = date('Y-m-d');
                     }
 
-                    if ($preparationTime
-                        && strtotime(date('Y-m-d', strtotime('+'. ($preparationTime) .' days'))) > strtotime($date_from)
+                    if ($minBookingOffset
+                        && strtotime(date('Y-m-d', strtotime('+'. ($minBookingOffset) .' days'))) > strtotime($date_from)
                     ) {
-                        $date_from = date('Y-m-d', strtotime('+ '.$preparationTime.' day'));
+                        $date_from = date('Y-m-d', strtotime('+ '.$minBookingOffset.' day'));
                     }
 
                     if (!($date_to = Tools::getValue('date_to'))) {
@@ -392,7 +392,7 @@ class ProductControllerCore extends FrontController
                             'room_type_info' => $room_info_by_product_id,
                             'isHotelRefundable' => $hotel_branch_obj->isRefundable(),
                             'max_order_date' => $max_order_date,
-                            'preparation_time' => $preparationTime,
+                            'min_booking_offset' => $minBookingOffset,
                             'warning_num' => Configuration::get('WK_ROOM_LEFT_WARNING_NUMBER'),
                             'ratting_img_path' => _MODULE_DIR_.'hotelreservationsystem/views/img/Slices/icons-sprite.png',
                             'product_controller_url' => $this->context->link->getPageLink('product'),

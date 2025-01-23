@@ -82,22 +82,19 @@ class AdminOrderPreferencesControllerCore extends AdminController
             )
         );
 
-        $maxOrderDate = Tools::getValue('MAX_GLOBAL_BOOKING_DATE', Configuration::get('MAX_GLOBAL_BOOKING_DATE'));
         $this->fields_options = array(
             'order_restrict' => array(
                 'title' => $this->l('Order Restrict'),
                 'icon' => 'icon-cogs',
                 'fields' => array(
-                    'MAX_GLOBAL_BOOKING_DATE' => array(
-                        'title' => $this->l('Maximum Global Check-out Date to book a room'),
-                        'hint' => $this->l('Maximum date of check-out for which rooms of your hotels can be booked.'),
+                    'GLOBAL_MAX_BOOKING_OFFSET' => array(
+                        'title' => $this->l('Maximum booking offset'),
+                        'hint' => $this->l('The maximum booking offset defines the number of days from today till which bookings can be made. It is used to limiting how far in advance reservations are allowed to the guest.'),
                         'type' => 'text',
-                        'id' => 'max_global_book_date',
-                        'auto_value' => false,
-                        'value' => date('d-m-Y', strtotime($maxOrderDate)),
-                        'class' => 'fixed-width-xxl readonly',
+                        'class' => 'fixed-width-xl',
+                        'suffix' => $this->l('day(s)'),
                     ),
-                    'GLOBAL_PREPARATION_TIME' => array(
+                    'GLOBAL_MIN_BOOKING_OFFSET' => array(
                         'title' => $this->l('Minimum booking offset'),
                         'hint' => $this->l('The minimum booking offset is the minimum number of days before the check-in date that a guest must book a room. For example, if you set this value to 3 and someone is booking on 2nd of March he can only book rooms for dates from and after 3 days, i.e, 5th of March.'),
                         'desc' => $this->l('Set to 0 to disable this feature.'),
@@ -332,23 +329,22 @@ class AdminOrderPreferencesControllerCore extends AdminController
             $this->errors[] = Tools::displayError('Please assign a valid CMS page for Terms and Conditions.');
         }
 
-        $_POST['MAX_GLOBAL_BOOKING_DATE'] = date('Y-m-d', strtotime(Tools::getValue('MAX_GLOBAL_BOOKING_DATE')));
-        $maxGlobalBookingDate = Tools::getValue('MAX_GLOBAL_BOOKING_DATE');
-        $globalPreparationTime = Tools::getValue('GLOBAL_PREPARATION_TIME');
-        $maxGlobalBookingDateFormatted = date('Y-m-d', strtotime($maxGlobalBookingDate));
-
-        if ($maxGlobalBookingDate == '') {
-            $this->errors[] = Tools::displayError('Field \'Maximum Global Check-out Date to book a room\' can not be empty.');
-        } elseif (!Validate::isDate($maxGlobalBookingDateFormatted)) {
-            $this->errors[] = Tools::displayError('Field \'Maximum Global Check-out Date to book a room\' is invalid.');
-        } elseif (strtotime($maxGlobalBookingDateFormatted) < strtotime(date('Y-m-d'))) {
-            $this->errors[] = Tools::displayError('Field \'Maximum Global Check-out Date to book a room\' can not be a past date. Please use a future date.');
+        $maxBookingOffset = Tools::getValue('GLOBAL_MAX_BOOKING_OFFSET');
+        $minBookingOffset = Tools::getValue('GLOBAL_MIN_BOOKING_OFFSET');
+        if ($maxBookingOffset === '') {
+            $this->errors[] = Tools::displayError('Field \'Maximum booking offset\' can not be empty.');
+        } elseif (!$maxBookingOffset || !Validate::isUnsignedInt($maxBookingOffset)) {
+            $this->errors[] = Tools::displayError('Field \'Maximum booking offset\' is invalid.');
         }
 
-        if ($globalPreparationTime === '') {
+        if ($minBookingOffset === '') {
             $this->errors[] = Tools::displayError('Field \'Minimum booking offset\' can not be empty.');
-        } elseif ($globalPreparationTime !== '0' && !Validate::isUnsignedInt($globalPreparationTime)) {
+        } elseif ($minBookingOffset != 0 && !Validate::isUnsignedInt($minBookingOffset)) {
             $this->errors[] = Tools::displayError('Field \'Minimum booking offset\' is invalid.');
+        }
+
+        if ($maxBookingOffset && $maxBookingOffset <= $minBookingOffset) {
+            $this->errors[] = Tools::displayError('Field \'Maximum booking offset\' cannot be be less than or equal to \'Minimum booking offset\'.');
         }
     }
 

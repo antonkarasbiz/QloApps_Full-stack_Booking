@@ -1063,12 +1063,8 @@ class HotelHelper
         Configuration::updateValue('WK_GLOBAL_CHILD_MAX_AGE', 15);
         Configuration::updateValue('WK_GLOBAL_MAX_CHILD_IN_ROOM', 0);
 
-        Configuration::updateValue(
-            'MAX_GLOBAL_BOOKING_DATE',
-            date('Y-m-d', strtotime(date('Y-m-d', time()).' + 1 year'))
-        );
-
-        Configuration::updateValue('GLOBAL_PREPARATION_TIME', 0);
+        Configuration::updateValue('GLOBAL_MAX_BOOKING_OFFSET', 1000);
+        Configuration::updateValue('GLOBAL_MIN_BOOKING_OFFSET', 0);
 
         Configuration::updateValue('HTL_FEATURE_PRICING_PRIORITY', 'specific_date;special_day;date_range');
         Configuration::updateValue('WK_GOOGLE_ACTIVE_MAP', 0);
@@ -2502,8 +2498,8 @@ class HotelHelper
     public static function validateDateRangeForHotel($dateFrom, $dateTo, $idHotel)
     {
         $validStartDateTimeStamp = strtotime(date('Y-m-d'));
-        if ($preparationTime = (int) HotelOrderRestrictDate::getPreparationTime($idHotel)) {
-            $validStartDateTimeStamp = strtotime(date('Y-m-d', strtotime('+ '.$preparationTime.' day')));
+        if ($minBookingOffset = (int) HotelOrderRestrictDate::getMinBookingOffset($idHotel)) {
+            $validStartDateTimeStamp = strtotime(date('Y-m-d', strtotime('+ '.$minBookingOffset.' day')));
         }
 
         $dateFromTimestamp = strtotime($dateFrom);

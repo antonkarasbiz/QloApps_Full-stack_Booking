@@ -551,22 +551,6 @@ $(document).ready(function() {
         $("#conf_id_WK_BO_MESSAGE").hide();
     });
 
-    /*For OrderRestrict Functionality*/
-    $("#max_htl_book_date").datepicker({
-        defaultDate: new Date(),
-        dateFormat: 'dd-mm-yy',
-        minDate: 0,
-    });
-
-    $("#max_global_book_date").datepicker({
-        defaultDate: new Date(),
-        dateFormat: 'dd-mm-yy',
-        minDate: 0,
-    });
-
-    //$( "#max_global_book_date" ).datepicker( "option", "maxDate", '20 Mar 2020');
-    /*END*/
-
     /* ----  AdminHotelFeaturePricesSettingsController Admin ---- */
 
     $('#date_selection_type').on('change', function() {
@@ -805,26 +789,19 @@ $(document).ready(function() {
         });
     }
 
-    // manage hotel page
-    $('#maximum_booking_date').datepicker({
-        defaultDate: new Date(),
-        dateFormat: 'dd-mm-yy',
-        minDate: 0,
-    });
-
-    $('input[name="enable_use_global_max_order_date"]').on('change', function () {
+    $('input[name="enable_use_global_max_booking_offset"]').on('change', function () {
         if (parseInt($(this).val())) {
-            $('input[name="maximum_booking_date"]').closest('.form-group').hide(200);
+            $('input[name="max_booking_offset"]').closest('.form-group').hide(200);
         } else {
-            $('input[name="maximum_booking_date"]').closest('.form-group').show(200);
+            $('input[name="max_booking_offset"]').closest('.form-group').show(200);
         }
     });
 
-    $('input[name="enable_use_global_preparation_time"]').on('change', function () {
+    $('input[name="enable_use_global_min_booking_offset"]').on('change', function () {
         if (parseInt($(this).val())) {
-            $('input[name="preparation_time"]').closest('.form-group').hide(200);
+            $('input[name="min_booking_offset"]').closest('.form-group').hide(200);
         } else {
-            $('input[name="preparation_time"]').closest('.form-group').show(200);
+            $('input[name="min_booking_offset"]').closest('.form-group').show(200);
         }
     });
 
