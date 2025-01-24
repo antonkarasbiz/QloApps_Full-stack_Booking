@@ -2202,6 +2202,19 @@
                             <p class="help-block">{l s='Keep this option enabled for full payment and disable it to take partial payment of the booking.'}</p>
                         </div>
                     </div>
+					<div class="form-group">
+						<label class="control-label col-lg-3">{l s="Send mails"}</label>
+						<div class="col-lg-9">
+							<span class="switch prestashop-switch fixed-width-lg">
+								<input type="radio" name="send_mails" id="send_mails_on" value="1" checked="checked">
+								<label for="send_mails_on">{l s="Yes"}</label>
+								<input type="radio" name="send_mails" id="send_mails_off" value="0">
+								<label for="send_mails_off">{l s="No"}</label>
+								<a class="slide-button btn"></a>
+							</span>
+							<p class="help-block">{l s='Keep this option enabled for to send order confirmation mails.'}</p>
+						</div>
+					</div>
                     <div class="form-group" {if $order_total <= 0}style="display: none;"{/if}>
                         <label class="control-label required col-lg-3">{l s='Payment amount'}</label>
                         <div class="col-lg-9">
