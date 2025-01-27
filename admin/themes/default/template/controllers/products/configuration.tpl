@@ -28,6 +28,11 @@
 			<table class="table hotel-room">
 				<thead>
 					<tr class="nodrag nodrop">
+                        <th class="center">
+                            <label class="control-label">
+                                <input type="checkbox" class="select_all" name="rooms_checkbox">
+                            </label>
+                        </th>
 						<th class="col-sm-2 center">
 							<label class="control-label required">
 								<span class="label-tooltip" data-toggle="tooltip" data-original-title="{l s='Enter room number. For eg. A-101, A-102 etc. Invalid characters <>;=#{}'}">
@@ -78,6 +83,9 @@
 						{foreach from=$rooms_info key=key item=room_info}
 							{assign var="var_name_room_info" value="rooms_info[`$key`]"}
 							<tr class="room_data_values" data-row-index="{$key}">
+                                <td class="center">
+									<input type="checkbox" value="{$room_info['id']}" name="bulk_update_room[]">
+								</td>
 								<td class="col-sm-1 center">
 									<input class="form-control" type="text" value="{$room_info['room_num']}" name="{$var_name_room_info|cat:'[room_num]'}">
 								</td>
@@ -151,6 +159,10 @@
 			</table>
 			<div class="form-group">
 				<div class="col-sm-12">
+                    <button id="bulk-update-rooms-button" class="btn btn-default bulkUpdateRoomModal" data-toggle="modal" data-target="#bulkUpdateRoomModal" type="button" data-size="s" data-style="expand-right" disabled>
+                        <i class="icon icon-list"></i>
+                        {l s='Bulk Update'}
+                    </button>
 					<button id="add-more-rooms-button" class="btn btn-default" type="button" data-size="s" data-style="expand-right">
 						<i class="icon icon-plus"></i>
 						{l s='Add More Rooms'}
@@ -174,10 +186,6 @@
 		</div>
 	</div>
 {/if}
-
-<div id="modal_loader" class="loading_overlay" style="display: none;">
-    <img src="{$link->getMediaLink(($smarty.const._PS_ADMIN_IMG_))}ajax-loader.gif" class="loading-img"/>
-</div>
 
 {*Disable Dates Model*}
 <div class="modal fade" id="deactiveDatesModal" tabindex="-1" role="dialog" aria-labelledby="deactiveDatesLabel">
@@ -267,6 +275,87 @@
 	</div>
 </div>
 {*END*}
+
+<div class="modal fade" id="bulkUpdateRoomModal" tabindex="-1" role="dialog" aria-labelledby="bulkUpdateRoomLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close margin-right-10" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title"><i class="icon-calendar"></i>&nbsp; {l s='Bulk Update Rooms'}</h4>
+			</div>
+			<div class="modal-body padding-top-20">
+				<div class="text-left errors-wrap" style="display: none;"></div>
+                <div class="form-group">
+                    <label class="control-label col-lg-3">
+                        <span>
+                            {l s='Floor'}
+                        </span>
+                    </label>
+                    <div class="col-lg-6">
+                        <input type="text" name="bulk_update_room_floor"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-lg-3">
+                        <span>
+                            {l s='Status'}
+                        </span>
+                    </label>
+                    <div class="col-lg-6">
+                        <select class="form-control bulk_update_room_status" name="bulk_update_room_status">
+                            {foreach from=$rm_status item=room_stauts}
+                                <option value="{$room_stauts['id']}">{$room_stauts['status']|escape:'htmlall':'UTF-8'}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-lg-3">
+                        <span>
+                            {l s='Extra Information'}
+                        </span>
+                    </label>
+                    <div class="col-lg-6">
+                        <input type="text" name="bulk_update_room_comment"/>
+                    </div>
+                </div>
+				<div class="from-group table-responsive-row clearfix" style="display:none;">
+				<div class="modal-subtitle padding-top-20">{l s='Disable Dates'}</div>
+					<table class="table rooms-disable-dates">
+						<thead>
+							<tr class="nodrag nodrop">
+								<th class="col-sm-1 center">
+									<div>{l s='Date From'}</span>
+								</th>
+								<th class="col-sm-2 center">
+									<span>{l s='Date To'}</span>
+								</th>
+								<th class="col-sm-2 center">
+									<span>{l s='Reason'}</span>
+								</th>
+                                <th class="col-sm-1 center"></th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+					<div class="form-group">
+						<div class="col-sm-12">
+							<a href="#" class="add_bulk_room_update_disable_date btn btn-default">
+                                <i class="icon icon-plus"></i>
+                                <span>{l s="Add More"}</span>
+                            </a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" name="submitBulkUpdateRooms">{l s='Submit'}</button>
+			</div>
+		</div>
+	</div>
+</div>
 
 <div class="modal fade" id="room-dates-modal" tabindex="-1" role="dialog" aria-labelledby="">
     <div class="modal-dialog" role="document">
@@ -393,6 +482,9 @@
 
             var prefix = 'rooms_info['+lengthRooms+']';
             html = '<tr class="room_data_values" data-row-index="'+lengthRooms+'">';
+                html += '<td class="center">';
+                    html += '<input type="checkbox" disabled name="bulk_update_room[]">';
+                html += '</td>';
                 html += '<td class="col-sm-1 center">';
                     html += '<input class="form-control" type="text" name="'+prefix+'[room_num]">';
                 html += '</td>';
@@ -456,6 +548,18 @@
             $("#checkConfSubmit").val(1);
             return true;
         });
+
+        $('[name="rooms_checkbox"]').on('change', function() {
+            if ($(this).hasClass('select_all')) {
+                $(this).addClass('unselect_all').removeClass('select_all');
+                $('[name="bulk_update_room[]"]').prop('checked', true);
+            } else {
+                $(this).addClass('select_all').removeClass('unselect_all');
+                $('[name="bulk_update_room[]"]').prop('checked', false);
+            }
+
+            BulkUpdateRoomModal.toggleBulkUpdateButton();
+        })
 
         // remove room row
         $(document).on('click', '.remove-rooms-button', function(e) {
@@ -687,14 +791,14 @@
         // Called after the modal is shown, since the modal is hidden at first, the size of the fullcalendar is render incorrectly.
         $('#deactiveDatesModal').on('shown.bs.modal', function(e) {
             DisableDatesCalendar.updateSize();
-            $('#modal_loader').hide();
+            $('#page-loader').hide();
             $('#deactiveDatesModal').css('visibility', 'visible');
         });
 
         // Reseting and populating the modal.
         $('#deactiveDatesModal').on('show.bs.modal', function(e) {
             $('#deactiveDatesModal').css('visibility', 'hidden');
-            $('#modal_loader').show();
+            $('#page-loader').show();
             DisableDatesObj.reset();
             DisableDatesObj.init($(e.relatedTarget));
         });
@@ -709,7 +813,195 @@
             DisableDatesObj.allowCalendarActions();
         });
 
-        // Init full calander object.
+        $('[name="bulk_update_room[]"]').on('change', function(){
+            BulkUpdateRoomModal.toggleBulkUpdateButton();
+        });
+
+        $(document).on('change', 'select[name="bulk_update_room_status"]', function(){
+            var status_val = $(this).val();
+            if (status_val == rm_status.STATUS_TEMPORARY_INACTIVE.id) {
+                $(this).closest('.modal-body').find('.rooms-disable-dates').parent().show();
+            } else {
+                $(this).closest('.modal-body').find('.rooms-disable-dates').parent().hide();
+            }
+        });
+
+        $(document).on('focus', '.disabled_date_from, .disabled_date_to', function () {
+            $('.disabled_date_from').datepicker({
+                showOtherMonths: true,
+                dateFormat: 'yy-mm-dd',
+                minDate: 0,
+                onSelect: function(selectedDate) {
+                    var date_format = selectedDate.split('-');
+                    selectedDate = new Date($.datepicker.formatDate('yy-mm-dd', new Date(date_format[0], date_format[1] - 1, date_format[2])));
+                    selectedDate.setDate(selectedDate.getDate() + 1);
+                    $(this).closest('tr').find('.disabled_date_to').datepicker('option', 'minDate', selectedDate);
+                },
+                onClose: function(selectedDate) {
+                    var dateTo = $(this).closest('tr').find('.disabled_date_to').val();
+                    if (!dateTo || (dateTo && selectedDate >= dateTo)) {
+                        $(this).closest('tr').find('.disabled_date_to').datepicker('show');
+                    }
+                },
+            });
+
+            $('.disabled_date_to').datepicker({
+                showOtherMonths: true,
+                dateFormat: 'yy-mm-dd',
+                minDate: 0,
+                beforeShow: function (input, instance) {
+                    var date_to = $(this).closest('tr').find('.disabled_date_from').val();
+                    if (typeof date_to != 'undefined' && date_to != '') {
+                        var date_format = date_to.split('-');
+                        var selectedDate = new Date($.datepicker.formatDate('yy-mm-dd', new Date(date_format[0], date_format[1] - 1, date_format[2])));
+                    } else {
+                        var date_format = new Date();
+                        var selectedDate = new Date($.datepicker.formatDate('yy-mm-dd', new Date()));
+                    }
+                    selectedDate.setDate(selectedDate.getDate()+1);
+                    $(this).datepicker('option', 'minDate', selectedDate);
+                },
+            });
+        });
+
+        $('#bulkUpdateRoomModal').on('show.bs.modal', function(e){
+            $('#bulkUpdateRoomModal table tbody').html('');
+            $('.bulk_update_room_status').val(rm_status.STATUS_ACTIVE.id).closest('.modal-body').find('.rooms-disable-dates').parent().hide();
+            $('[name="bulk_update_room_comment"]').val('');
+            $('[name="bulk_update_room_floor"]').val('');
+            $('#page-loader').show();
+            BulkUpdateRoomModal.init();
+        });
+
+        $('#bulkUpdateRoomModal').on('shown.bs.modal', function(e){
+            $('#page-loader').hide();
+        });
+
+        $('.add_bulk_room_update_disable_date').on('click', function() {
+            BulkUpdateRoomModal.addNewRow();
+        });
+
+        $(document).on('click','.remove-room-bulk-disable-dates-button',function(e) {
+            e.preventDefault();
+            $(this).closest('tr').remove();
+        });
+
+        $(document).on('click','button[name="submitBulkUpdateRooms"]',function(e) {
+            BulkUpdateRoomModal.submitBulkUpdateModal();
+
+        });
+
+        const BulkUpdateRoomModal = {
+            init: function() {
+                BulkUpdateRoomModal.addNewRow();
+                BulkUpdateRoomModal.hideErrors();
+            },
+            addNewRow: function() {
+                $('#bulkUpdateRoomModal tbody').append(this.disableDatesRowHtml);
+            },
+            removeAllInvalidRowDataMarkers: function(tr) {
+                $('#bulkUpdateRoomModal .room-disable-dates tr').css('outline', '');
+                $(tr).css('outline', '');
+            },
+            markRowDataInvalid: function(tr) {
+                $(tr).css({ 'outline': '1px solid #D27C82', 'border-radius': '2px' });
+            },
+            hideErrors: function() {
+                $('#bulkUpdateRoomModal .errors-wrap').hide();
+                $('#bulkUpdateRoomModal .errors-wrap').html('');
+            },
+            toggleBulkUpdateButton: function() {
+                let selectedRooms = BulkUpdateRoomModal.getSelectedRooms();
+                if (selectedRooms.length != 0) {
+                    $('#bulk-update-rooms-button').prop('disabled', false);
+                } else {
+                    $('#bulk-update-rooms-button').prop('disabled', true);
+                }
+            },
+            getSelectedRooms: function(){
+                let selectedRooms = [];
+                $('[type="checkbox"][name="bulk_update_room[]"]').each(function(){
+                    if ($(this).prop('checked')) {
+                        selectedRooms.push($(this).val());
+                    }
+                })
+
+                return selectedRooms;
+            },
+            getSelectedDates: function() {
+                let disableDates = [];
+                $('#bulkUpdateRoomModal .rooms-disable-dates tbody tr').each(function(i, tr) {
+                    let date_from = $(tr).find('.disabled_date_from').val().trim();
+                    let date_to = $(tr).find('.disabled_date_to').val().trim();
+                    let reason = $(tr).find('.room_disable_reason').val().trim();
+                    disableDates.push({ date_from, date_to, reason});
+                });
+
+                return disableDates;
+            },
+            showErrors: function(errors) {
+                $('#bulkUpdateRoomModal .errors-wrap').html(errors);
+                $('#bulkUpdateRoomModal .errors-wrap').show();
+            },
+            submitBulkUpdateModal: function() {
+                let dates = this.getSelectedDates();
+                let data = {
+                    ajax : 1,
+                    action: 'bulkUpdateRooms',
+                    id_rooms: this.getSelectedRooms(),
+                    disable_dates: this.getSelectedDates(),
+                    floor: $('[name="bulk_update_room_floor"]').val(),
+                    room_comment: $('[name="bulk_update_room_comment"]').val(),
+                    id_status: $('.bulk_update_room_status').val(),
+                    id_product: $('[name="id_product"]').val()
+                };
+
+                $('#page-loader').show();
+                $.ajax({
+                    url: prod_link,
+                    type: 'POST',
+                    data: data,
+                    dataType: 'JSON',
+                    success: function(response) {
+                        if (response.status) {
+                            window.location.href = response.href;
+                        } else {
+                            BulkUpdateRoomModal.showErrors(response.msg);
+                            BulkUpdateRoomModal.addInvalidRowDataMarkers(response.rows_to_highlight);
+                        }
+                    },
+                    complete: function() {
+                        $('#page-loader').hide();
+                    }
+                });
+            },
+            addInvalidRowDataMarkers: function(rowsToHighlight) {
+                if (rowsToHighlight.length != 0) {
+                    rowsToHighlight.map(function (rowIndex) {
+                        const tr = $('#bulkUpdateRoomModal .rooms-disable-dates tbody tr').eq(rowIndex);
+                        BulkUpdateRoomModal.markRowDataInvalid(tr);
+                    });
+                }
+            },
+            disableDatesRowHtml: `
+                <tr class="disabledDatesTr">
+                    <td class="col-sm-2 center">
+                        <input type="text" class="form-control disabled_date_from" value="" readonly>
+                    </td>
+                    <td class="col-sm-2 center">
+                        <input type="text" class="form-control disabled_date_to" value="" readonly>
+                    </td>
+                    <td class="center col-sm-6">
+                        <input type="text" class="form-control room_disable_reason" value="">
+                    </td>
+                    <td class="center col-sm-1">
+                        <a href="#" class="remove-room-bulk-disable-dates-button btn btn-default"><i class="icon-trash"></i></a>
+                    </td>
+                </tr>
+            `,
+        };
+
+        // Init full calender object.
         const DisableDatesCalendar = new FullCalendar.Calendar($('#disable_dates_full_calendar').get(0), {
             initialView: 'dayGridMonth',
             initialDate: '{date('Y-m-d', time())}',
