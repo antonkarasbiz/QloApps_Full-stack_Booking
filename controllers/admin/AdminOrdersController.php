@@ -79,8 +79,7 @@ class AdminOrdersControllerCore extends AdminController
         LEFT JOIN `'._DB_PREFIX_.'order_state` os ON (os.`id_order_state` = a.`current_state`)
         LEFT JOIN `'._DB_PREFIX_.'order_state_lang` osl ON (os.`id_order_state` = osl.`id_order_state` AND osl.`id_lang` = '.(int) $this->context->language->id.')
         LEFT JOIN `'._DB_PREFIX_.'htl_booking_detail` hbd ON (hbd.`id_order` = a.`id_order`)
-        LEFT JOIN `'._DB_PREFIX_.'htl_branch_info_lang` hbil ON (hbil.`id` = hbd.`id_hotel`)';
-
+        LEFT JOIN `'._DB_PREFIX_.'htl_branch_info_lang` hbil ON (hbil.`id` = hbd.`id_hotel` AND osl.`id_lang` = hbil.`id_lang`)';
 
         $this->_orderBy = 'id_order';
         $this->_orderWay = 'DESC';
@@ -1187,6 +1186,123 @@ class AdminOrdersControllerCore extends AdminController
         $this->_new_list_header_design = true;
 
         return parent::renderList();
+    }
+
+    public function getList(
+        $id_lang,
+        $order_by = null,
+        $order_way = null,
+        $start = 0,
+        $limit = null,
+        $id_lang_shop = false
+    ){
+        if ($this->action == 'export' && empty($this->_listsql)) {
+            $this->_select .= ', c.`email`, cgd.`phone`, a.`total_paid_real`,
+                orf.`cancellation_date`, orf.`cancellation_fee`,
+                cy.`iso_code` AS country, st.`iso_code` as state, ad.`city`,
+                CONCAT(ad.`address1`, \', \', ad.`postcode`) AS `cus_address`,
+                GROUP_CONCAT(
+                    CASE
+                        WHEN hbd.`id_status`='.HotelBookingDetail::STATUS_ALLOTED.' THEN \''.$this->l('Alloted').'\'
+                        WHEN hbd.`id_status`='.HotelBookingDetail::STATUS_CHECKED_IN.' THEN \''.$this->l('Checked in').'\'
+                        WHEN hbd.`id_status`='.HotelBookingDetail::STATUS_CHECKED_OUT.' THEN \''.$this->l('Checked out').'\'
+                        ELSE \''.$this->l('Invalid status').'\'
+                    END
+                ) AS `room_status`,
+                GROUP_CONCAT(DISTINCT(hbd.`room_type_name`)) AS `room_types`,
+                GROUP_CONCAT(hbd.`date_from`) AS `date_from`,
+                GROUP_CONCAT(hbd.`date_to`) AS `date_to`,
+                GROUP_CONCAT(hbd.`room_num`) AS `rooms`,
+                GROUP_CONCAT(hbd.`check_in`) AS `check_in_dates`,
+                GROUP_CONCAT(hbd.`check_out`) AS `check_out_dates`';
+
+            $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'cart_customer_guest_detail` cgd ON cgd.`email` = c.`email` AND  cgd.`id_cart` = 0
+                LEFT JOIN `'._DB_PREFIX_.'address` ad ON a.`id_customer`= ad.`id_customer` AND ad.`id_customer`!=0
+                LEFT JOIN `'._DB_PREFIX_.'country` cy ON cy.`id_country`= ad.`id_country`
+                LEFT JOIN `'._DB_PREFIX_.'state` st ON st.`id_state`= ad.`id_state`
+                LEFT JOIN (
+                    SELECT ref.`id_order`, IF(refst.refunded = 1, GROUP_CONCAT(ref.`date_upd`), NULL) AS `cancellation_date`,
+                        IF(refst.refunded = 1, SUM(ref.`refunded_amount`), NULL) AS `cancellation_fee`
+                    FROM `'._DB_PREFIX_.'order_return` ref
+                    LEFT JOIN `'._DB_PREFIX_.'order_return_state` refst
+                        ON refst.`id_order_return_state` = ref.`state` AND refst.`refunded` = 1
+                    GROUP BY ref.`id_order`
+                ) AS orf ON orf.`id_order` = a.`id_order`';
+
+            $this->fields_list = array_merge($this->fields_list, array(
+                'email' => array(
+                    'title' => $this->l('Email')
+                ),
+                'phone' => array(
+                    'title' => $this->l('Phone')
+                ),
+                'room_types' => array(
+                    'title' => $this->l('Room Types')
+                ),
+                'rooms' => array(
+                    'title' => $this->l('Rooms')
+                ),
+                'currency' => array(
+                    'title' => $this->l('Currency')
+                ),
+                'total_paid_real' => array(
+                    'title' => $this->l('Amount Paid')
+                ),
+                'check_in_dates' => array(
+                    'title' => $this->l('Check In')
+                ),
+                'check_out_dates' => array(
+                    'title' => $this->l('Check Out')
+                ),
+                'date_from' => array(
+                    'title' => $this->l('Date From'),
+                    'filter_key' => 'hbd!date_from',
+                ),
+                'date_to' => array(
+                    'title' => $this->l('Date To'),
+                    'filter_key' => 'hbd!date_to',
+                ),
+                'date_add' => array(
+                    'title' => $this->l('Reservation Date'),
+                    'filter_key' => 'a!date_add',
+                ),
+                'room_status' => array(
+                    'title' => $this->l('Room Status'),
+                ),
+                'country' => array(
+                    'title' => $this->l('Country'),
+                ),
+                'state' => array(
+                    'title' => $this->l('State'),
+                ),
+                'city' => array(
+                    'title' => $this->l('City'),
+                ),
+                'cus_address' => array(
+                    'title' => $this->l('Address'),
+                ),
+                'cancellation_date' => array(
+                    'title' => $this->l('Cancellation date'),
+                ),
+                'cancellation_fee' => array(
+                    'title' => $this->l('Cancellation fee'),
+                ),
+            ));
+
+            unset($this->fields_list['id_status']);
+            unset($this->fields_list['id_room_information']);
+            unset($this->fields_list['room_type_name']);
+            unset($this->fields_list['id_currency']);
+        }
+
+        parent::getList(
+            $id_lang,
+            $order_by,
+            $order_way,
+            $start,
+            $limit,
+            $id_lang_shop
+        );
     }
 
     public function postProcess()

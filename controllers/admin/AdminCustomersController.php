@@ -80,6 +80,7 @@ class AdminCustomersControllerCore extends AdminController
         $this->_join = 'LEFT JOIN '._DB_PREFIX_.'gender_lang gl ON (a.id_gender = gl.id_gender AND gl.id_lang = '.(int)$this->context->language->id.')';
         $this->_join .= ' LEFT JOIN '._DB_PREFIX_.'group_lang grl ON (a.id_default_group = grl.id_group AND grl.id_lang = '.(int)$this->context->language->id.')';
         $this->_join .= ' LEFT JOIN '._DB_PREFIX_.'orders o ON (a.id_customer = o.id_customer)';
+        $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'cart_customer_guest_detail` cgd ON cgd.`email` = a.`email` AND  cgd.`id_cart` = 0 ';
         $this->_group = 'GROUP BY a.`id_customer`';
 
         $this->fields_list = array(
@@ -97,13 +98,16 @@ class AdminCustomersControllerCore extends AdminController
                 'order_key' => 'gl!name'
             ),
             'firstname' => array(
-                'title' => $this->l('First name')
+                'title' => $this->l('First name'),
+                'filter_key' => 'a!firstname'
             ),
             'lastname' => array(
-                'title' => $this->l('Last name')
+                'title' => $this->l('Last name'),
+                'filter_key' => 'a!lastname'
             ),
             'email' => array(
-                'title' => $this->l('Email address')
+                'title' => $this->l('Email address'),
+                'filter_key' => 'a!email'
             ),
         );
 
@@ -140,6 +144,12 @@ class AdminCustomersControllerCore extends AdminController
                 'havingFilter' => true,
                 'align' => 'text-right',
                 'badge_success' => true
+            ),
+            'phone' => array(
+                'title' => $this->l('Phone'),
+                'filter_key' => 'cgd!phone',
+                'optional' => true,
+                'visible_default' => false,
             ),
             'active' => array(
                 'title' => $this->l('Enabled'),
@@ -179,6 +189,7 @@ class AdminCustomersControllerCore extends AdminController
                 'title' => $this->l('Banned'),
                 'type' => 'bool',
                 'displayed' => false,
+                'callback' => 'getCustomerStatusLabel',
             ),
             'order_date' => array(
                 'title' => $this->l('Order date'),
@@ -194,6 +205,7 @@ class AdminCustomersControllerCore extends AdminController
 
         $this->_select = '
         a.date_add, gl.name as title, grl.name as default_group_name, COUNT(o.`id_order`) as total_orders,
+        cgd.`phone`,
         o.`date_add` as order_date, SUM(total_paid_real / conversion_rate) as total_spent, (
             SELECT c.date_add FROM '._DB_PREFIX_.'guest g
             LEFT JOIN '._DB_PREFIX_.'connections c ON c.id_guest = g.id_guest
@@ -230,6 +242,17 @@ class AdminCustomersControllerCore extends AdminController
         }
     }
 
+    public function getCustomerStatusLabel($deleted, $tr)
+    {
+        if ($deleted == Customer::STATUS_DELETED) {
+            return $this->l('Deleted');
+        } else if ($deleted == Customer::STATUS_BANNED) {
+            return $this->l('Banned');
+        }
+
+        return;
+    }
+
     public function initContent()
     {
         if ($this->action == 'select_delete') {
@@ -263,8 +286,11 @@ class AdminCustomersControllerCore extends AdminController
 
     public function getList($id_lang, $orderBy = null, $orderWay = null, $start = 0, $limit = null, $id_lang_shop = null)
     {
-        parent::getList($id_lang, $orderBy, $orderWay, $start, $limit, $id_lang_shop);
+        if ($this->action == 'export')  {
+            $this->deleted = false;
+        }
 
+        parent::getList($id_lang, $orderBy, $orderWay, $start, $limit, $id_lang_shop);
         if ($this->_list) {
             foreach ($this->_list as &$row) {
                 $row['badge_success'] = $row['total_spent'] > 0;

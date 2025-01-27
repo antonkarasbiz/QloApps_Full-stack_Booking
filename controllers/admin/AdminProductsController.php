@@ -201,7 +201,13 @@ class AdminProductsControllerCore extends AdminController
 				LEFT JOIN `'._DB_PREFIX_.'address` aa ON (aa.`id_hotel` = hb.`id`)
 				LEFT JOIN `'._DB_PREFIX_.'feature_product` fp ON (fp.`id_product` = a.`id_product`)
 				LEFT JOIN `'._DB_PREFIX_.'htl_room_type_demand` hrtd ON (hrtd.`id_product` = a.`id_product`)
-				LEFT JOIN `'._DB_PREFIX_.'htl_room_type_service_product` hrtsp ON ((hrtsp.`element_type` = '.(int) RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL.' AND hrtsp.`id_element` = hrt.`id_hotel`) OR (hrtsp.`element_type` = '.(int) RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE.' AND hrtsp.`id_element` = a.`id_product`))
+				LEFT JOIN (
+                    SELECT rsp.*, GROUP_CONCAT(pl.`name`) AS service_products
+                    FROM `'._DB_PREFIX_.'htl_room_type_service_product` rsp
+                    LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON (pl.`id_product` = rsp.`id_product`)
+                    WHERE pl.`id_lang`='.$this->context->language->id.'
+                    GROUP BY rsp.`id_element`)
+                AS hrtsp ON ((hrtsp.`element_type` = '.(int) RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL.' AND hrtsp.`id_element` = hrt.`id_hotel`) OR (hrtsp.`element_type` = '.(int) RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE.' AND hrtsp.`id_element` = a.`id_product`))
 				LEFT JOIN `'._DB_PREFIX_.'htl_advance_payment` hap ON (hap.`id_product` = a.`id_product`)';
 
         $this->_select .= ' a.`show_at_front`, (SELECT COUNT(hri.`id`) FROM `'._DB_PREFIX_.'htl_room_information` hri WHERE hri.`id_product` = a.`id_product`) as num_rooms, ';
@@ -290,7 +296,7 @@ class AdminProductsControllerCore extends AdminController
             'validation' => 'isFloat',
             'align' => 'text-left',
             'filter_key' => 'a!price',
-            'callback' => 'displayBasePrice',
+            'callback' => 'displayPrice',
         );
         $this->fields_list['price_final'] = array(
             'title' => $this->l('Final price'),
@@ -298,7 +304,8 @@ class AdminProductsControllerCore extends AdminController
             'align' => 'text-left',
             'havingFilter' => true,
             'orderby' => false,
-            'search' => false
+            'search' => false,
+            'callback' => 'displayPrice',
         );
 
         $this->fields_list['active'] = array(
@@ -326,6 +333,7 @@ class AdminProductsControllerCore extends AdminController
             'align' => 'text-center',
             'type' => 'bool',
             'active' => 'show_at_front',
+            'callback' => 'formatStatusAsLabel',
             'optional' => true,
             'havingFilter' => true,
             'visible_default' => true,
@@ -335,7 +343,7 @@ class AdminProductsControllerCore extends AdminController
         if (Configuration::get('WK_ALLOW_ADVANCED_PAYMENT')) {
             $this->fields_list['advance_payment'] = array(
                 'title' => $this->l('Advance Payment'),
-                'callback' => 'getAdvancePaymentStatus',
+                'callback' => 'formatStatusAsLabel',
                 'badge_success' => true,
                 'badge_danger' => true,
                 'align' => 'text-center',
@@ -445,8 +453,7 @@ class AdminProductsControllerCore extends AdminController
             );
         }
     }
-
-    public function getAdvancePaymentStatus($val, $row)
+    public function formatStatusAsLabel($val, $row)
     {
         if ($val) {
             $str_return = $this->l('Yes');
@@ -470,7 +477,7 @@ class AdminProductsControllerCore extends AdminController
         }
     }
 
-    public static function displayBasePrice($basePrice, $tr)
+    public static function displayPrice($basePrice, $tr)
     {
         return Tools::displayPrice($basePrice, (int) Configuration::get('PS_CURRENCY_DEFAULT'));
     }
@@ -628,6 +635,43 @@ class AdminProductsControllerCore extends AdminController
         if ($orderByPriceFinal == 'price_final') {
             $orderBy = 'id_'.$this->table;
             $orderWay = 'ASC';
+        }
+        if ($this->action == 'export' && empty($this->_listsql)) {
+            $this->_select .= ' , trg.`name` AS `id_tax_rules_group`, GROUP_CONCAT(fpl.`name`) AS `features`, hrtdl.`global_demands`';
+            $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'tax_rules_group` trg
+                ON trg.`id_tax_rules_group` = a.`id_tax_rules_group`
+                LEFT JOIN `'._DB_PREFIX_.'feature_lang` fpl
+                ON (fp.`id_feature` = fpl.`id_feature` AND fpl.`id_lang`='.(int) $this->context->language->id.')';
+
+            $this->_join .= ' LEFT JOIN (SELECT
+                    `id_global_demand`, `id_lang`,
+                    GROUP_CONCAT(`name`) AS `global_demands`,
+                    GROUP_CONCAT(`id_global_demand`)
+                    FROM `'._DB_PREFIX_.'htl_room_type_global_demand_lang`
+                    WHERE `id_lang`='.(int) $this->context->language->id.'
+                    GROUP BY `id_global_demand`
+                ) AS hrtdl ON (hrtdl.`id_global_demand` = hrtd.`id_global_demand` AND hrtdl.`id_lang`= b.`id_lang` )';
+
+            $this->fields_list = array_merge($this->fields_list, array(
+                   'id_tax_rules_group' => array(
+                        'title' => $this->l('Id Tax Rules group'),
+                        'filter_key' => 'a!id_tax_rules_group',
+                    ),
+                    'features' => array(
+                        'title' => $this->l('Features'),
+                    ),
+                    'service_products' => array(
+                        'title' => $this->l('Services Products'),
+                    ),
+                    'global_demands' => array(
+                        'title' => $this->l('Additional Facilities'),
+                    )
+                )
+            );
+
+            unset($this->fields_list['id_global_demand']);
+            unset($this->fields_list['id_feature']);
+            unset($this->fields_list['id_service_product']);
         }
         parent::getList($id_lang, $orderBy, $orderWay, $start, $limit, $this->context->shop->id);
 
