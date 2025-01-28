@@ -55,11 +55,11 @@ class HotelOrderRestrictDate extends ObjectModel
     {
         $result = self::getDataByHotelId($idHotel);
         if (is_array($result) && count($result) && !$result['use_global_max_booking_offset']) {
-            return date('Y-m-d', strtotime('+ '.$result['max_booking_offset'].' days'));
+            return date('Y-m-d H:i:s', strtotime('+ '.$result['max_booking_offset'].' days'));
         }
 
         if ($globalBookingDate = Configuration::get('GLOBAL_MAX_BOOKING_OFFSET')) {
-            return date('Y-m-d', strtotime('+ '.$globalBookingDate.' days'));
+            return date('Y-m-d H:i:s', strtotime('+ '.$globalBookingDate.' days'));
         }
 
         return 0;
