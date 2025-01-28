@@ -854,6 +854,7 @@ class AdminOrdersControllerCore extends AdminController
             $this->context->smarty->assign(
                 array(
                     'order' => $objOrder,
+                    'invoices_collection' => $objOrder->getInvoicesCollection(),
                     'currency' => new Currency($objOrder->id_currency),
                     'max_child_age' => Configuration::get('WK_GLOBAL_CHILD_MAX_AGE'),
                 )
