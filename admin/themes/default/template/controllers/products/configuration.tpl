@@ -567,7 +567,7 @@
                 $('#disable_dates_full_calendar .id_calendar_event_'+calendarEventId).find('.fc-event-main-frame').tooltip('hide');
                 DisableDatesObj.deleteDisableDate(calendarEvent.extendedProps.id_disable_date)
                     .then(function(response) {
-                        if (response.status) {
+                        if (response) {
                             $('#disable_dates_full_calendar .id_calendar_event_'+calendarEventId).find('.fc-event-main-frame').tooltip('destroy');
                             calendarEvent.remove();
                             var formEventId = parseInt($('#disable_dates_form .id_calendar_event').val());
