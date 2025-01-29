@@ -5532,8 +5532,8 @@ class AdminOrdersControllerCore extends AdminController
         // Update Order
         // values changes as values are calculated accoding to the quantity of the product by webkul
         $order->total_paid = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
-        $order->total_paid_tax_incl = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
-        $order->total_paid_tax_excl = Tools::ps_round($order->getOrderTotal(false), _PS_PRICE_COMPUTE_PRECISION_);
+        $order->total_paid_tax_incl = Tools::ps_round($order->getOrderTotal() - $roomExtraDemandTI, _PS_PRICE_COMPUTE_PRECISION_);
+        $order->total_paid_tax_excl = Tools::ps_round($order->getOrderTotal(false) - $roomExtraDemandTE, _PS_PRICE_COMPUTE_PRECISION_);
 
         $order->total_products -= ($diff_products_tax_excl + $additionlServicesTE);
         $order->total_products = $order->total_products > 0 ? $order->total_products : 0;
@@ -5602,15 +5602,15 @@ class AdminOrdersControllerCore extends AdminController
                     $objOrderCartRule->delete();
                 }
 
-                // If no rooms left in the order, Update Order total and discounts to 0
-                $order->total_discounts = 0;
-                $order->total_discounts_tax_incl = 0;
-                $order->total_discounts_tax_excl = 0;
-                $order->total_paid = 0;
-                $order->total_paid_tax_incl = 0;
-                $order->total_paid_tax_excl = 0;
-                $order->update();
             }
+            // If no rooms left in the order, Update Order total and discounts to 0
+            $order->total_discounts = 0;
+            $order->total_discounts_tax_incl = 0;
+            $order->total_discounts_tax_excl = 0;
+            $order->total_paid = 0;
+            $order->total_paid_tax_incl = 0;
+            $order->total_paid_tax_excl = 0;
+            $order->update();
         }
 
         // Assign to smarty informations in order to show the new product line
