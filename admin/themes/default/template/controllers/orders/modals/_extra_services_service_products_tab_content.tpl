@@ -20,10 +20,13 @@
 <div id="room_type_service_product_desc" class="tab-pane {if isset($show_active) && $show_active}active{/if} extra-services-container">
 	{if isset($orderEdit) && $orderEdit}
 
-		<p class="col-sm-12 facility_nav_btn">
-			<button id="btn_new_room_service" class="btn btn-success"><i class="icon-plus"></i> {l s='Add new service'}</button>
+		<div class="col-sm-12 facility_nav_btn">
+            <button id="btn_new_room_service" class="btn btn-success pull-right"><i class="icon-plus-circle"></i> {l s='Add a new service'}</button>
+			<button id="btn_new_existing_room_service" class="btn btn-success"><i class="icon-plus-circle"></i> {l s='Add existing service'}</button>
 			<button id="back_to_service_btn" class="btn btn-default"><i class="icon-arrow-left"></i> {l s='Back'}</button>
-		</p>
+            <hr>
+		</div>
+
 
 		{* Already selected room services *}
 		<div class="col-sm-12 room_ordered_services table-responsive">
@@ -93,9 +96,9 @@
 				</tbody>
 			</table>
 		</div>
-		<form id="add_room_services_form" class="col-sm-12 room_services_container">
+		<form id="add_existing_room_services_form" class="col-sm-12 room_services_container">
 			<div class="room_demand_detail">
-				{if isset($roomTypeServiceProducts) && $roomTypeServiceProducts}
+				{if isset($serviceProducts) && $serviceProducts}
 					<table class="table">
 						<thead>
 							<tr>
@@ -107,7 +110,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							{foreach $roomTypeServiceProducts as $product}
+							{foreach $serviceProducts as $product}
 								<tr class="room_demand_block">
 									<td>
 										<input data-id_booking_detail="{$id_booking_detail}" value="{$product['id_product']|escape:'html':'UTF-8'}" name="selected_service[]" type="checkbox" class="id_room_type_service"/>
@@ -154,6 +157,80 @@
 				{/if}
 			</div>
 			<input type="hidden" name="id_booking_detail" value="{$id_booking_detail}">
+		</form>
+
+        <form id="add_new_room_services_form" class="col-sm-12 room_services_container">
+            <div class="row form-group">
+                <div class="col-sm-6">
+                    <label class="control-label required">{l s='Name'}</label>
+                    <input type="text" class="form-control" name="new_service_name"/>
+                </div>
+                <div class="col-sm-6">
+                    <label class="control-label required">{l s='Price(tax excl.)'}</label>
+                    <div class="input-group">
+                        <span class="input-group-addon">{$currencySign}</span>
+                        <input type="text" class="form-control" name="new_service_price"/>
+                    </div>
+                </div>
+            </div>
+            <div class="row form-group">
+                <div class="col-sm-6">
+                    <label class="control-label">{l s='Price calculation method'}</label>
+                    <select class="form-control" name="new_service_price_calc_method">
+                        <option value="{Product::PRICE_CALCULATION_METHOD_PER_BOOKING}">{l s='Add price once for the booking range'}</option>
+                        <option value="{Product::PRICE_CALCULATION_METHOD_PER_DAY}">{l s='Add price for each day of booking'}</option>
+                    </select>
+                </div>
+                <div class="col-sm-6">
+                    <label class="control-label">{l s='Auto added service'}</label>
+                    <div>
+                        <span class="switch prestashop-switch fixed-width-lg">
+                            <input type="radio" name="new_service_auto_added" id="new_service_auto_added_on" value="1"/>
+                            <label for="new_service_auto_added_on" class="radioCheck">
+                                {l s='Yes'}
+                            </label>
+                            <input type="radio" name="new_service_auto_added" id="new_service_auto_added_off" value="0" checked="checked"/>
+                            <label for="new_service_auto_added_off" class="radioCheck">
+                                {l s='No'}
+                            </label>
+                            <a class="slide-button btn"></a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="row form-group">
+                <div id="new_service_price_tax_rule_container" class="col-sm-6">
+                    <label class="control-label">{l s='Tax rule'}</label>
+                    <select name="new_service_price_tax_rule_group">
+                        {foreach from=$taxRulesGroups item=taxRuleGroup}
+                            <option value="{$taxRuleGroup.id_tax_rules_group}">{$taxRuleGroup.name}</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div id="new_service_price_addition_type_container" class="col-sm-6" style="display:none;">
+                    <label class="control-label">{l s='Price display preference'}</label>
+                    <select name="new_service_price_addition_type" id="new_service_price_addition_type">
+                        <option value="{Product::PRICE_ADDITION_TYPE_WITH_ROOM}">{l s='Add price in room price'}</option>
+                        <option value="{Product::PRICE_ADDITION_TYPE_INDEPENDENT}">{l s='Add price as convenience Fee'}</option>
+                    </select>
+                </div>
+                 <div id="new_service_qty_container" class="col-sm-6">
+                    <label class="control-label required">{l s='Quantity'}</label>
+                    <input type="number" class="form-control qty" min="1" name="new_service_qty" value="1">
+                </div>
+            </div>
+            {if $roomTypeTaxRuleGroupExist}
+                <div class="row form-group">
+                    <div class="col-sm-12 help-block">
+                        {l s='Note: If auto added service is enabled, then tax of the booking\'s room type will be applicable.'}
+                    </div>
+                </div>
+            {/if}
+            <div class="modal-footer">
+                <button type="submit" id="save_new_service" class="btn btn-primary"><i class="icon icon-save"></i> &nbsp;{l s="Update Service"}</button>
+            </div>
+			<input type="hidden" name="id_booking_detail" value="{$id_booking_detail}">
+            <input type="hidden" id="room_type_tax_rule_group_exist" name="room_type_tax_rule_group_exist" value="{$roomTypeTaxRuleGroupExist}">
 		</form>
 
 	{elseif isset($additionalServices) && $additionalServices}
