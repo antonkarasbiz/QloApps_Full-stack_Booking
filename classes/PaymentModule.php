@@ -1006,7 +1006,11 @@ abstract class PaymentModuleCore extends Module
                     $new_history = new OrderHistory();
                     $new_history->id_order = (int)$order->id;
                     $new_history->changeIdOrderState((int)$id_order_state, $order, true);
-                    if ($send_mails) {
+
+                    // Emails regarding awaiting payment should not be sent to customers if the payment amount in the order is 0.
+                    $sendOrderStatusMail = (($id_order_state == Configuration::get('PS_OS_AWAITING_REMOTE_PAYMENT') || $id_order_state == Configuration::get('PS_OS_AWAITING_PAYMENT')) && $order->total_paid > 0) ? true : false;
+
+                    if ($send_mails && $sendOrderStatusMail) {
                         $new_history->addWithemail(true, $extra_vars);
                     } else {
                         $new_history->add(true);
