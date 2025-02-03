@@ -2587,11 +2587,11 @@ class AdminOrdersControllerCore extends AdminController
             $helper->id = 'box-today-stay-over';
             $helper->icon = 'icon-user';
             $helper->color = 'color4';
-            $helper->title = $this->l('Stay Overs', null, null, false);
+            $helper->title = $this->l('Occupied Rooms', null, null, false);
             $helper->subtitle = $this->l('Today', null, null, false);
             $helper->href = $this->context->link->getAdminLink('AdminOrders').'&submitResetorder&submitFilterorder=1&orderFilter_hbd!is_refunded=0&orderFilter_hbd!id_status='.HotelBookingDetail::STATUS_CHECKED_IN.'&orderFilter_hbd!date_to[]='.pSQL(date('Y-m-d', strtotime('+ 1 days'))).'&orderFilter_hbd!date_to[]=';
-            $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=today_stay_over';
-            $helper->tooltip = $this->l('Total number of stay overs for today.', null, null, false);
+            $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=occupied_rooms';
+            $helper->tooltip = $this->l('The count of rooms that are currently occupied by guests.', null, null, false);
             $this->kpis[] = $helper;
 
             $helper = new HelperKpi();
