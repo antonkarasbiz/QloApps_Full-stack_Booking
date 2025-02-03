@@ -347,9 +347,9 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
                         if ($type_value)
                         if (isset($customer->id)) {
                             $cart_obj = new Cart($this->order->id_cart);
-                            $order_bk_data = $obj_htl_bk_dtl->getOnlyOrderBookingData($this->order->id, $cart_obj->id_guest, $type_value['product_id'], $customer->id, $type_value['id_order_detail']);
+                            $order_bk_data = $obj_htl_bk_dtl->getOnlyOrderBookingData($this->order->id, $cart_obj->id_guest, $type_value['product_id'], $customer->id);
                         } else {
-                            $order_bk_data = $obj_htl_bk_dtl->getOnlyOrderBookingData($this->order->id, $customer->id_guest, $type_value['product_id'], 0, $type_value['id_order_detail']);
+                            $order_bk_data = $obj_htl_bk_dtl->getOnlyOrderBookingData($this->order->id, $customer->id_guest, $type_value['product_id'], 0);
                         }
 
                         $cart_htl_data[$type_key]['id_product'] = $type_value['product_id'];
@@ -448,6 +448,9 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
 
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['total_price_tax_excl'] = 0;
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['total_price_tax_incl'] = 0;
+                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_auto_add_ti'] = 0;
+                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_auto_add_te'] = 0;
+                                $cart_htl_data[$type_key]['date_diff'][$date_join]['avg_paid_unit_price_tax_excl'] = 0;
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['amount'] = 0;
                                 // For order refund
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['id_room'] = $data_v['id_room'];
