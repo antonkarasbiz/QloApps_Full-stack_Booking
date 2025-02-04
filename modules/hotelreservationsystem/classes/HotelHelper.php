@@ -2231,6 +2231,10 @@ class HotelHelper
             $objProduct->price_calculation_method = $serviceProduct['price_calculation_method'];
             $objProduct->is_virtual = 1;
             $objProduct->indexed = 1;
+            if ($objProduct->auto_add_to_cart && $objProduct->price_addition_type == Product::PRICE_ADDITION_TYPE_WITH_ROOM) {
+                $objProduct->id_tax_rules_group = 0;
+            }
+
             $objProduct->save();
             $idProduct = $objProduct->id;
 
