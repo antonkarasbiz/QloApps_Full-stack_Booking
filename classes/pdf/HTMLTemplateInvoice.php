@@ -379,30 +379,6 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
                                 // For order refund
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['id_room'] = $data_v['id_room'];
                             } else {
-                                $cart_htl_data[$type_key]['date_diff'][$date_join]['extra_demands_price_te'] = $objBookingDemand->getRoomTypeBookingExtraDemands(
-                                    $order_obj->id,
-                                    $type_value['product_id'],
-                                    0,
-                                    $data_v['date_from'],
-                                    $data_v['date_to'],
-                                    0,
-                                    1,
-                                    0,
-                                    0,
-                                    $type_value['id_order_detail']
-                                );
-                                $cart_htl_data[$type_key]['date_diff'][$date_join]['extra_demands_price_ti'] = $objBookingDemand->getRoomTypeBookingExtraDemands(
-                                    $order_obj->id,
-                                    $type_value['product_id'],
-                                    0,
-                                    $data_v['date_from'],
-                                    $data_v['date_to'],
-                                    0,
-                                    1,
-                                    1,
-                                    0,
-                                    $type_value['id_order_detail']
-                                );
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services'] = $objRoomTypeServiceProductOrderDetail->getroomTypeServiceProducts(
                                     $order_obj->id,
                                     0,
@@ -454,9 +430,33 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['amount'] = 0;
                                 // For order refund
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['id_room'] = $data_v['id_room'];
-                                $totalDemandsPriceTE += $cart_htl_data[$type_key]['date_diff'][$date_join]['extra_demands_price_te'];
-                                $totalDemandsPriceTI += $cart_htl_data[$type_key]['date_diff'][$date_join]['extra_demands_price_ti'];
                             }
+
+                            $cart_htl_data[$type_key]['date_diff'][$date_join]['extra_demands_price_te'] = $objBookingDemand->getRoomTypeBookingExtraDemands(
+                                $order_obj->id,
+                                $type_value['product_id'],
+                                0,
+                                $data_v['date_from'],
+                                $data_v['date_to'],
+                                0,
+                                1,
+                                0,
+                                0
+                            );
+                            $cart_htl_data[$type_key]['date_diff'][$date_join]['extra_demands_price_ti'] = $objBookingDemand->getRoomTypeBookingExtraDemands(
+                                $order_obj->id,
+                                $type_value['product_id'],
+                                0,
+                                $data_v['date_from'],
+                                $data_v['date_to'],
+                                0,
+                                1,
+                                1,
+                                0
+                            );
+
+                            $totalDemandsPriceTE += $cart_htl_data[$type_key]['date_diff'][$date_join]['extra_demands_price_te'];
+                            $totalDemandsPriceTI += $cart_htl_data[$type_key]['date_diff'][$date_join]['extra_demands_price_ti'];
 
                             $cart_htl_data[$type_key]['date_diff'][$date_join]['total_price_tax_excl'] += $data_v['total_price_tax_excl'];
                             $cart_htl_data[$type_key]['date_diff'][$date_join]['total_price_tax_incl'] += $data_v['total_price_tax_incl'];
