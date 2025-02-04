@@ -4414,13 +4414,14 @@ class AdminOrdersControllerCore extends AdminController
             }
         }
 
-        // Create Order detail information
-        $order_detail = new OrderDetail();
-        $order_detail->createList($order, $cart, $order->getCurrentOrderState(), $cart->getProducts(), (isset($order_invoice) ? $order_invoice->id : 0), $use_taxes, (int)Tools::getValue('add_product_warehouse'));
-
         // update totals amount of order
         $order->total_products += (float)$cart->getOrderTotal(false, Cart::ONLY_PRODUCTS);
         $order->total_products_wt += (float)$cart->getOrderTotal($use_taxes, Cart::ONLY_PRODUCTS);
+
+        // Create Order detail information
+        $order_detail = new OrderDetail();
+        // In case there is no room in the order the the create list will not add taxes as total_products is zero.
+        $order_detail->createList($order, $cart, $order->getCurrentOrderState(), $cart->getProducts(), (isset($order_invoice) ? $order_invoice->id : 0), $use_taxes, (int)Tools::getValue('add_product_warehouse'));
 
         $order->total_paid = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
         $order->total_paid_tax_incl = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
