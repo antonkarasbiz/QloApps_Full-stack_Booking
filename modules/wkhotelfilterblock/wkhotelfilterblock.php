@@ -167,7 +167,6 @@ class wkhotelfilterblock extends Module
     public function hookDisplayLeftColumn()
     {
         if ($this->context->controller->php_self == 'category') {
-
             $htl_id_category = Tools::getValue('id_category');
             if (Validate::isLoadedObject($objCategory = new Category((int) $htl_id_category))
                 && ($id_hotel = HotelBranchInformation::getHotelIdByIdCategory($htl_id_category))
@@ -184,13 +183,22 @@ class wkhotelfilterblock extends Module
                     $max_child = HotelRoomType::getMaxChild($id_hotel);
 
                     $category = new Category($htl_id_category);
-
+                    $urlData = array ();
                     if (!($date_from = Tools::getValue('date_from'))) {
-                        $date_from = date('Y-m-d');
-                        $date_to = date('Y-m-d', strtotime($date_from) + 86400);
+                        $date_from = date('Y-m-d H:i:s');
+                        $date_to = date('Y-m-d H:i:s', strtotime($date_from) + 86400);
+                    } else {
+                        $urlData['date_from'] = $date_from;
                     }
+
                     if (!($date_to = Tools::getValue('date_to'))) {
-                        $date_to = date('Y-m-d', strtotime($date_from) + 86400);
+                        $date_to = date('Y-m-d H:i:s', strtotime($date_from) + 86400);
+                    } else {
+                        $urlData['date_from'] = $date_to;
+                    }
+
+                    if ($occupancy = Tools::getValue('occupancy')) {
+                        $urlData['occupancy'] = $occupancy;
                     }
 
                     $obj_rm_type = new HotelRoomType();
@@ -204,13 +212,6 @@ class wkhotelfilterblock extends Module
                     }
 
                     // Create URL of category
-                    $occupancy = Tools::getValue('occupancy');
-                    $urlData = array (
-                        'date_from' => $date_from,
-                        'date_to' => $date_to,
-                        'occupancy' => $occupancy,
-                    );
-
                     if (Configuration::get('PS_REWRITING_SETTINGS')) {
                         $categoryUrl = $this->context->link->getCategoryLink(
                             new Category($htl_id_category, $this->context->language->id),

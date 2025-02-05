@@ -176,17 +176,8 @@ class WkRoomSearchHelper
                     if ($locationCategoryId) {
                         $objLocationCategory = new Category($locationCategoryId, $context->language->id);
                         $searchedData['location'] = $objLocationCategory->name;
-                    } else {
-                        $locationCategoryId = $objCategory->id_parent;
-                        if ($searchedData['htl_dtl']) {
-                            $searchedData['location'] = $searchedData['htl_dtl']['city'];
-                            if (isset($searchedData['htl_dtl']['state_name'])) {
-                                $searchedData['location'] .= ', '.$searchedData['htl_dtl']['state_name'];
-                            }
-                            $searchedData['location'] .= ', '.$searchedData['htl_dtl']['country_name'];
-                        }
+                        $searchedData['location_category_id'] = $locationCategoryId;
                     }
-                    $searchedData['location_category_id'] = $locationCategoryId;
 
                     $searchedData['order_date_restrict'] = false;
                     $max_order_date = HotelOrderRestrictDate::getMaxOrderDate($idHotel);
@@ -224,7 +215,7 @@ class WkRoomSearchHelper
             }
 
             // if location is enabled the send hotels of the selected location only
-            if ($locationEnabled) {
+            if ($locationEnabled && $locationCategoryId) {
                 $hotelsInfo = Category::getAllCategoriesName($locationCategoryId);
             }
         }

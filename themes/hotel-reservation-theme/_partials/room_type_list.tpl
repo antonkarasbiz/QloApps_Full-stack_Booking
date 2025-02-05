@@ -20,9 +20,9 @@
 {block name='displayRoomTypeListBefore'}
 	{hook h='displayRoomTypeListBefore'}
 {/block}
-{if isset($booking_data['stats']) && $booking_data['stats']['num_avail']}
+{if isset($booking_data['stats']) && $booking_data['stats']['num_avail'] || isset($display_all_rooms) && $display_all_rooms}
 	{foreach from=$booking_data['rm_data'] key=room_k item=room_v}
-		{if $room_v['data']['available']|count}
+		{if $room_v['data']['available']|count || isset($display_all_rooms) && $display_all_rooms }
 			<div class="col-sm-12 room_cont" data-id-product="{$room_v['id_product']|escape:'htmlall':'UTF-8'}">
 				<div class="row">
 					{block name='room_type_list_room_image'}
@@ -41,7 +41,7 @@
 								<div class="row">
 									<p class="rm_heading col-sm-12 col-md-7">{$room_v['name']|escape:'htmlall':'UTF-8'}</p>
 									{if !isset($restricted_country_mode) && !$PS_CATALOG_MODE && !$order_date_restrict}
-										<p class="rm_left col-sm-12 col-md-5" {if $room_v['room_left'] > $warning_num}  style="display:none"{/if}>
+										<p class="rm_left col-sm-12 col-md-5" {if isset($display_all_rooms) && $display_all_rooms || $room_v['room_left'] > $warning_num} style="display:none"{/if}>
 											{l s='Hurry!'} <span class="remain_rm_qty">{$room_v['room_left']|escape:'htmlall':'UTF-8'}</span> {l s='rooms left'}
 										</p>
 									{/if}
@@ -115,7 +115,7 @@
 													{/if}
 													{block name='room_type_list_room_book_now_button'}
 														<div>
-															<a cat_rm_check_in="{$booking_date_from|escape:'htmlall':'UTF-8'}" cat_rm_check_out="{$booking_date_to|escape:'htmlall':'UTF-8'}" href="" rm_product_id="{$room_v['id_product']}" cat_rm_book_nm_days="{$num_days|escape:'htmlall':'UTF-8'}" data-id-product-attribute="0" data-id-product="{$room_v['id_product']|intval}" class="btn btn-default button button-medium ajax_add_to_cart_button"><span>{l s='Book Now'}</span></a>
+															<a cat_rm_check_in="{$booking_date_from|escape:'htmlall':'UTF-8'}" cat_rm_check_out="{$booking_date_to|escape:'htmlall':'UTF-8'}" href="" rm_product_id="{$room_v['id_product']}" cat_rm_book_nm_days="{$num_days|escape:'htmlall':'UTF-8'}" data-id-product-attribute="0" data-id-product="{$room_v['id_product']|intval}" class="btn btn-default button button-medium ajax_add_to_cart_button {if isset($display_all_rooms) && $display_all_rooms} display_type_room_list {/if}"><span>{l s='Book Now'}</span></a>
 														</div>
 													{/block}
 												{/if}

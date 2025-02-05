@@ -140,12 +140,15 @@ class CategoryControllerCore extends FrontController
 
         $id_category = Tools::getValue('id_category');
 
+        $displayAllRooms = false;
         if (!($date_from = Tools::getValue('date_from'))) {
             $date_from = date('Y-m-d');
             $date_to = date('Y-m-d', strtotime($date_from) + 86400);
+            $displayAllRooms = true;
         }
         if (!($date_to = Tools::getValue('date_to'))) {
             $date_to = date('Y-m-d', strtotime($date_from) + 86400);
+            $displayAllRooms = true;
         }
 
         // get occupancy of the search
@@ -180,6 +183,10 @@ class CategoryControllerCore extends FrontController
                 'id_guest' => $id_guest,
             );
 
+            if ($displayAllRooms) {
+                $bookingParams['room_info_detailed'] = 1;
+            }
+
             $booking_data = $objBookingDetail->dataForFrontSearch($bookingParams);
 
             $num_days = $objBookingDetail->getNumberOfDays($date_from, $date_to);
@@ -206,7 +213,8 @@ class CategoryControllerCore extends FrontController
                 'booking_date_to' => $date_to,
                 'booking_data' => $booking_data,
                 'max_order_date' => $max_order_date,
-                'order_date_restrict' => $order_date_restrict
+                'order_date_restrict' => $order_date_restrict,
+                'display_all_rooms' => $displayAllRooms
             ));
         } else {
             Tools::redirect($this->context->link->getPageLink('pagenotfound'));
@@ -261,8 +269,18 @@ class CategoryControllerCore extends FrontController
         $this->display_header = false;
         $this->display_footer = false;
 
-        $date_from = Tools::getValue('date_from');
-        $date_to = Tools::getValue('date_to');
+        $displayAllRooms = false;
+        if (!($date_from = Tools::getValue('date_from'))) {
+            $date_from = date('Y-m-d H:i:s');
+            $date_to = date('Y-m-d H:i:s', strtotime($date_from) + 86400);
+            $displayAllRooms = true;
+        }
+
+        if (!($date_to = Tools::getValue('date_to'))) {
+            $date_to = date('Y-m-d H:i:s', strtotime($date_from) + 86400);
+            $displayAllRooms = true;
+        }
+
         $htl_id_category = Tools::getValue('id_category');
 
         // occupancy of the search
@@ -316,6 +334,10 @@ class CategoryControllerCore extends FrontController
                 'id_cart' => $this->context->cart->id,
                 'id_guest' => $this->context->cookie->id_guest,
             );
+
+            if ($displayAllRooms) {
+                $bookingParams['room_info_detailed'] = 1;
+            }
 
             $booking_data = $objBookingDetail->dataForFrontSearch($bookingParams);
             // reset array keys from 0

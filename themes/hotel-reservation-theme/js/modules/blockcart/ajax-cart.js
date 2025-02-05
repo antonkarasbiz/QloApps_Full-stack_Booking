@@ -146,8 +146,11 @@ var ajaxCart = {
             // var minimalQuantity = $("#quantity_wanted_" + idProduct).val();
             // if (!minimalQuantity)
             //     minimalQuantity = 1;
-            if ($(this).prop('disabled') != 'disabled' && occupancy)
+            if ($(this).prop('disabled') != 'disabled' && occupancy && !$(this).hasClass('display_type_room_list')) {
                 ajaxCart.add(idProduct, idProductAttribute, false, this, occupancy, null, dateFrom, dateTo);
+            } else if ($(this).hasClass('display_type_room_list') && occupancy) {
+                showErrorMessage(room_selection_error_message);
+            }
         });
         //for product page 'add' button...
         if ($('.cart_block').length) {
