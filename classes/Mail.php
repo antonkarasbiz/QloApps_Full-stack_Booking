@@ -296,7 +296,10 @@ class MailCore extends ObjectModel
             }
 
             /* Create mail and attach differents parts */
-            $subject = '['.Configuration::get('PS_SHOP_NAME', null, null, $id_shop).'] '.$subject;
+            if (Configuration::get('SHOP_AS_SUBJECT_PREFIX')) {
+                $subject = '['.Configuration::get('PS_SHOP_NAME', null, null, $id_shop).'] '.$subject;
+            }
+
             $message->setSubject($subject);
 
             $message->setCharset('utf-8');

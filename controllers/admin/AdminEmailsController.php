@@ -126,6 +126,13 @@ class AdminEmailsControllerCore extends AdminController
                         'cast' => 'intval',
                         'type' => 'bool'
                     ),
+                    'SHOP_AS_SUBJECT_PREFIX' => array(
+                        'title' => $this->l('Add Website name to email subject'),
+                        'validation' => 'isBool',
+                        'cast' => 'intval',
+                        'type' => 'bool',
+                        'desc' => $this->l('Enable to prefix email subjects with the Website name')
+                    ),
                 ),
                 'submit' => array('title' => $this->l('Save'))
             ),
