@@ -6142,7 +6142,10 @@ class AdminOrdersControllerCore extends AdminController
         if ($deleted) {
             HotelRoomTypeFeaturePricing::deleteByIdCart($cart_id, $id_product, $room_id, $dt_frm, $dt_to );
             $obj_product_process = new HotelCartBookingData();
-            $num_cart_rooms = $obj_product_process->getCountRoomsByIdCartIdProduct($cart_id, $id_product, $dt_frm, $dt_to);
+            $num_cart_rooms = 0;
+            if ($rooms = $obj_hotel_cart_detail->getCartCurrentDataByCartId($cart_id)) {
+                $num_cart_rooms = count($num_cart_rooms);
+            }
 
             $numDays = HotelHelper::getNumberOfDays($dt_frm, $dt_to);
             $changed = $obj_product_process->changeProductDataByRoomId($room_id, $id_product, $numDays, $cart_id);
