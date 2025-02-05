@@ -203,7 +203,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
         parent::initToolbar();
         if (empty($this->display) || $this->display == 'list')  {
             $this->page_header_toolbar_btn['bulk_add'] = array(
-                'href' => self::$currentIndex.'&add'.$this->table.'&bulkAdd'.$this->table.'=1&token='.$this->token,
+                'href' => self::$currentIndex.'&add'.$this->table.'&bulkAdd'.$this->table.'&token='.$this->token,
                 'desc' => $this->l('Bulk create rules'),
                 'imgclass' => 'new'
             );
@@ -219,7 +219,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
     public function initToolbarTitle()
     {
         parent::initToolbarTitle();
-        if (Tools::getValue('bulkAdd'.$this->table)) {
+        if (Tools::isSubmit('bulkAdd'.$this->table)) {
             $this->toolbar_title[] = $this->l('Bulk Create', null, null, false);
             $this->addMetaTitle($this->l('Bulk Create', null, null, false));
         }
@@ -228,8 +228,8 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
     public function initProcess()
     {
         parent::initProcess();
-        if (Tools::getValue('bulkAdd'.$this->table)) {
-            self::$currentIndex = self::$currentIndex.'&bulkAdd'.$this->table.'=1';
+        if (Tools::isSubmit('bulkAdd'.$this->table)) {
+            self::$currentIndex = self::$currentIndex.'&bulkAdd'.$this->table.'';
         }
 
         if (Tools::isSubmit('submitBulkAdd'.$this->table)) {
@@ -285,23 +285,32 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
         $smartyVars['date_from'] = $dateFrom;
         $smartyVars['date_to'] = $dateTo;
         $smartyVars['groups'] = Group::getGroups($this->context->language->id);
-        $smartyVars['bulk_add'] = Tools::getValue('bulkAdd'.$this->table);
-
-        if ($smartyVars['bulk_add']) {
+        if (Tools::isSubmit('bulkAdd'.$this->table)) {
+            $this->submit_action = 'submitBulkAdd'.$this->table;
+            $smartyVars['bulk_add'] = true;
             $tree = new HelperTree('hotels-tree');
-            $tree->setData(HotelHelper::generateTreeData([
-                    'rootNode' => HotelHelper::NODE_HOTEL,
-                    'leafNode' => HotelHelper::NODE_ROOM_TYPE,
-                    'selectedElements' => array(
-                        'room_type' => Tools::getValue('room_type_box', array())
-                    )
-                ]))
+            if ($treeData = HotelHelper::generateTreeData([
+                'rootNode' => HotelHelper::NODE_HOTEL,
+                'leafNode' => HotelHelper::NODE_ROOM_TYPE,
+                'selectedElements' => array(
+                    'room_type' => Tools::getValue('room_type_box', array())
+                )
+            ])) {
+                foreach ($treeData as $idHotel => $data) {
+                    if (!isset($data['children']) || empty($data['children'])) {
+                        unset($treeData[$idHotel]);
+                    }
+                }
+            }
+
+            $tree->setData($treeData)
                 ->setUseCheckBox(true)
                 ->setAutoSelectChildren(true)
                 ->setUseBulkActions(true)
                 ->setUseSearch(true);
             $smartyVars['hotel_tree'] = $tree->render();
         }
+
         $this->context->smarty->assign($smartyVars);
         $this->fields_form = array(
             'submit' => array(
@@ -405,15 +414,84 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
         $languages = Language::getLanguages(false);
         $objDefaultLang = new language($defaultLangId);
 
+        if (!Tools::getValue('feature_price_name_'.$defaultLangId)) {
+            $this->errors[] = sprintf(
+                $this->l('Advanced price rule name is required at least in %s'),
+                $objDefaultLang->name
+            );
+        }
+        $validateRules = call_user_func(
+            array('HotelRoomTypeFeaturePricing', 'getValidationRules'),
+            'HotelRoomTypeFeaturePricing'
+        );
+        foreach ($languages as $language) {
+            if (!Validate::isCatalogName(Tools::getValue('feature_price_name_'.$language['id_lang']))) {
+                $this->errors[] = $this->l('Advanced price rule name is invalid in ').$language['name'];
+            } elseif (Tools::strlen(Tools::getValue('feature_price_name_'.$language['id_lang'])) > $validateRules['sizeLang']['feature_price_name']) {
+                sprintf(
+                    $this->l('Advanced price rule Name field is too long (%2$d chars max).'),
+                    $validateRules['sizeLang']['feature_price_name']
+                );
+            }
+        }
+
+        if (!$roomTypeId) {
+            $this->errors[] = $this->l('Room is not selected. Please try again.');
+        }
+
         if ($dateSelectionType == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_SPECIFIC) {
             $dateFrom = $specificDate;
             $dateTo = date('Y-m-d', strtotime("+1 day", strtotime($specificDate)));
+        } else if ($dateSelectionType == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE) {
+            if ($dateFrom == '') {
+                $this->errors[] = $this->l('Please choose Date from for the advanced price rule.');
+            }
+            if ($dateTo == '') {
+                $this->errors[] = $this->l('Please choose Date to for the advanced price rule.');
+            }
+            $dateFrom = date('Y-m-d', strtotime($dateFrom));
+            $dateTo = date('Y-m-d', strtotime($dateTo));
+            if (!Validate::isDate($dateFrom)) {
+                $this->errors[] = $this->l('Invalid Date From.');
+            }
+            if (!Validate::isDate($dateTo)) {
+                $this->errors[] = $this->l('Invalid Date To.');
+            }
+            if ($dateTo < $dateFrom) {
+                $this->errors[] = $this->l('Date To must be a date after Date From.');
+            }
+            if ($isSpecialDaysExists) {
+                if (!isset($specialDays) || !$specialDays) {
+                    $this->errors[] = $this->l('Please select at least one day for week days restriction.');
+                }
+            }
+        } else {
+            if ($specificDate == '') {
+                $this->errors[] = $this->l('Please choose Date from for the advanced price rule.');
+            }
+            $specificDate = date('Y-m-d', strtotime($specificDate));
+            if (!Validate::isDate($specificDate)) {
+                $this->errors[] = $this->l('Invalid Date From.');
+            }
         }
+
+        if (!$impactValue) {
+            $this->errors[] = $this->l('Please enter a valid impact value.');
+        } else {
+            if (!Validate::isPrice($impactValue)) {
+                $this->errors[] = $this->l('Invalid value of impact value.');
+            }
+        }
+
+        if (!(bool)$groups) {
+            $this->errors[] = $this->l('Please select at least one group for the group access');
+        }
+
 
         $isPlanTypeExists = 0;
         if ($isSpecialDaysExists && $jsonSpecialDays == 'false') {
             $this->errors[] = $this->l('Please select at least one day for week days restriction.');
-        } else {
+        } else if (empty($this->errors)) {
             $isPlanTypeExists = $this->validateExistingFeaturePrice(
                 $dateSelectionType,
                 $roomTypeId,
@@ -428,75 +506,6 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
         if ($isPlanTypeExists) {
             $this->errors[] = $this->l('An advanced price rule already exists in which some dates are common with this plan. Please select a different date range.');
         } else {
-            if (!$roomTypeId) {
-                $this->errors[] = $this->l('Room is not selected. Please try again.');
-            }
-            if (!Tools::getValue('feature_price_name_'.$defaultLangId)) {
-                $this->errors[] = sprintf(
-                    $this->l('Advanced price rule name is required at least in %s'),
-                    $objDefaultLang->name
-                );
-            }
-            $validateRules = call_user_func(
-                array('HotelRoomTypeFeaturePricing', 'getValidationRules'),
-                'HotelRoomTypeFeaturePricing'
-            );
-            foreach ($languages as $language) {
-                if (!Validate::isCatalogName(Tools::getValue('feature_price_name_'.$language['id_lang']))) {
-                    $this->errors[] = $this->l('Advanced price rule name is invalid in ').$language['name'];
-                } elseif (Tools::strlen(Tools::getValue('feature_price_name_'.$language['id_lang'])) > $validateRules['sizeLang']['feature_price_name']) {
-                    sprintf(
-                        $this->l('Advanced price rule Name field is too long (%2$d chars max).'),
-                        $validateRules['sizeLang']['feature_price_name']
-                    );
-                }
-            }
-
-            if ($dateSelectionType == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE) {
-                if ($dateFrom == '') {
-                    $this->errors[] = $this->l('Please choose Date from for the advanced price rule.');
-                }
-                if ($dateTo == '') {
-                    $this->errors[] = $this->l('Please choose Date to for the advanced price rule.');
-                }
-                $dateFrom = date('Y-m-d', strtotime($dateFrom));
-                $dateTo = date('Y-m-d', strtotime($dateTo));
-                if (!Validate::isDate($dateFrom)) {
-                    $this->errors[] = $this->l('Invalid Date From.');
-                }
-                if (!Validate::isDate($dateTo)) {
-                    $this->errors[] = $this->l('Invalid Date To.');
-                }
-                if ($dateTo < $dateFrom) {
-                    $this->errors[] = $this->l('Date To must be a date after Date From.');
-                }
-                if ($isSpecialDaysExists) {
-                    if (!isset($specialDays) || !$specialDays) {
-                        $this->errors[] = $this->l('Please select at least one day for week days restriction.');
-                    }
-                }
-            } else {
-                if ($specificDate == '') {
-                    $this->errors[] = $this->l('Please choose Date from for the advanced price rule.');
-                }
-                $specificDate = date('Y-m-d', strtotime($specificDate));
-                if (!Validate::isDate($specificDate)) {
-                    $this->errors[] = $this->l('Invalid Date From.');
-                }
-            }
-
-            if (!$impactValue) {
-                $this->errors[] = $this->l('Please enter a valid impact value.');
-            } else {
-                if (!Validate::isPrice($impactValue)) {
-                    $this->errors[] = $this->l('Invalid value of impact value.');
-                }
-            }
-
-            if (!(bool)$groups) {
-                $this->errors[] = $this->l('Please select at least one group for the group access');
-            }
-
             if (!count($this->errors)) {
                 if ($idFeaturePrice) {
                     $objFeaturePricing = new HotelRoomTypeFeaturePricing($idFeaturePrice);
@@ -574,16 +583,85 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
         $languages = Language::getLanguages(false);
         $objDefaultLang = new language($defaultLangId);
         $featurePricingName = array();
+        if (!Tools::getValue('feature_price_name_'.$defaultLangId)) {
+            $this->errors[] = sprintf(
+                $this->l('Advanced price rule name is required at least in %s'),
+                $objDefaultLang->name
+            );
+        }
 
+        $validateRules = call_user_func(
+            array('HotelRoomTypeFeaturePricing', 'getValidationRules'),
+            'HotelRoomTypeFeaturePricing'
+        );
+        foreach ($languages as $language) {
+            if (!Validate::isCatalogName(Tools::getValue('feature_price_name_'.$language['id_lang']))) {
+                $this->errors[] = $this->l('Advanced price rule name is invalid in ').$language['name'];
+            } elseif (Tools::strlen(Tools::getValue('feature_price_name_'.$language['id_lang'])) > $validateRules['sizeLang']['feature_price_name']) {
+                sprintf(
+                    $this->l('Advanced price rule Name field is too long (%2$d chars max).'),
+                    $validateRules['sizeLang']['feature_price_name']
+                );
+            }
+
+            if (Tools::getValue('feature_price_name_'.$language['id_lang'])) {
+                $featurePricingName[$language['id_lang']] = Tools::getValue('feature_price_name_'.$language['id_lang']);
+            } else {
+                $featurePricingName[$language['id_lang']] = Tools::getValue('feature_price_name_'.$defaultLangId);
+            }
+        }
         if ($dateSelectionType == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_SPECIFIC) {
             $dateFrom = $specificDate;
             $dateTo = date('Y-m-d', strtotime("+1 day", strtotime($specificDate)));
-        }
-        $isPlanTypeExists = 0;
-
-        if (empty($roomTypeIds)) {
-            $this->errors[] = $this->l('Please select at least one room type for bulk creation.');
+        } else if ($dateSelectionType == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE) {
+            if ($dateFrom == '') {
+                $this->errors[] = $this->l('Please choose Date from for the advanced price rule.');
+            }
+            if ($dateTo == '') {
+                $this->errors[] = $this->l('Please choose Date to for the advanced price rule.');
+            }
+            $dateFrom = date('Y-m-d', strtotime($dateFrom));
+            $dateTo = date('Y-m-d', strtotime($dateTo));
+            if (!Validate::isDate($dateFrom)) {
+                $this->errors[] = $this->l('Invalid Date From.');
+            }
+            if (!Validate::isDate($dateTo)) {
+                $this->errors[] = $this->l('Invalid Date To.');
+            }
+            if ($dateTo < $dateFrom) {
+                $this->errors[] = $this->l('Date To must be a date after Date From.');
+            }
+            if ($isSpecialDaysExists) {
+                if (!isset($specialDays) || !$specialDays) {
+                    $this->errors[] = $this->l('Please select at least one day for week days restriction.');
+                }
+            }
         } else {
+            if ($specificDate == '') {
+                $this->errors[] = $this->l('Please choose Date from for the advanced price rule.');
+            }
+            $specificDate = date('Y-m-d', strtotime($specificDate));
+            if (!Validate::isDate($specificDate)) {
+                $this->errors[] = $this->l('Invalid Date From.');
+            }
+        }
+
+        if (!$impactValue) {
+            $this->errors[] = $this->l('Please enter a valid impact value.');
+        } else {
+            if (!Validate::isPrice($impactValue)) {
+                $this->errors[] = $this->l('Invalid value of impact value.');
+            }
+        }
+
+        if (!(bool)$groups) {
+            $this->errors[] = $this->l('Please select at least one group for the group access');
+        }
+
+        $isPlanTypeExists = 0;
+        if (empty($roomTypeIds)) {
+            $this->errors[] = $this->l('Please select at least one room type for bulk creation process.');
+        } else if (empty($this->errors)) {
             if ($isSpecialDaysExists && $jsonSpecialDays == 'false') {
                 $this->errors[] = $this->l('Please select at least one day for week days restriction.');
             } else {
@@ -604,79 +682,6 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                         $this->errors[] = sprintf($this->l('An advanced price rule already exists for "%s" for the selected date range. Please select a different date range.'), $objProduct->name);
                     }
                 }
-            }
-
-            if (!Tools::getValue('feature_price_name_'.$defaultLangId)) {
-                $this->errors[] = sprintf(
-                    $this->l('Advanced price rule name is required at least in %s'),
-                    $objDefaultLang->name
-                );
-            }
-
-            $validateRules = call_user_func(
-                array('HotelRoomTypeFeaturePricing', 'getValidationRules'),
-                'HotelRoomTypeFeaturePricing'
-            );
-            foreach ($languages as $language) {
-                if (!Validate::isCatalogName(Tools::getValue('feature_price_name_'.$language['id_lang']))) {
-                    $this->errors[] = $this->l('Advanced price rule name is invalid in ').$language['name'];
-                } elseif (Tools::strlen(Tools::getValue('feature_price_name_'.$language['id_lang'])) > $validateRules['sizeLang']['feature_price_name']) {
-                    sprintf(
-                        $this->l('Advanced price rule Name field is too long (%2$d chars max).'),
-                        $validateRules['sizeLang']['feature_price_name']
-                    );
-                }
-
-                if (Tools::getValue('feature_price_name_'.$language['id_lang'])) {
-                    $featurePricingName[$language['id_lang']] = Tools::getValue('feature_price_name_'.$language['id_lang']);
-                } else {
-                    $featurePricingName[$language['id_lang']] = Tools::getValue('feature_price_name_'.$defaultLangId);
-                }
-            }
-
-            if ($dateSelectionType == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE) {
-                if ($dateFrom == '') {
-                    $this->errors[] = $this->l('Please choose Date from for the advanced price rule.');
-                }
-                if ($dateTo == '') {
-                    $this->errors[] = $this->l('Please choose Date to for the advanced price rule.');
-                }
-                $dateFrom = date('Y-m-d', strtotime($dateFrom));
-                $dateTo = date('Y-m-d', strtotime($dateTo));
-                if (!Validate::isDate($dateFrom)) {
-                    $this->errors[] = $this->l('Invalid Date From.');
-                }
-                if (!Validate::isDate($dateTo)) {
-                    $this->errors[] = $this->l('Invalid Date To.');
-                }
-                if ($dateTo < $dateFrom) {
-                    $this->errors[] = $this->l('Date To must be a date after Date From.');
-                }
-                if ($isSpecialDaysExists) {
-                    if (!isset($specialDays) || !$specialDays) {
-                        $this->errors[] = $this->l('Please select at least one day for week days restriction.');
-                    }
-                }
-            } else {
-                if ($specificDate == '') {
-                    $this->errors[] = $this->l('Please choose Date from for the advanced price rule.');
-                }
-                $specificDate = date('Y-m-d', strtotime($specificDate));
-                if (!Validate::isDate($specificDate)) {
-                    $this->errors[] = $this->l('Invalid Date From.');
-                }
-            }
-
-            if (!$impactValue) {
-                $this->errors[] = $this->l('Please enter a valid impact value.');
-            } else {
-                if (!Validate::isPrice($impactValue)) {
-                    $this->errors[] = $this->l('Invalid value of impact value.');
-                }
-            }
-
-            if (!(bool)$groups) {
-                $this->errors[] = $this->l('Please select at least one group for the group access');
             }
 
             if (empty($this->errors)) {
@@ -700,7 +705,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                     $res &= $objFeaturePricing->save();
                 }
 
-                Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
+                Tools::redirectAdmin($this->context->link->getAdminLink('AdminHotelFeaturePricesSettings').'&conf=4&token='.$this->token);
             }
         }
 
@@ -711,15 +716,14 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
 
     public function ajaxProcessSearchProductByName()
     {
-        $productName = Tools::getValue('room_type_name');
-        if ($productName) {
-            $productsByName = Product::searchByName($this->context->language->id, $productName);
-            // filter room types as per accessed hotels
-            $productsByName = HotelBranchInformation::filterDataByHotelAccess(
-                $productsByName,
-                $this->context->employee->id_profile
-            );
-            if ($productsByName) {
+        $response = array('status' => 'failed');
+        if ($productName = Tools::getValue('room_type_name')) {
+            if ($productsByName = Product::searchByName($this->context->language->id, $productName)) {
+                $productsByName = HotelBranchInformation::filterDataByHotelAccess(
+                    $productsByName,
+                    $this->context->employee->id_profile
+                );
+                // filter room types as per accessed hotels
                 foreach ($productsByName as &$product) {
                     $hotelRoomType = new HotelRoomType();
                     $roomInfoByIdProduct = $hotelRoomType->getRoomTypeInfoByIdProduct($product['id_product']);
@@ -729,22 +733,16 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                         $product['name'].= ' / '.$onjBranchInfo->hotel_name;
                     }
                 }
-                echo json_encode($productsByName, true);
-                die;
+
+                $response = $productsByName;
             } else {
-                die(
-                    json_encode(
-                        array('status' => 'failed', 'msg' => $this->l('No match found for entered room type name.'))
-                    )
-                );
+                $response['msg'] = $this->l('No match found for entered room type name.');
             }
         } else {
-            die(
-                json_encode(
-                    array('status' => 'failed', 'msg' => $this->l('No match found for entered room type name.'))
-                )
-            );
+            $response['msg'] = $this->l('No match found for entered room type name.');
         }
+
+        $this->ajaxDie(json_encode($response));
     }
 
     public function setMedia()

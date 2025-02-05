@@ -19,7 +19,7 @@
 
 <div class="panel">
 	<div class="panel-heading">
-		{if isset($bulk_add) && $bulk_add}
+		{if isset($bulk_add)}
 			<i class='icon-list'></i>&nbsp{l s='Bulk Create Advanced Price Rule' mod='hotelreservationsystem'}
 		{else if isset($edit)}
 			<i class='icon-pencil'></i>&nbsp{l s='Edit Advanced Price Rule' mod='hotelreservationsystem'}
@@ -59,7 +59,7 @@
 			{/if}
 		</div>
 
-		{if isset($bulk_add) && $bulk_add}
+		{if isset($bulk_add)}
 			<div class="form-group room-type-name">
 				<label class="col-sm-3 control-label required" for="feature_price_name" >
 					{l s='Select Room Types:' mod='hotelreservationsystem'}
@@ -325,7 +325,7 @@
 			<a href="{$link->getAdminLink('AdminHotelFeaturePricesSettings')|escape:'html':'UTF-8'}" class="btn btn-default">
 				<i class="process-icon-cancel"></i>{l s='Cancel' mod='hotelreservationsystem'}
 			</a>
-			{if isset($bulk_add) && $bulk_add}
+			{if isset($bulk_add)}
 				<button type="submit" name="submitBulkAdd{$table|escape:'html':'UTF-8'}" class="btn btn-default pull-right">
 					<i class="process-icon-save"></i> {l s='Save' mod='hotelreservationsystem'}
 				</button>
