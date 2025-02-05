@@ -175,8 +175,12 @@ class WkRoomSearchHelper
 
                     if ($locationCategoryId) {
                         $objLocationCategory = new Category($locationCategoryId, $context->language->id);
-                        $searchedData['location'] = $objLocationCategory->name;
-                        $searchedData['location_category_id'] = $locationCategoryId;
+                        if ($objLocationCategory->hasParent(Configuration::get('PS_LOCATIONS_CATEGORY'))) {
+                            $searchedData['location'] = $objLocationCategory->name;
+                            $searchedData['location_category_id'] = $locationCategoryId;
+                        } else {
+                            $locationCategoryId = false;
+                        }
                     }
 
                     $searchedData['order_date_restrict'] = false;
