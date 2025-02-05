@@ -441,7 +441,7 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
                                 0,
                                 1,
                                 0,
-                                0
+                                $data_v['id']
                             );
                             $cart_htl_data[$type_key]['date_diff'][$date_join]['extra_demands_price_ti'] = $objBookingDemand->getRoomTypeBookingExtraDemands(
                                 $order_obj->id,
@@ -452,7 +452,7 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
                                 0,
                                 1,
                                 1,
-                                0
+                                $data_v['id']
                             );
 
                             $totalDemandsPriceTE += $cart_htl_data[$type_key]['date_diff'][$date_join]['extra_demands_price_te'];
