@@ -1872,7 +1872,7 @@ class HotelBookingDetail extends ObjectModel
         $reallocatedBookingId = 0;
         // get the cart booking data for the given booking
         if (Validate::isLoadedObject($objOldHotelBooking = new HotelBookingDetail($idHotelBooking))) {
-            $objectHotelbookingFrom = $objOldHotelBooking;
+            $objectHotelbookingFrom = clone $objOldHotelBooking;
             $objHotelRoomInfo = new HotelRoomInformation($idRoom);
             $idNewRoomType = $objHotelRoomInfo->id_product;
             if ($objOldHotelBooking->id_product != $idNewRoomType) {
