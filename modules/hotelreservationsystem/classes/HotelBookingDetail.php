@@ -2290,7 +2290,7 @@ class HotelBookingDetail extends ObjectModel
                         'id_htl_booking_from' => $idHotelBooking,
                         'id_htl_booking_to' => $reallocatedBookingId,
                         'objectHotelbookingFrom' => $objOldHotelBooking,
-                        'objectHotelbookingTo' => $objBookingDetail,
+                        'objectHotelbookingTo' => $objectHotelbookingTo,
                     )
                 );
 
