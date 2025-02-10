@@ -6144,7 +6144,7 @@ class AdminOrdersControllerCore extends AdminController
             $obj_product_process = new HotelCartBookingData();
             $num_cart_rooms = 0;
             if ($rooms = $obj_hotel_cart_detail->getCartCurrentDataByCartId($cart_id)) {
-                $num_cart_rooms = count($num_cart_rooms);
+                $num_cart_rooms = count($rooms);
             }
 
             $numDays = HotelHelper::getNumberOfDays($dt_frm, $dt_to);
