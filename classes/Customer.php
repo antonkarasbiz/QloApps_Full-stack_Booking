@@ -323,7 +323,6 @@ class CustomerCore extends ObjectModel
         if ($carts) {
             $objHtlCartData = new HotelCartBookingData();
             foreach ($carts as $cart) {
-                $objCart = new Cart($cart['id_cart']);
                 if ($cart['id_cart']) {
                     Db::getInstance()->execute('DELETE FROM '._DB_PREFIX_.'cart WHERE id_cart='.(int)$cart['id_cart']);
                     Db::getInstance()->execute('DELETE FROM '._DB_PREFIX_.'cart_product WHERE id_cart='.(int)$cart['id_cart']);
