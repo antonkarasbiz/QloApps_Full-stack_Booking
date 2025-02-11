@@ -81,7 +81,8 @@
 
             let positionClass = 'bottom';
             // determine position class
-            if (spaceBottom < maxHeightNeeded && spaceTop > spaceBottom) {
+            if (spaceBottom < maxHeightNeeded && spaceTop > maxHeightNeeded && spaceTop > spaceBottom) {
+
                 positionClass = 'top';
             }
 
