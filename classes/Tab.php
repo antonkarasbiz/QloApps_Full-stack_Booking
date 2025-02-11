@@ -505,7 +505,7 @@ class TabCore extends ObjectModel
     {
         $admin_tab = Tab::getTab((int)Context::getContext()->language->id, $id_tab);
         $tabs[] = $admin_tab;
-        if ($admin_tab['id_parent'] > 0) {
+        if (isset($admin_tab['id_parent']) && !empty($admin_tab['id_parent'])) {
             $tabs = Tab::recursiveTab($admin_tab['id_parent'], $tabs);
         }
         return $tabs;
