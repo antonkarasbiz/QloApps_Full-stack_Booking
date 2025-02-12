@@ -321,39 +321,40 @@
                         <input type="text" name="bulk_update_room_comment"/>
                     </div>
                 </div>
-				<div class="from-group table-responsive-row clearfix" style="display:none;">
-				<div class="modal-subtitle padding-top-20">{l s='Disable Dates'}</div>
-					<table class="table rooms-disable-dates">
-						<thead>
-							<tr class="nodrag nodrop">
-								<th class="col-sm-1 center">
-									<div>{l s='Date From'}</span>
-								</th>
-								<th class="col-sm-2 center">
-									<span>{l s='Date To'}</span>
-								</th>
-								<th class="col-sm-2 center">
-									<span>{l s='Reason'}</span>
-								</th>
-                                <th class="col-sm-1 center"></th>
-							</tr>
-						</thead>
-						<tbody></tbody>
-					</table>
-					<div class="form-group">
-						<div class="col-sm-12">
-							<a href="#" class="add_bulk_room_update_disable_date btn btn-default">
-                                <i class="icon icon-plus"></i>
-                                <span>{l s="Add More"}</span>
-                            </a>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" name="submitBulkUpdateRooms">{l s='Submit'}</button>
-			</div>
-		</div>
+				<div class="from-group table-responsive-row clearfix panel" style="display:none;">
+                    <div class="modal-subtitle panel-heading">{l s='Disable Dates'}</div>
+                        <table class="table rooms-disable-dates">
+                            <thead>
+                                <tr class="nodrag nodrop">
+                                    <th class="col-sm-1 center">
+                                        <div>{l s='Date From'}</span>
+                                    </th>
+                                    <th class="col-sm-2 center">
+                                        <span>{l s='Date To'}</span>
+                                    </th>
+                                    <th class="col-sm-2 center">
+                                        <span>{l s='Reason'}</span>
+                                    </th>
+                                    <th class="col-sm-1 center"></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <div class="form-group add_disable_date_row_container">
+                            <div class="col-sm-12">
+                                <a href="#" class="add_bulk_room_update_disable_date btn btn-default">
+                                    <i class="icon icon-plus"></i>
+                                    <span>{l s="Add More"}</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+			    </div>
+			    <div class="modal-footer">
+				    <button type="button" class="btn btn-default" name="submitBulkUpdateRooms">{l s='Submit'}</button>
+			    </div>
+		    </div>
+	    </div>
 	</div>
 </div>
 
@@ -897,7 +898,7 @@
                 BulkUpdateRoomModal.hideErrors();
             },
             addNewRow: function() {
-                $('#bulkUpdateRoomModal tbody').append(this.disableDatesRowHtml);
+                $('#bulkUpdateRoomModal tbody').append(this.getDisableDatesRowHtml());
             },
             removeAllInvalidRowDataMarkers: function(tr) {
                 $('#bulkUpdateRoomModal .room-disable-dates tr').css('outline', '');
@@ -983,22 +984,19 @@
                     });
                 }
             },
-            disableDatesRowHtml: `
-                <tr class="disabledDatesTr">
-                    <td class="col-sm-2 center">
-                        <input type="text" class="form-control disabled_date_from" value="" readonly>
-                    </td>
-                    <td class="col-sm-2 center">
-                        <input type="text" class="form-control disabled_date_to" value="" readonly>
-                    </td>
-                    <td class="center col-sm-6">
-                        <input type="text" class="form-control room_disable_reason" value="">
-                    </td>
-                    <td class="center col-sm-1">
-                        <a href="#" class="remove-room-bulk-disable-dates-button btn btn-default"><i class="icon-trash"></i></a>
-                    </td>
-                </tr>
-            `,
+            getDisableDatesRowHtml: function () {
+                let dateFromElem = $('<td>').addClass('col-sm-2 center').append($('<input>').attr('type', 'text').addClass('form-control disabled_date_from').prop('readonly', 'readonly'));
+                let dateToElem = $('<td>').addClass('col-sm-2 center').append($('<input>').attr('type', 'text').addClass('form-control disabled_date_to').prop('readonly', 'readonly'));
+                let reasonElem = $('<td>').addClass('col-sm-6 center').append($('<input>').attr('type', 'text').addClass('form-control room_disable_reason'));
+                let removeRowElem = $('<td>').addClass('col-sm-1 center').append($('<a>').attr('href', '#').addClass('remove-room-bulk-disable-dates-button btn btn-default').append($('<i>').addClass('icon-trash')));
+                let rowElem = $('<tr>').addClass('disabledDatesTr')
+                    .append(dateFromElem)
+                    .append(dateToElem)
+                    .append(reasonElem)
+                    .append(removeRowElem);
+
+                return $(rowElem).prop('outerHTML');
+            }
         };
 
         // Init full calender object.
