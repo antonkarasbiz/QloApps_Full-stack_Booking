@@ -326,6 +326,9 @@ class WebserviceSpecificManagementImagesCore implements WebserviceSpecificManage
                     case 'room_types':
                         $directory = _PS_PROD_IMG_DIR_;
                         break;
+                    case 'extra_services':
+                        $directory = _PS_PROD_IMG_DIR_;
+                        break;
                     case 'hotels':
                         $directory = _PS_HOTEL_IMG_DIR_;
                         break;
