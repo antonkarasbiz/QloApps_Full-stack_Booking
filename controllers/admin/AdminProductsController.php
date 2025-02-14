@@ -5209,9 +5209,14 @@ class AdminProductsControllerCore extends AdminController
                     if (!$disableDates) {
                         $this->errors[] = Tools::displayError('Please add at least one date range for updating the rooms status to temporary inactive.');
                     } else {
+                        $hasMissingRowError = false;
                         foreach ($disableDates as $key => $dateRange) {
                             if (!Validate::isDate($dateRange['date_from']) || !Validate::isDate($dateRange['date_to'])) {
-                                $this->errors[] = Tools::displayError('Some dates are missing. Please select all the date ranges.');
+                                if (!$hasMissingRowError) {
+                                    $hasMissingRowError = true;
+                                    $this->errors[] = Tools::displayError('Some dates are missing. Please select all the date ranges.');
+                                }
+
                                 $rowsToHighlight[] = $key;
                             }
                         }

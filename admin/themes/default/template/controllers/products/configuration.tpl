@@ -321,8 +321,8 @@
                         <input type="text" name="bulk_update_room_comment"/>
                     </div>
                 </div>
-				<div class="from-group table-responsive-row clearfix panel" style="display:none;">
-                    <div class="modal-subtitle panel-heading">{l s='Disable Dates'}</div>
+				<div class="from-group table-responsive-row clearfix" style="display:none;">
+                    <div class="rooms-disable-dates-title">{l s='Disable Dates'}</div>
                         <table class="table rooms-disable-dates">
                             <thead>
                                 <tr class="nodrag nodrop">

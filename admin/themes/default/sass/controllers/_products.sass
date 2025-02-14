@@ -7,10 +7,19 @@
     color: #333333
     font-size: 13px
     padding-bottom: 10px
-.rooms-disable-dates
-    thead
-        tr
-            background-color: #f1f1f1
+.rooms-disable-dates-title
+    .rooms-disable-dates
+        thead
+            tr
+                background-color: #f1f1f1
+    margin-top: 15px
+    padding-bottom: 5px
+    font-size: 13px
+    border-bottom: solid 1px #EAEDEF
+#bulk-update-rooms-button[disabled]
+    &:hover
+        cursor: not-allowed
+    border-color: $btn-default-border
 .add_disable_date_row_container
     margin-top: 5px
 
