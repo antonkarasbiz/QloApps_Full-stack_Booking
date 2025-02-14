@@ -671,9 +671,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         $context = Context::getContext();
         $id_currency = Validate::isLoadedObject($context->currency) ? (int)$context->currency->id : (int)Configuration::get('PS_CURRENCY_DEFAULT');
 
-        $hotelCartBookingData = new HotelCartBookingData();
         for($currentDate = date('Y-m-d', strtotime($date_from)); $currentDate < date('Y-m-d', strtotime($date_to)); $currentDate = date('Y-m-d', strtotime('+1 day', strtotime($currentDate)))) {
-            if ($use_reduc && ($featurePrice = $hotelCartBookingData->getProductFeaturePricePlanByDateByPriority(
+            if ($use_reduc && ($featurePrice = HotelCartBookingData::getProductFeaturePricePlanByDateByPriority(
                 $id_product,
                 $currentDate,
                 $id_group,
@@ -826,8 +825,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
 
         $totalDurationPriceTI = $totalDurationPrice['total_price_tax_incl'];
         $totalDurationPriceTE = $totalDurationPrice['total_price_tax_excl'];
-        $objHotelBookingDetail = new HotelBookingDetail();
-        $numDaysInDuration = $objHotelBookingDetail->getNumberOfDays($dateFrom, $dateTo);
+        $numDaysInDuration = HotelHelper::getNumberOfDays($dateFrom, $dateTo);
         if ($use_tax) {
             $pricePerDay = $totalDurationPriceTI/$numDaysInDuration;
         } else {

@@ -1350,7 +1350,7 @@ class HotelCartBookingData extends ObjectModel
      * @param [int] $id_group    [id_group for which price is need (if available for the passed group)]
      * @return [array|false] [returns array containg info of the feature plan if foung otherwise returns false]
      */
-    public function getProductFeaturePricePlanByDateByPriority(
+    public static function getProductFeaturePricePlanByDateByPriority(
         $id_product,
         $date,
         $id_group,

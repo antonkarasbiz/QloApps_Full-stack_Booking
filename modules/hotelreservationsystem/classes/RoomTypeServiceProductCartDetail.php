@@ -267,10 +267,9 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
         if ($getTotalPrice) {
             $totalPrice = 0;
         }
-        $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
-        $objHotelRoomType = new HotelRoomType();
-        $selectedServiceProducts = array();
 
+        $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
+        $selectedServiceProducts = array();
         if ($serviceProducts = Db::getInstance()->executeS($sql)) {
             foreach ($serviceProducts as $product) {
                 $qty = $product['quantity'] ? (int)$product['quantity'] : 1;

@@ -527,9 +527,17 @@ class HotelBranchInformation extends ObjectModel
      */
     public static function getHotelIdByIdCategory($id_category)
     {
-        return Db::getInstance()->getValue(
-            'SELECT `id` FROM `'._DB_PREFIX_.'htl_branch_info` WHERE id_category = '.(int)$id_category
-        );
+        $cache_key = 'HotelBranchInformation::getHotelIdByIdCategory'.(int)$id_category;
+        if (!Cache::isStored($cache_key)) {
+            $res = Db::getInstance()->getValue(
+                'SELECT `id` FROM `'._DB_PREFIX_.'htl_branch_info` WHERE id_category = '.(int)$id_category
+            );
+            Cache::store($cache_key, $res);
+        } else {
+            $res = Cache::retrieve($cache_key);
+        }
+
+        return $res;
     }
 
     /**

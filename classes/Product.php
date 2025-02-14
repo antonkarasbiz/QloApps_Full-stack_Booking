@@ -931,12 +931,21 @@ class ProductCore extends ObjectModel
         ), 'id_product = '.(int)$id_product);
     }
 
-    public static function getProductPriceCalculation($id_product) {
-        return Db::getInstance()->getValue(
-            'SELECT product_shop.`price_calculation_method`
-            FROM `'._DB_PREFIX_.'product` p '.Shop::addSqlAssociation('product', 'p').'
-            WHERE p.`id_product` = '.(int)$id_product
-        );
+    public static function getProductPriceCalculation($id_product)
+    {
+        $cache_key = 'Product::getProductPriceCalculation'.(int)$id_product;
+        if (!Cache::isStored($cache_key)) {
+            $res = Db::getInstance()->getValue(
+                'SELECT product_shop.`price_calculation_method`
+                FROM `'._DB_PREFIX_.'product` p '.Shop::addSqlAssociation('product', 'p').'
+                WHERE p.`id_product` = '.(int)$id_product
+            );
+            Cache::store($cache_key, $res);
+        } else {
+            $res = Cache::retrieve($cache_key);
+        }
+
+        return $res;
     }
 
     /**
@@ -975,10 +984,18 @@ class ProductCore extends ObjectModel
 
     public static function isBookingProduct($id_product)
     {
-        return Db::getInstance()->getValue('
-            SELECT `booking_product` FROM `'._DB_PREFIX_.'product` p
-            WHERE p.`id_product` = '.(int)$id_product
-        );
+        $cache_key = 'Product::isBookingProduct'.(int)$id_product;
+        if (!Cache::isStored($cache_key)) {
+            $res =  Db::getInstance()->getValue('
+                SELECT `booking_product` FROM `'._DB_PREFIX_.'product` p
+                WHERE p.`id_product` = '.(int)$id_product
+            );
+            Cache::store($cache_key, $res);
+        } else {
+            $res = Cache::retrieve($cache_key);
+        }
+
+        return $res;
     }
 
     public function delete()

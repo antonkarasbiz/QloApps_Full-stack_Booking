@@ -2296,7 +2296,6 @@ class CartCore extends ObjectModel
         $orderPackage = array();
         $serviceProducts = array();
         $objRoomType = new HotelRoomType();
-        $objHtlCartBookingData = new HotelCartBookingData();
         $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
         $objHotelServiceProductCartDetail = new HotelServiceProductCartDetail();
         foreach ($final_package_list as $id_address => $packages) {
