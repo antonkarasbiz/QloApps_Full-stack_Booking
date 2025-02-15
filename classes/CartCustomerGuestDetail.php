@@ -54,6 +54,46 @@ class CartCustomerGuestDetailCore extends ObjectModel
         );
     }
 
+    public function add($auto_date = true, $null_values = false)
+    {
+        if ($res = parent::add($auto_date, $null_values)) {
+            $objCart = new Cart($this->id_cart);
+            Db::getInstance()->insert('customer_guest_detail_mapping', array(
+                'id_customer' => (int) $objCart->id_customer,
+                'id_customer_guest_detail' => (int)$this->id
+            ));
+        }
+
+        return $res;
+    }
+
+    public function delete()
+    {
+        if ($res = parent::delete()) {
+            $objCart = new Cart($this->id_cart);
+            Db::getInstance()->delete('customer_guest_detail_mapping',
+                '`id_customer` = '.(int) $objCart->id_customer.'
+                AND `id_customer_guest_detail`='.(int) $this->id
+            );
+        }
+
+        return $res;
+    }
+
+    public function getCustomerRelatedGuestDetails($idCustomer, $firstname = false, $lastname = false, $email = false)
+    {
+        return Db::getInstance()->executeS('
+            SELECT cgd.`id_customer_guest_detail`, cgd.`email`, cgd.`firstname`, cgd.`lastname`, cgd.`phone`, cgd.`id_cart`
+            FROM `'._DB_PREFIX_.'customer_guest_detail_mapping` cgdm
+            LEFT JOIN `'._DB_PREFIX_.'cart_customer_guest_detail` cgd
+            ON (cgdm.`id_customer_guest_detail` = cgd.`id_customer_guest_detail`)
+            WHERE cgdm.`id_customer` = '.(int)$idCustomer.
+            (($firstname !== false && $firstname != '') ? ' AND cgd.`firstname` LIKE "%'.$firstname.'%"' : ' ').
+            (($lastname !== false && $lastname != '') ? ' AND cgd.`lastname` LIKE "%'.$lastname.'%"' : ' ').
+            (($email !== false && $email != '') ? ' AND cgd.`email` LIKE "%'.$email.'%"' : ' ')
+        );
+    }
+
     public static function getCustomerGuestDetail($id_customer_guest_detail)
     {
         return Db::getInstance()->getRow('

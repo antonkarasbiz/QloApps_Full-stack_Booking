@@ -391,6 +391,10 @@ class OrderOpcControllerCore extends ParentOrderController
                             $this->ajaxDie($this->submitCustomerGuestDetail());
                             exit;
                             break;
+                        case 'getCustomerGuestDetail':
+                            $this->ajaxDie($this->getCustomerGuestDetail());
+                            exit;
+                            break;
                         default:
                             throw new PrestaShopException('Unknown method "'.Tools::getValue('method').'"');
                     }
@@ -1068,6 +1072,36 @@ class OrderOpcControllerCore extends ParentOrderController
         }
         die('0');
     }
+
+    public function getCustomerGuestDetail()
+    {
+        $response = array('status' => false);
+        $firstname = trim(Tools::getValue('firstname'));
+        $lastname = trim(Tools::getValue('lastname'));
+        $email = trim(Tools::getValue('email'));
+        $objCartCustomerGuestDetail = new CartCustomerGuestDetailCore();
+        if ($guestDetails = $objCartCustomerGuestDetail->getCustomerRelatedGuestDetails(
+            $this->context->cart->id_customer,
+            $firstname,
+            $lastname,
+            $email,
+        )) {
+            $response['status'] = true;
+            $detailsExist = array();
+            foreach ($guestDetails as $guestKey => $guestDetail) {
+                $joinKey = trim($guestDetail['firstname']).trim($guestDetail['lastname']).trim($guestDetail['email']);
+                if ($guestDetail['id_cart'] == $this->context->cart->id || isset($detailsExist[$joinKey])) {
+                    unset($guestDetails[$guestKey]);
+                }
+                $detailsExist[$joinKey] = true;
+            }
+
+            $response['guestDetails'] = $guestDetails;
+        }
+
+        return json_encode($response);
+    }
+
 
     public function submitCustomerGuestDetail()
     {

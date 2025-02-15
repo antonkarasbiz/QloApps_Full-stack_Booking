@@ -699,6 +699,12 @@ CREATE TABLE `PREFIX_cart_customer_guest_detail` (
 	PRIMARY KEY (`id_customer_guest_detail`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATION;
 
+CREATE TABLE `PREFIX_customer_guest_detail_mapping` (
+  `id_customer_guest_detail` int(10) unsigned NOT NULL,
+  `id_customer` int(10) unsigned NOT NULL,
+	PRIMARY KEY (`id_customer_guest_detail`, `id_customer`)
+) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATION;
+
 CREATE TABLE `PREFIX_customization` (
   `id_customization` int(10) unsigned NOT NULL auto_increment,
   `id_product_attribute` int(10) unsigned NOT NULL DEFAULT '0',

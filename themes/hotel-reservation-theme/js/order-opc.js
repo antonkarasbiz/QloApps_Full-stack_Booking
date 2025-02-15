@@ -116,15 +116,139 @@ $(document).ready(function()
 		validateCustomerGuestDetailForm();
 	}
 
-	$('#customer_guest_detail_form').on('change', function(e) {
+	function submitCustomerGuestDetailForm(postData) {
 		$.ajax({
 			type: 'POST',
 			url: orderOpcUrl,
 			async: false,
 			cache: false,
 			dataType : "json",
-			data: $(this).serialize()+'&method=submitCustomerGuestDetail&ajax=true&token=' + static_token
+			data: postData
 		});
+	}
+
+	$('#customer_guest_detail_form').on('change', function(e) {
+		let postData = $(this).serialize()+'&method=submitCustomerGuestDetail&ajax=true&token=' + static_token;
+		submitCustomerGuestDetailForm(postData);
+	});
+	function setCustomerGuestDetailForm(guestDetail) {
+		$('#customer_guest_detail_firstname').val(guestDetail.firstname);
+		$('#customer_guest_detail_lastname').val(guestDetail.lastname);
+		$('#customer_guest_detail_email').val(guestDetail.email);
+		$('#customer_guest_detail_phone').val(guestDetail.phone);
+		validateCustomerGuestDetailForm();
+		let postData = $('#customer_guest_detail_form').serialize()+'&method=submitCustomerGuestDetail&ajax=true&token=' + static_token;
+		submitCustomerGuestDetailForm(postData);
+		$('.customer_guest_detail_ul').remove();
+	}
+
+	$(document).on('keyup', function(e) {
+		if (!$(e.target).attr('id') == 'customer_guest_detail_firstname'
+			|| !$(e.target).attr('id') == 'customer_guest_detail_lastname'
+			|| !$(e.target).attr('id') == 'customer_guest_detail_email'
+		) {
+			$('.customer_guest_detail_ul').remove();
+		}
+	});
+
+	$(document).on('click', function(e) {
+		if ($(e.target).hasClass('customer_guest_detail_li')) {
+			let guestDetail = $(e.target).data('guest_detail');
+			setCustomerGuestDetailForm(guestDetail);
+		}
+
+		$('.customer_guest_detail_ul').remove();
+	});
+	let debounceTimeout;
+	$(document).on('keyup', '#customer_guest_detail_firstname, #customer_guest_detail_lastname, #customer_guest_detail_email', function(e) {
+		var keyCode = e.keyCode || e.which;
+		if (keyCode == 40 || keyCode == 38) {
+			let activeElem = $(".customer_guest_detail_ul .active");
+			let newActiveElem;
+			if (activeElem.length) {
+				if (keyCode == 40) {
+					newActiveElem = activeElem.next("li");
+					if (!newActiveElem.length) {
+						newActiveElem = $(".customer_guest_detail_ul li:first"); // Loop back to first
+					}
+				} else if (keyCode == 38) {
+					newActiveElem = activeElem.prev("li");
+					if (!newActiveElem.length) {
+						newActiveElem = $(".customer_guest_detail_ul li:last"); // Loop back to last
+					}
+				}
+			} else {
+				newActiveElem = keyCode == 40 ? $(".customer_guest_detail_ul li:first") : $(".customer_guest_detail_ul li:last");
+			}
+
+			activeElem.removeClass("active");
+			newActiveElem.addClass("active");
+
+			return;
+		} else if (keyCode == 13) {
+			if ($('.customer_guest_detail_ul .active').length != 0) {
+				let guestDetail = $('.customer_guest_detail_ul .active').data('guest_detail');
+				setCustomerGuestDetailForm(guestDetail);
+			}
+        } else if (!((keyCode < 65 || keyCode > 122) && (keyCode < 48 || keyCode > 57) && (keyCode != 8))) {
+			$('.customer_guest_detail_ul').remove();
+			clearTimeout(debounceTimeout); // Clear the existing timeout
+			debounceTimeout = setTimeout(() => {
+				let firstName = $('#customer_guest_detail_firstname').val();
+				let lastName = $('#customer_guest_detail_lastname').val();
+				let email = $('#customer_guest_detail_email').val();
+				let targetElem = $(this);
+				customerGuestDetailAjax = $.ajax({
+					type: 'POST',
+					url: orderOpcUrl,
+					async: false,
+					cache: false,
+					dataType : "json",
+					data: {
+						token : static_token,
+						ajax : true,
+						method : 'getCustomerGuestDetail',
+						firstname : firstName,
+						lastname : lastName,
+						email : email,
+					},
+					success: function(data) {
+						if (data.status) {
+							let listElem = $('<ul>').addClass('customer_guest_detail_ul');
+							$.each(data.guestDetails, function(index, guestDetail) {
+								let itemElem = $('<li>').addClass('customer_guest_detail_li').text(guestDetail.firstname + ' '+ guestDetail.lastname + ' ('+ guestDetail.email+')');
+								$(itemElem).attr('data-guest_detail', JSON.stringify(guestDetail));
+								$(listElem).append(itemElem);
+							});
+
+							$(targetElem).closest('.form-group').append($(listElem).prop('outerHTML'));
+						}
+					}
+				});
+			}, 200);
+		}
+	});
+
+	$(document).on('keydown', '.customer_guest_detail_ul li', function(e) {
+		if (e.which == 40 || e.which == 38) {
+			var ulElement = $(this).closest('ul');
+			var ulLength = ulElement.find('li').length;
+			$(this).blur();
+			ulElement.scrollTop($(this).index() * $(this).outerHeight());
+			if (e.which == 40) {
+				if ($(this).index() != (ulLength - 1)) {
+					$(this).next('li.customer_guest_detail_li').focus();
+				} else {
+					ulElement.find('li:first').focus();
+				}
+			} else if (e.which == 38) {
+				if ($(this).index()) {
+					$(this).prev('li.customer_guest_detail_li').focus();
+				} else {
+					ulElement.find('li:last').focus();
+				}
+			}
+		}
 	});
 
 	// GUEST CHECKOUT / NEW ACCOUNT MANAGEMENT

@@ -682,3 +682,28 @@
     line-height: 19px;
     color: #333;
     margin-bottom: 15px; }
+
+/* Customer guest suggetions Css */
+.customer_guest_detail_ul {
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 200px;
+    background: #fff;
+    margin: 0;
+    margin-top: 2px;
+	font-size: 14px;
+	z-index: 10;
+	box-shadow: 0 4px 5px rgba(0, 0, 0, 0.15);
+	position: absolute;
+	width: 90%;}
+
+.customer_guest_detail_li {
+	white-space: nowrap;
+	padding: 15px;}
+.customer_guest_detail_li.active {
+	color: #fff;
+	background-color: #379bf0;}
+.customer_guest_detail_li:hover {
+	cursor: pointer;
+	background-color: #379bf0;
+	color: #fff;}
