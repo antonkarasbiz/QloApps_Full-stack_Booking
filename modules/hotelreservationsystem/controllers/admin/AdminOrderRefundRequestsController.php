@@ -201,7 +201,7 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                     'title' => $this->l('Room type')
                 ),
                 'hotel_name' => array(
-                    'title' => $this->l('Room type')
+                    'title' => $this->l('Hotel')
                 ),
                 'date_from' => array(
                     'title' => $this->l('Date From')
