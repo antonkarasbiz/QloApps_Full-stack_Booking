@@ -2959,21 +2959,21 @@ class AdminProductsControllerCore extends AdminController
                         $data->assign('htl_full_info', $hotelFullInfo);
 
                         $objRoomDisableDates = new HotelRoomDisableDates();
-                        $hotelRoomInfo = $objRoomInfo->getHotelRoomInfo($obj->id, $hotelRoomType['id_hotel']);
-                        if ($hotelRoomInfo) {
+                        if ($hotelRoomInfo = $objRoomInfo->getHotelRoomInfo($obj->id, $hotelRoomType['id_hotel'])) {
                             foreach ($hotelRoomInfo as &$room) {
                                 $bookedDates = $objRoomInfo->getFutureBookings($room['id']);
                                 foreach($bookedDates as &$bookedDate) {
                                     $bookedDate['date_from_formatted'] = Tools::displayDate($bookedDate['date_from']);
                                     $bookedDate['date_to_formatted'] = Tools::displayDate($bookedDate['date_to']);
                                 }
-                                $room['booked_dates'] = json_encode($bookedDates);
+                                $room['booked_dates'] = $bookedDates;
 
                                 if ($room['id_status'] == HotelRoomInformation::STATUS_TEMPORARY_INACTIVE) {
                                     $disableDates = $objRoomDisableDates->getRoomDisableDates($room['id']);
                                     $room['disable_dates_json'] = json_encode($disableDates);
                                 }
                             }
+
                             $data->assign('htl_room_info', $hotelRoomInfo);
                         }
                     }
