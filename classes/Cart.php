@@ -782,10 +782,8 @@ class CartCore extends ObjectModel
                 $unitPriceByProductTaxExcl = $objHotelServiceProductCartDetail->getHotelProductUnitPrice($this->id, (int)$row['id_product'], 0, false);
 
                 // Rounding as per configurations
-                $row['total'] += Tools::processPriceRounding($unitPriceByProductTaxExcl, $row['cart_quantity']);
-                $row['total_wt'] += Tools::processPriceRounding($unitPriceByProductTaxIncl, $row['cart_quantity']);
-
-                $row['price_wt'] = $row['price_with_reduction'];
+                $row['total'] = Tools::processPriceRounding($unitPriceByProductTaxExcl, $row['cart_quantity']);
+                $row['total_wt'] = Tools::processPriceRounding($unitPriceByProductTaxIncl, $row['cart_quantity']);
             }
 
             /*END*/
