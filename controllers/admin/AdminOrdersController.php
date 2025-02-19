@@ -1669,7 +1669,7 @@ class AdminOrdersControllerCore extends AdminController
                 $this->errors[] = Tools::displayError('The invoice for edit note was unable to load. ');
             }
         } elseif (Tools::isSubmit('submitAddOrder') && ($id_cart = Tools::getValue('id_cart'))) {
-            if ($this->tabAccess['edit'] === '1') {
+            if ($this->tabAccess['add'] === '1') {
                 $objCart = new Cart($id_cart);
                 if (Validate::isLoadedObject($objCart)) {
                     $this->context->cart = $objCart;
