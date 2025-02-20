@@ -124,7 +124,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    {if $service_product.auto_add_to_cart&& $service_product.association_info.price_addition_type == Product::PRICE_ADDITION_TYPE_WITH_ROOM}
+                                    {if $service_product.auto_add_to_cart&& $service_product.price_addition_type == Product::PRICE_ADDITION_TYPE_WITH_ROOM}
                                         {l s='-'}
                                     {else}
                                         <div class="fixed-width-xl">
