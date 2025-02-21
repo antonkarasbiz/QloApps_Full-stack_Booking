@@ -789,10 +789,8 @@ class CartCore extends ObjectModel
                 $unitPriceByProductTaxExcl = $objHotelServiceProductCartDetail->getHotelProductUnitPrice($this->id, (int)$row['id_product'], 0, false);
 
                 // Rounding as per configurations
-                $row['total'] += Tools::processPriceRounding($unitPriceByProductTaxExcl, $row['cart_quantity']);
-                $row['total_wt'] += Tools::processPriceRounding($unitPriceByProductTaxIncl, $row['cart_quantity']);
-
-                $row['price_wt'] = $row['price_with_reduction'];
+                $row['total'] = Tools::processPriceRounding($unitPriceByProductTaxExcl, $row['cart_quantity']);
+                $row['total_wt'] = Tools::processPriceRounding($unitPriceByProductTaxIncl, $row['cart_quantity']);
             }
 
             /*END*/
@@ -3863,7 +3861,7 @@ class CartCore extends ObjectModel
                 $product['advanced_stock_management'] && (bool)Context::getContext()->customer->isLogged() && ($delivery = $this->getDeliveryOption()) && !empty($delivery)) {
                 $product['stock_quantity'] = StockManager::getStockByCarrier((int)$product['id_product'], (int)$product['id_product_attribute'], $delivery);
             }
-            if (!$product['active'] || !$product['available_for_order']
+            if (!$product['active'] || (!$product['auto_add_to_cart'] && !$product['available_for_order'])
                 || (!$product['allow_oosp'] && $product['stock_quantity'] < $product['cart_quantity'])) {
                 return $return_product ? $product : false;
             }
