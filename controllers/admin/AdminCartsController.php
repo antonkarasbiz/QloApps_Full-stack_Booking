@@ -1064,84 +1064,107 @@ class AdminCartsControllerCore extends AdminController
     // Process to get extra demands of any room while order creation process form.tpl
     public function ajaxProcessGetRoomTypeCartDemands()
     {
-        $response = array('status' => false);
-        if ($idProduct = Tools::getValue('id_product')) {
-            if (($dateFrom = Tools::getValue('date_from'))
-                && ($dateTo = Tools::getValue('date_to'))
-                && ($idRoom = Tools::getValue('id_room'))
-                && ($idCart = Tools::getValue('id_cart'))
-            ) {
-                $objCartBookingData = new HotelCartBookingData();
-                if ($selectedRoomDemands = $objCartBookingData->getCartExtraDemands(
-                    $idCart,
-                    $idProduct,
-                    $idRoom,
-                    $dateFrom,
-                    $dateTo
-                )) {
-                    // get room type additional demands
-                    $objRoomDemands = new HotelRoomTypeDemand();
-                    if ($roomTypeDemands = $objRoomDemands->getRoomTypeDemands($idProduct)) {
-                        foreach ($roomTypeDemands as &$demand) {
-                            // if demand has advance options then set demand price as first advance option price.
-                            if (isset($demand['adv_option']) && $demand['adv_option']) {
-                                $demand['price'] = current($demand['adv_option'])['price'];
-                            }
+        $response['hasError'] = false;
+        $response['errors'] = [];
+        if (($idProduct = Tools::getValue('id_product'))
+            && ($dateFrom = Tools::getValue('date_from'))
+            && ($dateTo = Tools::getValue('date_to'))
+            && ($idRoom = Tools::getValue('id_room'))
+            && ($idCart = Tools::getValue('id_cart'))
+            && ($idHotelCartBooking = Tools::getValue('id_hotel_cart_booking'))
+        ) {
+            $objCartBookingData = new HotelCartBookingData();
+            if ($selectedRoomDemands = $objCartBookingData->getCartExtraDemands(
+                $idCart,
+                $idProduct,
+                $idRoom,
+                $dateFrom,
+                $dateTo
+            )) {
+                // get room type additional demands
+                $objRoomDemands = new HotelRoomTypeDemand();
+                if ($roomTypeDemands = $objRoomDemands->getRoomTypeDemands($idProduct)) {
+                    foreach ($roomTypeDemands as &$demand) {
+                        // if demand has advance options then set demand price as first advance option price.
+                        if (isset($demand['adv_option']) && $demand['adv_option']) {
+                            $demand['price'] = current($demand['adv_option'])['price'];
                         }
-                        foreach ($selectedRoomDemands as &$selectedDemand) {
-                            $objRoom = new HotelRoomInformation($selectedDemand['id_room']);
-                            $selectedDemand['room_num'] = $objRoom->room_num;
-                            if (isset($selectedDemand['extra_demands']) && $selectedDemand['extra_demands']) {
-                                $extraDmd = array();
-                                foreach ($selectedDemand['extra_demands'] as $sDemand) {
-                                    $selectedDemand['selected_global_demands'][] = $sDemand['id_global_demand'];
-                                    $extraDmd[$sDemand['id_global_demand'].'-'.$sDemand['id_option']] = $sDemand;
-                                }
-                                $selectedDemand['extra_demands'] = $extraDmd;
+                    }
+                    foreach ($selectedRoomDemands as &$selectedDemand) {
+                        $objRoom = new HotelRoomInformation($selectedDemand['id_room']);
+                        $selectedDemand['room_num'] = $objRoom->room_num;
+                        if (isset($selectedDemand['extra_demands']) && $selectedDemand['extra_demands']) {
+                            $extraDmd = array();
+                            foreach ($selectedDemand['extra_demands'] as $sDemand) {
+                                $selectedDemand['selected_global_demands'][] = $sDemand['id_global_demand'];
+                                $extraDmd[$sDemand['id_global_demand'].'-'.$sDemand['id_option']] = $sDemand;
                             }
+                            $selectedDemand['extra_demands'] = $extraDmd;
                         }
-                        $this->context->smarty->assign('roomTypeDemands', $roomTypeDemands);
-                        $this->context->smarty->assign('selectedRoomDemands', $selectedRoomDemands);
+                    }
+                    $this->context->smarty->assign('roomTypeDemands', $roomTypeDemands);
+                    $this->context->smarty->assign('selectedRoomDemands', $selectedRoomDemands);
+                }
+            }
+
+            if (Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING')) {
+                // get all services
+                $objProduct = new Product();
+                $serviceProducts = $objProduct->getServiceProducts();
+            } else {
+                $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
+                $serviceProducts = $objRoomTypeServiceProduct->getServiceProductsData($idProduct, 1, 0, false, 2, null);
+            }
+
+            if ($serviceProducts) {
+                $objRoomTypeServPrice = new RoomTypeServiceProductPrice();
+                foreach ($serviceProducts as $key => $servProduct) {
+                    $serviceProducts[$key]['price_tax_exc'] = $objRoomTypeServPrice->getServicePrice($servProduct['id_product'], 0, 1, null, null, false, $idCart);
+                    if ($additionalServices
+                        && (in_array($servProduct['id_product'], array_column($additionalServices['additional_services'], 'id_product')))
+                    ) {
+                        unset($serviceProducts[$key]);
                     }
                 }
-                $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                $roomTypeServiceProducts = $objRoomTypeServiceProduct->getServiceProductsData($idProduct, 1, 0, false, 2, null);
-                if ($selectedRoomServiceProduct =  $objCartBookingData->getRoomRowByIdProductIdRoomInDateRange(
-                    $idCart,
-                    $idProduct,
-                    $dateFrom,
-                    $dateTo,
-                    $idRoom
-                )) {
-                    $selectedRoomServiceProduct['selected_service'] = $objRoomTypeServiceProductCartDetail->getRoomServiceProducts(
-                        $selectedRoomServiceProduct['id'],
-                        0,
-                        null,
-                        null
-                    );
-                }
+            }
 
-                $objCart = new Cart($idCart);
-                $cartCurrency = new Currency($objCart->id_currency);
-                $this->context->smarty->assign(array(
-                    'cartCurrency' => $cartCurrency,
-                    'roomTypeServiceProducts' => $roomTypeServiceProducts,
-                    'selectedRoomServiceProduct' => $selectedRoomServiceProduct
-                ));
-                $htlCartBoookingata =  $objCartBookingData->getRoomRowByIdProductIdRoomInDateRange(
-                    $idCart,
-                    $idProduct,
-                    $dateFrom,
-                    $dateTo,
-                    $idRoom
+            if ($selectedRoomServiceProduct =  $objCartBookingData->getRoomRowByIdProductIdRoomInDateRange(
+                $idCart,
+                $idProduct,
+                $dateFrom,
+                $dateTo,
+                $idRoom
+            )) {
+                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+                $selectedRoomServiceProduct['selected_service'] = $objRoomTypeServiceProductCartDetail->getRoomServiceProducts(
+                    $selectedRoomServiceProduct['id'],
+                    0,
+                    null,
+                    null
                 );
             }
+
+            $objCart = new Cart($idCart);
+            $cartCurrency = new Currency($objCart->id_currency);
+            $taxRulesGroups = TaxRulesGroup::getTaxRulesGroups(true);
+            $this->context->smarty->assign(array(
+                'taxRulesGroups' => $taxRulesGroups,
+                'id_hotel_cart_booking' => $idHotelCartBooking,
+                'cartCurrency' => $cartCurrency,
+                'serviceProducts' => $serviceProducts,
+                'selectedRoomServiceProduct' => $selectedRoomServiceProduct,
+                'customServiceAllowed' => Configuration::get('PS_ALLOW_CREATE_CUSTOM_SERVICES_IN_BOOKING'),
+                'loaderImg' => $this->context->link->getMediaLink(_PS_IMG_.'admin/ajax-loader.gif')
+            ));
+
+            $response['html_exta_demands'] = $this->context->smarty->fetch(
+                _PS_ADMIN_DIR_.'/themes/default/template/controllers/orders/_cart_booking_demands.tpl'
+            );
+        } else {
+            $response['hasError'] = true;
+            $response['errors'][] = $this->l('Some error occurred. please try again.');
         }
-        $response['status'] = true;
-        $response['html_exta_demands'] = $this->context->smarty->fetch(
-            _PS_ADMIN_DIR_.'/themes/default/template/controllers/orders/_cart_booking_demands.tpl'
-        );
+
         $this->ajaxDie(json_encode($response));
     }
 
@@ -1226,5 +1249,209 @@ class AdminCartsControllerCore extends AdminController
 
         $list = $helper->generateList($this->_list, $this->fields_list);
         return $list;
+    }
+
+    // Add new custom services to room
+    public function ajaxProcessAddNewRoomServices()
+    {
+        $response = array('hasError' => false);
+        // Check tab access is allowed to edit
+        if ($this->tabAccess['edit'] == 1) {
+            if (Configuration::get('PS_ALLOW_CREATE_CUSTOM_SERVICES_IN_BOOKING')) {
+                $idHotelCartBooking = Tools::getValue('id_hotel_cart_booking');
+                // valiadate services being added
+                if (Validate::isLoadedObject($objHtlCartBooking = new HotelCartBookingData($idHotelCartBooking))) {
+                    $name = Tools::getValue('new_service_name');
+                    $price = Tools::getValue('new_service_price');
+                    $priceCalcMethod = Tools::getValue('new_service_price_calc_method');
+                    $priceAdditionType = Tools::getValue('new_service_price_addition_type');
+                    $productQty = Tools::getValue('new_service_qty');
+                    $idTaxRuleGroup = Tools::getValue('new_service_price_tax_rule_group');
+                    $autoAdded = Tools::getValue('new_service_auto_added');
+
+                    // adjust values for auto added services
+                    if ($autoAdded) {
+                        $productQty = 1;
+                        $objRoomType = new Product($objHtlCartBooking->id_product);
+                        if (Validate::isLoadedObject($objTaxRuleGroup = new TaxRulesGroup($objRoomType->id_tax_rules_group))) {
+                            $idTaxRuleGroup = $objRoomType->id_tax_rules_group;
+                        }
+                    } else {
+                        $priceAdditionType = 0;
+                        if (empty($productQty)) {
+                            $response['hasError'] = true;
+                            $response['errors'][] = $this->l('Service quantity is required');
+                        } elseif (!Validate::isUnsignedInt($productQty)) {
+                            $response['hasError'] = true;
+                            $response['errors'][] = $this->l('Invalid service quantity');
+                        }
+                    }
+
+                    // Validate service data provided
+                    if (empty($name)) {
+                        $response['hasError'] = true;
+                        $response['errors'][] = $this->l('Service name is required');
+                    } elseif (!Validate::isCatalogName($name)) {
+                        $response['hasError'] = true;
+                        $response['errors'][] = $this->l('Invalid service name');
+                    }
+
+                    if (empty($price)) {
+                        $response['hasError'] = true;
+                        $response['errors'][] = $this->l('Service price is required');
+                    } elseif (!Validate::isPrice($price)) {
+                        $response['hasError'] = true;
+                        $response['errors'][] = $this->l('Invalid service price');
+                    }
+
+                    // if no validation errors then add service
+                    if (!$response['hasError']) {
+                        // ======= START: Create Service product  =========
+                        $objServiceProduct = new Product();
+                        $objServiceProduct->price_calculation_method = $priceCalcMethod;
+                        $objServiceProduct->service_product_type = Product::SERVICE_PRODUCT_WITH_ROOMTYPE;
+                        $objServiceProduct->id_category_default = Configuration::get('PS_SERVICE_CATEGORY');
+                        $objServiceProduct->name[Configuration::get('PS_LANG_DEFAULT')] = $name;
+                        $objServiceProduct->id_shop_default = Configuration::get('PS_SHOP_DEFAULT');
+                        $objServiceProduct->allow_multiple_quantity = !$autoAdded;
+                        $objServiceProduct->id_tax_rules_group = $idTaxRuleGroup;
+                        $objServiceProduct->price = $price;
+                        $objServiceProduct->wholesale_price = 0;
+                        $languages = Language::getLanguages(false);
+                        foreach ($languages as $lang) {
+                            $objServiceProduct->link_rewrite[$lang['id_lang']] = Tools::link_rewrite($name);
+                        }
+                        $objServiceProduct->available_for_order = true;
+                        $objServiceProduct->show_price = true;
+                        $objServiceProduct->is_virtual = true;
+                        $objServiceProduct->auto_add_to_cart = $autoAdded;
+                        $objServiceProduct->price_addition_type = $priceAdditionType;
+                        $objServiceProduct->booking_product = false;
+                        $objServiceProduct->show_at_front = false;
+                        $objServiceProduct->indexed = false;
+                        $objServiceProduct->minimal_quantity = 1;
+                        $objServiceProduct->active = true;
+                        $objServiceProduct->max_quantity = 99999;
+
+                        // ======= Create Service product END =========
+                        if ($objServiceProduct->save()) {
+                            // If service product is create successfully the start adding the product in cart and order
+                            $objCart = new Cart($objHtlCartBooking->id_cart);
+                            $objServiceProduct = new Product($objServiceProduct->id, false, $objCart->id_lang);
+
+                            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+                            if ($objRoomTypeServiceProductCartDetail->addServiceProductInCart(
+                                $objServiceProduct->id,
+                                $productQty,
+                                $objCart->id,
+                                $objHtlCartBooking->id
+                            )) {
+                                // Lets create a specific price for the service to match the price provided by the user
+                                $objSpecificPrice = new SpecificPrice();
+                                $objSpecificPrice->id_shop = 0;
+                                $objSpecificPrice->id_shop_group = 0;
+                                $objSpecificPrice->id_cart = $objCart->id;
+                                $objSpecificPrice->id_currency = $objCart->id_currency;
+                                $objSpecificPrice->id_country = 0;
+                                $objSpecificPrice->id_group = 0;
+                                $objSpecificPrice->id_customer = $objCart->id_customer;
+                                $objSpecificPrice->id_product = $objServiceProduct->id;
+                                $objSpecificPrice->id_product_attribute = 0;
+                                $objSpecificPrice->price = $price;
+                                $objSpecificPrice->from_quantity = 1;
+                                $objSpecificPrice->reduction = 0;
+                                $objSpecificPrice->reduction_type = 'amount';
+                                $objSpecificPrice->reduction_tax = 0;
+                                $objSpecificPrice->from = '0000-00-00 00:00:00';
+                                $objSpecificPrice->to = '0000-00-00 00:00:00';
+                                if ($objSpecificPrice->add()) {
+                                    $response['service_panel'] = $this->getBookingServicesTabContent($objHtlCartBooking->id);
+                                } else {
+                                    $response['hasError'] = true;
+                                    $response['errors'][] = $this->l('Some error occurred while adding service to the room');
+                                }
+                            } else {
+                                $response['hasError'] = true;
+                                $response['errors'][] = $this->l('Unable to add service to the room');
+                            }
+                        } else {
+                            $response['hasError'] = true;
+                            $response['errors'][] = $this->l('Unable to add service to the room');
+                        }
+                    }
+                } else {
+                    $response['hasError'] = true;
+                    $response['errors'][] = $this->l('Room not found');
+                }
+            } else {
+                $response['hasError'] = true;
+                $response['errors'][] = $this->l('Adding a new custom service is not allowed.');
+            }
+        } else {
+            $response['hasError'] = true;
+            $response['errors'][] = $this->l('You do not have permission to edit this order.');
+        }
+
+        die(json_encode($response));
+    }
+
+    public function getBookingServicesTabContent($idHotelCartBooking)
+    {
+        $servicesTpl = '';
+        if (Validate::isLoadedObject($objCartBookingData = new HotelCartBookingData($idHotelCartBooking))) {
+            if (Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING')) {
+                // get all services
+                $objProduct = new Product();
+                $serviceProducts = $objProduct->getServiceProducts();
+            } else {
+                $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
+                $serviceProducts = $objRoomTypeServiceProduct->getServiceProductsData($objCartBookingData->id_product, 1, 0, false, 2, null);
+            }
+
+            if ($serviceProducts) {
+                foreach ($serviceProducts as $key => $servProduct) {
+                    $serviceProducts[$key]['price_tax_exc'] = $servProduct['price'];
+                    if ($additionalServices
+                        && (in_array($servProduct['id_product'], array_column($additionalServices['additional_services'], 'id_product')))
+                    ) {
+                        unset($serviceProducts[$key]);
+                    }
+                }
+            }
+
+            if ($selectedRoomServiceProduct =  $objCartBookingData->getRoomRowByIdProductIdRoomInDateRange(
+                $objCartBookingData->id_cart,
+                $objCartBookingData->id_product,
+                $objCartBookingData->date_from,
+                $objCartBookingData->date_to,
+                $objCartBookingData->id_room
+            )) {
+                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+                $selectedRoomServiceProduct['selected_service'] = $objRoomTypeServiceProductCartDetail->getRoomServiceProducts(
+                    $selectedRoomServiceProduct['id'],
+                    0,
+                    null,
+                    null
+                );
+            }
+
+            $objCart = new Cart($objCartBookingData->id_cart);
+            $cartCurrency = new Currency($objCart->id_currency);
+            $taxRulesGroups = TaxRulesGroup::getTaxRulesGroups(true);
+            $this->context->smarty->assign(array(
+                'id_hotel_cart_booking' => $idHotelCartBooking,
+                'taxRulesGroups' => $taxRulesGroups,
+                'cartCurrency' => $cartCurrency,
+                'serviceProducts' => $serviceProducts,
+                'selectedRoomServiceProduct' => $selectedRoomServiceProduct,
+                'customServiceAllowed' => Configuration::get('PS_ALLOW_CREATE_CUSTOM_SERVICES_IN_BOOKING'),
+            ));
+
+            $servicesTpl = $this->context->smarty->fetch(
+                _PS_ADMIN_DIR_.'/themes/default/template/controllers/orders/modals/_add_order_extra_services_tab_content.tpl'
+            );
+        }
+
+        return $servicesTpl;
     }
 }

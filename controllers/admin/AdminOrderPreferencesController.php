@@ -197,7 +197,7 @@ class AdminOrderPreferencesControllerCore extends AdminController
                         'type' => 'bool'
                     ),
                     'PS_ORDER_LIST_PRICE_DISPLAY_CURRENCY' => array(
-                        'title' => $this->l('Display order list prices in'),
+                        'title' => $this->l('Display order list prices in Back Office'),
                         'hint' => $this->l('Choose the currency in which you want the prices in the order list to be displayed.'),
                         'desc' => $this->l('\'Order currency\' is the currency in which customer created the order and \'Default currency\' is the currency configured in localization.'),
                         'validation' => 'isInt',
@@ -221,6 +221,20 @@ class AdminOrderPreferencesControllerCore extends AdminController
                         'validation' => 'isUnsignedInt',
                         'class' => 'fixed-width-xl',
                         'suffix' => $this->l('day(s)'),
+                    ),
+                    'PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING' => array(
+                        'title' => $this->l('Allow to add all services in a booking'),
+                        'hint' => $this->l('Enable to allow all services created to be added in a booking while adding or editing a booking. Disable to allow only attached services with room type.'),
+                        'desc' => $this->l('If enabled, only attached services with room type will be available to be added to a booking.'),
+                        'cast' => 'intval',
+                        'type' => 'bool'
+                    ),
+                    'PS_ALLOW_CREATE_CUSTOM_SERVICES_IN_BOOKING' => array(
+                        'title' => $this->l('Allow to create custom service for a booking'),
+                        'hint' => $this->l('Enable to allow to create custom service while adding or editing a booking.'),
+                        'desc' => $this->l('If disabled, a custom service can not be created while adding or editing a booking.'),
+                        'cast' => 'intval',
+                        'type' => 'bool'
                     ),
                 ),
                 'submit' => array('title' => $this->l('Save'))
