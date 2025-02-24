@@ -7479,7 +7479,7 @@ class AdminOrdersControllerCore extends AdminController
                         $qty = 1;
                     }
                     // validate price
-                    if ($price && !ValidateCore::isPrice($price)) {
+                    if (!ValidateCore::isPrice($price)) {
                         $this->errors[] = Tools::displayError('Invalid service unit price.');
                     }
                 } else {

@@ -229,11 +229,11 @@
                         </div>
                     </div>
                 {/if}
+                <input type="hidden" name="id_booking_detail" value="{$id_booking_detail}">
+                <input type="hidden" id="room_type_tax_rule_group_exist" name="room_type_tax_rule_group_exist" value="{$roomTypeTaxRuleGroupExist}">
                 <div class="modal-footer">
                     <button type="submit" id="save_new_service" class="btn btn-primary"><i class="icon icon-save"></i> &nbsp;{l s="Update Service"}</button>
                 </div>
-                <input type="hidden" name="id_booking_detail" value="{$id_booking_detail}">
-                <input type="hidden" id="room_type_tax_rule_group_exist" name="room_type_tax_rule_group_exist" value="{$roomTypeTaxRuleGroupExist}">
             </form>
         {/if}
 

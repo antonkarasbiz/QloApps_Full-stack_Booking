@@ -101,13 +101,12 @@
 
                     {include file='controllers/orders/modals/_add_order_extra_services_tab_content.tpl'}
 				</div>
+                {if isset($loaderImg) && $loaderImg}
+                    <div class="loading_overlay">
+                        <img src='{$loaderImg}' class="loading-img"/>
+                    </div>
+                {/if}
 			</div>
 		</div>
 	</div>
-
-    {if isset($loaderImg) && $loaderImg}
-        <div class="loading_overlay">
-            <img src='{$loaderImg}' class="loading-img"/>
-        </div>
-    {/if}
 </div>

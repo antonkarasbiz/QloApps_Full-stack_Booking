@@ -1330,7 +1330,7 @@ class AdminCartsControllerCore extends AdminController
                         $objServiceProduct->show_at_front = false;
                         $objServiceProduct->indexed = false;
                         $objServiceProduct->minimal_quantity = 1;
-                        $objServiceProduct->active = true;
+                        $objServiceProduct->active = false;
                         $objServiceProduct->max_quantity = 99999;
 
                         // ======= Create Service product END =========

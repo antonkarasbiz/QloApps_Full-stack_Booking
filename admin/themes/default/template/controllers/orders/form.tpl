@@ -1641,11 +1641,11 @@
 		});
 
         // when the price of a service product is changed and focus is out
-        $(document).on('change', '.service_cart_price_input', function() {
+        $(document).on('change', '#room_type_services_desc .service_cart_price_input', function() {
 			updateServiceProducts(this);
 		});
 
-		$(document).on('focusout', '#rooms_type_extra_demands .qty', function(e) {
+		$(document).on('change', '#rooms_type_extra_demands .qty', function(e) {
 			var qty_wntd = $(this).val();
 			if (qty_wntd == '' || !$.isNumeric(qty_wntd)) {
 				$(this).val(1);
@@ -1818,14 +1818,12 @@
 						showSuccessMessage(txtExtraDemandSucc);
 					} else {
 						showErrorMessage(jsonData.errors);
-
 					}
 				},
                 complete: function() {
                     $(".loading_overlay").hide();
                 }
 			});
-
 		}
 	});
 </script>
