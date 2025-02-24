@@ -528,6 +528,9 @@
                                     <form action="{$link->getPageLink('order-detail', true)|escape:'html':'UTF-8'}" method="post" class="std" id="sendOrderMessage">
                                         <div class="form-group select-room-type">
                                             <label for="id_product">{l s='Room Type'}</label>
+                                            <p class="card-subheader text-muted">
+                                                {l s='To add a comment about a room type, please select one first.'}
+                                            </p>
 
                                             <select name="id_product" class="form-control">
                                                 <option value="0">{l s='-- Choose --'}</option>

@@ -704,7 +704,7 @@
 
                 {* Order Internal notes *}
                 {if (sizeof($messages))}
-                    <div class="panel">
+                    <div class="panel order-notes">
                         <div class="panel-heading">
                             <i class="icon-undo"></i> &nbsp;{l s='Order Notes'}
                         </div>
@@ -1153,7 +1153,11 @@
                 <div class="panel">
                     <div class="panel-heading">
                         <i class="icon-envelope"></i> &nbsp;{l s='Messages'} <span class="badge">{sizeof($customer_thread_message)}</span>
-                        <a href="{$link->getAdminLink('AdminCustomerThreads')|escape:'html':'UTF-8'}&amp;id_order={$order->id|intval}" class="pull-right">{l s='Show all messages'}</a>
+                        {if $id_customer_thread}
+                            <a href="{$link->getAdminLink('AdminCustomerThreads')|escape:'html':'UTF-8'}&amp;viewcustomer_thread&id_customer_thread={$id_customer_thread|intval}" class="pull-right ">{l s='Show all messages'}</a>
+                        {else}
+                            <a href="{$link->getAdminLink('AdminCustomerThreads')|escape:'html':'UTF-8'}" class="pull-right">{l s='Show all messages'}</a>
+                        {/if}
                     </div>
                     <div id="messages">
                         {if $can_edit}

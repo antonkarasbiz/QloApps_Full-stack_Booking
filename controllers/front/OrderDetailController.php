@@ -695,21 +695,23 @@ class OrderDetailControllerCore extends FrontController
                     $ct->id_contact = 0;
                     $ct->id_customer = (int)$order->id_customer;
                     $ct->id_shop = (int)$this->context->shop->id;
-                    if ($id_product && $order->orderContainProduct($id_product)) {
-                        $ct->id_product = $id_product;
-                    }
                     $ct->id_order = (int)$order->id;
                     $ct->id_lang = (int)$this->context->language->id;
                     $ct->email = $this->context->customer->email;
-                    $ct->status = 'open';
+                    $ct->status = CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN;
                     $ct->token = Tools::passwdGen(12);
                     $ct->add();
                 } else {
                     $ct = new CustomerThread((int)$id_customer_thread);
-                    $ct->status = 'open';
+                    $ct->status = CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN;
                     $ct->update();
                 }
 
+                if ($id_product && $order->orderContainProduct($id_product)) {
+                    $cm->id_product = $id_product;
+                }
+
+                $cm->user_agent = $_SERVER['HTTP_USER_AGENT'];
                 $cm->id_customer_thread = $ct->id;
                 $cm->message = $msgText;
                 $cm->ip_address = (int)ip2long($_SERVER['REMOTE_ADDR']);

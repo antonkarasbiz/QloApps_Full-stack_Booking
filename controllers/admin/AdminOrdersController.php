@@ -1424,7 +1424,7 @@ class AdminOrdersControllerCore extends AdminController
                             $customer_thread->id_order = (int)$order->id;
                             $customer_thread->id_lang = (int)$this->context->language->id;
                             $customer_thread->email = $customer->email;
-                            $customer_thread->status = 'open';
+                            $customer_thread->status = CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN;
                             $customer_thread->token = Tools::passwdGen(12);
                             $customer_thread->add();
                         } else {
@@ -3036,6 +3036,13 @@ class AdminOrdersControllerCore extends AdminController
                 }
             }
         }
+
+        $objCustomerThread = new CustomerThread();
+        $messages = Message::getMessagesByOrderId($order->id, true);
+        if ($customerMessages = CustomerMessage::getMessagesByOrderId($order->id, true)) {
+            $messages = array_merge($messages, $customerMessages);
+        }
+
         $this->tpl_view_vars = array(
             'guestFormattedAddress' => $guestFormattedAddress,
             'idOrderAddressInvoice' => $idOrderAddressInvoice,
@@ -3080,8 +3087,9 @@ class AdminOrdersControllerCore extends AdminController
             'discounts' => $order->getCartRules(),
             'total_paid' => $order->getTotalPaid(),
             'customer_thread_message' => CustomerThread::getCustomerMessages($order->id_customer, null, $order->id),
+            'id_customer_thread' => $objCustomerThread->getIdCustomerThreadByIdOrder($order->id),
             'orderMessages' => OrderMessage::getOrderMessages($order->id_lang),
-            'messages' => Message::getMessagesByOrderId($order->id, true),
+            'messages' => $messages,
             'carrier' => new Carrier($order->id_carrier),
             'history' => $history,
             'order_payment_detail' => $order_payment_detail,

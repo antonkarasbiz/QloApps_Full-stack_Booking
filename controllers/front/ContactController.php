@@ -39,16 +39,40 @@ class ContactControllerCore extends FrontController
             $saveContactKey = $this->context->cookie->contactFormKey;
             $extension = array('.txt', '.rtf', '.doc', '.docx', '.pdf', '.zip', '.png', '.jpeg', '.gif', '.jpg');
             $file_attachment = Tools::fileAttachment('fileUpload');
-            $message = Tools::getValue('message'); // Html entities is not usefull, iscleanHtml check there is no bad html tags.
+            $message = trim(Tools::getValue('message')); // Html entities is not usefull, iscleanHtml check there is no bad html tags.
             $url = Tools::getValue('url');
+            $phone = Tools::getValue('phone');
+            $subject = trim(Tools::getValue('subject'));
+            $userName = Tools::getValue('user_name');
+            $id_contact = (int)Tools::getValue('id_contact');
+            $objCustomerThread = new CustomerThread();
+            $id_customer_thread = (int)$objCustomerThread->getIdCustomerThreadByToken(Tools::getValue('token'));
+            $nameRequired = Configuration::get('PS_CUSTOMER_SERVICE_NAME_REQUIRED');
+            $phoneRequired = Configuration::get('PS_CUSTOMER_SERVICE_PHONE_REQUIRED');
+            if (!Configuration::get('PS_CUSTOMER_SERVICE_CONTACT_ALLOW')) {
+                $id_contact = (int) Configuration::get('PS_CUSTOMER_SERVICE_EMAIL_MESSAGE');
+            }
+
             if (!($from = trim(Tools::getValue('from'))) || !Validate::isEmail($from)) {
                 $this->errors[] = Tools::displayError('Invalid email address.');
             } elseif (!$message) {
                 $this->errors[] = Tools::displayError('The message cannot be blank.');
             } elseif (!Validate::isCleanHtml($message)) {
                 $this->errors[] = Tools::displayError('Invalid message');
-            } elseif (!($id_contact = (int)Tools::getValue('id_contact')) || !(Validate::isLoadedObject($contact = new Contact($id_contact, $this->context->language->id)))) {
-                $this->errors[] = Tools::displayError('Please select a subject from the list provided. ');
+            } elseif (!$id_customer_thread && !$subject) {
+                $this->errors[] = Tools::displayError('The subject cannot be blank.');
+            } elseif (!$id_customer_thread && !Validate::isCleanHtml($subject)) {
+                $this->errors[] = Tools::displayError('Invalid subject$subject');
+            } else if (!$id_customer_thread && $nameRequired && !trim($userName)) {
+                $this->errors[] = Tools::displayError('Name is required.');
+            } else if (!$id_customer_thread && trim($nameRequired) && !Validate::isGenericName($userName)) {
+                $this->errors[] = Tools::displayError('Invalid name.');
+            } else if (!$id_customer_thread && $phoneRequired && !trim($phone)) {
+                $this->errors[] = Tools::displayError('Phone is required.');
+            } else if (!$id_customer_thread && trim($phone) && !Validate::isPhoneNumber($phone)) {
+                $this->errors[] = Tools::displayError('Invalid Phone number.');
+            } elseif (!Validate::isLoadedObject($contact = new Contact($id_contact, $this->context->language->id))) {
+                $this->errors[] = Tools::displayError('Please select a subject from the list provided.');
             } elseif (!empty($file_attachment['name']) && $file_attachment['error'] != 0) {
                 $this->errors[] = Tools::displayError('An error occurred during the file-upload process.');
             } elseif (!empty($file_attachment['name']) && !in_array(Tools::strtolower(substr($file_attachment['name'], -4)), $extension) && !in_array(Tools::strtolower(substr($file_attachment['name'], -5)), $extension)) {
@@ -71,44 +95,15 @@ class ContactControllerCore extends FrontController
                     $id_order = (int) $order->id_customer === (int) $customer->id ? $id_order : 0;
                 }
 
-                if (!((
-                        ($id_customer_thread = (int)Tools::getValue('id_customer_thread'))
-                        && (int)Db::getInstance()->getValue('
-						SELECT cm.id_customer_thread FROM '._DB_PREFIX_.'customer_thread cm
-						WHERE cm.id_customer_thread = '.(int)$id_customer_thread.' AND cm.id_shop = '.(int)$this->context->shop->id.' AND token = \''.pSQL(Tools::getValue('token')).'\'')
-                    ) || (
-                        $id_customer_thread = CustomerThread::getIdCustomerThreadByEmailAndIdOrder($from, $id_order, $id_contact)
-                    ))) {
-                    $fields = Db::getInstance()->executeS('
-					SELECT cm.id_customer_thread, cm.id_contact, cm.id_customer, cm.id_order, cm.id_product, cm.email
-					FROM '._DB_PREFIX_.'customer_thread cm
-					WHERE email = \''.pSQL($from).'\' AND cm.id_shop = '.(int)$this->context->shop->id.' AND ('.
-                        ($customer->id ? 'id_customer = '.(int)$customer->id.' OR ' : '').'
-						id_order = '.(int)$id_order.')');
-                    $score = 0;
-                    foreach ($fields as $key => $row) {
-                        $tmp = 0;
-                        if ((int)$row['id_customer'] && $row['id_customer'] != $customer->id && $row['email'] != $from) {
-                            continue;
-                        }
-                        if ($row['id_order'] != 0 && $id_order != $row['id_order']) {
-                            continue;
-                        }
-                        if ($row['email'] == $from) {
-                            $tmp += 4;
-                        }
-                        if ($row['id_contact'] == $id_contact) {
-                            $tmp++;
-                        }
-                        if (Tools::getValue('id_product') != 0 && $row['id_product'] == Tools::getValue('id_product')) {
-                            $tmp += 2;
-                        }
-                        if ($tmp >= 5 && $tmp >= $score) {
-                            $score = $tmp;
-                            $id_customer_thread = $row['id_customer_thread'];
-                        }
-                    }
+                if (!$id_customer_thread) {
+                    $id_customer_thread = CustomerThread::getIdCustomerThreadByEmailAndIdOrder(
+                        $from,
+                        $id_order,
+                        $id_contact,
+                        ' AND a.`status` !='. CustomerThread::QLO_CUSTOMER_THREAD_STATUS_CLOSED
+                    );
                 }
+
                 $old_message = Db::getInstance()->getValue('
 					SELECT cm.message FROM '._DB_PREFIX_.'customer_message cm
 					LEFT JOIN '._DB_PREFIX_.'customer_thread cc on (cm.id_customer_thread = cc.id_customer_thread)
@@ -123,13 +118,10 @@ class ContactControllerCore extends FrontController
                     if ($contact->customer_service) {
                         if ((int)$id_customer_thread) {
                             $ct = new CustomerThread($id_customer_thread);
-                            $ct->status = 'open';
+                            $ct->status = CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN;
                             $ct->id_lang = (int)$this->context->language->id;
                             $ct->id_contact = (int)$id_contact;
                             $ct->id_order = (int)$id_order;
-                            if ($id_product = (int)Tools::getValue('id_product')) {
-                                $ct->id_product = $id_product;
-                            }
                             $ct->update();
                         } else {
                             $ct = new CustomerThread();
@@ -137,14 +129,13 @@ class ContactControllerCore extends FrontController
                                 $ct->id_customer = (int)$customer->id;
                             }
                             $ct->id_shop = (int)$this->context->shop->id;
-                            $ct->id_order = (int)$id_order;
-                            if ($id_product = (int)Tools::getValue('id_product')) {
-                                $ct->id_product = $id_product;
-                            }
+                            $ct->phone = $phone;
+                            $ct->user_name = $userName;
+                            $ct->subject = $subject;
                             $ct->id_contact = (int)$id_contact;
                             $ct->id_lang = (int)$this->context->language->id;
                             $ct->email = $from;
-                            $ct->status = 'open';
+                            $ct->status = CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN;
                             $ct->token = Tools::passwdGen(12);
                             $ct->add();
                         }
@@ -153,6 +144,9 @@ class ContactControllerCore extends FrontController
                             $cm = new CustomerMessage();
                             $cm->id_customer_thread = $ct->id;
                             $cm->message = $message;
+                            if ($id_product = (int)Tools::getValue('id_product')) {
+                                $cm->id_product = $id_product;
+                            }
                             if (isset($file_attachment['rename']) && !empty($file_attachment['rename']) && rename($file_attachment['tmp_name'], _PS_UPLOAD_DIR_.basename($file_attachment['rename']))) {
                                 $cm->file_name = $file_attachment['rename'];
                                 @chmod(_PS_UPLOAD_DIR_.basename($file_attachment['rename']), 0664);
@@ -266,21 +260,21 @@ class ContactControllerCore extends FrontController
             'max_upload_size' => (int)Tools::getMaxUploadSize()
         ));
 
-        if (($id_customer_thread = (int)Tools::getValue('id_customer_thread')) && $token = Tools::getValue('token')) {
-            $customer_thread = Db::getInstance()->getRow('
+        if ($token = Tools::getValue('token')) {
+            if ($customer_thread = Db::getInstance()->getRow('
 				SELECT cm.*
 				FROM '._DB_PREFIX_.'customer_thread cm
-				WHERE cm.id_customer_thread = '.(int)$id_customer_thread.'
-				AND cm.id_shop = '.(int)$this->context->shop->id.'
+				WHERE cm.id_shop = '.(int)$this->context->shop->id.'
 				AND token = \''.pSQL($token).'\'
-			');
-
-            $order = new Order((int)$customer_thread['id_order']);
-            if (Validate::isLoadedObject($order)) {
-                $customer_thread['reference'] = $order->getUniqReference();
+			')) {
+                $order = new Order((int)$customer_thread['id_order']);
+                if (Validate::isLoadedObject($order)) {
+                    $customer_thread['reference'] = $order->getUniqReference();
+                }
+                $this->context->smarty->assign('customerThread', $customer_thread);
             }
-            $this->context->smarty->assign('customerThread', $customer_thread);
         }
+
         // Send Hotel location information
         $gblHtlAddress = Configuration::get('WK_HOTEL_GLOBAL_ADDRESS');
         $gblHtlPhone = Configuration::get('WK_HOTEL_GLOBAL_CONTACT_NUMBER');
@@ -320,6 +314,9 @@ class ContactControllerCore extends FrontController
                 'contacts' => Contact::getContacts($this->context->language->id),
                 'message' => html_entity_decode(Tools::getValue('message')),
 	            'contactKey' => $contactKey,
+                'contactNameRequired' => Configuration::get('PS_CUSTOMER_SERVICE_NAME_REQUIRED'),
+                'contactPhoneRequired' => Configuration::get('PS_CUSTOMER_SERVICE_PHONE_REQUIRED'),
+                'allowContactSelection' => Configuration::get('PS_CUSTOMER_SERVICE_CONTACT_ALLOW')
             )
         );
 

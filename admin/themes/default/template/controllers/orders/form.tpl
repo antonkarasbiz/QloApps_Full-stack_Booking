@@ -282,6 +282,10 @@
 		})
 		$('#order_message').live('change', function(e) {
 			e.preventDefault();
+			let visibility = 0;
+			if ($('#visibility').prop('checked')) {
+				visibility = 1;
+			}
 			$.ajax({
 				type:"POST",
 				url: "{$link->getAdminLink('AdminCarts')|addslashes}",
@@ -294,8 +298,9 @@
 					action: "updateOrderMessage",
 					id_cart: id_cart,
 					id_customer: id_customer,
-					message: $(this).val()
-					},
+					message: $(this).val(),
+					visibility: visibility
+				},
 				success : function(res)
 				{
 					displaySummary(res);
@@ -2170,6 +2175,15 @@
                             <textarea name="order_message" id="order_message" rows="3" cols="45"></textarea>
                         </div>
                     </div>
+					<div class="form-group col-lg-12">
+						<span class="col-lg-3"></span>
+						<p class="checkbox col-lg-6">
+							<label class="control-label" for="visibility">
+								<input type="checkbox" name="visibility" id="visibility" value="1" />
+								{l s='Display Message to Customer?'}
+							</label>
+						</p>
+					</div>
                     <div class="form-group" {if $order_total <= 0}style="display: none;"{/if}>
                         {if !$PS_CATALOG_MODE}
                         <div class="col-lg-9 col-lg-offset-3">

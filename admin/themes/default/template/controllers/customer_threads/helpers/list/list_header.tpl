@@ -51,7 +51,7 @@
 						<span class="message-mail">{l s='No new messages'}</span>
 					{else}
 						<a href="{$currentIndex|escape:'html':'UTF-8'}&amp;token={$token|escape:'html':'UTF-8'}&amp;id_customer_thread={$id_customer_thread}&amp;viewcustomer_thread" class="button">
-							{$total_thread} 
+							{$total_thread}
 							{if $total_thread > 1}{l s='New messages'}{else}{l s='New message'}{/if}
 						</a>
 					{/if}
@@ -64,10 +64,10 @@
 					{l s='Meaning of status'}
 				</div>
 				<ul class="list-unstyled">
-					<li class="text-success"><i class="icon-circle"></i> {l s='Open'}</li>
-					<li class="text-danger"><i class="icon-circle"></i> {l s='Closed'}</li>
-					<li class="text-warning"><i class="icon-circle"></i> {l s='Pending 1'}</li>
-					<li class="text-warning"><i class="icon-circle"></i> {l s='Pending 2'}</li>
+					<li><i class="icon-circle text-success"></i> {l s='Open'}</li>
+					<li><i class="icon-circle text-danger"></i> {l s='Closed'}</li>
+					<li><i class="icon-circle text-warning"></i> {l s='Pending 1'}</li>
+					<li><i class="icon-circle text-warning"></i> {l s='Pending 2'}</li>
 				</ul>
 			</div>
 		</div>
@@ -78,9 +78,9 @@
 				</div>
 				<ul class="list-unstyled">
 					{assign var=count value=0}
-					{foreach $params as $key => $val}
+					{foreach $stats as $key => $stat}
 						{assign var=count value=$count+1}
-						<li>{$key} <span class="badge">{$val}</span></li>
+						<li>{$stat.title} <span class="badge">{$stat.val}</span></li>
 					{/foreach}
 				</ul>
 			</div>

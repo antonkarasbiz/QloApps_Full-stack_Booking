@@ -587,6 +587,7 @@ class AdminCartsControllerCore extends AdminController
                     $message->message = $message_content;
                     $message->id_cart = (int)$this->context->cart->id;
                     $message->id_customer = (int)$this->context->cart->id_customer;
+                    $message->private = !Tools::getValue('visibility');
                     $message->save();
                 }
             } elseif (Validate::isLoadedObject($message)) {
@@ -598,7 +599,7 @@ class AdminCartsControllerCore extends AdminController
 
     public function ajaxProcessUpdateCurrency()
     {
-        if ($this->tabAccess['edit'] === '1') {
+        if ($this->tabAccess['edit'] === '1' || $this->tabAccess['add'] === '1') {
             $currency = new Currency((int)Tools::getValue('id_currency'));
             if (Validate::isLoadedObject($currency) && !$currency->deleted && $currency->active) {
                 $this->context->cart->id_currency = (int)$currency->id;

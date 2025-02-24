@@ -32,12 +32,19 @@ class CustomerThreadCore extends ObjectModel
     public $id_contact;
     public $id_customer;
     public $id_order;
-    public $id_product;
+    public $user_name;
+    public $phone;
+    public $subject;
     public $status;
     public $email;
     public $token;
     public $date_add;
     public $date_upd;
+
+    const QLO_CUSTOMER_THREAD_STATUS_OPEN = 1;
+    const QLO_CUSTOMER_THREAD_STATUS_PENDING1 = 2;
+    const QLO_CUSTOMER_THREAD_STATUS_PENDING2 = 3;
+    const QLO_CUSTOMER_THREAD_STATUS_CLOSED = 4;
 
     /**
      * @see ObjectModel::$definition
@@ -48,10 +55,12 @@ class CustomerThreadCore extends ObjectModel
         'fields' => array(
             'id_lang' =>    array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
             'id_contact' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
+            'user_name' => array('type' => self::TYPE_STRING, 'validate' => 'isGenericName'),
+            'phone' => array('type' => self::TYPE_STRING, 'validate' => 'isPhoneNumber', 'size' => 32),
+            'subject' => array('type' => self::TYPE_STRING, 'validate' => 'isCleanHtml'),
             'id_shop' =>    array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_customer' =>array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_order' =>    array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'id_product' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'email' =>        array('type' => self::TYPE_STRING, 'validate' => 'isEmail', 'size' => 254),
             'token' =>        array('type' => self::TYPE_STRING, 'validate' => 'isGenericName', 'required' => true),
             'status' =>    array('type' => self::TYPE_STRING),
@@ -158,15 +167,38 @@ class CustomerThreadCore extends ObjectModel
         return Db::getInstance()->executeS($sql);
     }
 
-    public static function getIdCustomerThreadByEmailAndIdOrder($email, $id_order, $id_contact = false)
+    public static function getIdCustomerThreadByEmailAndIdOrder($email, $id_order, $id_contact = false, $query = false)
+    {
+        return Db::getInstance()->getValue('
+			SELECT a.`id_customer_thread`
+			FROM `'._DB_PREFIX_.'customer_thread` a
+			WHERE a.`email` = \''.pSQL($email).'\'
+				AND a.`id_shop` = '.(int)Context::getContext()->shop->id.'
+				AND a.`id_order` = '.(int)$id_order.' '.
+                (($id_contact) ? ' AND a.`id_contact`='.(int) $id_contact : ' ').
+                (($query) ? $query : ' ')
+        );
+    }
+
+
+    public static function getIdCustomerThreadByIdOrder($idOrder)
     {
         return Db::getInstance()->getValue('
 			SELECT cm.id_customer_thread
 			FROM '._DB_PREFIX_.'customer_thread cm
-			WHERE cm.email = \''.pSQL($email).'\'
-				AND cm.id_shop = '.(int)Context::getContext()->shop->id.'
-				AND cm.id_order = '.(int)$id_order.' '.
-                (($id_contact) ? ' AND cm.id_contact='.(int) $id_contact : ' ')
+			WHERE cm.id_shop = '.(int)Context::getContext()->shop->id.'
+				AND cm.id_order = '.(int)$idOrder
+        );
+    }
+
+
+    public static function getIdCustomerThreadByToken($token)
+    {
+        return Db::getInstance()->getValue('
+			SELECT cm.id_customer_thread
+			FROM '._DB_PREFIX_.'customer_thread cm
+			WHERE cm.id_shop = '.(int)Context::getContext()->shop->id.'
+            AND token = \''.pSQL($token).'\''
         );
     }
 
@@ -234,7 +266,7 @@ class CustomerThreadCore extends ObjectModel
         return Db::getInstance()->getValue('
 			SELECT id_customer_thread
 			FROM '._DB_PREFIX_.'customer_thread ct
-			WHERE ct.status = "open"
+			WHERE ct.status = '.CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN.'
 			AND ct.date_upd = (
 				SELECT date_add FROM '._DB_PREFIX_.'customer_message
 				WHERE (id_employee IS NULL OR id_employee = 0)

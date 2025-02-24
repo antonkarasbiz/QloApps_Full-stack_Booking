@@ -30,11 +30,6 @@
 	<div class="panel-heading">
 		<i class="icon-comments"></i>
 		{l s="Thread"}: <span class="badge">#{$id_customer_thread|intval}</span>
-		{if isset($next_thread) && $next_thread}
-			<a class="btn btn-default pull-right" href="{$next_thread.href|escape:'html':'UTF-8'}">
-				{$next_thread.name} <i class="icon-forward"></i>
-			</a>
-		{/if}
 	</div>
 	<div class="well">
 		<form action="{$link->getAdminLink('AdminCustomerThreads')|escape:'html':'UTF-8'}&amp;viewcustomer_thread&amp;id_customer_thread={$id_customer_thread|intval}" method="post" enctype="multipart/form-data" class="form-horizontal">
@@ -116,7 +111,9 @@
 			{l s="Choose a template"}
 		</button>
 		-->
-		<button class="btn btn-default pull-right" name="submitReply"><i class="process-icon-mail-reply"></i> {l s="Send"}</button>
+		<button class="submitReply btn btn-default pull-right" name="submitReply"><i class="icon-mail-reply"></i> {l s="Send"}</button>
+		<button class="submitReply btn btn-default pull-right" name="submitReplyAndClose"><i class="icon-reply-all"></i> {l s='Reply And Close'}</button>
+		<button class="submitReply btn btn-default pull-right" name="submitReplyAsPrivate"><i class="icon-lock"></i> {l s='Add Private Message'}</button>
 		<input type="hidden" name="id_customer_thread" value="{$thread->id|intval}" />
 		<input type="hidden" name="msg_email" value="{$thread->email}" />
 	</div>
@@ -180,5 +177,3 @@
 </script>
 
 {/block}
-
-

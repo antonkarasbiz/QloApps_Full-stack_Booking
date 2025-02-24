@@ -32,6 +32,7 @@ class CustomerMessageCore extends ObjectModel
     public $message;
     public $file_name;
     public $ip_address;
+    public $id_product;
     public $user_agent;
     public $private;
     public $date_add;
@@ -51,6 +52,7 @@ class CustomerMessageCore extends ObjectModel
             'id_employee' =>        array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_customer_thread' => array('type' => self::TYPE_INT),
             'ip_address' =>        array('type' => self::TYPE_STRING, 'validate' => 'isIp2Long', 'size' => 15),
+            'id_product' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'message' =>            array('type' => self::TYPE_STRING, 'validate' => 'isCleanHtml', 'required' => true, 'size' => 16777216),
             'file_name' =>            array('type' => self::TYPE_STRING),
             'user_agent' =>        array('type' => self::TYPE_STRING),
@@ -72,7 +74,7 @@ class CustomerMessageCore extends ObjectModel
         ),
     );
 
-    public static function getMessagesByOrderId($id_order, $private = true)
+    public static function getMessagesByOrderId($id_order, $private = true, $limit = false)
     {
         return Db::getInstance()->executeS('
 			SELECT cm.*,
@@ -91,8 +93,9 @@ class CustomerMessageCore extends ObjectModel
 			WHERE ct.id_order = '.(int)$id_order.'
 			'.(!$private ? 'AND cm.`private` = 0' : '').'
 			GROUP BY cm.id_customer_message
-			ORDER BY cm.date_add DESC
-		');
+			ORDER BY cm.date_add DESC'.
+            (($limit) ? ' LIMIT '.(int) $limit: ' ')
+        );
     }
 
     public static function getTotalCustomerMessages($where = null)
