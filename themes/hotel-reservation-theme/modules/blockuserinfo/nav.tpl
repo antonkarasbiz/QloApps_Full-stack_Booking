@@ -32,7 +32,7 @@
                     <ul class="dropdown-menu" aria-labelledby="user_info_acc">
                         <li><a href="{$link->getPageLink('my-account', true)|escape:'html'}" title="{l s='View my customer account' mod='blockuserinfo'}">{l s='Accounts'  mod='blockuserinfo'}</a></li>
                         <li><a href="{$link->getPageLink('history', true)|escape:'html'}" title="{l s='View my orders' mod='blockuserinfo'}">{l s='Orders'}</a></li>
-                        <li><a href="{$link->getPageLink('index', true, NULL, "mylogout")|escape:'html'}"  title="{l s='Log me out' mod='blockuserinfo'}">{l s='Logout'}</a></li>
+                        <li><a href="{$link->getPageLink('index', true, NULL, "mylogout=1&token={$static_token}")|escape:'html':'UTF-8'}"  title="{l s='Log me out' mod='blockuserinfo'}">{l s='Logout'}</a></li>
                         {block name='displayUserNavigationList'}
                             {hook h='displayUserNavigationList'}
                         {/block}
