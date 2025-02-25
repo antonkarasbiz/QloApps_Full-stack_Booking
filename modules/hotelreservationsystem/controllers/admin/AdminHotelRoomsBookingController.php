@@ -749,7 +749,7 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
             // remove room from cart
             if ((Validate::isLoadedObject($objHotelCartBookingData = new HotelCartBookingData((int) $id_cart_book_data)))
                 && $objHotelCartBookingData->deleteCartBookingData(
-                    0,
+                    $objHotelCartBookingData->id_cart,
                     $objHotelCartBookingData->id_product,
                     $objHotelCartBookingData->id_room,
                     $objHotelCartBookingData->date_from,
