@@ -3497,7 +3497,7 @@ class AdminProductsControllerCore extends AdminController
                         }
                         $objHotelRoomInfo->id_product = $id_product;
                         $objHotelRoomInfo->id_hotel = $id_hotel;
-                        $objHotelRoomInfo->room_num = $roomInfo['room_num'];
+                        $objHotelRoomInfo->room_num = trim($roomInfo['room_num']);
                         $objHotelRoomInfo->id_status = $roomInfo['id_status'];
                         $objHotelRoomInfo->floor = trim($roomInfo['floor']);
                         $objHotelRoomInfo->comment = trim($roomInfo['comment']);
