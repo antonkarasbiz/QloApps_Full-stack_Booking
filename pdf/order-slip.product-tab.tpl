@@ -51,7 +51,7 @@
 						{$order_detail.product_name}
 					</td>
 					<td class="product center">
-				     	{$order_detail.hotel_name}
+				    	{$order_detail.hotel_name}
 					</td>
 					<td class="product center">
 						{$order_detail.date_from|date_format:"%d-%m-%Y"} {l s='To' pdf='true'} {$order_detail.date_to|date_format:"%d-%m-%Y"}
