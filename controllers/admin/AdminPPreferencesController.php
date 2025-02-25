@@ -90,7 +90,7 @@ class AdminPPreferencesControllerCore extends AdminController
                         'type' => 'text',
                         'suffix' => $this->l('characters'),
                         'class' => 'fixed-width-xl',
-                        'desc' => $this->l('Set 0 for no limit'),
+                        'desc' => $this->l('If set to 0, the maximum limit will be 400 characters.')
                     ),
                     /*'PS_QTY_DISCOUNT_ON_COMBINATION' => array(
                         'title' => $this->l('Quantity discounts based on'),
