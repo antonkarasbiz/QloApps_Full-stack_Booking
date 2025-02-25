@@ -110,7 +110,7 @@ class AdminEmailsControllerCore extends AdminController
                         )
                     ),
                     'PS_MAIL_SUBJECT_PREFIX' => array(
-                        'title' => $this->l('Enable the store name as a prefix in the email\'s subject'),
+                        'title' => $this->l('Enable the website name as a prefix in the email\'s subject'),
                         'validation' => 'isBool',
                         'cast' => 'intval',
                         'type' => 'bool',
