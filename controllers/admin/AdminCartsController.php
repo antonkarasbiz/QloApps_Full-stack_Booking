@@ -349,7 +349,7 @@ class AdminCartsControllerCore extends AdminController
     ##################################################################
     public function ajaxPreProcess()
     {
-        if ($this->tabAccess['edit'] === '1' || $this->tabAccess['add'] === '1') {
+        if ($this->tabAccess['add'] === '1') {
             // prevent cart creation when kpi visibility or kpi view is updated.
             // @todo: move the below cart creation process required function.
             if (in_array(Tools::getValue('action'), array('changeKpiVisibility', 'saveKpiView'))) {
@@ -598,7 +598,7 @@ class AdminCartsControllerCore extends AdminController
 
     public function ajaxProcessUpdateCurrency()
     {
-        if ($this->tabAccess['edit'] === '1' || $this->tabAccess['add'] === '1') {
+        if ($this->tabAccess['add'] === '1') {
             $currency = new Currency((int)Tools::getValue('id_currency'));
             if (Validate::isLoadedObject($currency) && !$currency->deleted && $currency->active) {
                 $this->context->cart->id_currency = (int)$currency->id;
@@ -628,7 +628,7 @@ class AdminCartsControllerCore extends AdminController
     }
     public function ajaxProcessUpdateLang()
     {
-        if ($this->tabAccess['edit'] === '1') {
+        if ($this->tabAccess['add'] === '1') {
             $lang = new Language((int)Tools::getValue('id_lang'));
             if (Validate::isLoadedObject($lang) && $lang->active) {
                 $this->context->cart->id_lang = (int)$lang->id;
@@ -699,7 +699,7 @@ class AdminCartsControllerCore extends AdminController
 
     public function ajaxProcessAddVoucher()
     {
-        if ($this->tabAccess['edit'] === '1') {
+        if ($this->tabAccess['add'] === '1') {
             $errors = array();
             if (!($id_cart_rule = Tools::getValue('id_cart_rule')) || !$cart_rule = new CartRule((int)$id_cart_rule)) {
                 $errors[] = Tools::displayError('Invalid voucher.');
@@ -717,7 +717,7 @@ class AdminCartsControllerCore extends AdminController
 
     public function ajaxProcessUpdateAddress()
     {
-        if ($this->tabAccess['edit'] === '1') {
+        if ($this->tabAccess['add'] === '1') {
             echo json_encode(array('addresses' => $this->context->customer->getAddresses((int)$this->context->cart->id_lang)));
         }
     }
