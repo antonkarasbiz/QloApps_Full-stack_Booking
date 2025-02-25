@@ -252,7 +252,7 @@
 				{/foreach}
 			{/if}
 
-			{block name='displayAfterShoppingCartRoomsSummary'}
+            {block name='displayAfterShoppingCartRoomsSummary'}
                 {hook h="displayAfterShoppingCartRoomsSummary"}
             {/block}
 
