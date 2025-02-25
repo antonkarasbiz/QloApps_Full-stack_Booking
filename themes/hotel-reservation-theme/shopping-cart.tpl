@@ -251,6 +251,11 @@
 					{/foreach}
 				{/foreach}
 			{/if}
+
+			{block name='displayAfterShoppingCartRoomsSummary'}
+                {hook h="displayAfterShoppingCartRoomsSummary"}
+            {/block}
+
 			{if isset($cart_normal_data) && $cart_normal_data}
 				<p class="cart_section_title">{l s='service product information'}</p>
 				{foreach from=$cart_normal_data key=data_k item=product}
