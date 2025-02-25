@@ -32,72 +32,81 @@
 
 		{* Already selected room services *}
 		<div class="col-sm-12 room_ordered_services table-responsive">
-			<table class="table table-striped">
-				<thead>
-					<tr>
-						<th>{l s='Name'}</th>
-						<th class="fixed-width-sm"></th>
-						<th class="fixed-width-sm text-center">{l s='Quantity'}</th>
-						<th>{l s='Unit Price (tax excl.)'}</th>
-						<th>{l s='Total Price (tax excl.)'}</th>
-						<th class="text-right">{l s='Action'}</th>
-					</tr>
-				</thead>
-				<tbody>
-					{if isset($additionalServices) && $additionalServices}
-						{foreach $additionalServices['additional_services'] as $service}
-							<tr class="room_demand_block" data-id_room_type_service_product_order_detail="{$service['id_room_type_service_product_order_detail']}">
-								<td>
-									<div>{$service['name']|escape:'html':'UTF-8'}</div>
-								</td>
-								<td>
-									{if $service['product_auto_add'] && $service['product_price_addition_type'] == Product::PRICE_ADDITION_TYPE_WITH_ROOM}
-										<span class="badge badge-info label">{l s='Auto added'}</span><br>
-									{/if}
-									{if $service['product_auto_add'] && $service['product_price_addition_type'] == Product::PRICE_ADDITION_TYPE_INDEPENDENT}
-										<span class="badge badge-info label">{l s='Convenience fee'}</span>
-									{/if}
-								</td>
-								<td class="text-center">
-									{if $service['allow_multiple_quantity']}
-										<div class="qty_container">
-											<input type="number" class="form-control qty" min="1" data-id_product="{$service['id_product']|escape:'html':'UTF-8'}" value="{$service['quantity']|escape:'html':'UTF-8'}">
-											{if $service['max_quantity']}
-												<p style="display:{if $service['quantity'] > $service['max_quantity']}block{else}none{/if}; margin-top: 4px;">
-													<span class="label label-warning">{l s='Maximum allowed quantity: %s' sprintf=$service['max_quantity']}</span>
-												</p>
-											{/if}
-										</div>
-									{else}
-										--
-									{/if}
-								</td>
-								<td>
-									<div class="input-group">
-										<span class="input-group-addon">{$currencySign}</span>
-										<input type="text" class="form-control unit_price" value="{Tools::ps_round($service['unit_price_tax_excl'], 2)}" data-id-product="{$product['id_product']}">
-										{if Product::PRICE_CALCULATION_METHOD_PER_DAY == $service.product_price_calculation_method}
-											<span class="input-group-addon">{l s='/ night'}</span>
-										{/if}
-									</div>
-									{* {if $service['product_price_calculation_method'] == Product::PRICE_CALCULATION_METHOD_PER_DAY}
-										{l s='/ night'}
-									{/if} *}
-								</td>
-								<td>{displayPrice price=$service['total_price_tax_excl']|escape:'html':'UTF-8' currency=$orderCurrency}</td>
-								<td class="text-right"><a class="btn btn-danger pull-right del_room_additional_service" data-id_room_type_service_product_order_detail="{$service['id_room_type_service_product_order_detail']}" href="#"><i class="icon-trash"></i></a></td>
-							</tr>
-						{/foreach}
-					{else}
-						<tr>
-							<td colspan="3">
-								<i class="icon-warning"></i> {l s='No services added yet.'}
-							</td>
-						</tr>
-					{/if}
-				</tbody>
-			</table>
+            <form id="update_selected_room_services_form">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>{l s='Name'}</th>
+                            <th class="fixed-width-sm"></th>
+                            <th class="fixed-width-sm text-center">{l s='Quantity'}</th>
+                            <th>{l s='Unit Price (tax excl.)'}</th>
+                            <th>{l s='Total Price (tax excl.)'}</th>
+                            <th class="text-right">{l s='Action'}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {if isset($additionalServices) && $additionalServices}
+                            {foreach $additionalServices['additional_services'] as $service}
+                                <tr class="room_demand_block" data-id_room_type_service_product_order_detail="{$service['id_room_type_service_product_order_detail']}">
+                                    <td>
+                                        <div>{$service['name']|escape:'html':'UTF-8'}</div>
+                                        <input value="{$service['id_room_type_service_product_order_detail']|escape:'html':'UTF-8'}" name="id_service_product_order_detail[]" type="hidden"/>
+                                    </td>
+                                    <td>
+                                        {if $service['product_auto_add'] && $service['product_price_addition_type'] == Product::PRICE_ADDITION_TYPE_WITH_ROOM}
+                                            <span class="badge badge-info label">{l s='Auto added'}</span><br>
+                                        {/if}
+                                        {if $service['product_auto_add'] && $service['product_price_addition_type'] == Product::PRICE_ADDITION_TYPE_INDEPENDENT}
+                                            <span class="badge badge-info label">{l s='Convenience fee'}</span>
+                                        {/if}
+                                    </td>
+                                    <td class="text-center">
+                                        {if $service['allow_multiple_quantity']}
+                                            <div class="qty_container">
+                                                <input type="number" class="form-control qty" min="1" data-id_product="{$service['id_product']|escape:'html':'UTF-8'}" value="{$service['quantity']|escape:'html':'UTF-8'}" name="service_qty[{$service['id_room_type_service_product_order_detail']|escape:'html':'UTF-8'}]">
+                                                {if $service['max_quantity']}
+                                                    <p style="display:{if $service['quantity'] > $service['max_quantity']}block{else}none{/if}; margin-top: 4px;">
+                                                        <span class="label label-warning">{l s='Maximum allowed quantity: %s' sprintf=$service['max_quantity']}</span>
+                                                    </p>
+                                                {/if}
+                                            </div>
+                                        {else}
+                                            --
+                                        {/if}
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <span class="input-group-addon">{$currencySign}</span>
+                                            <input type="text" class="form-control unit_price" value="{Tools::ps_round($service['unit_price_tax_excl'], 2)}" data-id-product="{$service['id_product']}" name="service_price[{$service['id_room_type_service_product_order_detail']}]">
+                                            {if Product::PRICE_CALCULATION_METHOD_PER_DAY == $service.product_price_calculation_method}
+                                                <span class="input-group-addon">{l s='/ night'}</span>
+                                            {/if}
+                                        </div>
+                                        {* {if $service['product_price_calculation_method'] == Product::PRICE_CALCULATION_METHOD_PER_DAY}
+                                            {l s='/ night'}
+                                        {/if} *}
+                                    </td>
+                                    <td>{displayPrice price=$service['total_price_tax_excl']|escape:'html':'UTF-8' currency=$orderCurrency}</td>
+                                    <td class="text-right"><a class="btn btn-danger pull-right del_room_additional_service" data-id_room_type_service_product_order_detail="{$service['id_room_type_service_product_order_detail']}" href="#"><i class="icon-trash"></i></a></td>
+                                </tr>
+                            {/foreach}
+                        {else}
+                            <tr>
+                                <td colspan="3">
+                                    <i class="icon-warning"></i> {l s='No services added yet.'}
+                                </td>
+                            </tr>
+                        {/if}
+                    </tbody>
+                </table>
+
+                <div class="modal-footer">
+                    <button type="submit" id="update_selected_services" class="btn btn-primary"><i class="icon icon-save"></i> &nbsp;{l s="Update Services"}</button>
+                </div>
+            </form>
 		</div>
+
+        {* add already available service interface *}
 		<form id="add_existing_room_services_form" class="col-sm-12 room_services_container">
 			<div class="room_demand_detail">
 				{if isset($serviceProducts) && $serviceProducts}

@@ -1449,14 +1449,6 @@ $(document).ready(function() {
         }
     });
 
-    $(document).on('focusout', '#edit-room-booking-modal .room_ordered_services .qty', function(e) {
-        updateAdditionalServices($(this).closest('tr'));
-    });
-
-    $(document).on('focusout', '#edit-room-booking-modal .room_ordered_services .unit_price', function(e) {
-        updateAdditionalServices($(this).closest('tr'));
-    });
-
     $(document).on('focusout', '#edit-room-booking-modal #add_existing_room_services_form .qty', function(e) {
         var qty_wntd = $(this).val();
         if (qty_wntd == '' || !$.isNumeric(qty_wntd) || qty_wntd < 1) {
@@ -1492,6 +1484,48 @@ $(document).ready(function() {
                 } else {
                     showErrorMessage(jsonData.errors);
 
+                }
+            },
+            complete: function() {
+                $(".loading_overlay").hide();
+            }
+        });
+    });
+
+    $(document).on('submit', '#update_selected_room_services_form', function(e) {
+        e.preventDefault();
+        var form_data = new FormData(this);
+        form_data.append('ajax', true);
+        form_data.append('action', 'updateSelectedRoomServices');
+
+        $(".loading_overlay").show();
+        $.ajax({
+            type: 'POST',
+            headers: {
+                "cache-control": "no-cache"
+            },
+            url: admin_order_tab_link,
+            dataType: 'JSON',
+            cache: false,
+            data: form_data,
+            processData: false,
+            contentType: false,
+            success: function(jsonData) {
+                if (!jsonData.hasError) {
+                    if (jsonData.service_panel) {
+                        $('#room_type_service_product_desc').replaceWith(jsonData.service_panel);
+                    }
+                    showSuccessMessage(txtExtraDemandSucc);
+                } else {
+                    if (jsonData.errors != 'undefined' && jsonData.errors.length) {
+                        var errorHtml = error_found_txt + ':<br>';
+                        errorHtml += '<ol>';
+                        $.each(jsonData.errors, function(key, errorMsg) {
+                            errorHtml += '<li>' + errorMsg + '</li>';
+                        });
+                        errorHtml += '</ol>';
+                        showErrorMessage(errorHtml);
+                    }
                 }
             },
             complete: function() {
@@ -2796,56 +2830,6 @@ const RoomAllotmentCommentModal = {
         $('#room-allotment-comment-modal').modal('hide');
     }
 };
-
-function updateAdditionalServices(element)
-{
-    var id_room_type_service_product_order_detail = $(element).data('id_room_type_service_product_order_detail');
-    if ($(element).find('.qty').length) {
-        var qty = $(element).find('.qty').val();
-        if (qty == '' || !$.isNumeric(qty) || qty < 1) {
-            $(element).find('.qty').val(1);
-            qty = 1;
-        }
-    } else {
-        var qty = 1;
-    }
-
-    var unit_price = $(element).find('.unit_price').val();
-    if ($.isNumeric(qty)) {
-        $(".loading_overlay").show();
-        $.ajax({
-            type: 'POST',
-            headers: {
-                "cache-control": "no-cache"
-            },
-            url: admin_order_tab_link,
-            dataType: 'JSON',
-            cache: false,
-            data: {
-                id_room_type_service_product_order_detail: id_room_type_service_product_order_detail,
-                qty: qty,
-                unit_price: unit_price,
-                action: 'updateRoomAdditionalServices',
-                ajax: true
-            },
-            success: function(jsonData) {
-                if (!jsonData.hasError) {
-                    if (jsonData.service_panel) {
-                        $('#room_type_service_product_desc').replaceWith(jsonData.service_panel);
-                    }
-                    showSuccessMessage(txtExtraDemandSucc);
-                } else {
-                    showErrorMessage(jsonData.errors);
-
-                }
-            },
-            complete: function() {
-                $(".loading_overlay").hide();
-            }
-        });
-    }
-
-}
 
 function updateRoomDemand(element)
 {
