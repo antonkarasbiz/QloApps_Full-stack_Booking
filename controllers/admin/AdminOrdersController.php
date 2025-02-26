@@ -5442,6 +5442,15 @@ class AdminOrdersControllerCore extends AdminController
             $idHotelBooking
         );
 
+        //This is added to remove the services from the cart along with room deletion process.
+        $objHotelCartBookingData = new HotelCartBookingData();
+        $roomHtlCartInfo = $objHotelCartBookingData->getRoomRowByIdProductIdRoomInDateRange(
+            $objBookingDetail->id_cart,
+            $objBookingDetail->id_product,
+            $objBookingDetail->date_from,
+            $objBookingDetail->date_to,
+            $objBookingDetail->id_room
+        );
 
         /*$totalProductPriceBeforeTE = $order_detail->total_price_tax_excl;
         $totalProductPriceBeforeTI = $order_detail->total_price_tax_incl;*/
@@ -5476,6 +5485,7 @@ class AdminOrdersControllerCore extends AdminController
             $res &= $order_detail->update();
         }
         // update order detail for selected aditional services
+        $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
         foreach ($selectedAdditonalServices['additional_services'] as $service) {
             $serviceOrderDetail = new OrderDetail($service['id_order_detail']);
 
@@ -5495,6 +5505,21 @@ class AdminOrdersControllerCore extends AdminController
 
                 // Save order detail
                 $res &= $serviceOrderDetail->update();
+            }
+
+            if (isset($roomHtlCartInfo['id'])) {
+                if ($id_room_type_service_product_cart_detail = $objRoomTypeServiceProductCartDetail->alreadyExists(
+                    $service['id_product'],
+                    $service['id_cart'],
+                    $roomHtlCartInfo['id']
+                )) {
+                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail((int) $id_room_type_service_product_cart_detail);
+                    $serviceQuantity = $objRoomTypeServiceProductCartDetail->quantity;
+                    if ($objRoomTypeServiceProductCartDetail->delete()) {
+                        $objCart = new Cart($service['id_cart']);
+                        $objCart->updateQty((int)abs($serviceQuantity), $service['id_product'], null, false, 'down');
+                    }
+                }
             }
         }
         /*End*/
@@ -5574,7 +5599,9 @@ class AdminOrdersControllerCore extends AdminController
             $objBookingDetail->id_product,
             $objBookingDetail->id_room,
             $objBookingDetail->date_from,
-            $objBookingDetail->date_to
+            $objBookingDetail->date_to,
+            1,
+            1
         );
 
         $objBookingDetail->delete();
@@ -6493,8 +6520,31 @@ class AdminOrdersControllerCore extends AdminController
                 $quantity = $objRoomTypeServiceProductOrderDetail->quantity;
                 $res = true;
                 $objHotelBookingDetail = new HotelBookingDetail($objRoomTypeServiceProductOrderDetail->id_htl_booking_detail);
+                $idServiceProduct = $objRoomTypeServiceProductOrderDetail->id_product;
+                $objHotelCartBookingData = new HotelCartBookingData();
+                $roomHtlCartInfo = $objHotelCartBookingData->getRoomRowByIdProductIdRoomInDateRange(
+                    $objHotelBookingDetail->id_cart,
+                    $objHotelBookingDetail->id_product,
+                    $objHotelBookingDetail->date_from,
+                    $objHotelBookingDetail->date_to,
+                    $objHotelBookingDetail->id_room
+                );
+                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
 
                 if ($res &= $objRoomTypeServiceProductOrderDetail->delete()) {
+                    if (isset($roomHtlCartInfo['id'])) {
+                        if ($id_room_type_service_product_cart_detail = $objRoomTypeServiceProductCartDetail->alreadyExists(
+                            $idServiceProduct,
+                            $objRoomTypeServiceProductOrderDetail->id_cart,
+                            $roomHtlCartInfo['id']
+                        )) {
+                            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail($id_room_type_service_product_cart_detail);
+                            if ($objRoomTypeServiceProductCartDetail->delete()) {
+                                $objCart = new Cart($objRoomTypeServiceProductOrderDetail->id_cart);
+                                $objCart->updateQty((int)abs($quantity), $objRoomTypeServiceProductOrderDetail->id_product, null, false, 'down');
+                            }
+                        }
+                    }
                     $order = new Order($objRoomTypeServiceProductOrderDetail->id_order);
                     if ($quantity >= $objOrderDetail->product_quantity) {
                         $objOrderDetail->delete();
