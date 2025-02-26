@@ -154,7 +154,7 @@
 						{/foreach}
 					</tbody>
 				{/if}
-				{if isset($cart_normal_data) && $cart_normal_data}
+				{if isset($cart_hotel_product_data) && $cart_hotel_product_data}
 					<thead>
 						<tr>
 							<th><span class="title_box">{l s='Image'}</th>
@@ -167,13 +167,20 @@
 						</tr>
 					</thead>
 					<tbody>
-						{foreach $cart_normal_data as $product}
-							<tr>
+						{foreach $cart_hotel_product_data as $product}
+							<tr data-id-product="{$product.id_product}" data-id_hotel_service_product_cart_detail="{$product.id_hotel_service_product_cart_detail}" >
 								<td><img src="{$product['cover_img']|escape:'html':'UTF-8'}" class="img-responsive" /></td>
-								<td><p>{$product['name']|escape:'html':'UTF-8'}</p></td>
+								<td><p>{$product['name']|escape:'html':'UTF-8'}{if $product.option_name} : {$product.option_name|escape:'html':'UTF-8'}{/if}</p></td>
 								<td colspan="2">{$product['hotel_name']}</td>
-								<td colspan="2">{displayPrice price=$product['unit_price_tax_incl']}</td>
-								<td>{$product['quantity']|escape:'htmlall':'UTF-8'}</td>
+								<td colspan="2">{displayPrice price=$product['unit_price_tax_excl']}</td>
+								<td>
+									{if $product.allow_multiple_quantity}
+										<input type="number" value="{$product['quantity']}" class="product_quantity form-control" min="1" {if $product.max_quantity > 0}max="{$product.max_quantity}"{/if}>
+										<input type="hidden" value="{$product['quantity']}" class="product_quantity_hidden form-control">
+									{else}
+										--
+									{/if}
+								</td>
 								<td>{displayPrice price=$product['total_price_tax_incl']}</td>
 								<td>
 									<button class="delete_service_product btn btn-danger" data-id-hotel="{$product['id_hotel']|escape:'htmlall':'UTF-8'}" data-id_product={$product['id_product']|escape:'html':'UTF-8'} data-id_cart = {$cart->id|escape:'html':'UTF-8'}>

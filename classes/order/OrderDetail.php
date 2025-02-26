@@ -478,14 +478,16 @@ class OrderDetailCore extends ObjectModel
             /*
             *By webkul so that product quantity will not be decreased when product is ordered
              */
-            /*$update_quantity = true;
-            if (!StockAvailable::dependsOnStock($product['id_product'])) {
-                $update_quantity = StockAvailable::updateQuantity($product['id_product'], $product['id_product_attribute'], -(int)$product['cart_quantity']);
-            }
+            if (!$product['booking_product']) {
+                $update_quantity = true;
+                if (!StockAvailable::dependsOnStock($product['id_product'])) {
+                    $update_quantity = StockAvailable::updateQuantity($product['id_product'], $product['id_product_attribute'], -(int)$product['cart_quantity']);
+                }
 
-            if ($update_quantity) {
-                $product['stock_quantity'] -= $product['cart_quantity'];
-            }*/
+                if ($update_quantity) {
+                    $product['stock_quantity'] -= $product['cart_quantity'];
+                }
+            }
 
             if ($product['stock_quantity'] < 0 && Configuration::get('PS_STOCK_MANAGEMENT')) {
                 $this->outOfStock = true;

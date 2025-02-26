@@ -216,6 +216,10 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
             }
         }
 
+        if ($refundReqProducts = $objOrderReturn->getOrderRefundRequestedProducts($objOrderReturn->id_order, $objOrderReturn->id)){
+        }
+
+
         $paymentMethods = array();
         foreach (PaymentModule::getInstalledPaymentModules() as $payment) {
             $module = Module::getInstanceByName($payment['name']);
@@ -235,6 +239,7 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                 'customer_email' => $objCustomer->email,
                 'orderReturnInfo' => (array)$objOrderReturn,
                 'refundReqBookings' => $refundReqBookings,
+                'refundReqProducts' => $refundReqProducts,
                 'orderInfo' => (array) $objOrder,
                 'orderCurrency' => (array) $orderCurrency,
                 'currentOrderStateInfo' => (array) new OrderState($objOrder->current_state,
@@ -352,17 +357,21 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                     foreach ($idsReturnDetail as $idRetDetail) {
                         $objOrderReturnDetail = new OrderReturnDetail($idRetDetail);
                         // set booking as refunded if return state is refunded/denied
-                        $idHtlBooking = $objOrderReturnDetail->id_htl_booking;
                         $reduction_amount = array(
                             'total_price_tax_excl' => 0,
                             'total_price_tax_incl' => 0,
                             'total_products_tax_excl' => 0,
                             'total_products_tax_incl' => 0,
                         );
-
-                        $objHtlBooking = new HotelBookingDetail($idHtlBooking);
-                        // perform booking refund processes in the booking tables
-                        $objHtlBooking->processRefundInBookingTables();
+                        if ($idHtlBooking = $objOrderReturnDetail->id_htl_booking) {
+                            $objHtlBooking = new HotelBookingDetail($idHtlBooking);
+                            // perform booking refund processes in the booking tables
+                            $objHtlBooking->processRefundInBookingTables();
+                        } elseif ($id_room_type_service_product_order_detail = $objOrderReturnDetail->id_room_type_service_product_order_detail) {
+                            $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail($id_room_type_service_product_order_detail);
+                            // perform booking refund processes in the service product order tables
+                            $objRoomTypeServiceProductOrderDetail->processRefundInTable();
+                        }
 
                         // save individual booking amount for every booking refund
                         $refundedAmount = $refundedAmounts[$idRetDetail];
@@ -375,22 +384,34 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                         $totalRefundedAmount += $refundedAmount;
 
                         if (Tools::isSubmit('generateCreditSlip')) {
-                            $numDays = $objHtlBooking->getNumberOfDays(
-                                $objHtlBooking->date_from,
-                                $objHtlBooking->date_to
-                            );
+                            if ($idHtlBooking = $objOrderReturnDetail->id_htl_booking) {
 
-                            $objHtlBooking = new HotelBookingDetail($idHtlBooking);
-                            $idOrderDetail = $objHtlBooking->id_order_detail;
+                                $numDays = $objHtlBooking->getNumberOfDays(
+                                    $objHtlBooking->date_from,
+                                    $objHtlBooking->date_to
+                                );
 
-                            $bookingList[$idHtlBooking] = array(
-                                'id_htl_booking' => $idHtlBooking,
-                                'id_order_detail' => $idOrderDetail,
-                                'quantity' => $numDays,
-                                'num_days' => $numDays,
-                                'unit_price' => $refundedAmount / $numDays,
-                                'amount' => $refundedAmount,
-                            );
+                                $objHtlBooking = new HotelBookingDetail($idHtlBooking);
+                                $idOrderDetail = $objHtlBooking->id_order_detail;
+
+                                $bookingList[$idHtlBooking] = array(
+                                    'id_htl_booking' => $idHtlBooking,
+                                    'id_order_detail' => $idOrderDetail,
+                                    'quantity' => $numDays,
+                                    'num_days' => $numDays,
+                                    'unit_price' => $refundedAmount / $numDays,
+                                    'amount' => $refundedAmount,
+                                );
+                            } elseif ($id_room_type_service_product_order_detail = $objOrderReturnDetail->id_room_type_service_product_order_detail) {
+                                $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail($id_room_type_service_product_order_detail);
+                                $bookingList[$idHtlBooking] = array(
+                                    'id_room_type_service_product_order_detail' => $id_room_type_service_product_order_detail,
+                                    'id_order_detail' => $objRoomTypeServiceProductOrderDetail->id_order_detail,
+                                    'quantity' => $objRoomTypeServiceProductOrderDetail->quantity,
+                                    'unit_price' => $refundedAmount / $objRoomTypeServiceProductOrderDetail->quantity,
+                                    'amount' => $refundedAmount,
+                                );
+                            }
                         }
                     }
 

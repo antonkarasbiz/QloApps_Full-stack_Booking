@@ -280,6 +280,28 @@
 			};
 			updateProductPrice(params, cart_row);
 		})
+		$(document).on('change', '.product_quantity', function(e) {
+			var cart_row = $(this).closest('tr');
+			var qty = parseInt($(this).val());
+			var qtyhidden= parseInt($(this).siblings('.product_quantity_hidden').val());
+			var qty_to_update = qty - qtyhidden;
+			if ((qty_to_update) > 0) {
+				var opt = 'up';
+			} else {
+				var opt = 'down';
+			}
+
+			var params = {
+				id_product: parseInt($(cart_row).attr('data-id-product')),
+				id_hotel_service_product_cart_detail: parseInt($(cart_row).attr('data-id_hotel_service_product_cart_detail')),
+				qty: qty_to_update,
+				opt: opt,
+				id_cart: id_cart
+			};
+
+			updateQuantity(params, cart_row);
+			$(this).siblings('.product_quantity_hidden').val($(this).val())
+		});
 		$('#order_message').live('change', function(e) {
 			e.preventDefault();
 			$.ajax({
@@ -697,6 +719,26 @@
 		});
 	}
 
+	function updateQuantity(params, cart_row)
+	{
+		$.ajax({
+			type:"POST",
+			url: "{$link->getAdminLink('AdminCarts')|addslashes}",
+			async: true,
+			dataType: "JSON",
+			data: {
+				ajax: "1",
+				token: "{getAdminToken tab='AdminCarts'}",
+				tab: "AdminCarts",
+				action: "updateProductQuantity",
+				params: params,
+			},
+			success : function(response) {
+				// updateCartLine(response.curr_booking_info, cart_row);
+				// updateCartSummaryData(response.cart_info);
+			}
+		});
+	}
 
 	function updateCartLine(data, cart_row) {
 		$(cart_row).find('.cart_line_total_rooms_price').html(data.amt_with_qty);

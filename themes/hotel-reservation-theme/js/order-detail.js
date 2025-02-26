@@ -283,7 +283,7 @@ const BookingRefundManager = {
     },
 }
 
-$(document).on('click', '#order_refund_request', function(e) {
+$(document).on('click', '.order_refund_request', function(e) {
     e.preventDefault();
     BookingRefundManager.show();
 });

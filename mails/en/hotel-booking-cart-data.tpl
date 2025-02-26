@@ -82,13 +82,14 @@
 						</tr>
 					</table>
 				</td>
+				{assign var="is_full_date" value=($show_full_date && ($rm_v['data_form']|date_format:'%D' == $rm_v['data_to']|date_format:'%D'))}
 				<td style="border:1px solid #D6D4D4;">
 					<table class="table">
 						<tr>
 							<td width="10">&nbsp;</td>
 							<td align="right"  class="text-center">
 								<font size="2" face="Open-sans, sans-serif" color="#555454">
-									{$rm_v['data_form']|date_format:"%d-%b-%G"}
+									{$rm_v['data_form']|date_format:"%d-%b-%G"}{if $is_full_date} {$rm_v['data_form']|date_format:"%I:%M %p"}{/if}
 								</font>
 							</td>
 							<td width="10">&nbsp;</td>
@@ -101,7 +102,7 @@
 							<td width="10">&nbsp;</td>
 							<td align="right"  class="text-center">
 								<font size="2" face="Open-sans, sans-serif" color="#555454">
-									{$rm_v['data_to']|date_format:"%d-%b-%G"}
+									{$rm_v['data_to']|date_format:"%d-%b-%G"}{if $is_full_date} {$rm_v['data_to']|date_format:"%I:%M %p"}{/if}
 								</font>
 							</td>
 							<td width="10">&nbsp;</td>

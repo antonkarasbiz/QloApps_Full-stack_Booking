@@ -1061,6 +1061,20 @@ class AdminCartsControllerCore extends AdminController
         }
     }
 
+    public function ajaxProcessUpdateProductQuantity()
+    {
+        $params = Tools::getValue('params');
+        $idProduct = (int) $params['id_product'];
+
+        $idCart = (int) $params['id_cart'];
+        $this->context->cart = new Cart($idCart);
+        if ($this->tabAccess['edit'] === '1') {
+
+            $id_hotel_service_product_cart_detail = (int) $params['id_hotel_service_product_cart_detail'];
+            $product = new Product($idProduct, true, $this->context->language->id);
+        }
+    }
+
     // Process to get extra demands of any room while order creation process form.tpl
     public function ajaxProcessGetRoomTypeCartDemands()
     {

@@ -117,12 +117,13 @@ class ProductControllerCore extends FrontController
         }
 
         $objHotelRoomType = new HotelRoomType();
-        $hotelRoomInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($this->product->id);
-        $idHotel = (int) $hotelRoomInfo['id_hotel'];
-        if (!HotelHelper::validateDateRangeForHotel($dateFrom, $dateTo, $idHotel)) {
-            Tools::redirect($this->context->link->getPageLink('pagenotfound'));
-        } else if (!$this->product->booking_product || ($this->product->booking_product && !$this->product->show_at_front)) {
-            Tools::redirect($this->context->link->getPageLink('pagenotfound'));
+        if ($hotelRoomInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($this->product->id)) {
+            $idHotel = (int) $hotelRoomInfo['id_hotel'];
+            if (!HotelHelper::validateDateRangeForHotel($dateFrom, $dateTo, $idHotel)) {
+                Tools::redirect($this->context->link->getPageLink('pagenotfound'));
+            } else if (!$this->product->booking_product || ($this->product->booking_product && !$this->product->show_at_front)) {
+                Tools::redirect($this->context->link->getPageLink('pagenotfound'));
+            }
         }
 
         if (!Validate::isLoadedObject($this->product)) {
@@ -445,7 +446,7 @@ class ProductControllerCore extends FrontController
                     }
 
                     $this->assignBookingFormVars($this->product->id, $date_from, $date_to, $occupancy_value);
-                    $this->assignServiceProductVars();
+                    $this->assignRoomServiceProductVars();
 
                     // product price after imposing feature prices...
                     if ($useTax) {
@@ -474,6 +475,8 @@ class ProductControllerCore extends FrontController
                 if (Tools::getValue('error')) {
                     $this->context->smarty->assign('error', Tools::getValue('error'));
                 }
+            } else {
+                $this->assignServiceProductVars();
             }
 
             // send all the common variables for all type of products
@@ -524,7 +527,7 @@ class ProductControllerCore extends FrontController
         $this->setTemplate(_PS_THEME_DIR_.'product.tpl');
     }
 
-    public function assignServiceProductVars()
+    public function assignRoomServiceProductVars()
     {
         // get service products for room type
         $p = 1;
@@ -797,6 +800,66 @@ class ProductControllerCore extends FrontController
         $smartyVars['total_price_without_discount'] = $totalPriceWithoutDiscount + $demandsPrice;
         $smartyVars['demands_price'] = $demandsPrice;
         $smartyVars['total_price'] = $totalPrice;
+        $this->context->smarty->assign($smartyVars);
+        return true;
+    }
+
+    public function assignServiceProductVars(
+        $idServiceProductOption = false,
+        $quantity = false,
+        $idHotel = false
+    ) {
+        $smartyVars = array();
+        if (Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL == $this->product->service_product_type) {
+            $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
+
+            if ($associatedHotels = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($this->product->id)['hotel']) {
+                foreach ($associatedHotels as $key => $hotel) {
+                    if (Validate::isLoadedObject($objHotel = new HotelBranchInformation($hotel, $this->context->language->id))) {
+
+                        $associatedHotels[$key] = array('id_hotel' => $hotel, 'name' => $objHotel->hotel_name);
+                    } else {
+                        unset($associatedHotels[$key]);
+                    }
+                }
+                $smartyVars['associated_hotels'] = $associatedHotels;
+            }
+        }
+        if ($idHotel) {
+            $smartyVars['service_id_hotel'] = $idHotel;
+        }
+        $useTax = HotelBookingDetail::useTax();
+        $objServiceProductOption = new ServiceProductOption();
+        if ($serviceProductOptions = $objServiceProductOption->getProductOptions($this->product->id)) {
+            foreach ($serviceProductOptions as &$serviceProductOption) {
+                if ($idServiceProductOption == null) {
+                    $idServiceProductOption = $serviceProductOption['id_service_product_option'];
+                }
+                $serviceProductOption['price'] = RoomTypeServiceProductPrice::getPrice(
+                    $this->product->id,
+                    $idHotel,
+                    $serviceProductOption['id_service_product_option'],
+                    $useTax,
+                    $quantity
+                );
+            }
+
+        }
+        $smartyVars['service_product_option'] = $serviceProductOptions;
+        $smartyVars['service_price']  = RoomTypeServiceProductPrice::getPrice(
+            $this->product->id,
+            $idHotel,
+            $idServiceProductOption,
+            $useTax,
+            $quantity
+        );
+        if ($quantity) {
+            $smartyVars['quantity']  = $quantity;
+        }
+        if ($idServiceProductOption) {
+            $smartyVars['id_service_product_option']  = $idServiceProductOption;
+        }
+
         $this->context->smarty->assign($smartyVars);
         return true;
     }
@@ -1270,35 +1333,45 @@ class ProductControllerCore extends FrontController
     {
         $response = array('status' => false);
         $idProduct = (int) Tools::getValue('id_product');
-        $dateFrom = Tools::getValue('room_check_in');
-        $dateTo = Tools::getValue('room_check_out');
-        $occupancy = Tools::getValue('occupancy');
-        if (Configuration::get('PS_FRONT_ROOM_UNIT_SELECTION_TYPE') == HotelBookingDetail::PS_ROOM_UNIT_SELECTION_TYPE_OCCUPANCY) {
-            if (!Validate::isOccupancy($occupancy)) {
-                $occupancy = array();
+        if ($this->product->booking_product) {
+            $dateFrom = Tools::getValue('room_check_in');
+            $dateTo = Tools::getValue('room_check_out');
+            $occupancy = Tools::getValue('occupancy');
+            if (Configuration::get('PS_FRONT_ROOM_UNIT_SELECTION_TYPE') == HotelBookingDetail::PS_ROOM_UNIT_SELECTION_TYPE_OCCUPANCY) {
+                if (!Validate::isOccupancy($occupancy)) {
+                    $occupancy = array();
+                }
+            } else {
+                $occupancy = Tools::getValue('qty', 1);
+            }
+            $roomTypeDemands = Tools::getValue('room_type_demands');
+            $roomServiceProducts = Tools::getValue('room_service_products');
+            $dateFrom = date('Y-m-d H:i:s', strtotime($dateFrom));
+            $dateTo = date('Y-m-d H:i:s', strtotime($dateTo));
+            $this->assignRoomServiceProductVars();
+            if ($this->assignBookingFormVars(
+                $idProduct,
+                $dateFrom,
+                $dateTo,
+                $occupancy,
+                $roomTypeDemands,
+                $roomServiceProducts
+            )) {
             }
         } else {
-            $occupancy = Tools::getValue('qty', 1);
+            $idHotel = Tools::getValue('service_id_hotel');
+            $id_service_product_option = Tools::getValue('id_service_product_option');
+            $quantity = Tools::getValue('service_product_qty');
+            $this->assignServiceProductVars(
+                $id_service_product_option,
+                $quantity,
+                $idHotel
+            );
         }
-        $roomTypeDemands = Tools::getValue('room_type_demands');
-        $roomServiceProducts = Tools::getValue('room_service_products');
 
-        $dateFrom = date('Y-m-d H:i:s', strtotime($dateFrom));
-        $dateTo = date('Y-m-d H:i:s', strtotime($dateTo));
-
-        $this->assignServiceProductVars();
-        if ($this->assignBookingFormVars(
-            $idProduct,
-            $dateFrom,
-            $dateTo,
-            $occupancy,
-            $roomTypeDemands,
-            $roomServiceProducts
-        )) {
-            $html = $this->context->smarty->fetch('_partials/booking-form.tpl');
-            $response['status'] = true;
-            $response['html_booking_form'] = $html;
-        }
+        $html = $this->context->smarty->fetch('_partials/booking-form.tpl');
+        $response['status'] = true;
+        $response['html_booking_form'] = $html;
 
         $this->ajaxDie(json_encode($response));
     }

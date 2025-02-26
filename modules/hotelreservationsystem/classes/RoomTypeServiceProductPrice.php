@@ -101,6 +101,32 @@ class RoomTypeServiceProductPrice extends ObjectModel
         );
     }
 
+    public static function getPrice(
+        $idProduct,
+        $idHotel,
+        $idServiceProductOption = null,
+        $useTax = null,
+        $quantity = 1
+    ) {
+        $idHotelAddress = Cart::getIdAddressForTaxCalculation($idProduct, $idHotel);
+        $price =  ProductCore::getPriceStatic(
+            $idProduct,
+            $useTax,
+            $idServiceProductOption,
+            6,
+            null,
+            false,
+            true,
+            $quantity,
+            false,
+            null,
+            null,
+            $idHotelAddress,
+        );
+
+        return $price;
+    }
+
     public function getServicePrice(
         $idProduct,
         $idProductRoomType,

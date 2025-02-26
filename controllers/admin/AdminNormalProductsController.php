@@ -102,6 +102,7 @@ class AdminNormalProductsControllerCore extends AdminController
             // 'Seo' => $this->l('SEO'),
             'Images' => $this->l('Images'),
             'Associations' => $this->l('Associations'),
+            // 'Quantities' => $this->l('Quantities'),
         );
 
         if ($this->context->shop->getContext() != Shop::CONTEXT_GROUP) {
@@ -111,6 +112,7 @@ class AdminNormalProductsControllerCore extends AdminController
                 // 'Seo' => 2,
                 'Associations' => 3,
                 'Images' => 4,
+                // 'Quantities' => 5,
             ));
         }
 
@@ -207,6 +209,7 @@ class AdminNormalProductsControllerCore extends AdminController
 
         // show the list of the product according to the booking or service products
         $this->_where .= ' AND a.`booking_product` = 0';
+        $this->_where .= ' AND a.`service_product_type` = '.(int)ProductCore::SERVICE_PRODUCT_WITH_ROOMTYPE;
 
         $this->_group = 'GROUP BY a.`id_product`';
 
@@ -291,7 +294,7 @@ class AdminNormalProductsControllerCore extends AdminController
         );
         // $serviceProductType = array(
         //     Product::SERVICE_PRODUCT_WITH_ROOMTYPE => $this->l('Bought with room type'),
-        //     Product::SERVICE_PRODUCT_WITHOUT_ROOMTYPE => $this->l('Bought without room type')
+            // Product::SERVICE_PRODUCT_STANDALONE => $this->l('Bought without room type')
         // );
         // $this->fields_list['service_product_type'] = array(
         //     'type' => 'select',
@@ -358,7 +361,7 @@ class AdminNormalProductsControllerCore extends AdminController
     {
         if ($service_product_type == Product::SERVICE_PRODUCT_WITH_ROOMTYPE) {
             return $this->l('With room type');
-        } else if ($service_product_type == Product::SERVICE_PRODUCT_WITHOUT_ROOMTYPE) {
+        } else if ($service_product_type == Product::SERVICE_PRODUCT_STANDALONE) {
             return $this->l('Without room type');
         }
 
@@ -1822,8 +1825,8 @@ class AdminNormalProductsControllerCore extends AdminController
             $_POST['allow_multiple_quantity'] = 0;
         }
 
+        $_POST['service_product_type'] = Product::SERVICE_PRODUCT_WITH_ROOMTYPE;
         $this->copyFromPost($this->object, $this->table);
-        $this->object->service_product_type = Product::SERVICE_PRODUCT_WITH_ROOMTYPE;
 
 
         // set product visibility to none for current flow.
@@ -1967,6 +1970,7 @@ class AdminNormalProductsControllerCore extends AdminController
             if (Validate::isLoadedObject($object)) {
                 $this->_removeTaxFromEcotax();
                 $product_type_before = $object->getType();
+                $_POST['service_product_type'] = Product::SERVICE_PRODUCT_WITH_ROOMTYPE;
                 $this->copyFromPost($object, $this->table);
                 $object->indexed = 0;
 
@@ -2878,8 +2882,9 @@ class AdminNormalProductsControllerCore extends AdminController
     {
         if (Validate::isLoadedObject($product)) {
             $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
-            $associatedRoomTypes = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id)['room_type'];
+            $allAssociations = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id);
             if (Product::SERVICE_PRODUCT_WITH_ROOMTYPE == $product->service_product_type) {
+                $associatedRoomTypes = $allAssociations['room_type'];
                 $selectedRoomTypes = Tools::getValue('room_type_box');
 
                 // Generate list of new associations
@@ -2915,15 +2920,55 @@ class AdminNormalProductsControllerCore extends AdminController
                         RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE
                     );
                 }
-            } else {
+                RoomTypeServiceProduct::deleteRoomProductLink(
+                    $product->id,
+                    RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL
+                );
+            } elseif (Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL == $product->service_product_type) {
+                $associatedHotels = $allAssociations['hotel'];
+                $selectedHotel = Tools::getValue('hotel_box');
+                // Generate list of new associations
+                $newHotels = array();
+                foreach ($selectedHotel as $selectedRoomType) {
+                    if (!in_array($selectedRoomType, $associatedHotels)) {
+                        $newHotels[] = $selectedRoomType;
+                    }
+                }
+
+                // Generate list of associations to remove
+                $removedHotels = array();
+                foreach ($associatedHotels as $associatedRoomType) {
+                    if (!in_array($associatedRoomType, $selectedHotel)) {
+                        $removedHotels[] = $associatedRoomType;
+                    }
+                }
+
                 // Remove associations
-                foreach ($associatedRoomTypes as $associatedRoomType) {
+                foreach ($removedHotels as $removedHotel) {
                     RoomTypeServiceProduct::deleteRoomProductLink(
                         $product->id,
-                        RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE,
-                        $associatedRoomType
+                        RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL,
+                        $removedHotel
                     );
                 }
+
+                // Save new associations
+                if ($newHotels) {
+                    $objRoomTypeServiceProduct->addRoomProductLink(
+                        $product->id,
+                        $newHotels,
+                        RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL
+                    );
+                }
+                RoomTypeServiceProduct::deleteRoomProductLink(
+                    $product->id,
+                    RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE
+                );
+            } else {
+                // Remove associations
+                RoomTypeServiceProduct::deleteRoomProductLink(
+                    $product->id
+                );
             }
         }
     }
@@ -3186,6 +3231,160 @@ class AdminNormalProductsControllerCore extends AdminController
             'default_form_language' => $this->default_form_language,
             'rewritten_links' => $rewritten_links
         ));
+
+        $this->tpl_form_vars['custom_form'] = $data->fetch();
+    }
+
+    /**
+     * @param Product $obj
+     * @throws Exception
+     * @throws SmartyException
+     */
+    public function initFormQuantities($obj)
+    {
+        if (!$this->default_form_language) {
+            $this->getLanguages();
+        }
+
+        $data = $this->createTemplate($this->tpl_form);
+        $data->assign('default_form_language', $this->default_form_language);
+
+        if ($obj->id) {
+            if ($this->product_exists_in_shop) {
+                // Get all id_product_attribute
+                $attributes = $obj->getAttributesResume($this->context->language->id);
+                if (empty($attributes)) {
+                    $attributes[] = array(
+                        'id_product_attribute' => 0,
+                        'attribute_designation' => ''
+                    );
+                }
+
+                // Get available quantities
+                $available_quantity = array();
+                $product_designation = array();
+
+                foreach ($attributes as $attribute) {
+                    // Get available quantity for the current product attribute in the current shop
+                    $available_quantity[$attribute['id_product_attribute']] = isset($attribute['id_product_attribute']) && $attribute['id_product_attribute'] ? (int)$attribute['quantity'] : (int)$obj->quantity;
+                    // Get all product designation
+                    $product_designation[$attribute['id_product_attribute']] = rtrim(
+                        $obj->name[$this->context->language->id].' - '.$attribute['attribute_designation'],
+                        ' - '
+                    );
+                }
+
+                $show_quantities = true;
+                $shop_context = Shop::getContext();
+                $shop_group = new ShopGroup((int)Shop::getContextShopGroupID());
+
+                // if we are in all shops context, it's not possible to manage quantities at this level
+                if (Shop::isFeatureActive() && $shop_context == Shop::CONTEXT_ALL) {
+                    $show_quantities = false;
+                }
+                // if we are in group shop context
+                elseif (Shop::isFeatureActive() && $shop_context == Shop::CONTEXT_GROUP) {
+                    // if quantities are not shared between shops of the group, it's not possible to manage them at group level
+                    if (!$shop_group->share_stock) {
+                        $show_quantities = false;
+                    }
+                }
+                // if we are in shop context
+                elseif (Shop::isFeatureActive()) {
+                    // if quantities are shared between shops of the group, it's not possible to manage them for a given shop
+                    if ($shop_group->share_stock) {
+                        $show_quantities = false;
+                    }
+                }
+
+                $data->assign('ps_stock_management', Configuration::get('PS_STOCK_MANAGEMENT'));
+                $data->assign('has_attribute', $obj->hasAttributes());
+                // Check if product has combination, to display the available date only for the product or for each combination
+                if (Combination::isFeatureActive()) {
+                    $data->assign('countAttributes', (int)Db::getInstance()->getValue('SELECT COUNT(id_product) FROM '._DB_PREFIX_.'product_attribute WHERE id_product = '.(int)$obj->id));
+                } else {
+                    $data->assign('countAttributes', false);
+                }
+                // if advanced stock management is active, checks associations
+                $advanced_stock_management_warning = false;
+                if (Configuration::get('PS_ADVANCED_STOCK_MANAGEMENT') && $obj->advanced_stock_management) {
+                    $p_attributes = Product::getProductAttributesIds($obj->id);
+                    $warehouses = array();
+
+                    if (!$p_attributes) {
+                        $warehouses[] = Warehouse::getProductWarehouseList($obj->id, 0);
+                    }
+
+                    foreach ($p_attributes as $p_attribute) {
+                        $ws = Warehouse::getProductWarehouseList($obj->id, $p_attribute['id_product_attribute']);
+                        if ($ws) {
+                            $warehouses[] = $ws;
+                        }
+                    }
+                    $warehouses = Tools::arrayUnique($warehouses);
+
+                    if (empty($warehouses)) {
+                        $advanced_stock_management_warning = true;
+                    }
+                }
+                if ($advanced_stock_management_warning) {
+                    $this->displayWarning($this->l('If you wish to use the advanced stock management, you must:'));
+                    $this->displayWarning('- '.$this->l('associate your room types with warehouses.'));
+                    $this->displayWarning('- '.$this->l('associate your warehouses with carriers.'));
+                    $this->displayWarning('- '.$this->l('associate your warehouses with the appropriate shops.'));
+                }
+
+                $pack_quantity = null;
+                // if product is a pack
+                if (Pack::isPack($obj->id)) {
+                    $items = Pack::getItems((int)$obj->id, Configuration::get('PS_LANG_DEFAULT'));
+
+                    // gets an array of quantities (quantity for the product / quantity in pack)
+                    $pack_quantities = array();
+                    foreach ($items as $item) {
+                        /** @var Product $item */
+                        if (!$item->isAvailableWhenOutOfStock((int)$item->out_of_stock)) {
+                            $pack_id_product_attribute = Product::getDefaultAttribute($item->id, 1);
+                            $pack_quantities[] = Product::getQuantity($item->id, $pack_id_product_attribute) / ($item->pack_quantity !== 0 ? $item->pack_quantity : 1);
+                        }
+                    }
+
+                    // gets the minimum
+                    if (count($pack_quantities)) {
+                        $pack_quantity = $pack_quantities[0];
+                        foreach ($pack_quantities as $value) {
+                            if ($pack_quantity > $value) {
+                                $pack_quantity = $value;
+                            }
+                        }
+                    }
+
+                    if (Configuration::get('PS_ADVANCED_STOCK_MANAGEMENT') && !Warehouse::getPackWarehouses((int)$obj->id)) {
+                        $this->displayWarning($this->l('You must have a common warehouse between this pack and its room type.'));
+                    }
+                }
+
+                $data->assign(array(
+                    'attributes' => $attributes,
+                    'available_quantity' => $available_quantity,
+                    'pack_quantity' => $pack_quantity,
+                    'stock_management_active' => Configuration::get('PS_ADVANCED_STOCK_MANAGEMENT'),
+                    'product_designation' => $product_designation,
+                    'product' => $obj,
+                    'show_quantities' => $show_quantities,
+                    'order_out_of_stock' => Configuration::get('PS_ORDER_OUT_OF_STOCK'),
+                    'pack_stock_type' => Configuration::get('PS_PACK_STOCK_TYPE'),
+                    'token_preferences' => Tools::getAdminTokenLite('AdminPPreferences'),
+                    'token' => $this->token,
+                    'languages' => $this->_languages,
+                    'id_lang' => $this->context->language->id
+                ));
+            } else {
+                $this->displayWarning($this->l('You must save the room type in this shop before managing quantities.'));
+            }
+        } else {
+            $this->displayWarning($this->l('You must save this room type before managing quantities.'));
+        }
 
         $this->tpl_form_vars['custom_form'] = $data->fetch();
     }
@@ -3503,10 +3702,22 @@ class AdminNormalProductsControllerCore extends AdminController
         $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
         $selectedElements = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id);
 
-        $tree = new HelperTree('hotels-tree');
+        $tree = new HelperTree('hotels-room-tree');
         $tree->setData(HotelHelper::generateTreeData([
                 'rootNode' => HotelHelper::NODE_HOTEL,
                 'leafNode' => HotelHelper::NODE_ROOM_TYPE,
+                'selectedElements' => $selectedElements
+            ]))
+            ->setUseCheckBox(true)
+            ->setAutoSelectChildren(true)
+            ->setUseBulkActions(true)
+            ->setUseSearch(true);
+        $data->assign('hotel_room_tree', $tree->render());
+
+        $tree = new HelperTree('hotels-tree');
+        $tree->setData(HotelHelper::generateTreeData([
+                'rootNode' => HotelHelper::NODE_HOTEL,
+                'leafNode' => HotelHelper::NODE_HOTEL,
                 'selectedElements' => $selectedElements
             ]))
             ->setUseCheckBox(true)

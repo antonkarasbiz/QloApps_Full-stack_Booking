@@ -189,8 +189,8 @@ class OrderReturnCore extends ObjectModel
     public function getOrderRefundRequestedBookings($idOrder, $idOrderReturn = 0, $onlyBookingIds = 0, $customerView = 0, $skipReqCompletedNonRefunded = 0)
     {
         $sql = 'SELECT hbd.*, ord.*, orr.`state` as id_return_state FROM `'._DB_PREFIX_.'order_return` orr';
-        $sql .= ' LEFT JOIN `'._DB_PREFIX_.'order_return_detail` ord ON (orr.`id_order_return` = ord.`id_order_return`)';
-        $sql .= ' LEFT JOIN `'._DB_PREFIX_.'htl_booking_detail` hbd ON (hbd.`id` = ord.`id_htl_booking`)';
+        $sql .= ' INNER JOIN `'._DB_PREFIX_.'order_return_detail` ord ON (orr.`id_order_return` = ord.`id_order_return`)';
+        $sql .= ' INNER JOIN `'._DB_PREFIX_.'htl_booking_detail` hbd ON (hbd.`id` = ord.`id_htl_booking`)';
         $sql .= ' WHERE orr.`id_order` = '.(int)$idOrder;
 
         if ($idOrderReturn) {
@@ -309,6 +309,54 @@ class OrderReturnCore extends ObjectModel
         return $returnDetails;
     }
 
+    /**
+     * Get order refund request products
+     */
+    public function getOrderRefundRequestedProducts($idOrder, $idOrderReturn = 0, $onlyIds = 0, $customerView = 0, $skipReqCompletedNonRefunded = 0)
+    {
+        $sql = 'SELECT spod.*, ord.*, orr.`state` as id_return_state FROM `'._DB_PREFIX_.'order_return` orr';
+        $sql .= ' INNER JOIN `'._DB_PREFIX_.'order_return_detail` ord ON (orr.`id_order_return` = ord.`id_order_return`)';
+        $sql .= ' INNER JOIN `'._DB_PREFIX_.'htl_room_type_service_product_order_detail` spod ON (spod.`id_room_type_service_product_order_detail` = ord.`id_room_type_service_product_order_detail`)';
+        $sql .= ' WHERE orr.`id_order` = '.(int)$idOrder;
+
+        if ($idOrderReturn) {
+            $sql .= ' AND ord.`id_order_return` = '.(int)$idOrderReturn;
+        }
+        if ($returnDetails = Db::getInstance()->executeS($sql)) {
+            if ($customerView) {
+                $returnsCustView = array();
+            }
+            $objOrder = new Order($idOrder);
+
+            foreach ($returnDetails as $key => &$product) {
+                if ($skipReqCompletedNonRefunded) {
+                    $objReturnState = new OrderReturnState($product['id_return_state']);
+                    if ($objReturnState->refunded && !$product['is_refunded']) {
+                        unset($returnDetails[$key]);
+                        continue;
+                    }
+                }
+
+                $product['paid_amount'] = 0;
+                if ($product['total_price_tax_incl'] > 0) {
+                    if ($objOrder->total_paid_real > 0) {
+                        $product['paid_amount'] = ($objOrder->total_paid_real*$product['total_price_tax_incl'])/ ($objOrder->total_paid_tax_incl + $objOrder->total_discounts_tax_incl);
+                    }
+                }
+            }
+
+            if ($onlyIds) {
+                return array_column($returnDetails, 'id_room_type_service_product_order_detail');
+            }
+
+            if ($customerView) {
+                return $returnsCustView;
+            }
+        }
+
+        return $returnDetails;
+    }
+
     public static function getOrdersReturn($customer_id, $order_id = false, $no_denied = false, $only_customer = 0, Context $context = null)
     {
         if (!$context) {
@@ -322,6 +370,8 @@ class OrderReturnCore extends ObjectModel
             ON (ord.`id_order_return` = orr.`id_order_return`)
             LEFT JOIN `'._DB_PREFIX_.'htl_booking_detail` hbd
             ON (hbd.`id` = ord.`id_htl_booking`)
+            LEFT JOIN `'._DB_PREFIX_.'htl_room_type_service_product_order_detail` rtspod
+            ON (rtspod.`id_room_type_service_product_order_detail` = ord.`id_room_type_service_product_order_detail`)
             LEFT JOIN `'._DB_PREFIX_.'order_slip` ors
             ON (ors.`id_order_slip` = orr.`id_return_type` AND orr.`return_type` = '.(int) self::RETURN_TYPE_ORDER_SLIP.')
             WHERE orr.`id_customer` = '.(int)$customer_id.
@@ -353,6 +403,7 @@ class OrderReturnCore extends ObjectModel
         $idOrder,
         $idOrderReturn = 0,
         $idHtlBooking = 0,
+        $idServiceProductOrderOetail = 0,
         $idLang = 0,
         $orderByLatestRequest = 1
     ) {
@@ -371,6 +422,10 @@ class OrderReturnCore extends ObjectModel
 
         if ($idHtlBooking) {
             $sql .= ' AND ord.`id_htl_booking` = '.(int)$idHtlBooking;
+        }
+
+        if ($idServiceProductOrderOetail) {
+            $sql .= ' AND ord.`id_room_type_service_product_order_detail` = '.(int)$idServiceProductOrderOetail;
         }
 
         if ($orderByLatestRequest) {

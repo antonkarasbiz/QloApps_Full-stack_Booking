@@ -25,14 +25,19 @@ class RoomTypeServiceProductOrderDetail extends ObjectModel
     public $id_order;
     public $id_order_detail;
     public $id_cart;
+    public $id_hotel;
     public $id_htl_booking_detail;
+    public $id_service_product_option;
     public $unit_price_tax_excl;
     public $unit_price_tax_incl;
     public $total_price_tax_excl;
     public $total_price_tax_incl;
     public $name;
+    public $option_name;
     public $quantity;
     public $auto_added;
+    public $is_refunded;
+    public $is_cancelled;
     public $date_add;
     public $date_upd;
 
@@ -44,14 +49,19 @@ class RoomTypeServiceProductOrderDetail extends ObjectModel
             'id_order' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
             'id_order_detail' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
             'id_cart' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
-            'id_htl_booking_detail' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
+            'id_hotel' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_htl_booking_detail' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_service_product_option' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'unit_price_tax_excl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
             'unit_price_tax_incl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
             'total_price_tax_excl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
             'total_price_tax_incl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
             'name' => array('type' => self::TYPE_STRING, 'required' => true),
+            'option_name' => array('type' => self::TYPE_STRING),
             'quantity' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => true),
             'auto_added' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedInt'),
+            'is_refunded' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'is_cancelled' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'date_add' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
             'date_upd' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
         )
@@ -307,6 +317,141 @@ class RoomTypeServiceProductOrderDetail extends ObjectModel
         }
 
         return $res;
+    }
+
+    public function getProducts($idOrder, $idOrderDetail = 0, $idProduct = 0, $serviceProductType = 0)
+    {
+        $sql = 'SELECT spo.* FROM `'._DB_PREFIX_.'htl_room_type_service_product_order_detail` spo';
+
+        if ($serviceProductType) {
+            $sql .= ' INNER JOIN `'._DB_PREFIX_.'order_detail` od ON (od.`id_order_detail` = spo.`id_order_detail` AND od.`id_order` = '.(int)$idOrder.')';
+        }
+
+        $sql .= ' WHERE 1 AND spo.`id_order` = '.(int)$idOrder;
+
+        if ($idOrderDetail) {
+            $sql .= ' AND spo.`id_order_detail` = '.(int)$idOrderDetail;
+        }
+
+        if ($idProduct) {
+            $sql .= ' AND spo.`id_product` = '.(int)$idProduct;
+        }
+
+        if ($serviceProductType) {
+            $sql .= ' AND od.`product_service_type` = '.(int)$serviceProductType;
+        }
+
+        $products = Db::getInstance()->executeS($sql);
+        foreach ($products as $key => $product) {
+            // Check if this booking as any refund history then enter refund data
+            if ($refundInfo = OrderReturn::getOrdersReturnDetail($idOrder, 0, 0, $product['id_room_type_service_product_order_detail'])) {
+                $products[$key]['refund_info'] = reset($refundInfo);
+            }
+        }
+
+        return $products;
+    }
+
+    public function processRefundInTable()
+    {
+        if (Validate::isLoadedObject($this)) {
+            $reduction_amount = array(
+                'total_price_tax_excl' => 0,
+                'total_price_tax_incl' => 0,
+                'total_products_tax_excl' => 0,
+                'total_products_tax_incl' => 0,
+            );
+            $objOrder = new Order($this->id_order);
+            $orderTotalPaid = $objOrder->getTotalPaid();
+            $orderDiscounts = $objOrder->getCartRules();
+
+            $hasOrderDiscountOrPayment = ((float)$orderTotalPaid > 0 || $orderDiscounts) ? true : false;
+
+            // things to do if order is not paid
+            if (!$hasOrderDiscountOrPayment) {
+                $objHotelBookingDemands = new HotelBookingDemands();
+                $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
+
+                $reduction_amount['total_price_tax_excl'] = (float) $this->total_price_tax_excl;
+                $reduction_amount['total_products_tax_excl'] = (float) $this->total_price_tax_excl;
+                $reduction_amount['total_price_tax_incl'] = (float) $this->total_price_tax_incl;
+                $reduction_amount['total_products_tax_incl'] = (float) $this->total_price_tax_incl;
+            }
+
+            // enter refunded quantity in the order detail table
+            $idOrderDetail = $this->id_order_detail;
+            if (Validate::isLoadedObject($objOrderDetail = new OrderDetail($idOrderDetail))) {
+
+                $objOrderDetail->product_quantity_refunded += $this->quantity;
+                if ($objOrderDetail->product_quantity_refunded > $objOrderDetail->product_quantity) {
+                    $objOrderDetail->product_quantity_refunded = $objOrderDetail->product_quantity;
+                }
+
+                if (!$hasOrderDiscountOrPayment) {
+                    // reduce room amount from order and order detail
+                    $objOrderDetail->total_price_tax_incl -= Tools::processPriceRounding(
+                        $this->total_price_tax_incl,
+                        1,
+                        $objOrder->round_type,
+                        $objOrder->round_mode
+                    );
+
+                    $objOrderDetail->total_price_tax_excl -= Tools::processPriceRounding(
+                        $this->total_price_tax_excl,
+                        1,
+                        $objOrder->round_type,
+                        $objOrder->round_mode
+                    );
+
+                    if (Validate::isLoadedObject($objOrder = new Order($this->id_order))) {
+                        $objOrder->total_paid = Tools::ps_round(
+                            ($objOrder->total_paid - $reduction_amount['total_price_tax_incl']),
+                            _PS_PRICE_COMPUTE_PRECISION_
+                        );
+                        $objOrder->total_paid = $objOrder->total_paid > 0 ? $objOrder->total_paid : 0;
+
+                        $objOrder->total_paid_tax_excl = Tools::ps_round(($objOrder->total_paid_tax_excl - $reduction_amount['total_price_tax_excl']),
+                            _PS_PRICE_COMPUTE_PRECISION_
+                        );
+                        $objOrder->total_paid_tax_excl = $objOrder->total_paid_tax_excl > 0 ? $objOrder->total_paid_tax_excl : 0;
+
+                        $objOrder->total_paid_tax_incl = Tools::ps_round(($objOrder->total_paid_tax_incl - $reduction_amount['total_price_tax_incl']),
+                            _PS_PRICE_COMPUTE_PRECISION_
+                        );
+                        $objOrder->total_paid_tax_incl = $objOrder->total_paid_tax_incl > 0 ? $objOrder->total_paid_tax_incl : 0;
+
+                        $objOrder->total_products = Tools::ps_round(($objOrder->total_products - $reduction_amount['total_products_tax_excl']),
+                            _PS_PRICE_COMPUTE_PRECISION_
+                        );
+                        $objOrder->total_products = $objOrder->total_products > 0 ? $objOrder->total_products : 0;
+
+                        $objOrder->total_products_wt = Tools::ps_round(($objOrder->total_products_wt - $reduction_amount['total_products_tax_incl']),
+                            _PS_PRICE_COMPUTE_PRECISION_
+                        );
+                        $objOrder->total_products_wt = $objOrder->total_products_wt > 0 ? $objOrder->total_products_wt : 0;
+
+                        $objOrder->save();
+                    }
+                }
+
+                $objOrderDetail->save();
+            }
+
+            // as refund is completed then set the booking as refunded
+            $this->is_refunded = 1;
+            if (!$hasOrderDiscountOrPayment) {
+                // Reduce room amount from htl_booking_detail
+                $this->is_cancelled = 1;
+                $this->total_price_tax_excl = 0;
+                $this->total_price_tax_incl = 0;
+            }
+
+            $this->save();
+
+            return true;
+        }
+
+        return false;
     }
 
     public function delete()

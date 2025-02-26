@@ -32,13 +32,13 @@
 			{$navigationPipe}
 		</span>
 		<span class="navigation_page">
-			{l s='Booking refund requests'}
+			{l s='Refund requests'}
 		</span>
 	{/capture}
 	<div class="panel">
 		{block name='order_follow_heading'}
 			<h1 class="page-heading bottom-indent">
-				<i class="icon-tasks"></i> &nbsp;{l s='Booking Refund Requests'}
+				<i class="icon-tasks"></i> &nbsp;{l s='Refund Requests'}
 			</h1>
 		{/block}
 		{if $ordersReturns && $ordersReturns|count}

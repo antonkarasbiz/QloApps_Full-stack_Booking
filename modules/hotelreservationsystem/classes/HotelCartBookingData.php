@@ -502,9 +502,10 @@ class HotelCartBookingData extends ObjectModel
                         if ($services = RoomTypeServiceProduct::getAutoAddServices($id_product)) {
                             foreach($services as $service) {
                                 $objRoomTypeServiceProductCartDetail->addServiceProductInCart(
+                                    $id_cart,
                                     $service['id_product'],
                                     1,
-                                    $id_cart,
+                                    false,
                                     $obj_htl_cart_booking_data->id
                                 );
                             }
@@ -512,9 +513,10 @@ class HotelCartBookingData extends ObjectModel
                         if (count($serviceProducts)) {
                             foreach($serviceProducts as $product) {
                                 $objRoomTypeServiceProductCartDetail->addServiceProductInCart(
+                                    $id_cart,
                                     $product['id_product'],
                                     $product['quantity'],
-                                    $id_cart,
+                                    false,
                                     $obj_htl_cart_booking_data->id
                                 );
                             }

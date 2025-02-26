@@ -541,8 +541,29 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
                         foreach ($cart_htl_data[$type_key]['date_diff'] as $key => &$value) {
                             $value['avg_paid_unit_price_tax_excl'] = Tools::ps_round($value['avg_paid_unit_price_tax_excl'] / $value['num_rm'], 6);
                         }
-                    } else if (Product::SERVICE_PRODUCT_WITHOUT_ROOMTYPE == $type_value['product_service_type']) {
-                        $service_product_data[$type_key] = $type_value;
+                    } else if (Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL == $type_value['product_service_type']
+                        || Product::SERVICE_PRODUCT_STANDALONE == $type_value['product_service_type']
+                    ) {
+                        $serviceProducts = $objRoomTypeServiceProductOrderDetail->getProducts($order_obj->id, $type_value['id_order_detail'], $type_value['product_id']);
+                        if ($taxes = OrderDetail::getTaxListStatic($type_value['id_order_detail'])) {
+                            $tax_temp = array();
+                            foreach ($taxes as $tax) {
+                                $obj = new Tax($tax['id_tax']);
+                                $tax_temp[] = sprintf($this->l('%1$s%2$s%%'), ($obj->rate + 0), '');
+                            }
+                            $order_detail_tax_label = implode(', ', $tax_temp);
+                        } else {
+                            $order_detail_tax_label = HTMLTemplateInvoice::l('No tax');
+                        }
+                        foreach ($serviceProducts as $serviceProduct) {
+                            if ($serviceProduct['id_hotel']) {
+                                $objHotel = new HotelBranchInformation($serviceProduct['id_hotel'], $order_obj->id_lang);
+                                $serviceProduct['hotel_name'] = $objHotel->hotel_name;
+                            }
+                            $serviceProduct = array_merge($type_value, $serviceProduct);
+                            $serviceProduct['order_detail_tax_label'] = $order_detail_tax_label;
+                            $service_product_data[] = $serviceProduct;
+                        }
                     }
                 }
                 unset($tax_temp);
@@ -562,8 +583,8 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
         if ($idsOrderDetail = array_column($order_details, 'id_order_detail')) {
             $footer['room_price_tax_excl'] = $this->order->getTotalProductsWithoutTaxes(false, true, null, null, null, $idsOrderDetail) + $this->order->getTotalProductsWithoutTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE, 1, Product::PRICE_ADDITION_TYPE_WITH_ROOM, $idsOrderDetail);
             $footer['room_price_tax_incl'] = $this->order->getTotalProductsWithTaxes(false, true, null, null, null, $idsOrderDetail) + $this->order->getTotalProductsWithTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE, 1, Product::PRICE_ADDITION_TYPE_WITH_ROOM, $idsOrderDetail);
-            // $footer['service_products_price_tax_excl'] = $this->order->getTotalProductsWithoutTaxes(false, false, Product::SERVICE_PRODUCT_WITHOUT_ROOMTYPE);
-            // $footer['service_products_price_tax_incl'] = $this->order->getTotalProductsWithTaxes(false, false, Product::SERVICE_PRODUCT_WITHOUT_ROOMTYPE);
+            $footer['service_products_price_tax_excl'] = $this->order->getTotalProductsWithoutTaxes(false, false, Product::SERVICE_PRODUCT_STANDALONE, false, false, $idsOrderDetail) + $this->order->getTotalProductsWithoutTaxes(false, false, Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL, false, false, $idsOrderDetail);
+            $footer['service_products_price_tax_incl'] = $this->order->getTotalProductsWithTaxes(false, false, Product::SERVICE_PRODUCT_STANDALONE, false, false, $idsOrderDetail) + $this->order->getTotalProductsWithTaxes(false, false, Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL, false, false, $idsOrderDetail);
             $footer['additional_service_price_tax_excl'] = $this->order->getTotalProductsWithoutTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE, 0, null, $idsOrderDetail) + $totalDemandsPriceTE;
             $footer['additional_service_price_tax_incl'] = $this->order->getTotalProductsWithTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE, 0, null, $idsOrderDetail) + $totalDemandsPriceTI;
             $footer['total_convenience_fee_te'] = $this->order->getTotalProductsWithoutTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE, 1, Product::PRICE_ADDITION_TYPE_INDEPENDENT, $idsOrderDetail);
@@ -571,8 +592,8 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
         }
 
         $footer['total_paid_real'] = $this->order_invoice->getTotalPaid();
-        $footer['total_without_discount_te'] = $footer['room_price_tax_excl'] + $footer['total_convenience_fee_te'] + $footer['additional_service_price_tax_excl'];
-        $footer['total_without_discount_ti'] = $footer['room_price_tax_incl'] + $footer['total_convenience_fee_ti'] + $footer['additional_service_price_tax_incl'];
+        $footer['total_without_discount_te'] = $footer['room_price_tax_excl'] + $footer['total_convenience_fee_te'] + $footer['additional_service_price_tax_excl'] + $footer['service_products_price_tax_excl'];
+        $footer['total_without_discount_ti'] = $footer['room_price_tax_incl'] + $footer['total_convenience_fee_ti'] + $footer['additional_service_price_tax_incl'] + $footer['service_products_price_tax_incl'];
         $footer['total_tax_without_discount'] = $footer['total_without_discount_ti'] - $footer['total_without_discount_te'];
         if ($footer['total_tax_without_discount'] < 0) {
             $footer['total_tax_without_discount'] = 0;

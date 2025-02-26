@@ -551,19 +551,45 @@ product_tabs['Informations'] = new function(){
 	this.switchProductType = function(){
 
 		$('#service_product_type').on('change',function(){
-			if (parseInt($(this).val()) == with_room_type) {
-				$('#associated_hotel_rooms_tree').show('fast');
+			if (parseInt($(this).val()) == SERVICE_PRODUCT_WITH_ROOMTYPE) {
+				$('#associated_hotel_tree').hide('fast').find('input').each(function() {
+					$(this).attr('data-name', $(this).attr('name'));
+					$(this).removeAttr('name');
+				});
+				$('#associated_hotel_rooms_tree').show('fast').find('input').each(function() {
+					$(this).attr('name', $(this).attr('data-name'));
+					$(this).removeAttr('data-name');
+				});
+				$('#auto_add_to_cart_container').show('fast');
 				$('#show_at_front_container').show('fast');
 				$('#product_options').show('fast');
-				$('#independent_product_info').hide('fast');
-			} else {
-				$('#associated_hotel_rooms_tree').hide('fast');
-				$('#show_at_front_container').hide('fast');
-				$('#product_options').hide('fast');
-				$('#independent_product_info').show('fast');
+			} else if (parseInt($(this).val()) == SERVICE_PRODUCT_STANDALONE) {
+				$('#associated_hotel_rooms_tree').hide('fast').find('input').each(function() {
+					$(this).attr('data-name', $(this).attr('name'));
+					$(this).removeAttr('name');
+				});
+				$('#associated_hotel_tree').hide('fast').find('input').each(function() {
+					$(this).attr('data-name', $(this).attr('name'));
+					$(this).removeAttr('name');
+				});
+				$('#auto_add_to_cart_container').hide('fast');
+				$('#show_at_front_container').show('fast');
+				$('#product_options').show('fast');
+			} else if (parseInt($(this).val()) == SERVICE_PRODUCT_lINKED_WITH_HOTEL) {
+				$('#associated_hotel_rooms_tree').hide('fast').find('input').each(function() {
+					$(this).attr('data-name', $(this).attr('name'));
+					$(this).removeAttr('name');
+				});
+				$('#associated_hotel_tree').show('fast').show('fast').find('input').each(function() {
+					$(this).attr('name', $(this).attr('data-name'));
+					$(this).removeAttr('data-name');
+				});
+				$('#auto_add_to_cart_container').hide('fast');
+				$('#show_at_front_container').show('fast');
+				$('#product_options').show('fast');
 			}
 		});
-
+		$('#service_product_type').trigger('change');
 		$('#simple_product').attr('checked', true);
 
 		$('input[name="type_product"]').on('click', function(e)
@@ -613,6 +639,122 @@ product_tabs['Features'] = new function(){
 	this.onReady = function(){
 		displayFlags(languages, id_language, allowEmployeeFormLang);
 	}
+}
+
+product_tabs['Quantities'] = new function(){
+	var self = this;
+	this.ajaxCall = function(data){
+		data.ajaxProductQuantity = 1;
+		data.id_product = id_product;
+		data.token = token;
+		data.ajax = 1;
+		data.controller = "AdminNormalProducts";
+		data.action = "productQuantity";
+
+		$.ajax({
+			type: "POST",
+			url: "ajax-tab.php",
+			data: data,
+			dataType: 'json',
+			async : true,
+			beforeSend: function(xhr, settings)
+			{
+				$('.product_quantities_button').attr('disabled', 'disabled');
+			},
+			complete: function(xhr, status)
+			{
+				$('.product_quantities_button').removeAttr('disabled');
+			},
+			success: function(msg)
+			{
+				if (msg.error)
+				{
+					showErrorMessage(msg.error);
+					return;
+				}
+				showSuccessMessage(quantities_ajax_success);
+			},
+			error: function(jqXHR, textStatus, errorThrown)
+			{
+				if (textStatus != 'error' || errorThrown != '')
+					showErrorMessage(textStatus + ': ' + errorThrown);
+			}
+		});
+	};
+
+	this.refreshQtyAvailabilityForm = function()
+	{
+		if ($('#depends_on_stock_0').prop('checked'))
+		{
+			$('.available_quantity').find('input').show();
+			$('.available_quantity').find('span').hide();
+		}
+		else
+		{
+			$('.available_quantity').find('input').hide();
+			$('.available_quantity').find('span').show();
+		}
+	};
+
+	this.onReady = function(){
+		$('#available_date').datepicker({
+			prevText: '',
+			nextText: '',
+			dateFormat: 'yy-mm-dd'
+		});
+
+		$('.depends_on_stock').click(function(e)
+		{
+			self.refreshQtyAvailabilityForm();
+			self.ajaxCall( { actionQty: 'depends_on_stock', value: $(this).val() } );
+			if($(this).val() == 0)
+				$('.available_quantity input').trigger('change');
+		});
+
+		$('.advanced_stock_management').click(function(e)
+		{
+			var val = 0;
+			if ($(this).prop('checked'))
+				val = 1;
+
+			self.ajaxCall({actionQty: 'advanced_stock_management', value: val});
+			if (val == 1)
+			{
+				$(this).val(1);
+				$('#depends_on_stock_1').attr('disabled', false);
+			}
+			else
+			{
+				$(this).val(0);
+				$('#depends_on_stock_1').attr('disabled', true);
+				$('#depends_on_stock_0').attr('checked', true);
+				self.ajaxCall({actionQty: 'depends_on_stock', value: 0});
+				self.refreshQtyAvailabilityForm();
+			}
+			self.refreshQtyAvailabilityForm();
+		});
+
+		$('.available_quantity').find('input').change(function(e, init_val)
+		{
+			self.ajaxCall({actionQty: 'set_qty', id_product_attribute: $(this).parent().attr('id').split('_')[1], value: $(this).val()});
+		});
+
+		$('.out_of_stock').click(function(e)
+		{
+			self.refreshQtyAvailabilityForm();
+			self.ajaxCall({actionQty: 'out_of_stock', value: $(this).val()});
+		});
+		if (display_multishop_checkboxes)
+			ProductMultishop.checkAllQuantities();
+
+		$('.pack_stock_type').click(function(e)
+		{
+			self.refreshQtyAvailabilityForm();
+			self.ajaxCall({actionQty: 'pack_stock_type', value: $(this).val()});
+		});
+
+		self.refreshQtyAvailabilityForm();
+	};
 }
 
 /**

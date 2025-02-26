@@ -34,7 +34,7 @@
                                                     <td width="10">&nbsp;</td>
                                                     <td  class="text-center">
                                                         <font size="2" face="Open-sans, sans-serif" color="#555454">
-                                                            {$product['name']}
+                                                            {$product['name']}{if isset($product['option_name']) && $product['option_name']} : {$product['option_name']}{/if}
                                                         </font>
                                                     </td>
                                                     <td width="10">&nbsp;</td>
@@ -47,7 +47,7 @@
                                                     <td width="10">&nbsp;</td>
                                                     <td align="right"  class="text-center">
                                                         <font size="2" face="Open-sans, sans-serif" color="#555454">
-                                                            {convertPrice price=$product['unit_price']}
+                                                            {convertPrice price=$product['unit_price_tax_excl']}
                                                         </font>
                                                     </td>
                                                     <td width="10">&nbsp;</td>
@@ -73,7 +73,7 @@
                                                     <td width="10">&nbsp;</td>
                                                     <td align="right"  class="text-center">
                                                         <font size="2" face="Open-sans, sans-serif" color="#555454">
-                                                            {convertPrice price=$product['price']}
+                                                            {convertPrice price=$product['total_price_tax_excl']}
                                                         </font>
                                                     </td>
                                                     <td width="10">&nbsp;</td>

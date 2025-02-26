@@ -232,11 +232,38 @@
 			var product_name_redirected = '{$product_name_redirected|escape:'html':'UTF-8'}';
 		</script>
 	</div>
-	<div class="form-group" id="associated_hotel_rooms_tree" {if $product->service_product_type == Product::SERVICE_PRODUCT_WITHOUT_ROOMTYPE}style="display:none;"{/if}>
+	<div class="form-group" id="global_product_type_container">
+		<label class="control-label col-lg-3" for="service_product_type">
+			<span class="label-tooltip" data-toggle="tooltip" title="{l s='Select whether this product will be sold with room type or as an standalone product'}">
+				{l s='Product selling preference'}
+			<span>
+		</label>
+		<div class="col-lg-4">
+			<select name="service_product_type" id="service_product_type">
+				<option value="{Product::SERVICE_PRODUCT_WITH_ROOMTYPE}" {if $product->service_product_type == Product::SERVICE_PRODUCT_WITH_ROOMTYPE}selected="selected"{/if} >{l s='sell with room type'}</option>
+				<option value="{Product::SERVICE_PRODUCT_STANDALONE}" {if $product->service_product_type == Product::SERVICE_PRODUCT_STANDALONE}selected="selected"{/if} >{l s='Sell as standalone product'}</option>
+				<option value="{Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL}" {if $product->service_product_type == Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL}selected="selected"{/if} >{l s='Sell as independert product linked with hotel'}</option>
+			</select>
+		</div>
+	</div>
+	<div class="form-group" id="associated_hotel_rooms_tree" {if $product->service_product_type != Product::SERVICE_PRODUCT_WITH_ROOMTYPE && $product->service_product_type != 0}style="display:none;"{/if}>
 		<div class="col-lg-1"><span class="pull-right">{include file="controllers/products/multishop/checkbox.tpl" field="category_box" type="category_box"}</span></div>
-		<label class="control-label col-lg-2" for="hotel_block">
+		<label class="control-label col-lg-2" for="hotel_room_block">
 			<span class="label-tooltip" data-toggle="tooltip" title="{l s='Select room type and hotels for which this service will be available.'}">
 				{l s='Associated Hotels and Room Types'}
+			</span>
+		</label>
+		<div class="col-lg-9">
+			<div id="hotel_room_block">
+				{$hotel_room_tree}
+			</div>
+		</div>
+	</div>
+	<div class="form-group" id="associated_hotel_tree" {if $product->service_product_type != Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL}style="display:none;"{/if}>
+		<div class="col-lg-1"><span class="pull-right">{include file="controllers/products/multishop/checkbox.tpl" field="category_box" type="category_box"}</span></div>
+		<label class="control-label col-lg-2" for="hotel_block">
+			<span class="label-tooltip" data-toggle="tooltip" title="{l s='Select hotels for which this service will be available.'}">
+				{l s='Associated Hotels'}
 			</span>
 		</label>
 		<div class="col-lg-9">
@@ -245,7 +272,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="form-group" id="auto_add_to_cart_container">
+	<div class="form-group" id="auto_add_to_cart_container" {if $product->service_product_type != Product::SERVICE_PRODUCT_WITH_ROOMTYPE && $product->service_product_type != 0}style="display:none;"{/if}>
 		<label class="control-label col-lg-3" for="">
 			<span class="label-tooltip" data-toggle="tooltip" title="{l s='When enabled, this service will be added in cart for each associated Room type or Hotel when they are added in cart. Also auto added services will not be visible to customers.'}">
 				{l s='Auto add to cart this product'}
@@ -294,27 +321,6 @@
 			</div>
 		</div>
 	</div>
-
-	{* <div class="form-group" id="global_product_type_container">
-		<label class="control-label col-lg-3" for="service_product_type">
-			<span class="label-tooltip" data-toggle="tooltip" title="{l s='Select whether this product will be sold with room type or as an independent product'}">
-				{l s='Product selling preference'}
-			<span>
-		</label>
-		<div class="col-lg-4">
-			<select name="service_product_type" id="service_product_type">
-				<option value="{Product::SERVICE_PRODUCT_WITH_ROOMTYPE}" {if $product->service_product_type == Product::SERVICE_PRODUCT_WITH_ROOMTYPE}selected="selected"{/if} >{l s='sell with room type'}</option>
-				<option value="{Product::SERVICE_PRODUCT_WITHOUT_ROOMTYPE}" {if $product->service_product_type == Product::SERVICE_PRODUCT_WITHOUT_ROOMTYPE}selected="selected"{/if} >{l s='Sell as independent product'}</option>
-			</select>
-		</div>
-	</div> *}
-	{* <div class="form-group" id="independent_product_info" {if $product->service_product_type != Product::SERVICE_PRODUCT_WITHOUT_ROOMTYPE}style="display:none"{/if}>
-		<div class="col-lg-6 col-lg-offset-3">
-			<div class="alert alert-info">
-			{l s='Independent products can only be bought from backoffice.'}
-			</div>
-		</div>
-	</div> *}
 	<div class="form-group" id="show_at_front_container" {if $product->auto_add_to_cart}style="display:none;"{/if}>
 		<label class="control-label col-lg-3" for="">
 			<span class="label-tooltip" data-toggle="tooltip" title="{l s='Enable if you want this product to be visible at front office of your website.'}">

@@ -23,7 +23,9 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
     public $id_product;
     public $quantity;
     public $id_cart;
+    public $id_hotel;
     public $htl_cart_booking_id;
+    public $id_service_product_option;
 
     public static $definition = array(
         'table' => 'htl_room_type_service_product_cart_detail',
@@ -32,57 +34,40 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
             'id_product' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'quantity' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'id_cart' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_hotel' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'htl_cart_booking_id' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_service_product_option' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
         ),
     );
 
     public function alreadyExists(
-        $idProduct,
         $idCart,
-        $idHtlCartData
+        $idProduct,
+        $idHtlCartData = false,
+        $idHotel = false,
+        $idServiceProductOption = false
     ) {
-        return Db::getInstance()->getValue(
-            'SELECT `id_room_type_service_product_cart_detail` FROM `'._DB_PREFIX_.'htl_room_type_service_product_cart_detail`
-            WHERE `id_product` = '.(int)$idProduct.' AND `htl_cart_booking_id` = '.(int)$idHtlCartData.'
-            AND `id_cart` = '.(int)$idCart
-        );
-    }
 
-    public function addServiceProductInCart(
-        $idProduct,
-        $quantity,
-        $idCart,
-        $idHtlCartData
-    ) {
-        if ($id_room_type_service_product_cart_detail = $this->alreadyExists($idProduct, $idCart, $idHtlCartData)) {
-            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail($id_room_type_service_product_cart_detail);
-        } else {
-            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-            $objRoomTypeServiceProductCartDetail->id_product = $idProduct;
-            $objRoomTypeServiceProductCartDetail->htl_cart_booking_id = $idHtlCartData;
-            $objRoomTypeServiceProductCartDetail->id_cart = $idCart;
+        $sql = 'SELECT `id_room_type_service_product_cart_detail` FROM `'._DB_PREFIX_.'htl_room_type_service_product_cart_detail`
+            WHERE `id_product` = '.(int)$idProduct.' AND `id_cart` = '.(int)$idCart;
+
+        if ($idHotel) {
+            $sql .= ' AND `id_hotel` = '.(int)$idHotel;
+        }
+        if ($idHtlCartData) {
+            $sql .= ' AND `htl_cart_booking_id` = '.(int)$idHtlCartData;
+        }
+        if ($idServiceProductOption) {
+            $sql .= ' AND `id_service_product_option` = '.(int)$idServiceProductOption;
         }
 
-        if ($updateQty = $quantity - $objRoomTypeServiceProductCartDetail->quantity) {
-            $way = $updateQty > 0 ? 'up' : 'down';
-            $objRoomTypeServiceProductCartDetail->quantity += $updateQty;
-            if (Product::getProductPriceCalculation($idProduct) == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
-                $objHotelCartBookingData = new HotelCartBookingData($idHtlCartData);
-                $numdays = HotelHelper::getNumberOfDays($objHotelCartBookingData->date_from, $objHotelCartBookingData->date_to);
-                $updateQty *= $numdays;
-            }
-            if ($objRoomTypeServiceProductCartDetail->save()) {
-                $objCart = new Cart($idCart);
-                return $objCart->updateQty((int)abs($updateQty), $idProduct, null, false, $way);
-            }
-        } else {
-            return true;
-        }
-
-        return false;
+        return Db::getInstance()->getValue($sql);
     }
 
-    public function removeServiceProductByIdHtlCartBooking($htlCartBookingId, $idService = 0)
+    public function removeServiceProductByIdHtlCartBooking(
+        $htlCartBookingId,
+        $idService = 0
+        )
     {
         if ($stadardProductsData = Db::getInstance()->executeS(
             'SELECT * FROM `' . _DB_PREFIX_ . 'htl_room_type_service_product_cart_detail`
@@ -493,35 +478,341 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
         return $selectedServiceProducts;
     }
 
-    public function updateCartServiceProduct(
-        $idHtlCartData,
-        $idProduct,
-        $quantity,
+    public function getProducts(
         $idCart,
-        $operator
+        $idProduct = 0,
+        $serviceProductType = 0,
+        $idHotel = 0,
+        $htlCartBookingId = 0,
+        $idServiceProductOption = null,
+        $roomTypeIdProduct = 0,
+        $getTotalPrice = 0,
+        $useTax = null,
+        $idLang = null,
+        $full = false
     ) {
-        $id_room_type_service_product_cart_detail = $this->alreadyExists($idProduct, $idCart, $idHtlCartData);
+        if ($useTax === null) {
+            $useTax = Product::$_taxCalculationMethod == PS_TAX_EXC ? false : true;
+        }
 
+        if (!$idLang) {
+            $language = Context::getContext()->language;
+        } else {
+            $language = new Language($idLang);
+        }
+
+        $sql = 'SELECT spc.`id_room_type_service_product_cart_detail`, p.`service_product_type`, spc.`id_cart`, spc.`id_product`, spc.`quantity`, spc.`id_hotel`,
+            spc.`id_service_product_option`';
+        if (!$getTotalPrice) {
+            $sql .= ', hbil.`hotel_name` ';
+        }
+        $sql .= ' FROM `'._DB_PREFIX_.'htl_room_type_service_product_cart_detail` spc';
+        $sql .= ' LEFT JOIN `'._DB_PREFIX_.'product` p ON (p.`id_product` = spc.`id_product`)';
+        if (!$getTotalPrice) {
+            $sql .= ' LEFT JOIN `'._DB_PREFIX_.'htl_branch_info_lang` hbil ON (hbil.`id` = spc.`id_hotel` AND hbil.`id_lang` = '. $language->id.')';
+            // $sql .= ' INNER JOIN `'._DB_PREFIX_.'address` a ON (a.`id_hotel` = spc.`id_hotel`)';
+        }
+        $sql .= ' WHERE spc.`id_cart`='.(int) $idCart;
+        if ($idServiceProductOption) {
+            $sql .= ' AND spc.`id_service_product_option` = '.(int)$idServiceProductOption;
+        }
+        if ($serviceProductType) {
+            $sql .= ' AND p.`service_product_type` = '.(int)$serviceProductType;
+        }
+        if ($idProduct) {
+            $sql .= ' AND spc.`id_product`='.(int) $idProduct;
+        }
+        if ($idHotel) {
+            $sql .= ' AND spc.`id_hotel`='.(int) $idHotel;
+        }
+        if ($idServiceProductOption) {
+            $sql .= ' AND spc.`id_service_product_option` = '.(int)$idServiceProductOption;
+        }
+        if ($getTotalPrice) {
+            $totalPrice = 0;
+        }
+
+        $selectedProducts = array();
+        $objServiceProductOption = new ServiceProductOption();
+        if ($serviceProducts = Db::getInstance()->executeS($sql)) {
+        foreach ($serviceProducts as $product) {
+                $objProduct = new Product($product['id_product'], false, $language->id);
+                if (!$objProduct->booking_product) {
+                    if ($getTotalPrice) {
+                        $qty = $product['quantity'] ? (int)$product['quantity'] : 1;
+                        $totalPrice += RoomTypeServiceProductPrice::getPrice(
+                            $objProduct->id,
+                            $product['id_hotel'],
+                            $product['id_service_product_option'],
+                            $useTax,
+                            $qty
+                        );
+                    } else {
+                        $context = Context::getContext();
+                        $priceTaxIncl = RoomTypeServiceProductPrice::getPrice(
+                            $objProduct->id,
+                            $product['id_hotel'],
+                            $product['id_service_product_option'],
+                            true,
+                            $product['quantity']
+                        );
+                        $priceTaxExcl = RoomTypeServiceProductPrice::getPrice(
+                            $objProduct->id,
+                            $product['id_hotel'],
+                            $product['id_service_product_option'],
+                            false,
+                            $product['quantity']
+                        );
+                        $optionDetails = false;
+                        if (ServiceProductOption::productHasOptions($product['id_product'])) {
+                            $optionDetails = $objServiceProductOption->getProductOptions(
+                                $objProduct->id,
+                                $product['id_service_product_option']
+                            );
+                        }
+                        $coverImageArr = $objProduct->getCover($product['id_product']);
+                        if (!empty($coverImageArr)) {
+                            $coverImg = $context->link->getImageLink(
+                                $objProduct->link_rewrite,
+                                $objProduct->id.'-'.$coverImageArr['id_image'],
+                                'small_default'
+                            );
+                        } else {
+                            $coverImg = $context->link->getImageLink(
+                                $objProduct->link_rewrite,
+                                $language->iso_code.'-default',
+                                'small_default'
+                            );
+                        }
+                        $productInfo = array(
+                            'id_room_type_service_product_cart_detail' => $product['id_room_type_service_product_cart_detail'],
+                            'id_cart' => $product['id_cart'],
+                            'id_hotel' => $product['id_hotel'],
+                            'hotel_name' => $product['hotel_name'],
+                            'id_product' =>$objProduct->id,
+                            'service_product_type' => $product['service_product_type'],
+                            'id_service_product_option' => $product['id_service_product_option'],
+                            'name' => $objProduct->name,
+                            'option_name' => isset($optionDetails['name']) ? $optionDetails['name'] : false,
+                            'minimal_quantity' => $objProduct->minimal_quantity,
+                            'allow_multiple_quantity' => $objProduct->allow_multiple_quantity,
+                            'max_quantity' => $objProduct->max_quantity,
+                            'unit_price_tax_incl' => $priceTaxIncl,
+                            'unit_price_tax_excl' => $priceTaxExcl,
+                            'quantity' => $product['quantity'],
+                            'total_price_tax_incl' => $priceTaxIncl * (int)$product['quantity'],
+                            'total_price_tax_excl' => $priceTaxExcl * (int)$product['quantity'],
+                            'cover_img' => $coverImg
+                        );
+                        if ($full) {
+                            $objHotelBranchInformation = new HotelBranchInformation();
+                            $hotelInfo = $objHotelBranchInformation->hotelBranchesInfo($language->id, 2, 1, $product['id_hotel']);
+                            $hotelInfo['location'] = $hotelInfo['hotel_name'].', '.$hotelInfo['city'].
+                                ($hotelInfo['state_name']?', '.$hotelInfo['state_name']:'').', '.
+                                $hotelInfo['country_name'].', '.$hotelInfo['postcode'];
+                            $productInfo['hotel_info'] = $hotelInfo;
+                        }
+                        $selectedProducts[] = $productInfo;
+                    }
+                }
+            }
+
+        }
+        if ($getTotalPrice) {
+            return $totalPrice;
+        }
+        return $selectedProducts;
+    }
+
+
+    public function updateCartServiceProduct(
+        $idCart,
+        $idProduct,
+        $operator,
+        $quantity = false,
+        $idHotel = false,
+        $idHtlCartData = false,
+        $idServiceProductOption = null
+    ) {
         if ($operator == 'up') {
             return $this->addServiceProductInCart(
+                $idCart,
                 $idProduct,
                 $quantity,
-                $idCart,
-                $idHtlCartData
+                $idHotel,
+                $idHtlCartData,
+                $idServiceProductOption
             );
         } else {
+            return $this->removeCartServiceProduct(
+                $idCart,
+                $idProduct,
+                $quantity,
+                $idHotel,
+                $idHtlCartData,
+                $idServiceProductOption
+            );
+        }
+        return false;
+    }
+
+    public function addServiceProductInCart(
+        $idCart,
+        $idProduct,
+        $quantity,
+        $idHotel = false,
+        $idHtlCartData = false,
+        $idServiceProductOption = null
+    ) {
+        if ($quantity <= 0) {
+            $quantity = 1;
+        }
+        if ($id_room_type_service_product_cart_detail = $this->alreadyExists(
+            $idCart,
+            $idProduct,
+            $idHtlCartData,
+            $idHotel,
+            $idServiceProductOption
+        )) {
+            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail($id_room_type_service_product_cart_detail);
+        } else {
+            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+            $objRoomTypeServiceProductCartDetail->id_product = $idProduct;
+            $objRoomTypeServiceProductCartDetail->quantity = 0;
+            $objRoomTypeServiceProductCartDetail->id_hotel = $idHotel;
+            $objRoomTypeServiceProductCartDetail->htl_cart_booking_id = $idHtlCartData;
+            $objRoomTypeServiceProductCartDetail->id_cart = $idCart;
+            $objRoomTypeServiceProductCartDetail->id_service_product_option = $idServiceProductOption;
+        }
+
+        if ($idHtlCartData && Product::getProductPriceCalculation($idProduct) == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
+            $objHotelCartBookingData = new HotelCartBookingData($idHtlCartData);
+            $numdays = HotelHelper::getNumberOfDays($objHotelCartBookingData->date_from, $objHotelCartBookingData->date_to);
+            $quantity *= $numdays;
+        }
+        $objRoomTypeServiceProductCartDetail->quantity += $quantity;
+
+        if ($objRoomTypeServiceProductCartDetail->save()) {
+            $objCart = new Cart($idCart);
+            return $objCart->updateQty($quantity, $idProduct);
+        } else {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function removeCartServiceProduct(
+        $idCart,
+        $idProduct,
+        $quantity = false,
+        $idHotel = false,
+        $idHtlCartData = false,
+        $idServiceProductOption = null
+    ) {
+        $updateQunatity = false;
+        $res = true;
+
+        if ($idHtlCartData) {
+            $id_room_type_service_product_cart_detail = $this->alreadyExists($idCart, $idProduct, $idHtlCartData);
             if ($id_room_type_service_product_cart_detail) {
                 $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail($id_room_type_service_product_cart_detail);
-                $updateQty = $objRoomTypeServiceProductCartDetail->quantity;
-                if ($objRoomTypeServiceProductCartDetail->delete()) {
-                    $objCart = new Cart($idCart);
-                    return $objCart->updateQty((int)abs($updateQty), $idProduct, null, false, 'down');
+                if ($quantity) {
+                    $removedQuantity = $quantity;
+                    $objRoomTypeServiceProductCartDetail->quantity -= $quantity;
+                    if ($objRoomTypeServiceProductCartDetail->quantity) {
+                        $updateQunatity = $objRoomTypeServiceProductCartDetail->save();
+                    } else {
+                        $updateQunatity = $objRoomTypeServiceProductCartDetail->delete();
+                    }
+                } else {
+                    $removedQuantity = $objRoomTypeServiceProductCartDetail->quantity;
+                    $updateQunatity = $objRoomTypeServiceProductCartDetail->delete();
                 }
+                if ($updateQunatity) {
+                    $objCart = new Cart($idCart);
+                    if (isset(Context::getContext()->controller->controller_type)) {
+                        $controllerType = Context::getContext()->controller->controller_type;
+                    } else {
+                        $controllerType = 'front';
+                    }
+                    if ($controllerType == 'admin' || $controllerType == 'moduleadmin') {
+                        if ($cartQty = Cart::getProductQtyInCart($idCart, $idProduct)) {
+                            if ($removedQuantity < $cartQty) {
+                                $res = $res && Db::getInstance()->update(
+                                    'cart_product',
+                                    array('quantity' => (int)($cartQty - $removedQuantity)),
+                                    '`id_product` = '.(int)$idProduct.' AND `id_cart` = '.(int)$idCart
+                                );
+                            } else {
+                                //if room type has no qty remaining in cart then delete row
+                                $res = $res && Db::getInstance()->delete(
+                                    'cart_product',
+                                    '`id_product` = '.(int)$idProduct.' AND `id_cart` = '.(int)$idCart
+                                );
+                            }
+                        }
+                    } else {
+                        $res = $res && $objCart->updateQty((int)$removedQuantity, $idProduct, null, false, 'down');
+                    }
+                }
+                return $res;
+            } else {
+                return true;
+            }
+        } else {
+            if ($products = $this->getProducts($idCart, $idProduct, 0, $idHotel, 0, $idServiceProductOption, 0, 0, $idHtlCartData)) {
+                foreach ($products as $product) {
+                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail($product['id_room_type_service_product_cart_detail']);
+                    if ($quantity) {
+                        $removedQuantity = $quantity;
+                        $objRoomTypeServiceProductCartDetail->quantity -= $quantity;
+                        if ($objRoomTypeServiceProductCartDetail->quantity) {
+                            $updateQunatity = $objRoomTypeServiceProductCartDetail->save();
+                        } else {
+                            $updateQunatity = $objRoomTypeServiceProductCartDetail->delete();
+                        }
+                    } else {
+                        $removedQuantity = $objRoomTypeServiceProductCartDetail->quantity;
+                        $updateQunatity = $objRoomTypeServiceProductCartDetail->delete();
+                    }
+                    if ($updateQunatity) {
+                        $objCart = new Cart($idCart);
+                        if (isset(Context::getContext()->controller->controller_type)) {
+                            $controllerType = Context::getContext()->controller->controller_type;
+                        } else {
+                            $controllerType = 'front';
+                        }
+                        if ($controllerType == 'admin' || $controllerType == 'moduleadmin') {
+                            if ($cartQty = Cart::getProductQtyInCart($idCart, $idProduct)) {
+                                if ($removedQuantity < $cartQty) {
+                                    $res = $res && Db::getInstance()->update(
+                                        'cart_product',
+                                        array('quantity' => (int)($cartQty - $removedQuantity)),
+                                        '`id_product` = '.(int)$idProduct.' AND `id_cart` = '.(int)$idCart
+                                    );
+                                } else {
+                                    //if room type has no qty remaining in cart then delete row
+                                    $res = $res && Db::getInstance()->delete(
+                                        'cart_product',
+                                        '`id_product` = '.(int)$idProduct.' AND `id_cart` = '.(int)$idCart
+                                    );
+                                }
+                            }
+                        } else {
+                            $res = $res && $objCart->updateQty((int)$removedQuantity, $idProduct, null, false, 'down');
+                        }
+                    }
+                    if ($quantity) {
+                        break;
+                    }
+                }
+                return $res;
+
             } else {
                 return true;
             }
         }
-        return false;
     }
 
     public function getAllServiceProduct($idCart)
@@ -541,9 +832,13 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
             $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
             foreach ($cartProducts as $product) {
                 if (!$product['active'] && !$product['booking_product']) {
-                    $serviceProducts = $objRoomTypeServiceProductCartDetail->getServiceProductsInCart($context->cart->id, $product['id_product']);
-                    foreach ($serviceProducts as $serviceProduct) {
-                        $objRoomTypeServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($serviceProduct['htl_cart_booking_id']);
+                    if ($serviceProducts = $objRoomTypeServiceProductCartDetail->getServiceProductsInCart(
+                        $context->cart->id,
+                        $product['id_product']
+                    )) {
+                        foreach ($serviceProducts as $serviceProduct) {
+                            $objRoomTypeServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($serviceProduct['htl_cart_booking_id']);
+                        }
                     }
                 }
             }

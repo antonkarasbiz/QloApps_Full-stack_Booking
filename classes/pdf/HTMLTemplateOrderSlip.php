@@ -90,7 +90,8 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
 
         $customer = new Customer((int)$this->order->id_customer);
         $this->order->total_paid_tax_excl = $this->order->total_paid_tax_incl = $this->order->total_products = $this->order->total_products_wt = 0;
-
+        $roomsDetails = array();
+        $productsDetails = array();
         if ($this->order_slip->amount > 0) {
             foreach ($this->order->products as &$product) {
                 // $product['total_price_tax_excl'] = $product['unit_price_tax_excl'] * $product['product_quantity'];
@@ -101,9 +102,10 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
 						SELECT * FROM `'._DB_PREFIX_.'order_slip_detail`
 						WHERE `id_order_slip` = '.(int)$this->order_slip->id.'
                         AND `id_order_detail` = '.(int)$product['id_order_detail'].'
-                        AND `id_htl_booking` = '.(int)$product['id_htl_booking']);
+                        AND `id_htl_booking` = '.(int)$product['id_htl_booking'].'
+                        AND `id_room_type_service_product_order_detail` = '.(int)$product['id_room_type_service_product_order_detail']);
 
-                    $product['total_price_tax_excl'] = $order_slip_detail['amount_tax_excl'];
+                        $product['total_price_tax_excl'] = $order_slip_detail['amount_tax_excl'];
                     $product['total_price_tax_incl'] = $order_slip_detail['amount_tax_incl'];
                 }
 
@@ -111,6 +113,12 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
                 $this->order->total_products_wt += $product['total_price_tax_incl'];
                 $this->order->total_paid_tax_excl = $this->order->total_products;
                 $this->order->total_paid_tax_incl = $this->order->total_products_wt;
+
+                if ($product['id_htl_booking']) {
+                    $roomsDetails[] = $product;
+                } else {
+                    $productsDetails[] = $product;
+                }
             }
         } else {
             $this->order->products = null;
@@ -144,10 +152,13 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
                 }
             }
         }
+
         $this->smarty->assign(array(
             'order' => $this->order,
             'order_slip' => $this->order_slip,
             'order_details' => $this->order->products,
+            'roomsDetails' => $roomsDetails,
+            'productsDetails' => $productsDetails,
             'cart_rules' => $this->order_slip->order_slip_type == 1 ? $this->order->getCartRules($this->order_invoice->id) : false,
             'amount_choosen' => $this->order_slip->order_slip_type == 2 ? true : false,
             'delivery_address' => $formatted_delivery_address,

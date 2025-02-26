@@ -1842,8 +1842,8 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                             // Checking if the auto add service was sent in the request
                             if (!isset($this->wsRequestedRoomTypes[$dateRoomJoinKey]['services'][$service['id_product']])
                                 && ($idRoomTypeServiceProductCartDetail = $objRoomTypeServiceProductCartDetail->alreadyExists(
-                                $service['id_product'],
                                 $this->context->cart->id,
+                                $service['id_product'],
                                 $serviceProduct['htl_cart_booking_id'])
                             )) {
                                 $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail((int) $idRoomTypeServiceProductCartDetail);
@@ -3092,9 +3092,10 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
             $services = $formattedServices;
             foreach ($services as $service) {
                 $objRoomTypeServiceProductCartDetail->addServiceProductInCart(
+                    $objCart->id,
                     $service['id_product'],
                     $service['quantity'],
-                    $objCart->id,
+                    false,
                     $roomHtlCartInfo['id']
                 );
             }
@@ -3105,8 +3106,8 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
             $objOrderDetail->createList($objOrder, $objCart, $objOrder->getCurrentOrderState(), $productList, 0, true);
             foreach ($productList as &$product) {
                 if ($idRoomTypeServiceProductCartDetail = $objRoomTypeServiceProductCartDetail->alreadyExists(
-                    $product['id_product'],
                     $objCart->id,
+                    $product['id_product'],
                     $roomHtlCartInfo['id'])
                 ) {
                     $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail((int) $idRoomTypeServiceProductCartDetail);

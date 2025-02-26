@@ -17,6 +17,8 @@ Total
 
 {extra_demands_details_text}
 
+{normal_products_data_txt}
+
 {discounts}
 
 Total Rooms Cost
