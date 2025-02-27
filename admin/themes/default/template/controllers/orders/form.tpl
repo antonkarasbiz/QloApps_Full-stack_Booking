@@ -294,7 +294,8 @@
 					action: "updateOrderMessage",
 					id_cart: id_cart,
 					id_customer: id_customer,
-					message: $(this).val()				},
+					message: $(this).val()
+				},
 				success : function(res)
 				{
 					displaySummary(res);
