@@ -282,10 +282,6 @@
 		})
 		$('#order_message').live('change', function(e) {
 			e.preventDefault();
-			let visibility = 0;
-			if ($('#visibility').prop('checked')) {
-				visibility = 1;
-			}
 			$.ajax({
 				type:"POST",
 				url: "{$link->getAdminLink('AdminCarts')|addslashes}",
@@ -298,9 +294,7 @@
 					action: "updateOrderMessage",
 					id_cart: id_cart,
 					id_customer: id_customer,
-					message: $(this).val(),
-					visibility: visibility
-				},
+					message: $(this).val()				},
 				success : function(res)
 				{
 					displaySummary(res);

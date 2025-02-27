@@ -3040,7 +3040,18 @@ class AdminOrdersControllerCore extends AdminController
         $objCustomerThread = new CustomerThread();
         $messages = Message::getMessagesByOrderId($order->id, true);
         if ($customerMessages = CustomerMessage::getMessagesByOrderId($order->id, true)) {
-            $messages = array_merge($messages, $customerMessages);
+            foreach ($messages as $messageKey => $message) {
+                foreach ($customerMessages as $customerMessageKey => $customerMessage) {
+                    if (strcmp($message['message'], $customerMessage['message']) == 0) {
+                        unset($messages[$messageKey]);
+                    }
+                }
+            }
+
+            $messages = array_merge($customerMessages, $messages);
+            usort($messages, function ($a, $b) {
+                return strtotime($a['date_add']) < strtotime($b['date_add']);
+            });
         }
 
         $this->tpl_view_vars = array(

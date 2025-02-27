@@ -672,8 +672,7 @@ CREATE TABLE `PREFIX_customer_thread` (
 	KEY `id_lang` (`id_lang`),
 	KEY `id_contact` (`id_contact`),
 	KEY `id_customer` (`id_customer`),
-	KEY `id_order` (`id_order`),
-	KEY `id_product` (`id_product`)
+	KEY `id_order` (`id_order`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATION;
 
 CREATE TABLE `PREFIX_order_customer_guest_detail` (
