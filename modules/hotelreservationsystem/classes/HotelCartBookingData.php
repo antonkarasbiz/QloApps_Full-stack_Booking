@@ -1361,7 +1361,7 @@ class HotelCartBookingData extends ObjectModel
                 WHERE fp.`id_product` = '.(int) $id_product.' AND fp.`id_cart` = '.(int) $id_cart.'
                 AND fp.`id_guest` = '.(int) $id_guest.' AND fp.`id_room` = '.(int) $id_room.'
                 AND fp.`active` = 1 AND fp.`date_from` <= \''.pSQL($date).'\'
-                AND fp.`date_to` > \''.pSQL($date).'\'')
+                AND fp.`date_to` >= \''.pSQL($date).'\'')
             ) {
                 return $featurePrice;
             }
@@ -1389,7 +1389,7 @@ class HotelCartBookingData extends ObjectModel
                         ON (fp.`id_feature_price` = fpg.`id_feature_price` AND fpg.`id_group` = '.(int) $id_group.')' : '').'
                         WHERE fp.`id_cart` = 0 AND fp.`id_product`='.(int) $id_product.'
                         AND fp.`is_special_days_exists`=1 AND fp.`active`=1 AND fp.`date_from` <= \''.pSQL($date).'\'
-                        AND fp.`date_to` > \''.pSQL($date).'\''
+                        AND fp.`date_to` >= \''.pSQL($date).'\''
                     )) {
                         foreach ($featurePrice as $fRow) {
                             $specialDays = json_decode($fRow['special_days']);
@@ -1405,7 +1405,7 @@ class HotelCartBookingData extends ObjectModel
                         ON (fp.`id_feature_price` = fpg.`id_feature_price` AND fpg.`id_group` = '.(int) $id_group.')' : '').'
                         WHERE fp.`id_cart` = 0 AND fp.`id_product`='.(int) $id_product.' AND fp.`date_selection_type` = '.(int) HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE.'
                         AND `is_special_days_exists`=0 AND `active`=1
-                        AND fp.`date_from` <= \''.pSQL($date).'\' AND fp.`date_to` > \''.pSQL($date).'\''
+                        AND fp.`date_from` <= \''.pSQL($date).'\' AND fp.`date_to` >= \''.pSQL($date).'\''
                     )) {
                         return $featurePrice;
                     }

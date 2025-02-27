@@ -2879,7 +2879,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
         $objRoomTypeFeaturePricing->feature_price_name = $feature_price_name;
         $objRoomTypeFeaturePricing->date_selection_type = HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE;
         $objRoomTypeFeaturePricing->date_from = date('Y-m-d', strtotime($params['date_from']));
-        $objRoomTypeFeaturePricing->date_to = date('Y-m-d', strtotime($params['date_to']));
+        $objRoomTypeFeaturePricing->date_to = date('Y-m-d', (strtotime($params['date_to']) - _TIME_1_DAY_));
         $objRoomTypeFeaturePricing->is_special_days_exists = 0;
         $objRoomTypeFeaturePricing->special_days = json_encode(false);
         $objRoomTypeFeaturePricing->impact_way = HotelRoomTypeFeaturePricing::IMPACT_WAY_FIX_PRICE;

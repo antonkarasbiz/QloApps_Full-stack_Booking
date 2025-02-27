@@ -608,20 +608,17 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         foreach ($languages as $language) {
             $roomTypeFeaturePricing->feature_price_name[$language['id_lang']] = $params['featurePriceName'];
         }
+
         $roomTypeFeaturePricing->date_selection_type = $params['dateSelectionType'];
-        if ($dateSelectionType == self::DATE_SELECTION_TYPE_RANGE) {
-            $roomTypeFeaturePricing->date_from = $params['dateFrom'];
-            $roomTypeFeaturePricing->date_to = $params['dateTo'];
-        } else {
-            $roomTypeFeaturePricing->date_from = $params['dateFrom'];
-            $roomTypeFeaturePricing->date_to = $params['dateTo'];
-        }
+        $roomTypeFeaturePricing->date_from = $params['dateFrom'];
+        $roomTypeFeaturePricing->date_to = date('Y-m-d', (strtotime($params['dateTo']) - _TIME_1_DAY_));
         $roomTypeFeaturePricing->impact_way = $params['priceImpactWay'];
         $roomTypeFeaturePricing->is_special_days_exists = $params['isSpecialDaysExists'];
         $roomTypeFeaturePricing->special_days = $params['jsonSpecialDays'];
         $roomTypeFeaturePricing->impact_type = $params['priceImpactType'];
         $roomTypeFeaturePricing->impact_value = $params['impactValue'];
         $roomTypeFeaturePricing->active = $params['enableFeaturePrice'];
+
         return $roomTypeFeaturePricing->save();
     }
 
