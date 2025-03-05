@@ -490,6 +490,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
         if ($getTotalPrice) {
             return $totalPrice;
         }
+
         return $selectedServiceProducts;
     }
 

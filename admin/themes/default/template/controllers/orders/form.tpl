@@ -1636,25 +1636,6 @@
 			}
 		});
 
-		$(document).on('click', '.change_room_type_service_product', function() {
-			updateServiceProducts(this);
-		});
-
-        // when the price of a service product is changed and focus is out
-        $(document).on('change', '#room_type_services_desc .service_cart_price_input', function() {
-			updateServiceProducts(this);
-		});
-
-		$(document).on('change', '#rooms_type_extra_demands .qty', function(e) {
-			var qty_wntd = $(this).val();
-			if (qty_wntd == '' || !$.isNumeric(qty_wntd)) {
-				$(this).val(1);
-			}
-			if ($(this).closest('.room_demand_block').find('.change_room_type_service_product').is(':checked')) {
-				updateServiceProducts($(this).closest('.room_demand_block').find('.change_room_type_service_product'));
-			}
-		});
-
 		$(document).on('keyup', '#payment_module_name', function() {
 			let paymentMethod = $('#payment_module_name').val().trim().toLowerCase();
 
@@ -1782,49 +1763,54 @@
             });
         });
 
-		function updateServiceProducts(element)
-		{
-			var qty = $(element).closest('.room_demand_block').find('input.qty').val();
-            var dataElement = $(element).closest('.room_demand_block').find('.change_room_type_service_product');
-			var operator = $(dataElement).is(':checked') ? 'up' : 'down';
-			var id_product = $(dataElement).val();
-			var id_cart_booking = $(dataElement).data('id_cart_booking');
-			var service_price = $("#service_cart_price_"+id_cart_booking+"_"+id_product).val();
-
-			if (typeof(qty) == 'undefined') {
-				qty = 1;
-			}
+        $(document).on('click', '.change_room_type_service_product', function() {
+            if ($(this).prop('checked')) {
+                $("#selected_service_product_"+$(this).val()).val(1);
+            } else {
+                $("#selected_service_product_"+$(this).val()).val(0);
+            }
+		});
+        $(document).on('submit', '#update_selected_room_services_form', function(e) {
+            e.preventDefault();
+            var form_data = new FormData(this);
+            form_data.append('ajax', true);
+            form_data.append('action', 'updateSelectedRoomServices');
 
             $(".loading_overlay").show();
-			$.ajax({
-				type: 'POST',
-				headers: {
-					"cache-control": "no-cache"
-				},
-				url: "{$link->getAdminLink('AdminCarts')|addslashes}",
-				dataType: 'JSON',
-				cache: false,
-				data: {
-					operator: operator,
-					id_product: id_product,
-					id_cart_booking: id_cart_booking,
-					qty: qty,
-                    price: service_price,
-					action: 'updateServiceProduct',
-					ajax: true
-				},
-				success: function(jsonData) {
-					if (!jsonData.hasError) {
-						showSuccessMessage(txtExtraDemandSucc);
-					} else {
-						showErrorMessage(jsonData.errors);
-					}
-				},
+            $.ajax({
+                type: 'POST',
+                headers: {
+                    "cache-control": "no-cache"
+                },
+                url: "{$link->getAdminLink('AdminCarts')|addslashes}",
+                dataType: 'JSON',
+                cache: false,
+                data: form_data,
+                processData: false,
+                contentType: false,
+                success: function(jsonData) {
+                    if (!jsonData.hasError) {
+                        if (jsonData.service_panel) {
+                            $('#room_type_service_product_desc').replaceWith(jsonData.service_panel);
+                        }
+                        showSuccessMessage(txtExtraDemandSucc);
+                    } else {
+                        if (jsonData.errors != 'undefined' && jsonData.errors.length) {
+                            var errorHtml = error_found_txt + ':<br>';
+                            errorHtml += '<ol>';
+                            $.each(jsonData.errors, function(key, errorMsg) {
+                                errorHtml += '<li>' + errorMsg + '</li>';
+                            });
+                            errorHtml += '</ol>';
+                            showErrorMessage(errorHtml);
+                        }
+                    }
+                },
                 complete: function() {
                     $(".loading_overlay").hide();
                 }
-			});
-		}
+            });
+        });
 	});
 </script>
 

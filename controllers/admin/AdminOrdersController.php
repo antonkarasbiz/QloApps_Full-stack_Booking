@@ -388,7 +388,10 @@ class AdminOrdersControllerCore extends AdminController
 
                 // validate cart for removing invalid data from cart before new order creation
                 // remove not linked services with room types from cart if not allowed to book them
-                $this->errors = array_merge($this->errors, HotelCartBookingData::validateCartBookings(!Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING')));
+                $this->errors = array_merge(
+                    $this->errors,
+                    HotelCartBookingData::validateCartBookings(!Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING'))
+                );
 
                 $cart_detail_data = array();
                 $cart_detail_data_obj = new HotelCartBookingData();
@@ -953,7 +956,7 @@ class AdminOrdersControllerCore extends AdminController
             if (Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING')) {
                 // get all services
                 $objProduct = new Product();
-                $serviceProducts = $objProduct->getServiceProducts();
+                $serviceProducts = $objProduct->getServiceProducts(true);
             } else {
                 $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
                 $serviceProducts = $objRoomTypeServiceProduct->getServiceProductsData($idProduct, 1, 0, false, 2, null);
@@ -1700,7 +1703,7 @@ class AdminOrdersControllerCore extends AdminController
                     $this->context->cart = $objCart;
                     $this->context->currency = new Currency((int)$objCart->id_currency);
 
-                    $this->errors = HotelCartBookingData::validateCartBookings();
+                    $this->errors = HotelCartBookingData::validateCartBookings(!Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING'));
                     $orderTotal = $objCart->getOrderTotal(true, Cart::BOTH);
                     if ($objCart->is_advance_payment) {
                         $advancePaymentAmount = $objCart->getOrderTotal(true, Cart::ADVANCE_PAYMENT);
@@ -6297,7 +6300,7 @@ class AdminOrdersControllerCore extends AdminController
             if (Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING')) {
                 // get all services
                 $objProduct = new Product();
-                $serviceProducts = $objProduct->getServiceProducts();
+                $serviceProducts = $objProduct->getServiceProducts(true);
             } else {
                 $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
                 $serviceProducts = $objRoomTypeServiceProduct->getServiceProductsData($idProduct, 1, 0, false, 2, null);
@@ -6549,7 +6552,7 @@ class AdminOrdersControllerCore extends AdminController
             $response['errors'] = $this->l('You do not have permission to edit this order.');
         }
 
-        die(json_encode($response));
+        $this->ajaxDie(json_encode($response));
     }
 
     public function ajaxProcessAddExistingRoomServices()
@@ -6785,7 +6788,7 @@ class AdminOrdersControllerCore extends AdminController
             $response['errors'][] = $this->l('You do not have permission to edit this order.');
         }
 
-        die(json_encode($response));
+        $this->ajaxDie(json_encode($response));
     }
 
     // Add new custom services to room
@@ -7103,7 +7106,7 @@ class AdminOrdersControllerCore extends AdminController
             $response['errors'][] = $this->l('You do not have permission to edit this order.');
         }
 
-        die(json_encode($response));
+        $this->ajaxDie(json_encode($response));
     }
 
 
@@ -7187,7 +7190,7 @@ class AdminOrdersControllerCore extends AdminController
             $response['errors'] = $this->l('You do not have permission to edit this order.');
         }
 
-        die(json_encode($response));
+        $this->ajaxDie(json_encode($response));
     }
 
     // Process when admin changes extra demands of any room while order creation process form.tpl

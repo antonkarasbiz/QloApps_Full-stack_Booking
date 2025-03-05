@@ -1110,7 +1110,7 @@ class AdminCartsControllerCore extends AdminController
             if (Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING')) {
                 // get all services
                 $objProduct = new Product();
-                $serviceProducts = $objProduct->getServiceProducts();
+                $serviceProducts = $objProduct->getServiceProducts(true);
             } else {
                 $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
                 $serviceProducts = $objRoomTypeServiceProduct->getServiceProductsData($idProduct, 1, 0, false, 2, null);
@@ -1256,7 +1256,7 @@ class AdminCartsControllerCore extends AdminController
     {
         $response = array('hasError' => false);
         // Check tab access is allowed to edit
-        if ($this->tabAccess['edit'] == 1) {
+        if ($this->tabAccess['add'] == 1) {
             if (Configuration::get('PS_ALLOW_CREATE_CUSTOM_SERVICES_IN_BOOKING')) {
                 $idHotelCartBooking = Tools::getValue('id_hotel_cart_booking');
                 // valiadate services being added
@@ -1330,7 +1330,7 @@ class AdminCartsControllerCore extends AdminController
                         $objServiceProduct->show_at_front = false;
                         $objServiceProduct->indexed = false;
                         $objServiceProduct->minimal_quantity = 1;
-                        $objServiceProduct->active = false;
+                        $objServiceProduct->active = true;
                         $objServiceProduct->max_quantity = 99999;
 
                         // ======= Create Service product END =========
@@ -1392,7 +1392,7 @@ class AdminCartsControllerCore extends AdminController
             $response['errors'][] = $this->l('You do not have permission to edit this order.');
         }
 
-        die(json_encode($response));
+        $this->ajaxDie(json_encode($response));
     }
 
     public function getBookingServicesTabContent($idHotelCartBooking)
@@ -1402,7 +1402,7 @@ class AdminCartsControllerCore extends AdminController
             if (Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING')) {
                 // get all services
                 $objProduct = new Product();
-                $serviceProducts = $objProduct->getServiceProducts();
+                $serviceProducts = $objProduct->getServiceProducts(true);
             } else {
                 $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
                 $serviceProducts = $objRoomTypeServiceProduct->getServiceProductsData($objCartBookingData->id_product, 1, 0, false, 2, null);
@@ -1455,111 +1455,127 @@ class AdminCartsControllerCore extends AdminController
         return $servicesTpl;
     }
 
-
-    public function ajaxProcessUpdateServiceProduct()
+    // Process to update selected services
+    public function ajaxProcessUpdateSelectedRoomServices()
     {
-        $operator = Tools::getValue('operator', 'up');
-        $idServiceProduct = Tools::getValue('id_product');
-        $idCartBooking = Tools::getValue('id_cart_booking');
-        $qty = Tools::getValue('qty');
-        $price = Tools::getValue('price');
+        $response = array('hasError' => false);
+        // Check tab access is allowed to edit
+        if ($this->tabAccess['add'] == 1) {
+            $idCartBooking = Tools::getValue('id_hotel_cart_booking');
+            if (Validate::isLoadedObject($objHotelCartBookingData = new HotelCartBookingData($idCartBooking))) {
+                $objCart = new Cart($objHotelCartBookingData->id_cart);
+                if ($selectedServiceProducts = Tools::getValue('selected_service_product')) {
+                    $serviceQuantities = Tools::getValue('service_qty');
+                    $serviceUnitPrices = Tools::getValue('service_price');
+                    // Validate selected services
+                    foreach ($selectedServiceProducts as $idServiceProduct => $selected) {
+                        if (Validate::isLoadedObject($objProduct = new Product($idServiceProduct, false, $objCart->id_lang))) {
+                            if ($objProduct->allow_multiple_quantity) {
+                                if (!isset($serviceQuantities[$idServiceProduct])) {
+                                    $response['hasError'] = true;
+                                    $response['errors'] = $this->l('Quantity not provided for service').': '.$objProduct->name;
+                                } else if (!Validate::isUnsignedInt($serviceQuantities[$idServiceProduct])) {
+                                    $response['hasError'] = true;
+                                    $response['errors'] = $this->l('Invalid quantity provided for service').': '.$objProduct->name;
+                                }
+                            } elseif ($serviceQuantities[$idServiceProduct] > 1) {
+                                $response['hasError'] = true;
+                                $response['errors'] = $this->l('Can not order multiple quanitity for service').': '.$objProduct->name;
+                            }
 
-        if (Validate::isLoadedObject($objHotelCartBookingData = new HotelCartBookingData($idCartBooking))) {
-            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+                            if (!$objProduct->allow_multiple_quantity) {
+                                $serviceQuantities[$idServiceProduct] = 1;
+                            }
 
-            if ($operator == 'up') {
-                // validate quanitity
-                if (Validate::isLoadedObject($objProduct = new Product($idServiceProduct))) {
-                    if ($objProduct->allow_multiple_quantity) {
-                        if (!Validate::isUnsignedInt($qty)) {
-                            $this->errors[] = Tools::displayError('The quantity you\'ve entered is invalid.');
-                        // } elseif ($objProduct->max_quantity && $qty > $objProduct->max_quantity) {
-                        //     $this->errors[] = Tools::displayError(sprintf('cannot add more than %d quantity.', $objProduct->max_quantity));
+                            if (!isset($serviceUnitPrices[$idServiceProduct])
+                                || !ValidateCore::isPrice($serviceUnitPrices[$idServiceProduct])
+                            ) {
+                                $response['hasError'] = true;
+                                $response['errors'] = $this->l('Invalid unit price for service').': '.$objProduct->name;
+                            }
+
+                        } else {
+                            die($idServiceProduct);
+                            $response['errors'] = $this->l('Some services not found. please try after refreshing the page');
                         }
-                    } else {
-                        $qty = 1;
                     }
-                    // validate price
-                    if (!ValidateCore::isPrice($price)) {
-                        $this->errors[] = Tools::displayError('Invalid service unit price.');
+
+                    if (!$response['hasError']) {
+                        $result = true;
+                        $objRoomTypeServiceProductCart = new RoomTypeServiceProductCartDetail();
+                        foreach ($selectedServiceProducts as $idServiceProduct => $selected) {
+                            if ($selected) {
+                                $operator = 'up';
+                            } else {
+                                $operator = 'down';
+                            }
+                            $quantity = $serviceQuantities[$idServiceProduct];
+                            $unitPrice = $serviceUnitPrices[$idServiceProduct];
+                            if ($result &= $objRoomTypeServiceProductCart->updateCartServiceProduct(
+                                $idCartBooking,
+                                $idServiceProduct,
+                                $quantity,
+                                $objHotelCartBookingData->id_cart,
+                                $operator,
+                            )) {
+                                $originalPrice = Product::getPriceStatic($idServiceProduct, false);
+                                // if price is different than the original service price then update the price
+                                if ($operator == 'up' && $originalPrice != $price) {
+                                    if ($specificPriceInfo = SpecificPrice::getSpecificPrice(
+                                        (int)$idServiceProduct,
+                                        0,
+                                        $objCart->id_currency,
+                                        0,
+                                        0,
+                                        1,
+                                        0,
+                                        $objCart->id_customer,
+                                        $objCart->id
+                                    )) {
+                                        $objSpecificPrice = new SpecificPrice($specificPriceInfo['id_specific_price']);
+                                    } else {
+                                        $objSpecificPrice = new SpecificPrice();
+                                    }
+                                    $objSpecificPrice->id_shop = 0;
+                                    $objSpecificPrice->id_shop_group = 0;
+                                    $objSpecificPrice->id_cart = $objCart->id;
+                                    $objSpecificPrice->id_currency = $objCart->id_currency;
+                                    $objSpecificPrice->id_country = 0;
+                                    $objSpecificPrice->id_group = 0;
+                                    $objSpecificPrice->id_customer = $objCart->id_customer;
+                                    $objSpecificPrice->id_product = $idServiceProduct;
+                                    $objSpecificPrice->id_product_attribute = 0;
+                                    $objSpecificPrice->price = $unitPrice;
+                                    $objSpecificPrice->from_quantity = 1;
+                                    $objSpecificPrice->reduction = 0;
+                                    $objSpecificPrice->reduction_type = 'amount';
+                                    $objSpecificPrice->reduction_tax = 0;
+                                    $objSpecificPrice->from = '0000-00-00 00:00:00';
+                                    $objSpecificPrice->to = '0000-00-00 00:00:00';
+
+                                    $result &= $objSpecificPrice->save();
+                                }
+                            }
+                        }
+
+                        if (!$result) {
+                            $response['hasError'] = true;
+                            $response['errors'] = $this->l('Error while updating services, please try again after refresing the page');
+                        }
                     }
                 } else {
-                    $this->errors[] = Tools::displayError('This Service is not available.');
+                    $response['hasError'] = true;
+                    $response['errors'] = $this->l('No service found');
                 }
-            }
-
-            if (empty($this->errors)) {
-                if ($objRoomTypeServiceProductCartDetail->updateCartServiceProduct(
-                    $idCartBooking,
-                    $idServiceProduct,
-                    $qty,
-                    $objHotelCartBookingData->id_cart,
-                    $operator
-                )) {
-                    $objCart = new Cart($objHotelCartBookingData->id_cart);
-                    $originalPrice = Product::getPriceStatic($idServiceProduct, false);
-                    // if price is different than the original service price then update the price
-                    if ($operator == 'up' && $originalPrice != $price) {
-                        if ($specificPriceInfo = SpecificPrice::getSpecificPrice(
-                            (int)$idServiceProduct,
-                            0,
-                            $objCart->id_currency,
-                            0,
-                            0,
-                            1,
-                            0,
-                            $objCart->id_customer,
-                            $objCart->id
-                        )) {
-                            $objSpecificPrice = new SpecificPrice($specificPriceInfo['id_specific_price']);
-                        } else {
-                            $objSpecificPrice = new SpecificPrice();
-                        }
-                        $objSpecificPrice->id_shop = 0;
-                        $objSpecificPrice->id_shop_group = 0;
-                        $objSpecificPrice->id_cart = $objCart->id;
-                        $objSpecificPrice->id_currency = $objCart->id_currency;
-                        $objSpecificPrice->id_country = 0;
-                        $objSpecificPrice->id_group = 0;
-                        $objSpecificPrice->id_customer = $objCart->id_customer;
-                        $objSpecificPrice->id_product = $idServiceProduct;
-                        $objSpecificPrice->id_product_attribute = 0;
-                        $objSpecificPrice->price = $price;
-                        $objSpecificPrice->from_quantity = 1;
-                        $objSpecificPrice->reduction = 0;
-                        $objSpecificPrice->reduction_type = 'amount';
-                        $objSpecificPrice->reduction_tax = 0;
-                        $objSpecificPrice->from = '0000-00-00 00:00:00';
-                        $objSpecificPrice->to = '0000-00-00 00:00:00';
-                        if ($objSpecificPrice->save()) {
-                            $this->ajaxDie(json_encode(array(
-                                'hasError' => false
-                            )));
-                        } else {
-                            $this->errors[] = Tools::displayError('Some error has been occurred. Please try reloading the page.');
-                        }
-                    } else {
-                        // delete specific price if price is same as original price
-                        if (SpecificPrice::deleteByIdCart($objCart->id, $idServiceProduct)) {
-                            $this->ajaxDie(json_encode(array(
-                                'hasError' => false,
-                                'down' => 1,
-                            )));
-                        } else {
-                            $this->errors[] = Tools::displayError('Unable to update services. Please try reloading the page.');
-                        }
-                    }
-                } else {
-                    $this->errors[] = Tools::displayError('Unable to update services. Please try reloading the page.');
-                }
-
+            } else {
+                $response['hasError'] = true;
+                $response['errors'] = $this->l('Room info not found');
             }
         } else {
-            $this->errors[] = Tools::displayError('Room not found. Please try reloading the page.');
+            $response['hasError'] = true;
+            $response['errors'] = $this->l('You do not have permission to edit this order.');
         }
-        $this->ajaxDie(json_encode(array(
-            'hasError' => true,
-            'errors' => $this->errors
-        )));
+
+        $this->ajaxDie(json_encode($response));
     }
 }
