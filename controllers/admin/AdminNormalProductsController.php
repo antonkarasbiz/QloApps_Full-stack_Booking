@@ -209,7 +209,7 @@ class AdminNormalProductsControllerCore extends AdminController
 
         // show the list of the product according to the booking or service products
         $this->_where .= ' AND a.`booking_product` = 0';
-        $this->_where .= ' AND a.`service_product_type` = '.(int)ProductCore::SERVICE_PRODUCT_WITH_ROOMTYPE;
+        // $this->_where .= ' AND a.`selling_preference_type` = '.(int)Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
 
         $this->_group = 'GROUP BY a.`id_product`';
 
@@ -293,14 +293,14 @@ class AdminNormalProductsControllerCore extends AdminController
             'optional' => true,
         );
         // $serviceProductType = array(
-        //     Product::SERVICE_PRODUCT_WITH_ROOMTYPE => $this->l('Bought with room type'),
-            // Product::SERVICE_PRODUCT_STANDALONE => $this->l('Bought without room type')
+        //     Product::SELLING_PREFERENCE_WITH_ROOM_TYPE => $this->l('Bought with room type'),
+            // Product::SELLING_PREFERENCE_STANDALONE => $this->l('Bought without room type')
         // );
-        // $this->fields_list['service_product_type'] = array(
+        // $this->fields_list['selling_preference_type'] = array(
         //     'type' => 'select',
         //     'list' => $serviceProductType,
         //     'title' => $this->l('Buying option'),
-        //     'filter_key' => 'a!service_product_type',
+        //     'filter_key' => 'a!selling_preference_type',
         //     'callback' => 'getBuyingOption'
         // );
         if (Shop::isFeatureActive() && Shop::getContext() != Shop::CONTEXT_SHOP) {
@@ -357,11 +357,11 @@ class AdminNormalProductsControllerCore extends AdminController
         }
     }
 
-    public function getBuyingOption($service_product_type, $row)
+    public function getBuyingOption($selling_preference_type, $row)
     {
-        if ($service_product_type == Product::SERVICE_PRODUCT_WITH_ROOMTYPE) {
+        if ($selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
             return $this->l('With room type');
-        } else if ($service_product_type == Product::SERVICE_PRODUCT_STANDALONE) {
+        } else if ($selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE) {
             return $this->l('Without room type');
         }
 
@@ -1825,7 +1825,7 @@ class AdminNormalProductsControllerCore extends AdminController
             $_POST['allow_multiple_quantity'] = 0;
         }
 
-        $_POST['service_product_type'] = Product::SERVICE_PRODUCT_WITH_ROOMTYPE;
+        $_POST['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
         $this->copyFromPost($this->object, $this->table);
 
 
@@ -1970,7 +1970,7 @@ class AdminNormalProductsControllerCore extends AdminController
             if (Validate::isLoadedObject($object)) {
                 $this->_removeTaxFromEcotax();
                 $product_type_before = $object->getType();
-                $_POST['service_product_type'] = Product::SERVICE_PRODUCT_WITH_ROOMTYPE;
+                // $_POST['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
                 $this->copyFromPost($object, $this->table);
                 $object->indexed = 0;
 
@@ -2883,7 +2883,7 @@ class AdminNormalProductsControllerCore extends AdminController
         if (Validate::isLoadedObject($product)) {
             $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
             $allAssociations = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id);
-            if (Product::SERVICE_PRODUCT_WITH_ROOMTYPE == $product->service_product_type) {
+            if (Product::SELLING_PREFERENCE_WITH_ROOM_TYPE == $product->selling_preference_type) {
                 $associatedRoomTypes = $allAssociations['room_type'];
                 $selectedRoomTypes = Tools::getValue('room_type_box');
 
@@ -2924,7 +2924,7 @@ class AdminNormalProductsControllerCore extends AdminController
                     $product->id,
                     RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL
                 );
-            } elseif (Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL == $product->service_product_type) {
+            } elseif (Product::SELLING_PREFERENCE_HOTEL_STANDALONE == $product->selling_preference_type) {
                 $associatedHotels = $allAssociations['hotel'];
                 $selectedHotel = Tools::getValue('hotel_box');
                 // Generate list of new associations
@@ -2964,6 +2964,80 @@ class AdminNormalProductsControllerCore extends AdminController
                     $product->id,
                     RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE
                 );
+            } elseif (Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE == $product->selling_preference_type) {
+                // Add room types linking
+                $associatedRoomTypes = $allAssociations['room_type'];
+                $selectedRoomTypes = Tools::getValue('room_type_box');
+                // Generate list of new associations
+                $newRoomTypes = array();
+                foreach ($selectedRoomTypes as $selectedRoomType) {
+                    if (!in_array($selectedRoomType, $associatedRoomTypes)) {
+                        $newRoomTypes[] = $selectedRoomType;
+                    }
+                }
+
+                // Generate list of associations to remove
+                $removedRoomTypes = array();
+                foreach ($associatedRoomTypes as $associatedRoomType) {
+                    if (!in_array($associatedRoomType, $selectedRoomTypes)) {
+                        $removedRoomTypes[] = $associatedRoomType;
+                    }
+                }
+
+                // Remove old associations
+                foreach ($removedRoomTypes as $removedRoomType) {
+                    RoomTypeServiceProduct::deleteRoomProductLink(
+                        $product->id,
+                        RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE,
+                        $removedRoomType
+                    );
+                }
+
+                // Save new associations
+                if ($newRoomTypes) {
+                    $objRoomTypeServiceProduct->addRoomProductLink(
+                        $product->id,
+                        $newRoomTypes,
+                        RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE
+                    );
+                }
+
+                // Add hotels linking
+                $associatedHotels = $allAssociations['hotel'];
+                $selectedHotel = Tools::getValue('hotel_box');
+                // Generate list of new associations
+                $newHotels = array();
+                foreach ($selectedHotel as $selectedRoomType) {
+                    if (!in_array($selectedRoomType, $associatedHotels)) {
+                        $newHotels[] = $selectedRoomType;
+                    }
+                }
+
+                // Generate list of associations to remove
+                $removedHotels = array();
+                foreach ($associatedHotels as $associatedRoomType) {
+                    if (!in_array($associatedRoomType, $selectedHotel)) {
+                        $removedHotels[] = $associatedRoomType;
+                    }
+                }
+
+                // Remove old associations
+                foreach ($removedHotels as $removedHotel) {
+                    RoomTypeServiceProduct::deleteRoomProductLink(
+                        $product->id,
+                        RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL,
+                        $removedHotel
+                    );
+                }
+
+                // Save new associations
+                if ($newHotels) {
+                    $objRoomTypeServiceProduct->addRoomProductLink(
+                        $product->id,
+                        $newHotels,
+                        RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL
+                    );
+                }
             } else {
                 // Remove associations
                 RoomTypeServiceProduct::deleteRoomProductLink(
@@ -3700,13 +3774,14 @@ class AdminNormalProductsControllerCore extends AdminController
         }
 
         $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
-        $selectedElements = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id);
+        $selectetRoomTypes = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id, RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE);
+        $selectetHotels = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id, RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL);
 
         $tree = new HelperTree('hotels-room-tree');
         $tree->setData(HotelHelper::generateTreeData([
                 'rootNode' => HotelHelper::NODE_HOTEL,
                 'leafNode' => HotelHelper::NODE_ROOM_TYPE,
-                'selectedElements' => $selectedElements
+                'selectedElements' => $selectetRoomTypes
             ]))
             ->setUseCheckBox(true)
             ->setAutoSelectChildren(true)
@@ -3718,7 +3793,7 @@ class AdminNormalProductsControllerCore extends AdminController
         $tree->setData(HotelHelper::generateTreeData([
                 'rootNode' => HotelHelper::NODE_HOTEL,
                 'leafNode' => HotelHelper::NODE_HOTEL,
-                'selectedElements' => $selectedElements
+                'selectedElements' => $selectetHotels
             ]))
             ->setUseCheckBox(true)
             ->setAutoSelectChildren(true)

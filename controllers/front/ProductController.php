@@ -805,12 +805,14 @@ class ProductControllerCore extends FrontController
     }
 
     public function assignServiceProductVars(
-        $idServiceProductOption = false,
-        $quantity = false,
+        $idProductOption = false,
+        $quantity = 1,
         $idHotel = false
     ) {
         $smartyVars = array();
-        if (Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL == $this->product->service_product_type) {
+        if (Product::SELLING_PREFERENCE_HOTEL_STANDALONE == $this->product->selling_preference_type
+            || Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE == $this->product->selling_preference_type
+        ) {
             $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
 
             if ($associatedHotels = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($this->product->id)['hotel']) {
@@ -832,32 +834,32 @@ class ProductControllerCore extends FrontController
         $objServiceProductOption = new ServiceProductOption();
         if ($serviceProductOptions = $objServiceProductOption->getProductOptions($this->product->id)) {
             foreach ($serviceProductOptions as &$serviceProductOption) {
-                if ($idServiceProductOption == null) {
-                    $idServiceProductOption = $serviceProductOption['id_service_product_option'];
+                if ($idProductOption == null) {
+                    $idProductOption = $serviceProductOption['id_product_option'];
                 }
                 $serviceProductOption['price'] = RoomTypeServiceProductPrice::getPrice(
                     $this->product->id,
                     $idHotel,
-                    $serviceProductOption['id_service_product_option'],
+                    $serviceProductOption['id_product_option'],
                     $useTax,
                     $quantity
                 );
             }
 
         }
-        $smartyVars['service_product_option'] = $serviceProductOptions;
+        $smartyVars['product_option'] = $serviceProductOptions;
         $smartyVars['service_price']  = RoomTypeServiceProductPrice::getPrice(
             $this->product->id,
             $idHotel,
-            $idServiceProductOption,
+            $idProductOption,
             $useTax,
             $quantity
         );
         if ($quantity) {
             $smartyVars['quantity']  = $quantity;
         }
-        if ($idServiceProductOption) {
-            $smartyVars['id_service_product_option']  = $idServiceProductOption;
+        if ($idProductOption) {
+            $smartyVars['id_product_option']  = $idProductOption;
         }
 
         $this->context->smarty->assign($smartyVars);
@@ -1360,10 +1362,10 @@ class ProductControllerCore extends FrontController
             }
         } else {
             $idHotel = Tools::getValue('service_id_hotel');
-            $id_service_product_option = Tools::getValue('id_service_product_option');
+            $id_product_option = Tools::getValue('id_product_option');
             $quantity = Tools::getValue('service_product_qty');
             $this->assignServiceProductVars(
-                $id_service_product_option,
+                $id_product_option,
                 $quantity,
                 $idHotel
             );

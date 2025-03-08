@@ -340,21 +340,21 @@
                                     <tbody>
                                         {assign var=room_price_tax_excl value=$order->getTotalProductsWithoutTaxes(false, true)}
                                         {assign var=room_price_tax_incl value=$order->getTotalProductsWithTaxes(false, true)}
-                                        {assign var=additional_service_price_tax_excl value=($order->getTotalProductsWithoutTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE) + $total_demands_price_te)}
-                                        {assign var=additional_service_price_tax_incl value=($order->getTotalProductsWithTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE) + $total_demands_price_ti)}
-                                        {assign var=total_tax_without_discount value=(($room_price_tax_incl - $room_price_tax_excl) + ($additional_service_price_tax_incl - $additional_service_price_tax_excl ))}
+                                        {assign var=room_services_price_tax_excl value=($order->getTotalProductsWithoutTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) + $total_demands_price_te)}
+                                        {assign var=room_services_price_tax_incl value=($order->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) + $total_demands_price_ti)}
+                                        {assign var=total_tax_without_discount value=(($room_price_tax_incl - $room_price_tax_excl) + ($room_services_price_tax_incl - $room_services_price_tax_excl ))}
                                         {if $priceDisplay && $use_tax && $room_price_tax_excl}
                                             <tr>
                                                 <td>{l s='Total rooms cost (tax excl.)'}</td>
                                                 <td class="text-right">
-                                                    <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_excl + $additional_service_price_tax_excl - $total_convenience_fee_te) currency=$currency}</span>
+                                                    <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_excl + $room_services_price_tax_excl - $total_convenience_fee_te) currency=$currency}</span>
                                                 </td>
                                             </tr>
                                         {else}
                                             <tr>
                                                 <td>{l s='Total Rooms Cost'} {if $use_tax}{l s='(tax incl.)'}{/if} </td>
                                                 <td class="text-right">
-                                                    <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_incl + $additional_service_price_tax_incl - $total_convenience_fee_ti) currency=$currency}</span>
+                                                    <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_incl + $room_services_price_tax_incl - $total_convenience_fee_ti) currency=$currency}</span>
                                                 </td>
                                             </tr>
                                         {/if}
@@ -738,21 +738,30 @@
                                     <tbody>
                                         {assign var=room_price_tax_excl value=$order->getTotalProductsWithoutTaxes(false, true)}
                                         {assign var=room_price_tax_incl value=$order->getTotalProductsWithTaxes(false, true)}
-                                        {assign var=additional_service_price_tax_excl value=($order->getTotalProductsWithoutTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE) + $total_demands_price_te)}
-                                        {assign var=additional_service_price_tax_incl value=($order->getTotalProductsWithTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE) + $total_demands_price_ti)}
-                                        {assign var=total_tax_without_discount value=(($room_price_tax_incl - $room_price_tax_excl) + ($additional_service_price_tax_incl - $additional_service_price_tax_excl ))}
+
+                                        {assign var=room_services_price_tax_excl value=($order->getTotalProductsWithoutTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) + $total_demands_price_te)}
+                                        {assign var=room_services_price_tax_incl value=($order->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) + $total_demands_price_ti)}
+
+                                        {assign var=hotel_products_price_tax_excl value=$order->getTotalProductsWithoutTaxes(false, false, Product::SELLING_PREFERENCE_HOTEL_STANDALONE)}
+                                        {assign var=hotel_products_price_tax_incl value=$order->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_HOTEL_STANDALONE)}
+
+                                        {assign var=standalone_products_price_tax_excl value=$order->getTotalProductsWithoutTaxes(false, false, Product::SELLING_PREFERENCE_STANDALONE)}
+                                        {assign var=standalone_products_price_tax_incl value=$order->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_STANDALONE)}
+
+                                        {assign var=total_tax_without_discount value=(($room_price_tax_incl - $room_price_tax_excl) + ($room_services_price_tax_incl - $room_services_price_tax_excl) + ($standalone_products_price_tax_excl - $standalone_products_price_tax_excl) + ($hotel_products_price_tax_incl - $hotel_products_price_tax_excl))}
+
                                         {if $priceDisplay && $use_tax && $room_price_tax_excl}
                                             <tr>
                                                 <td>{l s='Total rooms cost (tax excl.)'}</td>
                                                 <td class="text-right">
-                                                    <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_excl + $additional_service_price_tax_excl - $total_convenience_fee_te) currency=$currency}</span>
+                                                    <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_excl + $room_services_price_tax_excl - $total_convenience_fee_te) currency=$currency}</span>
                                                 </td>
                                             </tr>
                                         {else}
                                             <tr>
                                                 <td>{l s='Total Rooms Cost'} {if $use_tax}{l s='(tax incl.)'}{/if} </td>
                                                 <td class="text-right">
-                                                    <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_incl + $additional_service_price_tax_incl - $total_convenience_fee_ti) currency=$currency}</span>
+                                                    <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_incl + $room_services_price_tax_incl - $total_convenience_fee_ti) currency=$currency}</span>
                                                 </td>
                                             </tr>
                                         {/if}

@@ -72,7 +72,16 @@ class Blockcart extends Module
         }
 
         $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-        $serviceProducts = $objRoomTypeServiceProductCartDetail->getProducts($params['cart']->id);
+        $serviceProducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+            $params['cart']->id,
+            [
+                Product::SELLING_PREFERENCE_STANDALONE,
+                Product::SELLING_PREFERENCE_HOTEL_STANDALONE,
+                Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
+            ],
+            null,
+            0
+        );
 
         $priceDisplayMethod = Product::getTaxCalculationMethod((int)$this->context->cookie->id_customer);
         $nbTotalProducts = 0;
@@ -119,7 +128,7 @@ class Blockcart extends Module
 
             if (!$product['booking_product']) {
                 $product['hasOptions'] = ServiceProductOption::productHasOptions($product['id_product']);
-                if (Product::SERVICE_PRODUCT_STANDALONE == $product['service_product_type']) {
+                if (Product::SELLING_PREFERENCE_STANDALONE == $product['selling_preference_type']) {
                     $nbTotalProducts += (int) $product['cart_quantity'];
                     $product['total_price_tax_incl'] = 0;
                     $product['total_price_tax_excl'] = 0;
@@ -133,10 +142,12 @@ class Blockcart extends Module
                             $product['amount'] += $useTax ? $serviceProduct['total_price_tax_incl'] : $serviceProduct['total_price_tax_excl'];
                         }
                     }
-                } elseif (Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL == $product['service_product_type']) {
-                    $nbTotalProducts += (int) $product['cart_quantity'];
+                } elseif (Product::SELLING_PREFERENCE_HOTEL_STANDALONE == $product['selling_preference_type']
+                    || Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE == $product['selling_preference_type']
+                ) {
                     foreach ($serviceProducts as $key => $serviceProduct) {
-                        if ($serviceProduct['id_product'] == $product['id_product']) {
+                        if ($serviceProduct['id_hotel']) {
+                            $nbTotalProducts += (int) $serviceProduct['quantity'];
                             if (!isset($product['hotel_wise_data'][$serviceProduct['id_hotel']])) {
                                 $product['hotel_wise_data'][$serviceProduct['id_hotel']] = array(
                                     'id_hotel' => $serviceProduct['id_hotel'],
@@ -293,20 +304,22 @@ class Blockcart extends Module
                 $addedProduct['date_from'] = Tools::displayDate($addedProduct['date_from'], null, $fullDate);
                 $addedProduct['date_to'] = Tools::displayDate($addedProduct['date_to'], null, $fullDate);
             } else {
-                if ($objProduct->service_product_type == Product::SERVICE_PRODUCT_STANDALONE) {
+                if ($objProduct->selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE) {
                     $addedProduct['unit_price'] = RoomTypeServiceProductPrice::getPrice(
                         $objProduct->id,
                         0,
-                        isset($addedProduct['id_service_product_option']) ? $addedProduct['id_service_product_option'] : null,
+                        isset($addedProduct['id_product_option']) ? $addedProduct['id_product_option'] : null,
                         $useTax,
                         $addedProduct['qty']
                     );
 
-                } elseif ($objProduct->service_product_type == Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL) {
+                } elseif ($objProduct->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE
+                    || $objProduct->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
+                ) {
                     $addedProduct['unit_price'] = RoomTypeServiceProductPrice::getPrice(
                         $objProduct->id,
                         $addedProduct['id_hotel'],
-                        isset($addedProduct['id_service_product_option']) ? $addedProduct['id_service_product_option'] : null,
+                        isset($addedProduct['id_product_option']) ? $addedProduct['id_product_option'] : null,
                         $useTax,
                         $addedProduct['qty']
                     );

@@ -982,18 +982,26 @@ class OrderOpcControllerCore extends ParentOrderController
                 $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
                 $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
                 $roomTypeServiceProducts = $objRoomTypeServiceProduct->getServiceProductsData($idProduct, 1, 0, true, 1);
-                $cartRooms = $objCartBookingData->getHotelCartRoomsInfoByRoomType($this->context->cart->id, $idProduct,$dateFrom, $dateTo);
-                foreach($cartRooms as &$room) {
-                    $room['selected_service'] = $objRoomTypeServiceProductCartDetail->getRoomServiceProducts(
-                        $room['id'],
+                $cartBookings = $objCartBookingData->getHotelCartRoomsInfoByRoomType($this->context->cart->id, $idProduct,$dateFrom, $dateTo);
+                foreach($cartBookings as &$cartBookingData) {
+                    $cartBookingData['selected_service'] = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                        $cartBookingData['id_cart'],
+                        [],
+                        null,
+                        $cartBookingData['id'],
+                        null,
+                        null,
+                        null,
+                        null,
+                        0,
                         0,
                         null,
-                        null
+                        1
                     );
                 }
                 $this->context->smarty->assign(array(
                     'roomTypeServiceProducts' => $roomTypeServiceProducts,
-                    'cartRooms' => $cartRooms
+                    'cartRooms' => $cartBookings
                 ));
             }
         }

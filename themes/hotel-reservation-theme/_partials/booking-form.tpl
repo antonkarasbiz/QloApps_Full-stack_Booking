@@ -226,14 +226,14 @@
                                 </div>
                             {/if}
                         {/block}
-                        {block name='booking_form_service_product_option'}
-                            {if isset($service_product_option) && $service_product_option}
+                        {block name='booking_form_product_option'}
+                            {if isset($product_option) && $product_option}
                                 <label class="control-label">{l s='Variants'}</label>
                                 <div class="product-options-block">
-                                    {foreach $service_product_option as $option}
+                                    {foreach $product_option as $option}
                                         <div class="form-group">
-                                            <label for="id_service_product_option{$option['id_service_product_option']}" class="top">
-                                                <input type="radio" name="id_service_product_option" id="id_service_product_option{$option['id_service_product_option']}" value="{$option['id_service_product_option']}" {if isset($id_service_product_option) && $id_service_product_option == $option['id_service_product_option']}checked="checked"{else if $option@first}checked="checked"{/if}/>
+                                            <label for="id_product_option{$option['id_product_option']}" class="top">
+                                                <input type="radio" name="id_product_option" id="id_product_option{$option['id_product_option']}" value="{$option['id_product_option']}" {if isset($id_product_option) && $id_product_option == $option['id_product_option']}checked="checked"{else if $option@first}checked="checked"{/if}/>
                                                 {$option['name']}
                                                 <span class="pull-right">{convertPrice price=$option['price']}</span>
                                             </label>

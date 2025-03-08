@@ -11,7 +11,7 @@
             </div>
         {/block}
         {block name='blockcart_shopping_cart_hotel_name'}
-            {if $product.service_product_type == Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL}
+            {if $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE || $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE}
                 <div class="hotel-name">
                     {$hotel_wise_data.hotel_name|escape:'html':'UTF-8'}
                 </div>
@@ -29,7 +29,7 @@
                     {if !isset($product.is_gift) || !$product.is_gift}
                         {if $product.booking_product}
                             {displayWtPrice p="`$product.bookingData.total_room_type_amount`"}
-                        {else if $product.service_product_type == Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL}
+                        {else if $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE || $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE}
                             {if $priceDisplay == $smarty.const.PS_TAX_EXC}{displayWtPrice p="`$hotel_wise_data.total_price_tax_excl`"}{else}{displayWtPrice p="`$hotel_wise_data.total_price_tax_incl`"}{/if}
                         {else}
                             {if $priceDisplay == $smarty.const.PS_TAX_EXC}{displayWtPrice p="`$product.total_price_tax_excl`"}{else}{displayWtPrice p="`$product.total_price_tax_incl`"}{/if}
@@ -53,9 +53,9 @@
                     {if $product.booking_product}
                         <span class="quantity product_info_data">{$product.bookingData['total_num_rooms']}</span>
                     {else}
-                        {if $product.service_product_type == Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL}
+                        {if $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE || $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE}
                             <span class="quantity product_info_data">{$hotel_wise_data.total_qty}</span>
-                        {elseif $product.service_product_type == Product::SERVICE_PRODUCT_STANDALONE}
+                        {elseif $product.selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE}
                             <span class="quantity product_info_data">{$product.cart_quantity}</span>
                         {/if}
                     {/if}
@@ -99,9 +99,9 @@
         {/block}
     {else if $product.hasOptions}
         {block name='blockcart_shopping_cart_options'}
-            {if $product.service_product_type == Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL}
+            {if $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE || $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE}
                 {assign var='options' value=$hotel_wise_data.options}
-            {else if $product.service_product_type == Product::SERVICE_PRODUCT_STANDALONE}
+            {else if $product.selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE}
                 {assign var='options' value=$product.options}
             {/if}
             <div class="table-responsive cart_prod_cont">
@@ -118,7 +118,7 @@
                                 <td>{$data_v.option_name}</td>
                                 <td>{$data_v['quantity']}</td>
                                 <td>{convertPrice price=($data_v['total_price_tax_excl'])}</td>
-                                <td class="text-right"><a class="ajax_remove_product_option" href="#" id_product="{$product.id_product|intval}" id_hotel="{$data_v.id_hotel|intval}" id_service_product_option="{$data_v.id_service_product_option|intval}" title="{l s='remove this product from my cart' mod='blockcart'}">&nbsp;</a></td>
+                                <td class="text-right"><a class="ajax_remove_product_option" href="#" id_product="{$product.id_product|intval}" id_hotel="{$data_v.id_hotel|intval}" id_product_option="{$data_v.id_product_option|intval}" title="{l s='remove this product from my cart' mod='blockcart'}">&nbsp;</a></td>
                             </tr>
                         {/foreach}
                     </tbody>

@@ -1235,7 +1235,7 @@ $(document).ready(function() {
         }, 500);
     });
 
-    $(document).on('change', 'input[name="id_service_product_option"]', function(e) {
+    $(document).on('change', 'input[name="id_product_option"]', function(e) {
         BookingForm.refresh()
     });
 

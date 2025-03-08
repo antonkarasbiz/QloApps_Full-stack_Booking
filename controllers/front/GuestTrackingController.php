@@ -487,7 +487,7 @@ class GuestTrackingControllerCore extends FrontController
                                     $value['avg_price_diff_tax_excl'] = abs(Tools::ps_round($value['avg_paid_unit_price_tax_excl'] - $value['product_price_tax_excl'], 6));
                                     $value['avg_price_diff_tax_incl'] = abs(Tools::ps_round($value['avg_paid_unit_price_tax_incl'] - $value['product_price_tax_incl'], 6));
                                 }
-                            } else if ($type_value['product_service_type'] == Product::SERVICE_PRODUCT_WITH_ROOMTYPE) {
+                            } else if ($type_value['selling_preference_type'] == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
                                 if ($type_value['product_auto_add'] && $type_value['product_price_addition_type'] == Product::PRICE_ADDITION_TYPE_INDEPENDENT) {
                                     $total_convenience_fee_ti += $objRoomTypeServiceProductOrderDetail->getroomTypeServiceProducts(
                                         $idOrder,
@@ -516,7 +516,7 @@ class GuestTrackingControllerCore extends FrontController
                                 }
                             } else {
                                 // get all products that are independent.
-                                if ($type_value['product_service_type'] == Product::SERVICE_PRODUCT_STANDALONE) {
+                                if ($type_value['selling_preference_type'] == Product::SELLING_PREFERENCE_STANDALONE) {
                                     $product = new Product($type_value['product_id'], false, $this->context->language->id);
                                     $cover_image_arr = $product->getCover($type_value['product_id']);
 

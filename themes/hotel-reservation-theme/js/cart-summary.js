@@ -405,12 +405,12 @@ function updateQty(val, cart, el)
 		var input = $(prefix + 'input[name=' + id + ']').val();
 		var QtyToUp = parseInt(input) - parseInt(hidden);
 
-		var [productId, id_service_product_option, id_hotel] = getRequestData(id.replace('quantity_', ''));
+		var [productId, id_product_option, id_hotel] = getRequestData(id.replace('quantity_', ''));
 
 		if (parseInt(QtyToUp) > 0)
-			updateQuantityRequest(productId, 'up', id_service_product_option, id_hotel, QtyToUp)
+			updateQuantityRequest(productId, 'up', id_product_option, id_hotel, QtyToUp)
 		else if(parseInt(QtyToUp) < 0)
-			updateQuantityRequest(productId, 'down', id_service_product_option, id_hotel, QtyToUp)
+			updateQuantityRequest(productId, 'down', id_product_option, id_hotel, QtyToUp)
 		}
 	else
 		$(prefix + 'input[name=' + id + ']').val($(prefix + 'input[name=' + id + '_hidden]').val());
@@ -435,10 +435,10 @@ function deleteProductFromSummary(id)
 	if (typeof(ids[3]) !== 'undefined')
 		id_address_delivery = parseInt(ids[3]);
 
-	var id_service_product_option = 0;
+	var id_product_option = 0;
 	var id_hotel = 0;
 
-	var [productId, id_service_product_option, id_hotel] = getRequestData(id);
+	var [productId, id_product_option, id_hotel] = getRequestData(id);
 	if (ajax_pre_check_var) {
 		ajax_pre_check_var.abort();
 	}
@@ -452,7 +452,7 @@ function deleteProductFromSummary(id)
 		data: 'controller=cart'
 			+ '&ajax=true&delete=true&summary=true'
 			+ '&id_product='+productId
-			+ '&id_service_product_option=' + id_service_product_option
+			+ '&id_product_option=' + id_product_option
 			+ '&id_hotel=' + id_hotel
 			+ '&ipa='+productAttributeId
 			+ '&id_address_delivery='+id_address_delivery
@@ -686,7 +686,7 @@ function debounce(func, delay) {
 	// };
   }
 
-function updateQuantityRequest(productId, op, id_service_product_option, id_hotel, qty)
+function updateQuantityRequest(productId, op, id_product_option, id_hotel, qty)
 {
 	if (ajax_pre_check_var) {
 		ajax_pre_check_var.abort();
@@ -704,7 +704,7 @@ function updateQuantityRequest(productId, op, id_service_product_option, id_hote
 			+ '&getproductprice=true'
 			+ '&summary=true'
 			+ '&id_product=' + productId
-			+ '&id_service_product_option=' + id_service_product_option
+			+ '&id_product_option=' + id_product_option
 			+ '&id_hotel=' + id_hotel
 			+ '&qty=' + qty
 			+ '&op=' + op
@@ -779,14 +779,14 @@ function getRequestData(id)
 	var ids = 0;
 	ids = id.split('_');
 	productId = parseInt(ids[0]);
-	id_service_product_option = 0;
+	id_product_option = 0;
 	id_hotel = 0;
 	if (typeof(ids[1]) !== 'undefined')
-		id_service_product_option = parseInt(ids[1]);
+		id_product_option = parseInt(ids[1]);
 	if (typeof(ids[2]) !== 'undefined' && ids[2] !== 'nocustom')
 		id_hotel = parseInt(ids[2]);
 
-	return [productId, id_service_product_option, id_hotel];
+	return [productId, id_product_option, id_hotel];
 }
 
 function upQuantity(id, qty)
@@ -794,15 +794,15 @@ function upQuantity(id, qty)
 	if (typeof(qty) == 'undefined' || !qty)
 		qty = 1;
 	var productId = 0;
-	var id_service_product_option = 0;
+	var id_product_option = 0;
 	var id_hotel = 0;
 
-	var [productId, id_service_product_option, id_hotel] = getRequestData(id);
+	var [productId, id_product_option, id_hotel] = getRequestData(id);
 	if (typeof(cart) == 'undefined' || cart)
 		prefix = '.order-detail-content ';
 	else
 		prefix = '#fancybox-content ';
-	updateQuantityRequest(productId, 'up', id_service_product_option, id_hotel, qty)
+	updateQuantityRequest(productId, 'up', id_product_option, id_hotel, qty)
 	$(prefix + 'input[name=quantity_' + id + ']').val(parseInt($(prefix + 'input[name=quantity_' + id + ']').val()) + parseInt(qty));
 	$(prefix + 'input[name=quantity_' + id + '_hidden]').val(parseInt($(prefix + 'input[name=quantity_' + id + ']').val()) + parseInt(qty));
 }
@@ -820,9 +820,9 @@ function downQuantity(id, qty)
 		qty = -qty;
 
 	var productId = 0;
-	var id_service_product_option = 0;
+	var id_product_option = 0;
 	var id_hotel = 0;
-	var [productId, id_service_product_option, id_hotel] = getRequestData(id);
+	var [productId, id_product_option, id_hotel] = getRequestData(id);
 
 	if (typeof(cart) == 'undefined' || cart)
 		prefix = '.order-detail-content ';
@@ -831,7 +831,7 @@ function downQuantity(id, qty)
 
 	if (newVal > 0 || $('#product_' + id + '_gift').length)
 	{
-		updateQuantityRequest(productId, 'down', id_service_product_option, id_hotel, qty)
+		updateQuantityRequest(productId, 'down', id_product_option, id_hotel, qty)
 		$(prefix + 'input[name=quantity_' + id + ']').val(newVal);
 		$(prefix + 'input[name=quantity_' + id + '_hidden]').val(newVal);
 		// if (ajax_pre_check_var) {

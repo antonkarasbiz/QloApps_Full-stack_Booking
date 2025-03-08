@@ -3010,7 +3010,7 @@ const AddProductModal = {
                                 if (data.options) {
                                     $('#new_product .form-group.productOptions').show();
                                     $.each(data.options, function() {
-                                        $('<option/>').val(this.id_service_product_option).text(this.name).appendTo('#new_product #add_product_product_option');
+                                        $('<option/>').val(this.id_product_option).text(this.name).appendTo('#new_product #add_product_product_option');
                                     });
                                     AddProductModal.initOptionsChange();
                                 }

@@ -285,7 +285,7 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
         $order_detail = array_filter($this->order->products, function($v) {
             return ((isset($v['is_booking_product']) && $v['is_booking_product'])
                 || ((isset($v['product_auto_add']) && $v['product_auto_add'])
-                    && $v['product_service_type'] == Product::SERVICE_PRODUCT_WITH_ROOMTYPE
+                    && $v['selling_preference_type'] == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE
                     && $v['product_price_addition_type'] == ProductCore::PRICE_ADDITION_TYPE_WITH_ROOM)
             );
         });

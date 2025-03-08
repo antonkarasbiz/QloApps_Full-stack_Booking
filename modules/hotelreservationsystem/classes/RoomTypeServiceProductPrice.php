@@ -104,7 +104,7 @@ class RoomTypeServiceProductPrice extends ObjectModel
     public static function getPrice(
         $idProduct,
         $idHotel,
-        $idServiceProductOption = null,
+        $idProductOption = null,
         $useTax = null,
         $quantity = 1
     ) {
@@ -112,7 +112,7 @@ class RoomTypeServiceProductPrice extends ObjectModel
         $price =  ProductCore::getPriceStatic(
             $idProduct,
             $useTax,
-            $idServiceProductOption,
+            $idProductOption,
             6,
             null,
             false,
@@ -124,7 +124,7 @@ class RoomTypeServiceProductPrice extends ObjectModel
             $idHotelAddress,
         );
 
-        return $price;
+        return $price * (int)$quantity;
     }
 
     public function getServicePrice(

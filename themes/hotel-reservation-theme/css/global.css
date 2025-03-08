@@ -9014,6 +9014,7 @@ a.open_rooms_extra_services_panel {
   margin-bottom: 18px;} */
 
 #rooms_extra_services .room_demand_block {
+  margin-bottom: 10px;
   color: #333;
   font-size: 14px;}
 #rooms_extra_services .checkbox {

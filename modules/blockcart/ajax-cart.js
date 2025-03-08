@@ -856,7 +856,7 @@ var ajaxCart = {
         $(jsonData.products).each(function(key, value) {
             //fix ie6 bug (one more item 'undefined' in IE6)
             if (this.id != undefined) {
-                if (!this.booking_product && this.service_product_type != 2) {
+                if (!this.booking_product && this.selling_preference_type != 2) {
                     return;
                 }
                 //create a container for listing the products and hide the 'no product in the cart' message (only if the cart was empty)

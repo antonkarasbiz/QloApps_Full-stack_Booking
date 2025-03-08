@@ -1864,7 +1864,7 @@ class AdminImportControllerCore extends AdminController
                                 }
 
                                 $objServiceProduct = new Product($idServiceProduct);
-                                if (Product::SERVICE_PRODUCT_WITH_ROOMTYPE == $objServiceProduct->service_product_type) {
+                                if (Product::SELLING_PREFERENCE_WITH_ROOM_TYPE == $objServiceProduct->selling_preference_type) {
                                     $objRoomTypeServiceProduct->addRoomProductLink(
                                         $objServiceProduct->id,
                                         $product->id,
@@ -2236,7 +2236,7 @@ class AdminImportControllerCore extends AdminController
                         $product->price_addition_type = Product::PRICE_ADDITION_TYPE_WITH_ROOM;
                     }
 
-                    $product->service_product_type = Product::SERVICE_PRODUCT_WITH_ROOMTYPE;
+                    $product->selling_preference_type = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
                     if (!$serviceProductExists) {
                         if (isset($product->date_add) && $product->date_add != '') {
                             $res = $product->add(false);
@@ -2292,7 +2292,7 @@ class AdminImportControllerCore extends AdminController
                     $info['shop'] = explode($this->multiple_value_separator, $info['shop']);
 
                     RoomTypeServiceProduct::deleteRoomProductLink($product->id);
-                    if (Product::SERVICE_PRODUCT_WITH_ROOMTYPE == $product->service_product_type) {
+                    if (Product::SELLING_PREFERENCE_WITH_ROOM_TYPE == $product->selling_preference_type) {
                         $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
                         if (isset($info['id_room_types']) && $info['id_room_types']) {
                             $objRoomTypeServiceProduct->addRoomProductLink(

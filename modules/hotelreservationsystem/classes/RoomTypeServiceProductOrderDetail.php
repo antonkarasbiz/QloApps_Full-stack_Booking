@@ -27,7 +27,7 @@ class RoomTypeServiceProductOrderDetail extends ObjectModel
     public $id_cart;
     public $id_hotel;
     public $id_htl_booking_detail;
-    public $id_service_product_option;
+    public $id_product_option;
     public $unit_price_tax_excl;
     public $unit_price_tax_incl;
     public $total_price_tax_excl;
@@ -51,7 +51,7 @@ class RoomTypeServiceProductOrderDetail extends ObjectModel
             'id_cart' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
             'id_hotel' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_htl_booking_detail' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'id_service_product_option' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_product_option' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'unit_price_tax_excl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
             'unit_price_tax_incl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
             'total_price_tax_excl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
@@ -88,7 +88,7 @@ class RoomTypeServiceProductOrderDetail extends ObjectModel
 
         $sql = 'SELECT rsod.*';
         if (!$getTotalPrice) {
-            $sql .= ', hbd.`id_product` as `room_type_id_product`, od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`, hbd.`id_room`, hbd.`adults`, hbd.`children`';
+            $sql .= ', hbd.`id_product` as `id_room_type`, od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`, hbd.`id_room`, hbd.`adults`, hbd.`children`';
         }
         $sql .= ' FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
             LEFT JOIN `'._DB_PREFIX_.'htl_room_type_service_product_order_detail` rsod ON(rsod.`id_htl_booking_detail` = hbd.`id`)';
@@ -174,7 +174,7 @@ class RoomTypeServiceProductOrderDetail extends ObjectModel
                         $selectedAdditionalServices[$product['id_htl_booking_detail']]['children'] = $product['children'];
                         $selectedAdditionalServices[$product['id_htl_booking_detail']]['total_price_tax_excl'] = $product['total_price_tax_excl'];
                         $selectedAdditionalServices[$product['id_htl_booking_detail']]['total_price_tax_incl'] = $product['total_price_tax_incl'];
-                        $selectedAdditionalServices[$product['id_htl_booking_detail']]['room_type_id_product'] = $product['room_type_id_product'];
+                        $selectedAdditionalServices[$product['id_htl_booking_detail']]['id_room_type'] = $product['id_room_type'];
                         $selectedAdditionalServices[$product['id_htl_booking_detail']]['id_room'] = $product['id_room'];
 
 
@@ -218,7 +218,7 @@ class RoomTypeServiceProductOrderDetail extends ObjectModel
 
         $sql = 'SELECT rsod.*';
         if (!$getTotalPrice) {
-            $sql .= ', hbd.`id_product` as `room_type_id_product`, hbd.`id_room`, od.`product_allow_multiple_quantity`, p.`max_quantity`,
+            $sql .= ', hbd.`id_product` as `id_room_type`, hbd.`id_room`, od.`product_allow_multiple_quantity`, p.`max_quantity`,
                 od.`product_auto_add`, od.`product_price_calculation_method`, od.`product_price_addition_type`';
         }
         $sql .= ' FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
@@ -274,7 +274,7 @@ class RoomTypeServiceProductOrderDetail extends ObjectModel
                         $selectedAdditionalServices['id_htl_booking_detail'] = $product['id_htl_booking_detail'];
                         $selectedAdditionalServices['total_price_tax_excl'] = $product['total_price_tax_excl'];
                         $selectedAdditionalServices['total_price_tax_incl'] = $product['total_price_tax_incl'];
-                        $selectedAdditionalServices['room_type_id_product'] = $product['room_type_id_product'];
+                        $selectedAdditionalServices['id_room_type'] = $product['id_room_type'];
                         $selectedAdditionalServices['id_room'] = $product['id_room'];
                         $selectedAdditionalServices['additional_services'] = array(
                             array(
@@ -338,7 +338,7 @@ class RoomTypeServiceProductOrderDetail extends ObjectModel
         }
 
         if ($serviceProductType) {
-            $sql .= ' AND od.`product_service_type` = '.(int)$serviceProductType;
+            $sql .= ' AND od.`selling_preference_type` = '.(int)$serviceProductType;
         }
 
         $products = Db::getInstance()->executeS($sql);

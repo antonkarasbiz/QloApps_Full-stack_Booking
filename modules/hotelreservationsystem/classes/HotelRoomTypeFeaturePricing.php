@@ -733,26 +733,34 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         );
         if ($with_auto_room_services) {
             if ($id_cart && $id_room) {
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                if ($roomServicesServices = $objRoomTypeServiceProductCartDetail->getServiceProductsInCart(
+                $objHotelCartBookingData = new HotelCartBookingData();
+                if ($roomHtlCartInfo = $objHotelCartBookingData->getRoomRowByIdProductIdRoomInDateRange(
                     $id_cart,
-                    0,
-                    0,
                     $id_product,
                     $date_from,
                     $date_to,
-                    0,
-                    0,
-                    null,
-                    1,
-                    null,
-                    Product::PRICE_ADDITION_TYPE_WITH_ROOM,
                     $id_room
                 )) {
-                    $selectedServices = array_shift($roomServicesServices);
-                    $totalPrice['total_price_tax_incl'] += $selectedServices['total_price_tax_incl'];
-                    $totalPrice['total_price_tax_excl'] += $selectedServices['total_price_tax_excl'];
+                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+                    if ($roomServicesServices = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                        $id_cart,
+                        [],
+                        null,
+                        $roomHtlCartInfo['id'],
+                        null,
+                        null,
+                        null,
+                        null,
+                        0,
+                        1,
+                        Product::PRICE_ADDITION_TYPE_WITH_ROOM
+                    )) {
+                        $selectedServices = array_shift($roomServicesServices);
+                        $totalPrice['total_price_tax_incl'] += $selectedServices['total_price_tax_incl'];
+                        $totalPrice['total_price_tax_excl'] += $selectedServices['total_price_tax_excl'];
+                    }
                 }
+
             } else {
                 if ($servicesWithTax = RoomTypeServiceProduct::getAutoAddServices(
                     $id_product,

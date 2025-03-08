@@ -1169,7 +1169,6 @@ class HotelCartBookingData extends ObjectModel
                     0,
                     false
                 );
-
                 $cart_detail_data[$key]['additional_service'] = $objRoomTypeServiceProduct->getServiceProductsData(
                     $value['id_product'],
                     1,
@@ -1546,16 +1545,19 @@ class HotelCartBookingData extends ObjectModel
                                     $data_v['date_to'],
                                     1
                                 );
-                                $serviceProductPrice = $objRoomTypeServiceProductCartDetail->getServiceProductsInCart(
+                                $serviceProductPrice = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
                                     $context->cart->id,
-                                    0,
-                                    $data_v['id_hotel'],
-                                    $data_v['id_product'],
-                                    $data_v['date_from'],
-                                    $data_v['date_to'],
+                                    [],
+                                    null,
                                     $data_v['id'],
-                                    1
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    1,
+                                    0
                                 );
+
                                 $totalAdditionalServicePrice = $demandPrice + $serviceProductPrice;
 
                                 if (isset($cartHotelData[$prodKey]['date_diff'][$dateJoin])) {

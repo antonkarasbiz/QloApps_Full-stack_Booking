@@ -597,14 +597,14 @@ $(document).ready(function()
 		var id_product = $(element).val();
 		var id_cart_booking = $(element).data('id_cart_booking');
 		var qty = $(element).closest('.room_demand_block').find('input.qty');
-		if (typeof(qty) == 'undefined') {
-			qty = 1;
-		}
-		var qty_hidden = $(element).closest('.room_demand_block').find('input.qty_hidden');
-		var update_qty = parseInt($(qty).val()) - parseInt($(qty_hidden).val());
-		var checked = $(element).is(':checked');
 
-		console.log(checked);
+		if (qty.length == 0) {
+			update_qty = 1;
+		} else {
+            var qty_hidden = $(element).closest('.room_demand_block').find('input.qty_hidden');
+            var update_qty = parseInt($(qty).val()) - parseInt($(qty_hidden).val());
+        }
+		var checked = $(element).is(':checked');
 
 		if (checked) {
 			if (update_qty > 0) {

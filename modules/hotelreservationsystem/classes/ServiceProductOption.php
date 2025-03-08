@@ -24,7 +24,7 @@
 
 class ServiceProductOption extends ObjectModel
 {
-    public $id_service_product_option;
+    public $id_product_option;
     public $id_product;
     public $name;
     public $price_impact;
@@ -32,8 +32,8 @@ class ServiceProductOption extends ObjectModel
     public $date_upd;
 
     public static $definition = array(
-        'table' => 'service_product_option',
-        'primary' => 'id_service_product_option',
+        'table' => 'product_option',
+        'primary' => 'id_product_option',
         'multilang' => true,
         'fields' => array(
             'id_product' =>     array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
@@ -57,32 +57,32 @@ class ServiceProductOption extends ObjectModel
         $objServiceProductOption->save();
     }
 
-    public static function productHasOptions($idProduct, $idServiceProductOption = false)
+    public static function productHasOptions($idProduct, $idProductOption = false)
     {
 
-        $sql = 'SELECT po.`id_service_product_option`
-            FROM `'._DB_PREFIX_.'service_product_option` po
+        $sql = 'SELECT po.`id_product_option`
+            FROM `'._DB_PREFIX_.'product_option` po
             WHERE po.`id_product` = '.(int)$idProduct;
-        if ($idServiceProductOption) {
-            $sql .= ' AND po.`id_service_product_option` = '.(int)$idServiceProductOption;
+        if ($idProductOption) {
+            $sql .= ' AND po.`id_product_option` = '.(int)$idProductOption;
         }
         return (bool)Db::getInstance()->getValue($sql);
     }
 
-    public function  getProductOptions($idProduct, $idServiceProductOption = false, $idLang = false)
+    public function  getProductOptions($idProduct, $idProductOption = false, $idLang = false)
     {
         if (!$idLang) {
             $idLang = Context::getContext()->language->id;
         }
 
-        $sql = 'SELECT po.`id_service_product_option`, po.`id_product`, pol.`id_lang`, pol.`name`, po.`price_impact`
-            FROM `'._DB_PREFIX_.'service_product_option` po
-            INNER JOIN `'._DB_PREFIX_.'service_product_option_lang` pol
-            ON (po.`id_service_product_option` = pol.`id_service_product_option`)
+        $sql = 'SELECT po.`id_product_option`, po.`id_product`, pol.`id_lang`, pol.`name`, po.`price_impact`
+            FROM `'._DB_PREFIX_.'product_option` po
+            INNER JOIN `'._DB_PREFIX_.'product_option_lang` pol
+            ON (po.`id_product_option` = pol.`id_product_option`)
             WHERE po.`id_product` = '.(int)$idProduct.' AND pol.`id_lang` = '.(int)$idLang;
 
-        if ($idServiceProductOption) {
-            $sql .= ' AND po.`id_service_product_option` = '.(int)$idServiceProductOption;
+        if ($idProductOption) {
+            $sql .= ' AND po.`id_product_option` = '.(int)$idProductOption;
             return Db::getInstance()->getRow($sql);
         } else {
             return Db::getInstance()->executeS($sql);

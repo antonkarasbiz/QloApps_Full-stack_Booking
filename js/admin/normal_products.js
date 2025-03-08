@@ -550,8 +550,8 @@ product_tabs['Informations'] = new function(){
 
 	this.switchProductType = function(){
 
-		$('#service_product_type').on('change',function(){
-			if (parseInt($(this).val()) == SERVICE_PRODUCT_WITH_ROOMTYPE) {
+		$('#selling_preference_type').on('change',function(){
+			if (parseInt($(this).val()) == SELLING_PREFERENCE_WITH_ROOM_TYPE) {
 				$('#associated_hotel_tree').hide('fast').find('input').each(function() {
 					$(this).attr('data-name', $(this).attr('name'));
 					$(this).removeAttr('name');
@@ -563,7 +563,31 @@ product_tabs['Informations'] = new function(){
 				$('#auto_add_to_cart_container').show('fast');
 				$('#show_at_front_container').show('fast');
 				$('#product_options').show('fast');
-			} else if (parseInt($(this).val()) == SERVICE_PRODUCT_STANDALONE) {
+			} else if (parseInt($(this).val()) == SELLING_PREFERENCE_HOTEL_STANDALONE) {
+				$('#associated_hotel_rooms_tree').hide('fast').find('input').each(function() {
+					$(this).attr('data-name', $(this).attr('name'));
+					$(this).removeAttr('name');
+				});
+				$('#associated_hotel_tree').show('fast').find('input').each(function() {
+					$(this).attr('name', $(this).attr('data-name'));
+					$(this).removeAttr('data-name');
+				});
+				$('#auto_add_to_cart_container').hide('fast');
+				$('#show_at_front_container').show('fast');
+				$('#product_options').show('fast');
+            } else if (parseInt($(this).val()) == SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE) {
+				$('#associated_hotel_rooms_tree').show('fast').find('input').each(function() {
+					$(this).attr('name', $(this).attr('data-name'));
+					$(this).removeAttr('data-name');
+				});
+				$('#associated_hotel_tree').show('fast').find('input').each(function() {
+					$(this).attr('name', $(this).attr('data-name'));
+					$(this).removeAttr('data-name');
+				});
+				$('#auto_add_to_cart_container').hide('fast');
+				$('#show_at_front_container').show('fast');
+				$('#product_options').show('fast');
+            } else if (parseInt($(this).val()) == SELLING_PREFERENCE_STANDALONE) {
 				$('#associated_hotel_rooms_tree').hide('fast').find('input').each(function() {
 					$(this).attr('data-name', $(this).attr('name'));
 					$(this).removeAttr('name');
@@ -575,21 +599,9 @@ product_tabs['Informations'] = new function(){
 				$('#auto_add_to_cart_container').hide('fast');
 				$('#show_at_front_container').show('fast');
 				$('#product_options').show('fast');
-			} else if (parseInt($(this).val()) == SERVICE_PRODUCT_lINKED_WITH_HOTEL) {
-				$('#associated_hotel_rooms_tree').hide('fast').find('input').each(function() {
-					$(this).attr('data-name', $(this).attr('name'));
-					$(this).removeAttr('name');
-				});
-				$('#associated_hotel_tree').show('fast').show('fast').find('input').each(function() {
-					$(this).attr('name', $(this).attr('data-name'));
-					$(this).removeAttr('data-name');
-				});
-				$('#auto_add_to_cart_container').hide('fast');
-				$('#show_at_front_container').show('fast');
-				$('#product_options').show('fast');
 			}
 		});
-		$('#service_product_type').trigger('change');
+		$('#selling_preference_type').trigger('change');
 		$('#simple_product').attr('checked', true);
 
 		$('input[name="type_product"]').on('click', function(e)

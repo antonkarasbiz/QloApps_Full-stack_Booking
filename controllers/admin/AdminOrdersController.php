@@ -400,7 +400,7 @@ class AdminOrdersControllerCore extends AdminController
                     }
                     $this->context->smarty->assign('cart_detail_data', $cart_detail_data);
                 }
-                if ($cartHotelProduct = $objRoomTypeServiceProductCartDetail->getProducts($this->context->cart->id)) {
+                if ($cartHotelProduct = $objRoomTypeServiceProductCartDetail->getCartStandardProducts($this->context->cart->id)) {
                     $this->context->smarty->assign('cart_hotel_product_data', $cartHotelProduct);
                 }
 
@@ -1038,14 +1038,14 @@ class AdminOrdersControllerCore extends AdminController
                 }
             }
             $refundReqProducts = $objOrderReturn->getOrderRefundRequestedProducts($objOrder->id, 0, 1, 0, 1);
-            $hotelProducts = $objRoomTypeServiceProductOrderDetail->getProducts($objOrder->id, 0, 0, Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL);
+            $hotelProducts = $objRoomTypeServiceProductOrderDetail->getProducts($objOrder->id, 0, 0, [Product::SELLING_PREFERENCE_HOTEL_STANDALONE]);
             foreach($hotelProducts as $key => $product) {
                 if ((in_array($product['id_room_type_service_product_order_detail'], $refundReqProducts)) || $product['is_refunded']) {
                     unset($hotelProducts[$key]);
                 }
             }
 
-            $standaloneProducts = $objRoomTypeServiceProductOrderDetail->getProducts($objOrder->id, 0, 0, Product::SERVICE_PRODUCT_STANDALONE);
+            $standaloneProducts = $objRoomTypeServiceProductOrderDetail->getProducts($objOrder->id, 0, 0, [Product::SELLING_PREFERENCE_STANDALONE]);
             foreach($standaloneProducts as $key => $product) {
                 if ((in_array($product['id_room_type_service_product_order_detail'], $refundReqProducts)) || $product['is_refunded']) {
                     unset($standaloneProducts[$key]);
@@ -1140,7 +1140,7 @@ class AdminOrdersControllerCore extends AdminController
                 $smartyVars['RoomTypeServiceProductOrderDetail'] = $objRoomTypeServiceProductOrderDetail;
                 $response['data'] = array(
                     'id_product' => $objRoomTypeServiceProductOrderDetail->id_product,
-                    'id_service_product_option' => $objRoomTypeServiceProductOrderDetail->id_service_product_option,
+                    'id_product_option' => $objRoomTypeServiceProductOrderDetail->id_product_option,
                     'name' => $objRoomTypeServiceProductOrderDetail->name,
                     'option_name' => $objRoomTypeServiceProductOrderDetail->option_name,
                     'unit_price_tax_excl' => $objRoomTypeServiceProductOrderDetail->unit_price_tax_excl,
@@ -2930,13 +2930,13 @@ class AdminOrdersControllerCore extends AdminController
                 $product['warehouse_name'] = '--';
                 $product['warehouse_location'] = false;
             }
-            if ($product['product_service_type'] == Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL) {
+            if ($product['selling_preference_type'] == Product::SELLING_PREFERENCE_HOTEL_STANDALONE) {
                 $hotelProducts = $objRoomTypeServiceProductOrderDetail->getProducts($order->id, $product['id_order_detail'], $product['product_id']);
                 foreach ($hotelProducts as $hotelProduct) {
                     $orderHotelServiceProducts[] = array_merge($product, $hotelProduct);
                 }
             }
-            if ($product['product_service_type'] == Product::SERVICE_PRODUCT_STANDALONE) {
+            if ($product['selling_preference_type'] == Product::SELLING_PREFERENCE_STANDALONE) {
                 $standaloneProducts = $objRoomTypeServiceProductOrderDetail->getProducts($order->id, $product['id_order_detail'], $product['product_id']);
                 foreach ($standaloneProducts as $standaloneProduct) {
                     $orderStandaloneServiceProducts[] = array_merge($product, $standaloneProduct);
@@ -3670,7 +3670,7 @@ class AdminOrdersControllerCore extends AdminController
                     (int)$this->context->language->id,
                     pSQL(Tools::getValue('product_search')),
                     0,
-                    Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL
+                    Product::SELLING_PREFERENCE_HOTEL_STANDALONE
                 )) {
                     $objServiceProductOption = new ServiceProductOption();
                     foreach ($products as $key => &$product) {
@@ -3690,7 +3690,7 @@ class AdminOrdersControllerCore extends AdminController
                     (int)$this->context->language->id,
                     pSQL(Tools::getValue('product_search')),
                     0,
-                    Product::SERVICE_PRODUCT_STANDALONE
+                    Product::SELLING_PREFERENCE_STANDALONE
                 )) {
                     $objServiceProductOption = new ServiceProductOption();
                     foreach ($products as $key => &$product) {
@@ -3828,7 +3828,7 @@ class AdminOrdersControllerCore extends AdminController
             }
         }
 
-        if ($product->booking_product || Product::SERVICE_PRODUCT_WITH_ROOMTYPE == $product->service_product_type) {
+        if ($product->booking_product || Product::SELLING_PREFERENCE_WITH_ROOM_TYPE == $product->selling_preference_type) {
             die(Tools::jsonEncode(array(
                 'result' => false,
                 'error' => Tools::displayError('The product cannot be added through this method.')
@@ -5085,7 +5085,7 @@ class AdminOrdersControllerCore extends AdminController
 
         $this->sendChangedNotification($order);
 
-        $serviceProducts = $objRoomTypeServiceProductCartDetail->getProducts(
+        $serviceProducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
             $this->context->cart->id,
             $idProduct,
             0,
@@ -5094,7 +5094,7 @@ class AdminOrdersControllerCore extends AdminController
         foreach ($serviceProducts as $serviceProduct) {
             $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
             $objRoomTypeServiceProductOrderDetail->id_product = $idProduct;
-            $objRoomTypeServiceProductOrderDetail->id_service_product_option = $serviceProduct['id_service_product_option'];
+            $objRoomTypeServiceProductOrderDetail->id_product_option = $serviceProduct['id_product_option'];
             $objRoomTypeServiceProductOrderDetail->id_order = $order->id;
             $objRoomTypeServiceProductOrderDetail->id_order_detail = $order_detail->id;
             $objRoomTypeServiceProductOrderDetail->id_cart = $this->context->cart->id;

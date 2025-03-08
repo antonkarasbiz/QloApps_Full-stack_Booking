@@ -120,8 +120,8 @@ class OrderConfirmationControllerCore extends FrontController
             $orderTotalInfo['total_products_ti'] = 0;
             $orderTotalInfo['total_rooms_te'] = 0;
             $orderTotalInfo['total_rooms_ti'] = 0;
-            $orderTotalInfo['total_service_products_te'] = 0;
-            $orderTotalInfo['total_service_products_ti'] = 0;
+            $orderTotalInfo['total_standalone_products_te'] = 0;
+            $orderTotalInfo['total_standalone_products_ti'] = 0;
             $orderTotalInfo['total_auto_add_services_te'] = 0;
             $orderTotalInfo['total_auto_add_services_ti'] = 0;
             $orderTotalInfo['total_services_te'] = 0;
@@ -150,16 +150,14 @@ class OrderConfirmationControllerCore extends FrontController
                 $cart_hotel_service_products = array();
                 $cart_htl_data = array();
                 foreach ($cartOrders as $cartOrder) {
+
                     $idOrder = $cartOrder['id_order'];
                     $objCartOrder = new Order($idOrder);
                     $orderProducts = $objCartOrder->getProducts();
 
                     if (!empty($orderProducts)) {
                         foreach ($orderProducts as $type_key => $type_value) {
-
-
                             $product = new Product($type_value['product_id'], false, $this->context->language->id);
-
                             $cover_image_arr = $product->getCover($type_value['product_id']);
 
                             if (!empty($cover_image_arr)) {
@@ -358,7 +356,7 @@ class OrderConfirmationControllerCore extends FrontController
 
                                     $totalRoomsBooked += 1;
                                 }
-                            } else if ($product->service_product_type == ProductCore::SERVICE_PRODUCT_lINKED_WITH_HOTEL) {
+                            } else if ($type_value['selling_preference_type'] == Product::SELLING_PREFERENCE_HOTEL_STANDALONE) {
                                 $cover_image_arr = $product->getCover($type_value['product_id']);
 
                                 if (!empty($cover_image_arr)) {
@@ -372,11 +370,11 @@ class OrderConfirmationControllerCore extends FrontController
                                     $type_value['total_price_tax_incl'] = $serviceProduct['total_price_tax_incl'];
                                     $type_value['product_quantity'] = $serviceProduct['quantity'];
                                     $type_value['option_name'] = $serviceProduct['option_name'];
-                                    $orderTotalInfo['total_service_products_te'] += $type_value['total_price_tax_excl'];
-                                    $orderTotalInfo['total_service_products_ti'] += $type_value['total_price_tax_incl'];
+                                    $orderTotalInfo['total_standalone_products_te'] += $type_value['total_price_tax_excl'];
+                                    $orderTotalInfo['total_standalone_products_ti'] += $type_value['total_price_tax_incl'];
                                     $cart_hotel_service_products[] = $type_value;
                                 }
-                            } else if ($product->service_product_type == Product::SERVICE_PRODUCT_STANDALONE) {
+                            } else if ($type_value['selling_preference_type'] == Product::SELLING_PREFERENCE_STANDALONE) {
                                 $cover_image_arr = $product->getCover($type_value['product_id']);
 
                                 if (!empty($cover_image_arr)) {
@@ -390,8 +388,8 @@ class OrderConfirmationControllerCore extends FrontController
                                     $type_value['total_price_tax_incl'] = $serviceProduct['total_price_tax_incl'];
                                     $type_value['product_quantity'] = $serviceProduct['quantity'];
                                     $type_value['option_name'] = $serviceProduct['option_name'];
-                                    $orderTotalInfo['total_service_products_te'] += $type_value['total_price_tax_excl'];
-                                    $orderTotalInfo['total_service_products_ti'] += $type_value['total_price_tax_incl'];
+                                    $orderTotalInfo['total_standalone_products_te'] += $type_value['total_price_tax_excl'];
+                                    $orderTotalInfo['total_standalone_products_ti'] += $type_value['total_price_tax_incl'];
                                     $cart_standalone_service_products[] = $type_value;
                                 }
                             }
@@ -409,14 +407,14 @@ class OrderConfirmationControllerCore extends FrontController
                     $orderTotalInfo['total_wrapping'] += $objCartOrder->total_wrapping;
                     $orderTotalInfo['total_rooms_te'] += $objCartOrder->getTotalProductsWithoutTaxes(false, true);
                     $orderTotalInfo['total_rooms_ti'] += $objCartOrder->getTotalProductsWithTaxes(false, true);
-                    $orderTotalInfo['total_auto_add_services_te'] += $objCartOrder->getTotalProductsWithoutTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE, 1, Product::PRICE_ADDITION_TYPE_WITH_ROOM);
-                    $orderTotalInfo['total_auto_add_services_ti'] += $objCartOrder->getTotalProductsWithTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE, 1, Product::PRICE_ADDITION_TYPE_WITH_ROOM);
-                    $orderTotalInfo['total_services_te'] += $objCartOrder->getTotalProductsWithoutTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE, 0);
-                    $orderTotalInfo['total_services_ti'] += $objCartOrder->getTotalProductsWithTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE, 0);
-                    $orderTotalInfo['total_convenience_fee_te'] += $objCartOrder->getTotalProductsWithoutTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE, 1, Product::PRICE_ADDITION_TYPE_INDEPENDENT);
-                    $orderTotalInfo['total_convenience_fee_ti'] += $objCartOrder->getTotalProductsWithTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE, 1, Product::PRICE_ADDITION_TYPE_INDEPENDENT);
-                    // $orderTotalInfo['total_service_products_te'] += $objCartOrder->getTotalProductsWithoutTaxes(false, false, Product::SERVICE_PRODUCT_STANDALONE);
-                    // $orderTotalInfo['total_service_products_ti'] += $objCartOrder->getTotalProductsWithTaxes(false, false, Product::SERVICE_PRODUCT_STANDALONE);
+                    $orderTotalInfo['total_auto_add_services_te'] += $objCartOrder->getTotalProductsWithoutTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE, 1, Product::PRICE_ADDITION_TYPE_WITH_ROOM);
+                    $orderTotalInfo['total_auto_add_services_ti'] += $objCartOrder->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE, 1, Product::PRICE_ADDITION_TYPE_WITH_ROOM);
+                    $orderTotalInfo['total_services_te'] += $objCartOrder->getTotalProductsWithoutTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE, 0);
+                    $orderTotalInfo['total_services_ti'] += $objCartOrder->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE, 0);
+                    $orderTotalInfo['total_convenience_fee_te'] += $objCartOrder->getTotalProductsWithoutTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE, 1, Product::PRICE_ADDITION_TYPE_INDEPENDENT);
+                    $orderTotalInfo['total_convenience_fee_ti'] += $objCartOrder->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE, 1, Product::PRICE_ADDITION_TYPE_INDEPENDENT);
+                    $orderTotalInfo['total_standalone_products_te'] += $objCartOrder->getTotalProductsWithoutTaxes(false, false, Product::SELLING_PREFERENCE_STANDALONE);
+                    $orderTotalInfo['total_standalone_products_ti'] += $objCartOrder->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_STANDALONE);
                     $orderTotalInfo['total_discounts'] += $objCartOrder->total_discounts;
                     $orderTotalInfo['total_discounts_te'] += $objCartOrder->total_discounts_tax_excl;
                     $orderTotalInfo['total_tax'] += $objCartOrder->total_paid_tax_incl - $objCartOrder->total_paid_tax_excl;
@@ -424,8 +422,10 @@ class OrderConfirmationControllerCore extends FrontController
                     $orderTotalInfo['total_paid_real'] += $objCartOrder->total_paid_real;
                 }
 
-                $totalTaxIncl = $orderTotalInfo['total_rooms_ti'] + $orderTotalInfo['total_services_ti'] + $orderTotalInfo['total_convenience_fee_ti'] + $orderTotalInfo['total_auto_add_services_ti'] + $orderTotalInfo['total_demands_price_ti'];
-                $totalTaxExcl = $orderTotalInfo['total_rooms_te'] + $orderTotalInfo['total_services_te'] + $orderTotalInfo['total_convenience_fee_te'] + $orderTotalInfo['total_auto_add_services_te'] + $orderTotalInfo['total_demands_price_te'];
+                $totalTaxIncl = $orderTotalInfo['total_rooms_ti'] + $orderTotalInfo['total_services_ti'] + $orderTotalInfo['total_convenience_fee_ti'] + $orderTotalInfo['total_auto_add_services_ti'] + $orderTotalInfo['total_demands_price_ti'] + $orderTotalInfo['total_standalone_products_ti'];
+
+                $totalTaxExcl = $orderTotalInfo['total_rooms_te'] + $orderTotalInfo['total_services_te'] + $orderTotalInfo['total_convenience_fee_te'] + $orderTotalInfo['total_auto_add_services_te'] + $orderTotalInfo['total_demands_price_te'] + $orderTotalInfo['total_standalone_products_te'];
+
                 $orderTotalInfo['total_tax_without_discount'] = $totalTaxIncl - $totalTaxExcl;
             }
 

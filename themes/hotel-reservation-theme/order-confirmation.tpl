@@ -443,7 +443,7 @@
 																		<strong>{l s='Total products cost'} {if $use_tax}{l s='(tax incl.)'}{/if} </strong>
 																	</td>
 																	<td class="text-right">
-																		<span>{displayWtPriceWithCurrency price=$orderTotalInfo['total_service_products_ti'] currency=$objOrderCurrency}</span>
+																		<span>{displayWtPriceWithCurrency price=$orderTotalInfo['total_standalone_products_ti'] currency=$objOrderCurrency}</span>
 																	</td>
 																</tr>
 															{/if}

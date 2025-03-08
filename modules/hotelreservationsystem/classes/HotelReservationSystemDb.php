@@ -383,20 +383,20 @@ class HotelReservationSystemDb
                 KEY `id_product` (`id_product`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
 
-            "CREATE TABLE `"._DB_PREFIX_."service_product_option` (
-                `id_service_product_option` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+            "CREATE TABLE `"._DB_PREFIX_."product_option` (
+                `id_product_option` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `id_product` int(11) UNSIGNED NOT NULL,
                 `price_impact` decimal(20,6) NOT NULL DEFAULT '0.000000',
                 `date_add` datetime NOT NULL,
                 `date_upd` datetime NOT NULL,
-                PRIMARY KEY (`id_service_product_option`),
+                PRIMARY KEY (`id_product_option`),
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
 
-            "CREATE TABLE `"._DB_PREFIX_."service_product_option_lang` (
-                `id_service_product_option` int(10) unsigned NOT NULL,
+            "CREATE TABLE `"._DB_PREFIX_."product_option_lang` (
+                `id_product_option` int(10) unsigned NOT NULL,
                 `id_lang` int(10) unsigned NOT NULL,
                 `name` varchar(255) character set utf8 NOT NULL,
-                PRIMARY KEY (`id_service_product_option`, `id_lang`)
+                PRIMARY KEY (`id_product_option`, `id_lang`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8;",
 
             "CREATE TABLE `"._DB_PREFIX_."htl_room_type_service_product_cart_detail` (
@@ -406,7 +406,7 @@ class HotelReservationSystemDb
                 `id_cart` int(11) unsigned NOT NULL,
                 `id_hotel` int(11) UNSIGNED NOT NULL,
                 `htl_cart_booking_id` int(11) unsigned NOT NULL,
-                `id_service_product_option` int(11) UNSIGNED NOT NULL,
+                `id_product_option` int(11) UNSIGNED NOT NULL,
                 PRIMARY KEY (`id_room_type_service_product_cart_detail`),
                 KEY `id_product` (`id_product`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
@@ -419,7 +419,7 @@ class HotelReservationSystemDb
                 `id_cart` int(11) NOT NULL,
                 `id_hotel` int(11) NOT NULL,
                 `id_htl_booking_detail` int(11) NOT NULL,
-                `id_service_product_option` int(11) NOT NULL,
+                `id_product_option` int(11) NOT NULL,
                 `unit_price_tax_excl` decimal(20,6) NOT NULL,
                 `unit_price_tax_incl` decimal(20,6) NOT NULL,
                 `total_price_tax_excl` decimal(20,6) NOT NULL,

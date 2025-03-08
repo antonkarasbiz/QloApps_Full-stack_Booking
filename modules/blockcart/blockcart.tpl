@@ -63,7 +63,7 @@
 											<dl class="products">
 												{foreach from=$products key=data_k item='product' name='myLoop'}
 												{* only show products that are booking or global without room *}
-													{if $product.booking_product || ($product.service_product_type == Product::SERVICE_PRODUCT_STANDALONE)}
+													{if $product.booking_product || ($product.selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE)}
 														{assign var='productId' value=$product.id_product}
 														{assign var='productAttributeId' value=$product.id_product_attribute}
 														<dt data-id="cart_block_product_{$product.id_product|intval}_{if $product.id_product_attribute}{$product.id_product_attribute|intval}{else}0{/if}_{if $product.id_address_delivery}{$product.id_address_delivery|intval}{else}0{/if}" class="{if $smarty.foreach.myLoop.first}first_item{elseif $smarty.foreach.myLoop.last}last_item{else}item{/if}">

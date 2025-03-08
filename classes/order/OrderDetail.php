@@ -102,7 +102,7 @@ class OrderDetailCore extends ObjectModel
     public $is_booking_product;
 
     /** @var int */
-    public $product_service_type;
+    public $selling_preference_type;
 
     /** @var bool */
     public $product_allow_multiple_quantity;
@@ -197,7 +197,7 @@ class OrderDetailCore extends ObjectModel
             'group_reduction' =>            array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat'),
             'product_quantity_discount' =>    array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat'),
             'is_booking_product' =>                array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
-            'product_service_type' =>        array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'selling_preference_type' =>        array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'product_auto_add' =>            array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'product_price_addition_type' =>    array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'product_allow_multiple_quantity' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
@@ -647,7 +647,7 @@ class OrderDetailCore extends ObjectModel
             $product_quantity : (int)$product['cart_quantity'];
 
         $this->is_booking_product = $product['booking_product'];
-        $this->product_service_type = $product['service_product_type'];
+        $this->selling_preference_type = $product['selling_preference_type'];
         $this->product_auto_add = $product['auto_add_to_cart'];
         $this->product_price_addition_type = $product['price_addition_type'];
         $this->product_allow_multiple_quantity = $product['allow_multiple_quantity'];

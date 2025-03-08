@@ -316,26 +316,27 @@ class ParentOrderControllerCore extends FrontController
                 $this->context->smarty->assign('cart_htl_data', $cartBookingInfo);
             }
             $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-            if ($hotelProducts = $objRoomTypeServiceProductCartDetail->getProducts(
+            if ($hotelProducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
                 $this->context->cart->id,
-                0,
-                Product::SERVICE_PRODUCT_lINKED_WITH_HOTEL,
-                0,
-                0,
-                null,
-                0,
+                [Product::SELLING_PREFERENCE_HOTEL_STANDALONE, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE],
+                $idHotel = null,
                 0,
                 null,
                 null,
-                true
+                null,
+                null,
+                0,
+                null,
+                0,
+                null,
+                1
             )) {
                 $this->context->smarty->assign('hotel_products', $hotelProducts);
             }
 
-            $standaloneProducts = $objRoomTypeServiceProductCartDetail->getProducts(
+            $standaloneProducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
                 $this->context->cart->id,
-                0,
-                ProductCore::SERVICE_PRODUCT_STANDALONE
+                [Product::SELLING_PREFERENCE_STANDALONE]
             );
 
             if (count($standaloneProducts)) {
@@ -473,10 +474,9 @@ class ParentOrderControllerCore extends FrontController
             Tools::redirect('');
         } elseif (!Customer::getAddressesTotalById($this->context->customer->id)) {
             $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-            if (count($objRoomTypeServiceProductCartDetail->getProducts(
+            if (count($objRoomTypeServiceProductCartDetail->getCartStandardProducts(
                 $this->context->cart->id,
-                0,
-                Product::SERVICE_PRODUCT_STANDALONE
+                [Product::SELLING_PREFERENCE_STANDALONE]
             ))) {
                 $multi = (int)Tools::getValue('multi-shipping');
                 Tools::redirect('index.php?controller=address&back='.urlencode('order.php?step=1'.($multi ? '&multi-shipping='.$multi : '')));

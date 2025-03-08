@@ -2578,9 +2578,14 @@ class HotelBookingDetail extends ObjectModel
      * @param [int] $id_order   [Id of the order]
      * @return [int|false] [If found id_order_detail else returns false]
      */
-    public function getPsOrderDetailIdByIdProduct($id_product, $id_order)
+    public function getPsOrderDetailIdByIdProduct($id_product, $id_order, $selling_preference_type = 0)
     {
         $sql = 'SELECT `id_order_detail` FROM `'._DB_PREFIX_.'order_detail` WHERE `id_order`='.(int)$id_order.' AND `product_id`='.(int)$id_product;
+
+        if ($selling_preference_type) {
+            $sql .= ' AND `selling_preference_type`='.(int)$selling_preference_type;
+        }
+
         return Db::getInstance()->getvalue($sql);
     }
 

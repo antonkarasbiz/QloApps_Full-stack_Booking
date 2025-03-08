@@ -199,7 +199,7 @@
                     </p>
 
                     <p class="product_remove_block">
-                        <a id="{$product.id_product}_{if $product.id_service_product_option}{$product.id_service_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" class="cart_quantity_delete" href="{$link->getPageLink('cart', true, NULL, "delete=1&amp;id_product={$product.id_product|intval}&amp;token={$token_cart}")|escape:'html':'UTF-8'}" rel="nofollow" title="{l s='Delete'}">
+                        <a id="{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" class="cart_quantity_delete" href="{$link->getPageLink('cart', true, NULL, "delete=1&amp;id_product={$product.id_product|intval}&amp;token={$token_cart}")|escape:'html':'UTF-8'}" rel="nofollow" title="{l s='Delete'}">
                             <i class="icon-trash"></i> &nbsp;{l s='Remove'}
                         </a>
                         {* <a href="{$rm_v['link']}"><i class="icon-trash"></i> &nbsp;{l s='Remove'}</a> *}
@@ -251,16 +251,16 @@
                         </div>
                         <div class="col-sm-3 col-xs-5">
                             <div class="quantity_cont">
-                                <input type="hidden" value="{$product.quantity}" name="quantity_{$product.id_product}_{if $product.id_service_product_option}{$product.id_service_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}_hidden" />
-                                <input size="2" type="text" autocomplete="off" class="cart_quantity_input grey" value="{$product.quantity}"  name="quantity_{$product.id_product}_{if $product.id_service_product_option}{$product.id_service_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" />
+                                <input type="hidden" value="{$product.quantity}" name="quantity_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}_hidden" />
+                                <input size="2" type="text" autocomplete="off" class="cart_quantity_input grey" value="{$product.quantity}"  name="quantity_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" />
                                 <div class="cart_quantity_button">
-                                    <a rel="nofollow" class="cart_quantity_up btn btn-default" id="cart_quantity_up_{$product.id_product}_{if $product.id_service_product_option}{$product.id_service_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_address_delivery=0&amp;token={$token_cart}")|escape:'html':'UTF-8'}" title="{l s='Add'}"><span><i class="icon-plus"></i></span></a>
+                                    <a rel="nofollow" class="cart_quantity_up btn btn-default" id="cart_quantity_up_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_address_delivery=0&amp;token={$token_cart}")|escape:'html':'UTF-8'}" title="{l s='Add'}"><span><i class="icon-plus"></i></span></a>
                                     {if $product.minimal_quantity < ($product.quantity)}
-                                        <a rel="nofollow" class="cart_quantity_down btn btn-default" id="cart_quantity_down_{$product.id_product}_{if $product.id_service_product_option}{$product.id_service_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_address_delivery=0&amp;op=down&amp;token={$token_cart}")|escape:'html':'UTF-8'}" title="{l s='Subtract'}">
+                                        <a rel="nofollow" class="cart_quantity_down btn btn-default" id="cart_quantity_down_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_address_delivery=0&amp;op=down&amp;token={$token_cart}")|escape:'html':'UTF-8'}" title="{l s='Subtract'}">
                                             <span><i class="icon-minus"></i></span>
                                         </a>
                                     {else}
-                                        <a class="cart_quantity_down btn btn-default disabled" href="#" id="cart_quantity_down_{$product.id_product}_{if $product.id_service_product_option}{$product.id_service_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" title="{l s='You must purchase a minimum of %d of this product.' sprintf=1}">
+                                        <a class="cart_quantity_down btn btn-default disabled" href="#" id="cart_quantity_down_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" title="{l s='You must purchase a minimum of %d of this product.' sprintf=1}">
                                             <span><i class="icon-minus"></i></span>
                                         </a>
                                     {/if}
@@ -307,7 +307,7 @@
                     </p>
 
                     <p class="product_remove_block">
-                        <a id="{$product.id_product}_{if $product.id_service_product_option}{$product.id_service_product_option}{else}0{/if}_0" class="cart_quantity_delete" href="{$link->getPageLink('cart', true, NULL, "delete=1&amp;id_product={$product.id_product|intval}&amp;token={$token_cart}")|escape:'html':'UTF-8'}" rel="nofollow" title="{l s='Delete'}">
+                        <a id="{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_0" class="cart_quantity_delete" href="{$link->getPageLink('cart', true, NULL, "delete=1&amp;id_product={$product.id_product|intval}&amp;token={$token_cart}")|escape:'html':'UTF-8'}" rel="nofollow" title="{l s='Delete'}">
                             <i class="icon-trash"></i> &nbsp;{l s='Remove'}
                         </a>
                         {* <a href="{$rm_v['link']}"><i class="icon-trash"></i> &nbsp;{l s='Remove'}</a> *}
@@ -351,16 +351,16 @@
                         </div>
                         <div class="col-sm-3  col-xs-5">
                             <div class="quantity_cont">
-                                <input type="hidden" value="{$product.quantity}" name="quantity_{$product.id_product}_{if $product.id_service_product_option}{$product.id_service_product_option}{else}0{/if}_0_hidden" />
-                                <input size="2" type="text" autocomplete="off" class="cart_quantity_input grey" value="{$product.quantity}"  name="quantity_{$product.id_product}_{if $product.id_service_product_option}{$product.id_service_product_option}{else}0{/if}_0" />
+                                <input type="hidden" value="{$product.quantity}" name="quantity_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_0_hidden" />
+                                <input size="2" type="text" autocomplete="off" class="cart_quantity_input grey" value="{$product.quantity}"  name="quantity_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_0" />
                                 <div class="cart_quantity_button">
-                                    <a rel="nofollow" class="cart_quantity_up btn btn-default" id="cart_quantity_up_{$product.id_product}_{if $product.id_service_product_option}{$product.id_service_product_option}{else}0{/if}_0" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_address_delivery={$product.id_address_delivery|intval}&amp;token={$token_cart}")|escape:'html':'UTF-8'}" title="{l s='Add'}"><span><i class="icon-plus"></i></span></a>
+                                    <a rel="nofollow" class="cart_quantity_up btn btn-default" id="cart_quantity_up_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_0" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_address_delivery={$product.id_address_delivery|intval}&amp;token={$token_cart}")|escape:'html':'UTF-8'}" title="{l s='Add'}"><span><i class="icon-plus"></i></span></a>
                                     {if $product.minimal_quantity < ($product.quantity)}
-                                        <a rel="nofollow" class="cart_quantity_down btn btn-default" id="cart_quantity_down_{$product.id_product}_{if $product.id_service_product_option}{$product.id_service_product_option}{else}0{/if}_0" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_address_delivery={$product.id_address_delivery|intval}&amp;op=down&amp;token={$token_cart}")|escape:'html':'UTF-8'}" title="{l s='Subtract'}">
+                                        <a rel="nofollow" class="cart_quantity_down btn btn-default" id="cart_quantity_down_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_0" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_address_delivery={$product.id_address_delivery|intval}&amp;op=down&amp;token={$token_cart}")|escape:'html':'UTF-8'}" title="{l s='Subtract'}">
                                             <span><i class="icon-minus"></i></span>
                                         </a>
                                     {else}
-                                        <a class="cart_quantity_down btn btn-default disabled" href="#" id="cart_quantity_down_{$product.id_product}_{if $product.id_service_product_option}{$product.id_service_product_option}{else}0{/if}_0" title="{l s='You must purchase a minimum of %d of this product.' sprintf=$product.minimal_quantity}">
+                                        <a class="cart_quantity_down btn btn-default disabled" href="#" id="cart_quantity_down_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_0" title="{l s='You must purchase a minimum of %d of this product.' sprintf=$product.minimal_quantity}">
                                             <span><i class="icon-minus"></i></span>
                                         </a>
                                     {/if}

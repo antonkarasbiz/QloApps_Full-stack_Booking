@@ -2223,7 +2223,7 @@ class HotelHelper
             $objProduct->active = 1;
             $objProduct->quantity = 999999999;
             $objProduct->booking_product = 0;
-            $objProduct->service_product_type = Product::SERVICE_PRODUCT_WITH_ROOMTYPE;
+            $objProduct->selling_preference_type = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
             $objProduct->auto_add_to_cart = $serviceProduct['auto_add_to_cart'];
             $objProduct->show_at_front = $serviceProduct['show_at_front'];
             $objProduct->available_for_order = 1;

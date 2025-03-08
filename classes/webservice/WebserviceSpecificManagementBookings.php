@@ -1004,7 +1004,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                         }
                     }
 
-                    $serviceProductPrice = $objOrder->getTotalProductsWithTaxes(false, false, Product::SERVICE_PRODUCT_WITH_ROOMTYPE);
+                    $serviceProductPrice = $objOrder->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE);
                     if ($demands = $objHotelBookingDemands->getExtraDemandsTaxesDetails($objOrder->id)) {
                         $demandsPrice = array_sum(array_column($demands, 'total_price_tax_excl'));
                         // Adding the tax
@@ -1795,7 +1795,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
         $objProduct->redirect_type = '404';
         $objProduct->visibility = 'none';
         $objProduct->minimal_quantity = 1;
-        $objProduct->service_product_type = Product::SERVICE_PRODUCT_WITH_ROOMTYPE;
+        $objProduct->selling_preference_type = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
         $objProduct->allow_multiple_quantity = true;
         $objProduct->max_quantity = $quantity;
         if ($objProduct->save()) {

@@ -160,7 +160,7 @@ var ajaxCart = {
                 var occupancy = getBookingOccupancyDetails($(this).closest('.booking_room_fields'), parseInt(booking_product));
 
                 if (occupancy) {
-                    ajaxCart.add($('#product_page_product_id').val(), id_hotel, $('[name="id_service_product_option"]:checked').val(), true, null, occupancy, null, date_from, date_to, booking_product);
+                    ajaxCart.add($('#product_page_product_id').val(), id_hotel, $('[name="id_product_option"]:checked').val(), true, null, occupancy, null, date_from, date_to, booking_product);
                 }
 
             });
@@ -189,8 +189,8 @@ var ajaxCart = {
             e.preventDefault();
             var id_product = $(this).attr('id_product');
             var id_hotel = $(this).attr('id_hotel');
-            var id_service_product_option = $(this).attr('id_service_product_option');
-            ajaxCart.remove(id_product, id_hotel, id_service_product_option);
+            var id_product_option = $(this).attr('id_product_option');
+            ajaxCart.remove(id_product, id_hotel, id_product_option);
         });
 
         //for 'delete' buttons in the cart block...
@@ -387,7 +387,7 @@ var ajaxCart = {
         req.append('token', static_token);
         req.append('id_customization', ((typeof customizationId !== 'undefined') ? customizationId : 0));
         if (parseInt(idCombination) && idCombination != null){
-            req.append('id_service_product_option', parseInt(idCombination));
+            req.append('id_product_option', parseInt(idCombination));
         }
         req.append('id_hotel', idHotel);
 
@@ -412,7 +412,7 @@ var ajaxCart = {
         } else {
             req.append('qty', ((occupancy && occupancy != null) ? occupancy : '1'));
             // if (parseInt(idCombination) && idCombination != null){
-            //     req.append('id_service_product_option', parseInt(idCombination));
+            //     req.append('id_product_option', parseInt(idCombination));
             // }
         }
 
@@ -696,7 +696,7 @@ var ajaxCart = {
             async: true,
             cache: false,
             dataType: "json",
-            data: 'controller=cart&delete=1&dateFrom=' + dateFrom + '&dateTo=' + dateTo + '&id_product=' + idProduct + '&id_hotel=' + idHotel + '&id_service_product_option=' + ((idCombination != null && parseInt(idCombination)) ? idCombination : '') + ((customizationId && customizationId != null) ? '&id_customization=' + customizationId : '') + '&id_address_delivery=' + idAddressDelivery + '&token=' + static_token + '&ajax=true',
+            data: 'controller=cart&delete=1&dateFrom=' + dateFrom + '&dateTo=' + dateTo + '&id_product=' + idProduct + '&id_hotel=' + idHotel + '&id_product_option=' + ((idCombination != null && parseInt(idCombination)) ? idCombination : '') + ((customizationId && customizationId != null) ? '&id_customization=' + customizationId : '') + '&id_address_delivery=' + idAddressDelivery + '&token=' + static_token + '&ajax=true',
             success: function(jsonData) {
                 if (pagename == 'product') {
                     disableRoomTypeDemands(0);
@@ -773,7 +773,7 @@ var ajaxCart = {
                 for (aProduct in jsonData.products) {
                     //we've called the variable aProduct because IE6 bug if this variable is called product
                     //if product has attributes
-                    if (parseInt(jsonData.products[aProduct]['service_product_type']) == SERVICE_PRODUCT_lINKED_WITH_HOTEL) {
+                    if (parseInt(jsonData.products[aProduct]['selling_preference_type']) == SELLING_PREFERENCE_HOTEL_STANDALONE) {
                         $.each(jsonData.products[aProduct]['hotel_wise_data'], function() {
                             if (!ids[3] || (ids[3] == this.id_hotel)) {
                                 stayInTheCart = true;
@@ -899,7 +899,7 @@ var ajaxCart = {
         $(jsonData.products).each(function(key, value) {
             //fix ie6 bug (one more item 'undefined' in IE6)
             if (this.id != undefined) {
-                if (!this.booking_product && parseInt(this.service_product_type) == SERVICE_PRODUCT_WITH_ROOMTYPE) {
+                if (!this.booking_product && parseInt(this.selling_preference_type) == SELLING_PREFERENCE_WITH_ROOM_TYPE) {
                     return;
                 }
                 //create a container for listing the products and hide the 'no product in the cart' message (only if the cart was empty)
@@ -907,7 +907,7 @@ var ajaxCart = {
                     $('.cart_block_no_products').before('<dl class="products"></dl>');
                     $('.cart_block_no_products').hide();
                 }
-                if (parseInt(this.service_product_type) == SERVICE_PRODUCT_lINKED_WITH_HOTEL) {
+                if (parseInt(this.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE) {
 					$(value.hotel_wise_data).each(function(i, val) {
                         ajaxCart.addProductRow(value, val);
                     });
@@ -935,7 +935,7 @@ var ajaxCart = {
             content += '<div class="product-name">';
             content += '<a href="' + product.link + '" title="' + product.name + '" class="cart_block_product_name">' + name + '</a>';
             content += '</div>';
-            if (parseInt(product.service_product_type) == SERVICE_PRODUCT_lINKED_WITH_HOTEL) {
+            if (parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE) {
                 content += '<div class="hotel-name">' + hotel_wise_data.hotel_name + '</div>';
             }
 
@@ -948,7 +948,7 @@ var ajaxCart = {
                 content += '<span class="price product_info_data">&nbsp;';
                 if (product.booking_product) {
                     content += formatCurrency(parseFloat(product.bookingData.total_room_type_amount), currency_format, currency_sign, currency_blank);
-                }else if (parseInt(product.service_product_type) == SERVICE_PRODUCT_lINKED_WITH_HOTEL) {
+                }else if (parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE) {
                     content += formatCurrency(parseFloat(hotel_wise_data.amount), currency_format, currency_sign, currency_blank);
                 } else {
                     content += formatCurrency(parseFloat(product.amount), currency_format, currency_sign, currency_blank);
@@ -1021,11 +1021,11 @@ var ajaxCart = {
                 content += '<th>' + price_txt + '</th>';
                 content += '<th>&nbsp;</th>';
                 content += '</tr>';
-                if (parseInt(product.service_product_type) == SERVICE_PRODUCT_lINKED_WITH_HOTEL) {
+                if (parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE) {
                     if (hotel_wise_data.options !== 'undefined') {
                         var options = hotel_wise_data.options;
                     }
-                } else if (parseInt(product.service_product_type) == SERVICE_PRODUCT_STANDALONE) {
+                } else if (parseInt(product.selling_preference_type) == SELLING_PREFERENCE_STANDALONE) {
                     if (product.options !== 'undefined') {
                         var options = product.options;
                     }
@@ -1036,7 +1036,7 @@ var ajaxCart = {
                         content += '<td>' + data_v.option_name + '</td>';
                         content += '<td>' + data_v.quantity + '</td>';
                         content += '<td>' + formatCurrency(parseFloat(data_v.total_price_tax_excl), currency_format, currency_sign, currency_blank) + '</td>';
-                        content += '<td class="text-right"><a class="ajax_remove_product_option" href="#" id_product="' + product.id_product + '" id_hotel="' + data_v.id_hotel + '" id_service_product_option="' + data_v.id_service_product_option + '" title="' + remove_rm_title + '">&nbsp;</a></td>';
+                        content += '<td class="text-right"><a class="ajax_remove_product_option" href="#" id_product="' + product.id_product + '" id_hotel="' + data_v.id_hotel + '" id_product_option="' + data_v.id_product_option + '" title="' + remove_rm_title + '">&nbsp;</a></td>';
                         content += '</tr>';
                     });
                 }
@@ -1084,11 +1084,11 @@ var ajaxCart = {
             } else if (product.hasOptions) {
                 $('dt[data-id="cart_block_product_' + domIdProduct + '"] .cart_prod_cont tr.product_option_row').remove();
                 var product_options_content = '';
-                if (parseInt(product.service_product_type) == SERVICE_PRODUCT_lINKED_WITH_HOTEL) {
+                if (parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE) {
                     if (hotel_wise_data.options !== 'undefined') {
                         var options = hotel_wise_data.options;
                     }
-                } else if (parseInt(product.service_product_type) == SERVICE_PRODUCT_STANDALONE) {
+                } else if (parseInt(product.selling_preference_type) == SELLING_PREFERENCE_STANDALONE) {
                     if (product.options !== 'undefined') {
                         var options = product.options;
                     }
@@ -1099,7 +1099,7 @@ var ajaxCart = {
                         product_options_content += '<td>' + data_v.option_name + '</td>';
                         product_options_content += '<td>' + data_v.quantity + '</td>';
                         product_options_content += '<td>' + formatCurrency(parseFloat(data_v.total_price_tax_excl), currency_format, currency_sign, currency_blank) + '</td>';
-                        product_options_content += '<td class="text-right"><a class="ajax_remove_product_option" href="#" id_product="' + product.id_product + '" id_hotel="' + data_v.id_hotel + '" id_service_product_option="' + data_v.id_service_product_option + '" title="' + remove_rm_title + '">&nbsp;</a></td>';
+                        product_options_content += '<td class="text-right"><a class="ajax_remove_product_option" href="#" id_product="' + product.id_product + '" id_hotel="' + data_v.id_hotel + '" id_product_option="' + data_v.id_product_option + '" title="' + remove_rm_title + '">&nbsp;</a></td>';
                         product_options_content += '</tr>';
                     });
                 }
@@ -1114,7 +1114,7 @@ var ajaxCart = {
                 if (!product.is_gift) {
                     if (product.booking_product) {
                         $('dt[data-id="cart_block_product_' + domIdProduct + '"] .price').text(formatCurrency(parseFloat(product.bookingData.total_room_type_amount), currency_format, currency_sign, currency_blank));
-                    } else if (parseInt(product.service_product_type) == SERVICE_PRODUCT_lINKED_WITH_HOTEL) {
+                    } else if (parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE) {
                         $('dt[data-id="cart_block_product_' + domIdProduct + '"] .price').text(formatCurrency(parseFloat(hotel_wise_data.amount), currency_format, currency_sign, currency_blank));
                     } else {
                         $('dt[data-id="cart_block_product_' + domIdProduct + '"] .price').text(formatCurrency(parseFloat(product.amount), currency_format, currency_sign, currency_blank));
@@ -1125,7 +1125,7 @@ var ajaxCart = {
                 //cart_booking_data[key].total_num_rooms argument sent to update num of rooms instead of quantity
                 if (product.booking_product) {
                     ajaxCart.updateProductQuantity(jsonProduct, product.bookingData.total_num_rooms);
-                } else if (parseInt(product.service_product_type) == SERVICE_PRODUCT_lINKED_WITH_HOTEL && hotel_wise_data && hotel_wise_data.total_qty) {
+                } else if (parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE && hotel_wise_data && hotel_wise_data.total_qty) {
                     ajaxCart.updateProductQuantity(jsonProduct, hotel_wise_data.total_qty);
                 } else {
                     ajaxCart.updateProductQuantity(jsonProduct, jsonProduct.cart_quantity);
