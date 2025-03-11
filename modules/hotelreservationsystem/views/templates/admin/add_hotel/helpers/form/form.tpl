@@ -441,7 +441,7 @@
 							</div>
 						</div>
 						<div class="form-group" {if isset($smarty.post.enable_use_global_max_booking_offset)} {if !$smarty.post.enable_use_global_max_booking_offset} style="display:block;" {else} style="display:none;" {/if} {elseif isset($order_restrict_date_info.use_global_max_booking_offset) && !$order_restrict_date_info.use_global_max_booking_offset} style="display:block;" {else} style="display:none;" {/if}>
-							<label class="control-label col-sm-3 required" for="max_booking_offset">{l s='Maximum Check-out Date to book a room :' mod='hotelreservationsystem'}</label>
+							<label class="control-label col-sm-3 required" for="max_booking_offset">{l s='Maximum booking offset :' mod='hotelreservationsystem'}</label>
 							<div class="col-sm-2">
 								<input type="text" class="form-control" id="max_booking_offset" name="max_booking_offset" value="{if isset($smarty.post.max_booking_offset)}{$smarty.post.max_booking_offset}{elseif isset($order_restrict_date_info.max_booking_offset)}{$order_restrict_date_info.max_booking_offset|escape:'htmlall':'UTF-8'}{/if}" />
 							</div>
