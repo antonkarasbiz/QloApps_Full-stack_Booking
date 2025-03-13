@@ -90,10 +90,16 @@
 			</a>
             {*By webkul To Check Order restrict condition before Payment by the customer*}
             {if !$restrict_order}
-                <button class="btn pull-right button button-medium" type="submit">
+                <button class="btn pull-right button button-medium" type="submit" onClick="disableSubmitButton(this)">
                     <span>{l s='I confirm my order' mod='bankwire'}&nbsp;<i class="icon-chevron-right right"></i></span>
                 </button>
             {/if}
         </p>
     </form>
+    <script>
+        function disableSubmitButton(button) {
+            $(button).attr('disabled', 'disabled');
+            $(button).closest('form').get(0).submit();
+        }
+    </script>
 {/if}
