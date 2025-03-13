@@ -2495,21 +2495,33 @@ class HotelHelper
         return $daysDifference;
     }
 
+    /**
+     * Validate the date range for a hotel booking.
+     *
+     * @param string $dateFrom Start date (format: 'Y-m-d H:i:s')
+     * @param string $dateTo End date (format: 'Y-m-d H:i:s')
+     * @param int $idHotel Hotel ID
+     * @return bool True if the date range is valid, otherwise false
+     */
     public static function validateDateRangeForHotel($dateFrom, $dateTo, $idHotel)
     {
         $validStartDateTimeStamp = strtotime(date('Y-m-d'));
         if ($minBookingOffset = (int) HotelOrderRestrictDate::getMinBookingOffset($idHotel)) {
-            $validStartDateTimeStamp = strtotime(date('Y-m-d', strtotime('+ '.$minBookingOffset.' day')));
+            $validStartDateTimeStamp = strtotime('+ '.$minBookingOffset.' day', $validStartDateTimeStamp);
         }
 
+        $maxOrderDateTimestamp = strtotime(HotelOrderRestrictDate::getMaxOrderDate($idHotel));
         $dateFromTimestamp = strtotime($dateFrom);
         $dateToTimestamp = strtotime($dateTo);
+
         $isValid = true;
         if ($dateFrom != '' && ($dateFromTimestamp === false || ($dateFromTimestamp < $validStartDateTimeStamp))) {
             $isValid = false;
         } else if ($dateTo != '' && ($dateToTimestamp === false || ($dateToTimestamp < $validStartDateTimeStamp))) {
             $isValid = false;
         } else if ($dateTo != '' && $dateFrom != '' && $dateFromTimestamp >= $dateToTimestamp) {
+            $isValid = false;
+        } else if ($dateToTimestamp > $maxOrderDateTimestamp) {
             $isValid = false;
         }
 
