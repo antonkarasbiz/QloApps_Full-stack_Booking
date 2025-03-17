@@ -6138,7 +6138,6 @@ class AdminOrdersControllerCore extends AdminController
         $obj_hotel_cart_detail = new HotelCartBookingData();
         $deleted = $obj_hotel_cart_detail->deleteRowById($del_id);
         if ($deleted) {
-            HotelRoomTypeFeaturePricing::deleteByIdCart($cart_id, $id_product, $room_id, $dt_frm, $dt_to );
             $obj_product_process = new HotelCartBookingData();
             $num_cart_rooms = 0;
             if ($rooms = $obj_hotel_cart_detail->getCartCurrentDataByCartId($cart_id)) {
@@ -6146,6 +6145,8 @@ class AdminOrdersControllerCore extends AdminController
             }
 
             $numDays = HotelHelper::getNumberOfDays($dt_frm, $dt_to);
+            $dt_to = date('Y-m-d H:i:s', strtotime($dt_to) - _TIME_1_DAY_);
+            HotelRoomTypeFeaturePricing::deleteFeaturePrices($cart_id, $id_product, $room_id, $dt_frm, $dt_to);
             $changed = $obj_product_process->changeProductDataByRoomId($room_id, $id_product, $numDays, $cart_id);
             if ($changed) {
                 $result['status'] = 'deleted';
