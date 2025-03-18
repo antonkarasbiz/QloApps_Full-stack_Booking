@@ -388,10 +388,6 @@ class OrderOpcControllerCore extends ParentOrderController
                             $this->ajaxDie($this->changeRoomDemands());
                             exit;
                             break;
-                        case 'submitCustomerGuestDetail':
-                            $this->ajaxDie($this->submitCustomerGuestDetail());
-                            exit;
-                            break;
                         case 'getCustomerGuestDetail':
                             $this->ajaxDie($this->getCustomerGuestDetail());
                             exit;
@@ -442,6 +438,10 @@ class OrderOpcControllerCore extends ParentOrderController
         }
 
         parent::initContent();
+
+        if (Tools::getValue('submitGuestDetails')) {
+            $this->submitCustomerGuestDetail();
+        }
 
         /* id_carrier is not defined in database before choosing a carrier, set it to a default one to match a potential cart _rule */
         if (empty($this->context->cart->id_carrier)) {
@@ -556,9 +556,9 @@ class OrderOpcControllerCore extends ParentOrderController
         $this->_assignPayment();
         // GUEST BOOKING
         if ($this->isLogged) {
-            if ($id_customer_guest_detail = CartCustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
+            if ($id_customer_guest_detail = CustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
                 $this->context->smarty->assign(
-                    'customer_guest_detail', CartCustomerGuestDetail::getCustomerGuestDetail($id_customer_guest_detail)
+                    'customer_guest_detail', CustomerGuestDetail::getCustomerGuestDetail($id_customer_guest_detail)
                 );
             }
             $this->context->smarty->assign('id_customer_guest_detail', $id_customer_guest_detail);
@@ -1080,23 +1080,14 @@ class OrderOpcControllerCore extends ParentOrderController
         $firstname = trim(Tools::getValue('firstname'));
         $lastname = trim(Tools::getValue('lastname'));
         $email = trim(Tools::getValue('email'));
-        $objCartCustomerGuestDetail = new CartCustomerGuestDetailCore();
-        if ($guestDetails = $objCartCustomerGuestDetail->getCustomerRelatedGuestDetails(
+        $objCustomerGuestDetail = new CustomerGuestDetail();
+        if ($guestDetails = $objCustomerGuestDetail->getCustomerRelatedGuestDetails(
             $this->context->cart->id_customer,
             $firstname,
             $lastname,
             $email,
         )) {
             $response['status'] = true;
-            $detailsExist = array();
-            foreach ($guestDetails as $guestKey => $guestDetail) {
-                $joinKey = trim($guestDetail['firstname']).trim($guestDetail['lastname']).trim($guestDetail['email']);
-                if ($guestDetail['id_cart'] == $this->context->cart->id || isset($detailsExist[$joinKey])) {
-                    unset($guestDetails[$guestKey]);
-                }
-                $detailsExist[$joinKey] = true;
-            }
-
             $response['guestDetails'] = $guestDetails;
         }
 
@@ -1110,71 +1101,85 @@ class OrderOpcControllerCore extends ParentOrderController
         $this->context->cookie->__set('customer_details_proceeded', 0);
         $this->context->cookie->checkedTOS = false;
         if ($customerGuestDetail) {
-            if ($id_customer_guest_detail = CartCustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
-                $objCustomerGuestDetail = new CartCustomerGuestDetail($id_customer_guest_detail);
-            } else {
-                $objCustomerGuestDetail = new CartCustomerGuestDetail();
-            }
-
+            $customerGuestDetailErrors = array();
             $customerGuestDetailGender = Tools::getValue('customer_guest_detail_gender');
             $customerGuestDetailFirstname = Tools::getValue('customer_guest_detail_firstname');
             $customerGuestDetailLastname = Tools::getValue('customer_guest_detail_lastname');
             $customerGuestDetailEmail = Tools::getValue('customer_guest_detail_email');
             $customerGuestDetailPhone = Tools::getValue('customer_guest_detail_phone');
-
-            $className = 'CartCustomerGuestDetail';
-            $rules = call_user_func(array($className, 'getValidationRules'), $className);
-
-            if (trim($customerGuestDetailGender) && Validate::isUnsignedInt($customerGuestDetailGender)) {
-                $objCustomerGuestDetail->id_gender = $customerGuestDetailGender;
+            if ($id_customer_guest_detail = CustomerGuestDetail::getIdCustomerGuest($customerGuestDetailEmail, $this->context->cart->id)) {
+                $objCustomerGuestDetail = new CustomerGuestDetail($id_customer_guest_detail);
+            } else if ($id_customer_guest_detail = CustomerGuestDetail::getIdCustomerGuest($customerGuestDetailEmail, $this->context->customer->id, null)) {
+                $objCustomerGuestDetail = new CustomerGuestDetail($id_customer_guest_detail);
             } else {
-                $result['errors']['customer_guest_detail_gender'] = Tools::displayError('Invalid gender');
+                $objCustomerGuestDetail = new CustomerGuestDetail();
             }
 
-            if (trim($customerGuestDetailFirstname)
-                && Validate::isName($customerGuestDetailFirstname)
-                && (!isset($rules['size']['firstname'])
+            $className = 'CustomerGuestDetail';
+            $rules = call_user_func(array($className, 'getValidationRules'), $className);
+
+            if (!(trim($customerGuestDetailGender) || !Validate::isUnsignedInt($customerGuestDetailGender))) {
+                $customerGuestDetailErrors[] = Tools::displayError('Invalid gender');
+            }
+
+            if (!trim($customerGuestDetailFirstname)
+                || !Validate::isName($customerGuestDetailFirstname)
+                || !(!isset($rules['size']['firstname'])
                    || (isset($rules['size']['firstname']) && (Tools::strlen(trim($customerGuestDetailFirstname)) <= $rules['size']['firstname']))
                 )
             ) {
-                $objCustomerGuestDetail->firstname = $customerGuestDetailFirstname;
+                $customerGuestDetailErrors[] = Tools::displayError('Invalid first name');
             }
 
-            if (trim($customerGuestDetailLastname)
-                && Validate::isName($customerGuestDetailLastname)
-                && (!isset($rules['size']['lastname'])
+            if (!trim($customerGuestDetailLastname)
+                || !Validate::isName($customerGuestDetailLastname)
+                || !(!isset($rules['size']['lastname'])
                   || (isset($rules['size']['lastname']) && (Tools::strlen(trim($customerGuestDetailLastname)) <= $rules['size']['lastname']))
                 )
             ) {
-                $objCustomerGuestDetail->lastname = $customerGuestDetailLastname;
+                $customerGuestDetailErrors[] = Tools::displayError('Invalid last name');
             }
 
-            if (trim($customerGuestDetailEmail)
-                && Validate::isEmail($customerGuestDetailEmail)
-                && (!isset($rules['size']['email'])
+            if (!trim($customerGuestDetailEmail)
+                || !Validate::isEmail($customerGuestDetailEmail)
+                || !(!isset($rules['size']['email'])
                   || (isset($rules['size']['email']) && (Tools::strlen(trim($customerGuestDetailEmail)) <= $rules['size']['email']))
                 )
             ) {
-                $objCustomerGuestDetail->email = $customerGuestDetailEmail;
+                $customerGuestDetailErrors[] = Tools::displayError('Invalid email');
             }
 
-            if (trim($customerGuestDetailPhone)
-                && Validate::isPhoneNumber($customerGuestDetailPhone)
-                && (!isset($rules['size']['phone'])
+            if (!trim($customerGuestDetailPhone)
+                || !Validate::isPhoneNumber($customerGuestDetailPhone)
+                || !(!isset($rules['size']['phone'])
                   || (isset($rules['size']['phone']) && (Tools::strlen(trim($customerGuestDetailPhone)) <= $rules['size']['phone']))
                 )
             ) {
-                $objCustomerGuestDetail->phone = $customerGuestDetailPhone;
+                $customerGuestDetailErrors[] = Tools::displayError('Invalid phone');
             }
 
-            $objCustomerGuestDetail->id_cart = $this->context->cart->id;
-            $objCustomerGuestDetail->save();
-        } else {
-            if ($id_customer_guest_detail = CartCustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
-                if (Validate::isLoadedObject($objCustomerGuestDetail = new CartCustomerGuestDetail($id_customer_guest_detail))) {
-                    $objCustomerGuestDetail->delete();
+            if (empty($customerGuestDetailErrors)) {
+                $objCustomerGuestDetail->id_gender = $customerGuestDetailGender;
+                $objCustomerGuestDetail->firstname = $customerGuestDetailFirstname;
+                $objCustomerGuestDetail->lastname = $customerGuestDetailLastname;
+                $objCustomerGuestDetail->email = $customerGuestDetailEmail;
+                $objCustomerGuestDetail->phone = $customerGuestDetailPhone;
+                $objCustomerGuestDetail->id_customer = $this->context->customer->id;
+                if ($objCustomerGuestDetail->save()) {
+                    if ($maxGuestAccountAllowed = Configuration::get('PS_CUSTOMER_GUEST_MAX_NUM')) {
+                        $objCustomerGuestDetail->deleteCartCustomerGuestByIdCustomer($this->context->cart->id_customer, $maxGuestAccountAllowed);
+                    }
+                    // To prevent duplications for the same cart.
+                    CustomerGuestDetail::deleteCartCustomerGuest($this->context->cart->id);
+                    CustomerGuestDetail::saveCartCustomerGuest($this->context->cart->id, $objCustomerGuestDetail->id);
+                    Tools::redirect($this->context->link->getPageLink('order-opc', null, $this->context->language->id, array('proceed_to_payment' => 1)));
                 }
             }
+
+            $this->context->smarty->assign('customerGuestDetailErrors', $customerGuestDetailErrors);
+        } else {
+            CustomerGuestDetail::deleteCartCustomerGuest($this->context->cart->id);
+            Tools::redirect($this->context->link->getPageLink('order-opc', null, $this->context->language->id, array('proceed_to_payment' => 1)));
         }
 
         $this->context->cart->save();
