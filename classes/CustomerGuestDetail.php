@@ -18,10 +18,10 @@
 *  @license   https://store.webkul.com/license.html
 */
 
-class CartCustomerGuestDetailCore extends ObjectModel
+class CustomerGuestDetailCore extends ObjectModel
 {
     public $id_customer_guest_detail;
-    public $id_cart;
+    public $id_customer;
     public $id_gender;
     public $firstname;
     public $lastname;
@@ -31,10 +31,10 @@ class CartCustomerGuestDetailCore extends ObjectModel
     public $date_upd;
 
     public static $definition = array(
-        'table' => 'cart_customer_guest_detail',
+        'table' => 'customer_guest_detail',
         'primary' => 'id_customer_guest_detail',
         'fields' => array(
-            'id_cart' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_customer' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_gender' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'firstname' => array('type' => self::TYPE_STRING, 'validate' => 'isName', 'size' => 32),
             'lastname' => array('type' => self::TYPE_STRING, 'validate' => 'isName', 'size' => 32),
@@ -49,48 +49,67 @@ class CartCustomerGuestDetailCore extends ObjectModel
     {
         return Db::getInstance()->getValue('
             SELECT `id_customer_guest_detail`
-            FROM `'._DB_PREFIX_.'cart_customer_guest_detail`
+            FROM `'._DB_PREFIX_.'cart_customer_guest`
             WHERE `id_cart` = '.(int)$id_cart
         );
     }
 
-    public function add($auto_date = true, $null_values = false)
+    public static function saveCartCustomerGuest($idCart, $idCustomerGuestDetail)
     {
-        if ($res = parent::add($auto_date, $null_values)) {
-            $objCart = new Cart($this->id_cart);
-            Db::getInstance()->insert('customer_guest_detail_mapping', array(
-                'id_customer' => (int) $objCart->id_customer,
-                'id_customer_guest_detail' => (int)$this->id
-            ));
-        }
+        return Db::getInstance()->insert('cart_customer_guest', array(
+            'id_cart' => (int) $idCart,
+            'id_customer_guest_detail' => (int) $idCustomerGuestDetail
+        ));
+    }
 
-        return $res;
+    public static function deleteCartCustomerGuest($idCart)
+    {
+        return Db::getInstance()->delete('cart_customer_guest',
+            ' `id_cart`='.(int) $idCart
+        );
+    }
+
+    public function deleteCartCustomerGuestByIdGuest()
+    {
+        return Db::getInstance()->delete('cart_customer_guest',
+            ' `id_customer_guest_detail`='.(int) $this->id
+        );
     }
 
     public function delete()
     {
-        if ($res = parent::delete()) {
-            $objCart = new Cart($this->id_cart);
-            Db::getInstance()->delete('customer_guest_detail_mapping',
-                '`id_customer` = '.(int) $objCart->id_customer.'
-                AND `id_customer_guest_detail`='.(int) $this->id
-            );
+        $this->deleteCartCustomerGuestByIdGuest();
+
+        return parent::delete();
+    }
+
+    public function deleteCartCustomerGuestByIdCustomer($idCustomer, $offset = 0)
+    {
+        $res = true;
+        if ($guests = $this->getCustomerRelatedGuestDetails($idCustomer, false, false, false, $offset)) {
+            foreach ($guests as $guest) {
+                $objCustomerGuestDetail = new CustomerGuestDetail((int) $guest['id_customer_guest_detail']);
+                $objCustomerGuestDetail->delete();
+            }
         }
 
         return $res;
     }
 
-    public function getCustomerRelatedGuestDetails($idCustomer, $firstname = false, $lastname = false, $email = false)
+    public function getCustomerRelatedGuestDetails($idCustomer, $firstname = false, $lastname = false, $email = false, $offset = 0)
     {
         return Db::getInstance()->executeS('
-            SELECT cgd.`id_customer_guest_detail`, cgd.`email`, cgd.`firstname`, cgd.`lastname`, cgd.`phone`, cgd.`id_cart`
-            FROM `'._DB_PREFIX_.'customer_guest_detail_mapping` cgdm
-            LEFT JOIN `'._DB_PREFIX_.'cart_customer_guest_detail` cgd
-            ON (cgdm.`id_customer_guest_detail` = cgd.`id_customer_guest_detail`)
-            WHERE cgdm.`id_customer` = '.(int)$idCustomer.
+            SELECT cgd.`id_customer_guest_detail`, cgd.`email`, cgd.`firstname`, cgd.`lastname`, cgd.`phone`
+            FROM `'._DB_PREFIX_.'customer_guest_detail` cgd
+            LEFT JOIN  `'._DB_PREFIX_.'cart_customer_guest` ccg
+            ON (ccg.`id_customer_guest_detail` = cgd.`id_customer_guest_detail`)
+            WHERE cgd.`id_customer` = '.(int)$idCustomer.
             (($firstname !== false && $firstname != '') ? ' AND cgd.`firstname` LIKE "%'.$firstname.'%"' : ' ').
             (($lastname !== false && $lastname != '') ? ' AND cgd.`lastname` LIKE "%'.$lastname.'%"' : ' ').
-            (($email !== false && $email != '') ? ' AND cgd.`email` LIKE "%'.$email.'%"' : ' ')
+            (($email !== false && $email != '') ? ' AND cgd.`email` LIKE "%'.$email.'%"' : ' ').
+            'GROUP BY cgd.`id_customer_guest_detail`'.
+            ' Order BY date_add DESC '.
+            (($offset) ? ' LIMIT 999999 OFFSET '.(int) $offset : ' ')
         );
     }
 
@@ -98,24 +117,29 @@ class CartCustomerGuestDetailCore extends ObjectModel
     {
         return Db::getInstance()->getRow('
             SELECT `id_gender`, `firstname`, `lastname`, `email`, `phone`
-            FROM `'._DB_PREFIX_.'cart_customer_guest_detail`
+            FROM `'._DB_PREFIX_.'customer_guest_detail`
             WHERE `id_customer_guest_detail` = '.(int)$id_customer_guest_detail
         );
     }
 
-    public static function getIdCustomerGuest($email)
+    public static function getIdCustomerGuest($email, $idCustomer = null, $idCart = 0)
     {
         return Db::getInstance()->getValue(
-            'SELECT `id_customer_guest_detail` FROM `'._DB_PREFIX_.'cart_customer_guest_detail`
-            WHERE `id_cart` = 0 AND `email` = "'.pSQL($email).'"'
+            'SELECT cgd.`id_customer_guest_detail` FROM `'._DB_PREFIX_.'customer_guest_detail` as cgd
+            LEFT JOIN `'._DB_PREFIX_.'cart_customer_guest` ccg
+            ON ccg.`id_customer_guest_detail` = cgd.`id_customer_guest_detail`
+            WHERE cgd.`email` = "'.pSQL($email).'"'.
+            (!is_null($idCart) ? ' AND (ccg.`id_cart` = '.(int) $idCart.' '. (($idCart) ? ')'  : ' OR ISNULL(ccg.`id_cart`)) ') : ' ').
+            (!is_null($idCustomer) ? ' AND cgd.`id_customer` = '.(int) $idCustomer : ' ')
         );
     }
 
-    public static function getCustomerPhone($email)
+    public static function getCustomerPhone($email, $idCustomer = null)
     {
         return Db::getInstance()->getValue(
-            'SELECT `phone` FROM `'._DB_PREFIX_.'cart_customer_guest_detail`
-            WHERE `id_cart` = 0 AND `email` = "'.pSQL($email).'"'
+            'SELECT `phone` FROM `'._DB_PREFIX_.'customer_guest_detail`
+            WHERE 1 AND `email` = "'.pSQL($email).'"'.
+            (!is_null($idCustomer) ? ' AND `id_customer` ='.(int) $idCustomer: ' ')
         );
     }
 
@@ -135,7 +159,7 @@ class CartCustomerGuestDetailCore extends ObjectModel
             $isValid = false;
         }
 
-        $className = 'CartCustomerGuestDetail';
+        $className = 'CustomerGuestDetail';
         $rules = call_user_func(array($className, 'getValidationRules'), $className);
 
         if (isset($rules['size']['firstname'])) {

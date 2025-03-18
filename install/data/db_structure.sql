@@ -686,9 +686,9 @@ CREATE TABLE `PREFIX_order_customer_guest_detail` (
 	PRIMARY KEY (`id_order_customer_guest_detail`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATION;
 
-CREATE TABLE `PREFIX_cart_customer_guest_detail` (
+CREATE TABLE `PREFIX_customer_guest_detail` (
   `id_customer_guest_detail` int(10) unsigned NOT NULL auto_increment,
-  `id_cart` int(10) unsigned NOT NULL,
+  `id_customer` int(10) unsigned NOT NULL,
   `id_gender` int(10) unsigned NOT NULL,
   `firstname` varchar(32) NOT NULL,
   `lastname` varchar(32) NOT NULL,
@@ -699,10 +699,10 @@ CREATE TABLE `PREFIX_cart_customer_guest_detail` (
 	PRIMARY KEY (`id_customer_guest_detail`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATION;
 
-CREATE TABLE `PREFIX_customer_guest_detail_mapping` (
+CREATE TABLE `PREFIX_cart_customer_guest` (
   `id_customer_guest_detail` int(10) unsigned NOT NULL,
-  `id_customer` int(10) unsigned NOT NULL,
-	PRIMARY KEY (`id_customer_guest_detail`, `id_customer`)
+  `id_cart` int(10) unsigned NOT NULL,
+	PRIMARY KEY (`id_customer_guest_detail`, `id_cart`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATION;
 
 CREATE TABLE `PREFIX_customization` (

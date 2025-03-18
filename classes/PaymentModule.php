@@ -400,16 +400,16 @@ abstract class PaymentModuleCore extends Module
                     }
 
                     // save customer guest information
-                    if ($id_customer_guest_detail = CartCustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
-                        if (Validate::isLoadedObject($objCartCustomerGuestDetail = new CartCustomerGuestDetail(
+                    if ($id_customer_guest_detail = CustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
+                        if (Validate::isLoadedObject($objCustomerGuestDetail = new CustomerGuestDetail(
                             $id_customer_guest_detail
                         ))) {
                             $objOrderCustomerGuestDetail = new OrderCustomerGuestDetail();
-                            $objOrderCustomerGuestDetail->id_gender = $objCartCustomerGuestDetail->id_gender;
-                            $objOrderCustomerGuestDetail->firstname = $objCartCustomerGuestDetail->firstname;
-                            $objOrderCustomerGuestDetail->lastname = $objCartCustomerGuestDetail->lastname;
-                            $objOrderCustomerGuestDetail->email = $objCartCustomerGuestDetail->email;
-                            $objOrderCustomerGuestDetail->phone = $objCartCustomerGuestDetail->phone;
+                            $objOrderCustomerGuestDetail->id_gender = $objCustomerGuestDetail->id_gender;
+                            $objOrderCustomerGuestDetail->firstname = $objCustomerGuestDetail->firstname;
+                            $objOrderCustomerGuestDetail->lastname = $objCustomerGuestDetail->lastname;
+                            $objOrderCustomerGuestDetail->email = $objCustomerGuestDetail->email;
+                            $objOrderCustomerGuestDetail->phone = $objCustomerGuestDetail->phone;
                             $objOrderCustomerGuestDetail->id_order = (int)$order->id;
                             $objOrderCustomerGuestDetail->save();
                         }

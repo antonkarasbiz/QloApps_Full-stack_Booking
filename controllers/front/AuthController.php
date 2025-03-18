@@ -422,7 +422,7 @@ class AuthControllerCore extends FrontController
                 $addresses_types[] = 'address_invoice';
             }
 
-            $className = 'CartCustomerGuestDetail';
+            $className = 'CustomerGuestDetail';
             $rules = call_user_func(array($className, 'getValidationRules'), $className);
             if (Configuration::get('PS_ONE_PHONE_AT_LEAST') && !Tools::getValue('phone')) {
                 $this->errors[] = Tools::displayError('Phone number is required.');

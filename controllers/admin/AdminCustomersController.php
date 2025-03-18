@@ -939,6 +939,9 @@ class AdminCustomersControllerCore extends AdminController
 
         $customerLanguage = new Language($customer->id_lang);
         $shop = new Shop($customer->id_shop);
+
+        $objCustomerGuestDetail = new CustomerGuestDetail();
+        $customerGuests = $objCustomerGuestDetail->getCustomerRelatedGuestDetails($customer->id);
         $this->tpl_view_vars = array(
             'customer' => $customer,
             'gender' => $gender,
@@ -985,7 +988,8 @@ class AdminCustomersControllerCore extends AdminController
             'connections' => $connections,
             // Referrers
             'referrers' => $referrers,
-            'show_toolbar' => true
+            'show_toolbar' => true,
+            'customer_guests' => $customerGuests,
         );
         return parent::renderView();
     }
@@ -1002,11 +1006,11 @@ class AdminCustomersControllerCore extends AdminController
                     $this->errors[] = Tools::displayError('Some error ocurred while deleting the Customer');
                     return;
                 } else {
-                    if ($idCustomerGuest = CartCustomerGuestDetail::getIdCustomerGuest($customerEmail)) {
-                        $objCartCustomerGuestDetail = new CartCustomerGuestDetail($idCustomerGuest);
-                        $objCartCustomerGuestDetail->phone = preg_replace('/[0-9]/', '0', $objCustomer->phone);
-                        $objCartCustomerGuestDetail->email = $objCustomer->email;
-                        $objCartCustomerGuestDetail->save();
+                    if ($idCustomerGuest = CustomerGuestDetail::getIdCustomerGuest($customerEmail, false)) {
+                        $objCustomerGuestDetail = new CustomerGuestDetail($idCustomerGuest);
+                        $objCustomerGuestDetail->phone = preg_replace('/[0-9]/', '0', $objCustomer->phone);
+                        $objCustomerGuestDetail->email = $objCustomer->email;
+                        $objCustomerGuestDetail->save();
                     }
                 }
 
@@ -1176,7 +1180,7 @@ class AdminCustomersControllerCore extends AdminController
                 $this->errors[] = Tools::displayError('Phone number is required.');
             }
         }
-        $className = 'CartCustomerGuestDetail';
+        $className = 'CustomerGuestDetail';
         $rules = call_user_func(array($className, 'getValidationRules'), $className);
         if ($phone && !Validate::isPhoneNumber($phone)) {
             $this->errors[] = Tools::displayError('Invaid phone number.');
@@ -1389,17 +1393,113 @@ class AdminCustomersControllerCore extends AdminController
         $this->ajaxDie(json_encode($response));
     }
 
+    public function ajaxProcessInitGuestModal()
+    {
+        $response['hasError'] = 1;
+        if (Validate::isLoadedObject($objCustomerGuestDetail = new CustomerGuestDetail((int) Tools::getValue('id_customer_guest_detail')))) {
+            $this->context->smarty->assign(
+                array(
+                    'genders' => Gender::getGenders(),
+                    'customerGuestDetail' => $objCustomerGuestDetail,
+                )
+            );
+            $modal = array(
+                'modal_id' => 'customer-guest-modal',
+                'modal_class' => 'customer_guest_modal',
+                'modal_title' => '<i class="icon icon-user"></i> &nbsp'.$this->l('Guest details'),
+                'modal_content' => $this->context->smarty->fetch('controllers/customers/modals/_customer_guest_form.tpl'),
+                'modal_actions' => array(
+                    array(
+                        'type' => 'button',
+                        'value' => 'submitGuestInfo',
+                        'class' => 'submitGuestInfoInfo btn-primary pull-right',
+                        'label' => '<i class="icon-user"></i> '.$this->l('Save Guest'),
+                    ),
+                ),
+            );
+
+            $this->context->smarty->assign($modal);
+            $response['hasError'] = 0;
+            $response['modalHtml'] = $this->context->smarty->fetch('modal.tpl');
+        }
+
+        $this->ajaxDie(json_encode($response));
+    }
+
+
+    public function ajaxProcessUpdateGuestDetails()
+    {
+        $response = array('hasError' => 0, 'errors' => array());
+        // Check tab access is allowed to edit
+        if ($this->tabAccess['edit'] == 1) {
+            if (Validate::isLoadedObject($objCustomerGuestDetail = new CustomerGuestDetail((int) Tools::getValue('id_customer_guest_detail')))) {
+                $objCustomerGuestDetail->id_gender = Tools::getValue('id_gender');
+                $objCustomerGuestDetail->firstname = Tools::getValue('firstname');
+                $objCustomerGuestDetail->lastname = Tools::getValue('lastname');
+                $objCustomerGuestDetail->phone = Tools::getValue('phone');
+                if ($objCustomerGuestDetail->save()) {
+                    $gender = new Gender($objCustomerGuestDetail->id_gender, $this->context->language->id);
+                    $response['data']['gender'] = $gender->name;
+                    $response['data']['firstname'] = $objCustomerGuestDetail->firstname;
+                    $response['data']['lastname'] = $objCustomerGuestDetail->lastname ;
+                    $response['data']['email'] = $objCustomerGuestDetail->email;
+                    $response['data']['phone'] = $objCustomerGuestDetail->phone;
+                    $response['data']['id'] = $objCustomerGuestDetail->id;
+                    $response['msg'] = $this->l('Guest details are updated.');
+                } else {
+                    $response['errors'][] = $this->l('Unable to save guest details.');
+                }
+            } else {
+                $response['errors'][] = $this->l('Guest details not found.');
+            }
+        } else {
+            $response['errors'][] = $this->l('You do not have permission to edit this.');
+        }
+
+        if ($response['errors']) {
+            $response['hasError'] = 1;
+            $this->context->smarty->assign('errors', $response['errors']);
+            $response['errorsHtml'] = $this->context->smarty->fetch('alerts.tpl');
+        }
+
+        $this->ajaxDie(json_encode($response));
+    }
+
+    public function ajaxProcessDeleteGuest()
+    {
+        $response = array('hasError' => 1, 'errors' => array());
+        // Check tab access is allowed to edit
+        if ($this->tabAccess['delete'] == 1) {
+            if (Validate::isLoadedObject($objCustomerGuestDetail = new CustomerGuestDetail((int) Tools::getValue('id_customer_guest_detail')))) {
+                if ($objCustomerGuestDetail->delete()) {
+                    $response['hasError'] = false;
+                    $response['msg'] = $this->l('Successful deletion.');
+                } else {
+                    $response['msg'] = $this->l('Unable to delete guest details.');
+                }
+            } else {
+                $response['msg'] = $this->l('Guest details not found.');
+            }
+        } else {
+            $response['msg'] = $this->l('You do not have permission to delete this.');
+        }
+
+        $this->ajaxDie(json_encode($response));
+    }
+
     public function setMedia()
     {
         parent::setMedia();
         if ($this->loadObject(true)
-            && ($this->display == 'edit' || $this->display == 'add')
+            && ($this->display == 'edit' || $this->display == 'add' || $this->display == 'view')
         ) {
             $idCustomer = $this->object->id ? $this->object->id : 0;
             Media::addJSDef(
                 array(
                     'customer_controller_url' => self::$currentIndex.'&token='.$this->token,
-                    'id_customer' => $idCustomer
+                    'id_customer' => $idCustomer,
+                    'txtSomeErr' => $this->l('Some error occurred. Please try again.', null, true),
+                    'confirmTxt' => $this->l('Are you sure you want to delete this guest details?', null, true)
                 )
             );
             $this->addJS(_PS_JS_DIR_.'admin/customers.js');

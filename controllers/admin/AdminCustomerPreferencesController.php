@@ -121,6 +121,15 @@ class AdminCustomerPreferencesControllerCore extends AdminController
                         'cast' => 'intval',
                         'type' => 'bool'
                     ),
+                    'PS_CUSTOMER_GUEST_MAX_NUM' => array(
+                        'title' => $this->l('Maximum Customers guests'),
+                        'hint' => $this->l('Maximum number of guests a customer can add using the "booking for someone else" feature. Set as 0 for no limit.'),
+                        'validation' => 'isUnsignedInt',
+                        'cast' => 'intval',
+                        'size' => 5,
+                        'type' => 'text',
+                        'class' => 'fixed-width-xl',
+                    ),
                 ),
                 'submit' => array(
                     'title' => $this->l('Save'),

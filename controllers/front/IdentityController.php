@@ -88,7 +88,8 @@ class IdentityControllerCore extends FrontController
                     $this->errors[] = Tools::displayError('Phone number is required.');
                 }
             }
-            $className = 'CartCustomerGuestDetail';
+
+            $className = 'CustomerGuestDetail';
             $rules = call_user_func(array($className, 'getValidationRules'), $className);
             if ($phone && !Validate::isPhoneNumber($phone)) {
                 $this->errors[] = Tools::displayError('Invaid phone number.');

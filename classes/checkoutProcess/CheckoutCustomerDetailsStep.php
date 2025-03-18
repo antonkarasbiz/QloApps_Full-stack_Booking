@@ -39,9 +39,9 @@ class CheckoutCustomerDetailsStepCore extends AbstractCheckoutStepCore
             }
         } elseif (Tools::getValue('proceed_to_payment')) {
             $guestInfoComplete = true;
-            if ($id_customer_guest_detail = CartCustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
+            if ($id_customer_guest_detail = CustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
                 $guestInfoComplete = false;
-                $objCustomerGuestDetail = new CartCustomerGuestDetail($id_customer_guest_detail);
+                $objCustomerGuestDetail = new CustomerGuestDetail($id_customer_guest_detail);
                 if ($objCustomerGuestDetail->validateGuestInfo()) {
                     $guestInfoComplete = true;
                 }

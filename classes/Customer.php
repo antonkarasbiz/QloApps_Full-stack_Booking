@@ -207,7 +207,7 @@ class CustomerCore extends ObjectModel
         parent::__construct($id);
 
         if ($this->email) {
-            $this->phone = CartCustomerGuestDetail::getCustomerPhone($this->email);
+            $this->phone = CustomerGuestDetail::getCustomerPhone($this->email, false);
         }
 
         if (Configuration::get('PS_ONE_PHONE_AT_LEAST')) {
@@ -264,7 +264,7 @@ class CustomerCore extends ObjectModel
         }
         $success = parent::add($autodate, $null_values);
         $this->updateGroup($this->groupBox);
-        $this->updateCustomerAdditionalDetails(CartCustomerGuestDetail::getIdCustomerGuest($this->email));
+        $this->updateCustomerAdditionalDetails(CustomerGuestDetail::getIdCustomerGuest($this->email, false));
         return $success;
     }
 
@@ -289,20 +289,20 @@ class CustomerCore extends ObjectModel
 
         $objOldCustomer = new Customer($this->id);
         $success = parent::update(true);
-        $this->updateCustomerAdditionalDetails(CartCustomerGuestDetail::getIdCustomerGuest($objOldCustomer->email));
+        $this->updateCustomerAdditionalDetails(CustomerGuestDetail::getIdCustomerGuest($objOldCustomer->email, false));
         return $success;
     }
 
     public function updateCustomerAdditionalDetails($idCustomerGuest)
     {
-        $objCartCustomerGuestDetail = new CartCustomerGuestDetail($idCustomerGuest);
-        $objCartCustomerGuestDetail->id_cart = 0;
-        $objCartCustomerGuestDetail->id_gender = $this->id_gender;
-        $objCartCustomerGuestDetail->firstname = $this->firstname;
-        $objCartCustomerGuestDetail->lastname = $this->lastname;
-        $objCartCustomerGuestDetail->email = $this->email;
-        $objCartCustomerGuestDetail->phone = $this->phone;
-        return $objCartCustomerGuestDetail->save();
+        $objCustomerGuestDetail = new CustomerGuestDetail($idCustomerGuest);
+        $objCustomerGuestDetail->id_customer = 0;
+        $objCustomerGuestDetail->id_gender = $this->id_gender;
+        $objCustomerGuestDetail->firstname = $this->firstname;
+        $objCustomerGuestDetail->lastname = $this->lastname;
+        $objCustomerGuestDetail->email = $this->email;
+        $objCustomerGuestDetail->phone = $this->phone;
+        return $objCustomerGuestDetail->save();
     }
 
     public function delete()
@@ -343,8 +343,8 @@ class CustomerCore extends ObjectModel
 
         CartRule::deleteByIdCustomer((int)$this->id);
         // delete customer data from customerGuest table
-        $objCartCustomerGuestDetail = new CartCustomerGuestDetail(CartCustomerGuestDetail::getIdCustomerGuest($this->email));
-        $objCartCustomerGuestDetail->delete();
+        $objCustomerGuestDetail = new CustomerGuestDetail(CustomerGuestDetail::getIdCustomerGuest($this->email, false));
+        $objCustomerGuestDetail->delete();
         return parent::delete();
     }
 
@@ -542,7 +542,7 @@ class CustomerCore extends ObjectModel
         return Db::getInstance()->getValue(
             'SELECT cgd.`phone`
             FROM `'._DB_PREFIX_.'customer` c
-            INNER JOIN `'._DB_PREFIX_.'cart_customer_guest_detail` cgd
+            INNER JOIN `'._DB_PREFIX_.'customer_guest_detail` cgd
             ON (cgd.`email` = c.`email`)
             WHERE `id_cart` = 0 AND c.`id_customer` = '.(int)($id_customer)
         );

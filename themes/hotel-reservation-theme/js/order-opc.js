@@ -94,9 +94,11 @@ $(document).ready(function()
 		if ($("#customer_guest_detail:checked").val() == 1) {
 			$('#checkout-guest-info-block').hide('slow');
 			$('#customer-guest-detail-container').show('slow');
+			$('#customer_guest_detail_errors').show('slow');
 		} else {
 			$('#customer-guest-detail-container').hide('slow');
 			$('#checkout-guest-info-block').show('slow');
+			$('#customer_guest_detail_errors').hide('hide');
 		}
 	}
 	function validateCustomerGuestDetailForm() {
@@ -115,30 +117,24 @@ $(document).ready(function()
 	if ($("#customer_guest_detail:checked").val() == 1) {
 		validateCustomerGuestDetailForm();
 	}
-
-	function submitCustomerGuestDetailForm(postData) {
-		$.ajax({
-			type: 'POST',
-			url: orderOpcUrl,
-			async: false,
-			cache: false,
-			dataType : "json",
-			data: postData
-		});
-	}
-
-	$('#customer_guest_detail_form').on('change', function(e) {
-		let postData = $(this).serialize()+'&method=submitCustomerGuestDetail&ajax=true&token=' + static_token;
-		submitCustomerGuestDetailForm(postData);
+	$(document).on('click', '.submit-guest-details', function(e) {
+		e.preventDefault();
+		if ($('#customer_guest_detail').prop('checked')) {
+			validateCustomerGuestDetailForm();
+			if ($('#customer_guest_detail_form').find('.form-error').length == 0) {
+				$('#customer_guest_detail_form').get(0).submit();
+			}
+		} else {
+			$('#customer_guest_detail_form').get(0).submit();
+		}
 	});
+
 	function setCustomerGuestDetailForm(guestDetail) {
 		$('#customer_guest_detail_firstname').val(guestDetail.firstname);
 		$('#customer_guest_detail_lastname').val(guestDetail.lastname);
 		$('#customer_guest_detail_email').val(guestDetail.email);
 		$('#customer_guest_detail_phone').val(guestDetail.phone);
 		validateCustomerGuestDetailForm();
-		let postData = $('#customer_guest_detail_form').serialize()+'&method=submitCustomerGuestDetail&ajax=true&token=' + static_token;
-		submitCustomerGuestDetailForm(postData);
 		$('.customer_guest_detail_ul').remove();
 	}
 
@@ -194,9 +190,17 @@ $(document).ready(function()
 			$('.customer_guest_detail_ul').remove();
 			clearTimeout(debounceTimeout); // Clear the existing timeout
 			debounceTimeout = setTimeout(() => {
-				let firstName = $('#customer_guest_detail_firstname').val();
-				let lastName = $('#customer_guest_detail_lastname').val();
-				let email = $('#customer_guest_detail_email').val();
+				let firstName = '';
+				let lastName = '';
+				let email = '';
+				if ($(e.target).prop('id') == 'customer_guest_detail_firstname') {
+					firstName = $('#customer_guest_detail_firstname').val()
+				} else if ($(e.target).prop('id') == 'customer_guest_detail_lastname') {
+					lastName = $('#customer_guest_detail_lastname').val()
+				} else if ($(e.target).prop('id') == 'customer_guest_detail_email') {
+					email = $('#customer_guest_detail_email').val()
+				}
+
 				let targetElem = $(this);
 				customerGuestDetailAjax = $.ajax({
 					type: 'POST',
@@ -220,7 +224,6 @@ $(document).ready(function()
 								$(itemElem).attr('data-guest_detail', JSON.stringify(guestDetail));
 								$(listElem).append(itemElem);
 							});
-
 							$(targetElem).closest('.form-group').append($(listElem).prop('outerHTML'));
 						}
 					}
