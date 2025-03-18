@@ -941,7 +941,7 @@ class AdminCustomersControllerCore extends AdminController
         $shop = new Shop($customer->id_shop);
 
         $objCustomerGuestDetail = new CustomerGuestDetail();
-        $customerGuests = $objCustomerGuestDetail->getCustomerRelatedGuestDetails($customer->id);
+        $customerGuests = $objCustomerGuestDetail->getCustomerGuestsByIdCustomer($customer->id);
         $this->tpl_view_vars = array(
             'customer' => $customer,
             'gender' => $gender,

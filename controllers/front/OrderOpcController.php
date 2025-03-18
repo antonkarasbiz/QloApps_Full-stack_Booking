@@ -1081,7 +1081,7 @@ class OrderOpcControllerCore extends ParentOrderController
         $lastname = trim(Tools::getValue('lastname'));
         $email = trim(Tools::getValue('email'));
         $objCustomerGuestDetail = new CustomerGuestDetail();
-        if ($guestDetails = $objCustomerGuestDetail->getCustomerRelatedGuestDetails(
+        if ($guestDetails = $objCustomerGuestDetail->getCustomerGuestsByIdCustomer(
             $this->context->cart->id_customer,
             $firstname,
             $lastname,
@@ -1167,7 +1167,7 @@ class OrderOpcControllerCore extends ParentOrderController
                 $objCustomerGuestDetail->id_customer = $this->context->customer->id;
                 if ($objCustomerGuestDetail->save()) {
                     if ($maxGuestAccountAllowed = Configuration::get('PS_CUSTOMER_GUEST_MAX_NUM')) {
-                        $objCustomerGuestDetail->deleteCartCustomerGuestByIdCustomer($this->context->cart->id_customer, $maxGuestAccountAllowed);
+                        $objCustomerGuestDetail->deleteCustomerGuestByIdCustomer($this->context->cart->id_customer, $maxGuestAccountAllowed);
                     }
                     // To prevent duplications for the same cart.
                     CustomerGuestDetail::deleteCartCustomerGuest($this->context->cart->id);

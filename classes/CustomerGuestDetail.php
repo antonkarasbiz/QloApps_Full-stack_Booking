@@ -83,10 +83,10 @@ class CustomerGuestDetailCore extends ObjectModel
         return parent::delete();
     }
 
-    public function deleteCartCustomerGuestByIdCustomer($idCustomer, $offset = 0)
+    public function deleteCustomerGuestByIdCustomer($idCustomer, $offset = 0)
     {
         $res = true;
-        if ($guests = $this->getCustomerRelatedGuestDetails($idCustomer, false, false, false, $offset)) {
+        if ($guests = $this->getCustomerGuestsByIdCustomer($idCustomer, false, false, false, $offset)) {
             foreach ($guests as $guest) {
                 $objCustomerGuestDetail = new CustomerGuestDetail((int) $guest['id_customer_guest_detail']);
                 $objCustomerGuestDetail->delete();
@@ -96,7 +96,7 @@ class CustomerGuestDetailCore extends ObjectModel
         return $res;
     }
 
-    public function getCustomerRelatedGuestDetails($idCustomer, $firstname = false, $lastname = false, $email = false, $offset = 0)
+    public function getCustomerGuestsByIdCustomer($idCustomer, $firstname = false, $lastname = false, $email = false, $offset = 0)
     {
         return Db::getInstance()->executeS('
             SELECT cgd.`id_customer_guest_detail`, cgd.`email`, cgd.`firstname`, cgd.`lastname`, cgd.`phone`
