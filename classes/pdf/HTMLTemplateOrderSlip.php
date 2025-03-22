@@ -103,7 +103,7 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
 						WHERE `id_order_slip` = '.(int)$this->order_slip->id.'
                         AND `id_order_detail` = '.(int)$product['id_order_detail'].'
                         AND `id_htl_booking` = '.(int)$product['id_htl_booking'].'
-                        AND `id_room_type_service_product_order_detail` = '.(int)$product['id_room_type_service_product_order_detail']);
+                        AND `id_service_product_order_detail` = '.(int)$product['id_service_product_order_detail']);
 
                         $product['total_price_tax_excl'] = $order_slip_detail['amount_tax_excl'];
                     $product['total_price_tax_incl'] = $order_slip_detail['amount_tax_incl'];

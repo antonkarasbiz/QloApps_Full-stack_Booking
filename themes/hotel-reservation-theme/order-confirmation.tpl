@@ -427,14 +427,14 @@
 																</tr>
 															{/if}
 														{/if}
-														{if isset($cart_standalone_service_products) || isset($cart_hotel_service_products)}
+														{if (isset($cart_standalone_service_products) && $cart_standalone_service_products) || (isset($cart_hotel_service_products) && $cart_hotel_service_products)}
 															{if $priceDisplay && $use_tax}
 																<tr class="item">
 																	<td>
 																		<strong>{l s='Total products cost (tax excl.)'}</strong>
 																	</td>
 																	<td class="text-right">
-																		<span>{displayWtPriceWithCurrency price=$orderTotalInfo['total_service_products_te'] currency=$objOrderCurrency}</span>
+																		<span>{displayWtPriceWithCurrency price=$orderTotalInfo['total_standalone_products_te'] currency=$objOrderCurrency}</span>
 																	</td>
 																</tr>
 															{else}

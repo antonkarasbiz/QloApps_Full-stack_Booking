@@ -278,6 +278,9 @@ const BookingRefundManager = {
             href: '#popup-cancellation-order-cancel-success',
             wrapCSS: 'fancybox-order-detail feedback',
             padding: 0,
+            afterClose: function() {
+                location.reload();
+            },
         });
     },
 }

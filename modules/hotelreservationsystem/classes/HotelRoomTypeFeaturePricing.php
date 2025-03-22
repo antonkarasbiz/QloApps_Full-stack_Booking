@@ -741,8 +741,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
                     $date_to,
                     $id_room
                 )) {
-                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                    if ($roomServicesServices = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                    $objServiceProductCartDetail = new ServiceProductCartDetail();
+                    if ($roomServicesServices = $objServiceProductCartDetail->getServiceProductsInCart(
                         $id_cart,
                         [],
                         null,

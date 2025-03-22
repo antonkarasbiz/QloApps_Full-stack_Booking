@@ -1,97 +1,66 @@
 {if isset($list) && $list}
-    <tr>
-        <td style="padding:7px 0">
-            <font size="2" face="Open-sans, sans-serif" color="#555454">
-                <table class="table table-recap" bgcolor="#ffffff" style="width:100%;border-collapse:collapse"><!-- Title -->
-                    <tr>
-                        <th bgcolor="#f8f8f8" style="border:1px solid #D6D4D4;background-color: #fbfbfb;color: #333;font-family: Arial;font-size: 13px;padding: 10px;">Image</th>
-                        <th bgcolor="#f8f8f8" style="border:1px solid #D6D4D4;background-color: #fbfbfb;color: #333;font-family: Arial;font-size: 13px;padding: 10px;">Name</th>
-                        <th bgcolor="#f8f8f8" style="border:1px solid #D6D4D4;background-color: #fbfbfb;color: #333;font-family: Arial;font-size: 13px;padding: 10px;">Unit Price</th>
-                        <th bgcolor="#f8f8f8" style="border:1px solid #D6D4D4;background-color: #fbfbfb;color: #333;font-family: Arial;font-size: 13px;padding: 10px;" width="17%">Qty</th>
-                        <th bgcolor="#f8f8f8" style="border:1px solid #D6D4D4;background-color: #fbfbfb;color: #333;font-family: Arial;font-size: 13px;padding: 10px;" width="17%">Total</th>
-                    </tr>
-                    <tbody>
-                        <tr>
-                            <td colspan="5" style="border:1px solid #D6D4D4;text-align:center;color:#777;padding:7px 0">
-                                {foreach from=$list key=key item=product}
-                                    <tr>
-                                        <td style="border:1px solid #D6D4D4;">
-                                            <table class="table">
-                                                <tr>
-                                                    <td width="10">&nbsp;</td>
-                                                    <td class="text-center">
-                                                        <font size="2" face="Open-sans, sans-serif" color="#555454">
-                                                            <img src="{$product['cover_img']}" class="img-responsive" />
-                                                        </font>
-                                                    </td>
-                                                    <td width="10">&nbsp;</td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td style="border:1px solid #D6D4D4;">
-                                            <table class="table">
-                                                <tr>
-                                                    <td width="10">&nbsp;</td>
-                                                    <td  class="text-center">
-                                                        <font size="2" face="Open-sans, sans-serif" color="#555454">
-                                                            {$product['name']}{if isset($product['option_name']) && $product['option_name']} : {$product['option_name']}{/if}
-                                                        </font>
-                                                    </td>
-                                                    <td width="10">&nbsp;</td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td style="border:1px solid #D6D4D4;">
-                                            <table class="table">
-                                                <tr>
-                                                    <td width="10">&nbsp;</td>
-                                                    <td align="right"  class="text-center">
-                                                        <font size="2" face="Open-sans, sans-serif" color="#555454">
-                                                            {convertPrice price=$product['unit_price_tax_excl']}
-                                                        </font>
-                                                    </td>
-                                                    <td width="10">&nbsp;</td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td style="border:1px solid #D6D4D4;">
-                                            <table class="table">
-                                                <tr>
-                                                    <td width="10">&nbsp;</td>
-                                                    <td align="right"  class="text-center">
-                                                        <font size="2" face="Open-sans, sans-serif" color="#555454">
-                                                            {$product['quantity']}
-                                                        </font>
-                                                    </td>
-                                                    <td width="10">&nbsp;</td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td style="border:1px solid #D6D4D4;">
-                                            <table class="table">
-                                                <tr>
-                                                    <td width="10">&nbsp;</td>
-                                                    <td align="right"  class="text-center">
-                                                        <font size="2" face="Open-sans, sans-serif" color="#555454">
-                                                            {convertPrice price=$product['total_price_tax_excl']}
-                                                        </font>
-                                                    </td>
-                                                    <td width="10">&nbsp;</td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                {/foreach}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </font>
-        </td>
-    </tr>
-<style>
-    .pull-right {
-        float: right;
-    }
-</style>
+    <table class="table table-recap service-product-table"><!-- Title -->
+        <tr>
+            <th colspan="5" class="table-caption">{l s='Service Products Detail'}</th>
+        </tr>
+        <tr>
+            <th>{l s='Image'}</th>
+            <th>{l s='Name'}</th>
+            <th>{l s='Unit Price'}</th>
+            <th>{l s='Qty'}</th>
+            <th>{l s='Total'}</th>
+        </tr>
+        <tbody>
+            {foreach from=$list key=key item=product}
+                <tr>
+                    <td>
+                        <img src="{$product['cover_img']}" class="img-responsive" />
+                    </td>
+                    <td>
+                        {$product['name']}{if isset($product['option_name']) && $product['option_name']} : {$product['option_name']}{/if}
+                    </td>
+                    <td>
+                        {convertPrice price=$product['unit_price_tax_excl']}
+                    </td>
+                    <td>
+                        {$product['quantity']}
+                    </td>
+                    <td>
+                        {convertPrice price=$product['total_price_tax_excl']}
+                    </td>
+                </tr>
+            {/foreach}
+        </tbody>
+    </table>
+
+    <style>
+        <style>
+            .pull-right {
+                float: right;
+            }
+            .service-product-table {
+                width:100%;
+                border-collapse:collapse;
+                padding:5px;
+            }
+            .service-product-table th {
+                border:1px solid #D6D4D4;
+                background-color: #fbfbfb;
+                color: #333;
+                font-family: Arial;
+                font-size: 13px;
+                padding: 7px 7px 5px 10px;
+                text-align:left;
+            }
+            .service-product-table th.table-caption {
+                text-align: left;
+                padding:10px;
+            }
+            .service-product-table td {
+                border:1px solid #D6D4D4;
+                padding: 5px 5px 5px 10px;
+                text-align:left;
+            }
+        </style>
+    </style>
 {/if}

@@ -37,25 +37,12 @@ class ServiceProductOption extends ObjectModel
         'multilang' => true,
         'fields' => array(
             'id_product' =>     array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'price_impact' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
+            'price_impact' => array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat', 'required' => true),
+            'date_add' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
+            'date_upd' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
             'name' => array('type' => self::TYPE_STRING, 'validate' => 'isGenericName', 'lang' => true, 'required' => true),
         )
     );
-
-    public function addProductOption($idProduct, $names, $priceImpact)
-    {
-        if (!is_array($names)) {
-            return false;
-        }
-
-        $objServiceProductOption = new ServiceProductOption();
-        $objServiceProductOption->id_product = $idProduct;
-        $objServiceProductOption->price_impact = $priceImpact;
-        foreach($names as $id_lang => $name) {
-            $objServiceProductOption->name[$id_lang] = $name;
-        }
-        $objServiceProductOption->save();
-    }
 
     public static function productHasOptions($idProduct, $idProductOption = false)
     {

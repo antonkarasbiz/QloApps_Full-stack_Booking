@@ -102,7 +102,8 @@ class AdminNormalProductsControllerCore extends AdminController
             // 'Seo' => $this->l('SEO'),
             'Images' => $this->l('Images'),
             'Associations' => $this->l('Associations'),
-            // 'Quantities' => $this->l('Quantities'),
+            'Quantities' => $this->l('Quantities'),
+            'Options' => $this->l('Options'),
         );
 
         if ($this->context->shop->getContext() != Shop::CONTEXT_GROUP) {
@@ -112,7 +113,8 @@ class AdminNormalProductsControllerCore extends AdminController
                 // 'Seo' => 2,
                 'Associations' => 3,
                 'Images' => 4,
-                // 'Quantities' => 5,
+                'Quantities' => 5,
+                'Options' => 6
             ));
         }
 
@@ -120,7 +122,7 @@ class AdminNormalProductsControllerCore extends AdminController
         asort($this->available_tabs, SORT_NUMERIC);
 
         /* Adding tab if modules are hooked */
-        $modules_list = Hook::getHookModuleExecList('displayAdminNormalProductsExtra');
+        $modules_list = Hook::getHookModuleExecList('displayAdminServiceProductsExtra');
         if (is_array($modules_list) && count($modules_list) > 0) {
             foreach ($modules_list as $m) {
                 // if module is setting name of the tab at the product edit page
@@ -2036,6 +2038,9 @@ class AdminNormalProductsControllerCore extends AdminController
                         if ($this->isTabSubmitted('Occupancy')) {
                             $this->processOccupancy();
                         }
+                        if ($this->isTabSubmitted('Options')) {
+                            $this->processOptions();
+                        }
 
                         $this->updateLinkedHotelsAndRooms($this->object);
                         // Disallow avanced stock management if the product become a pack
@@ -3830,6 +3835,59 @@ class AdminNormalProductsControllerCore extends AdminController
         $this->tpl_form_vars['custom_form'] = $data->fetch();
     }
 
+    public function initFormOptions($product)
+    {
+        if (!$this->default_form_language) {
+            $this->getLanguages();
+        }
+
+        $data = $this->createTemplate($this->tpl_form);
+
+        $currency = $this->context->currency;
+
+        $objServiceProductOption = new ServiceProductOption();
+        $serviceProductOptions = $objServiceProductOption->getProductOptions($product->id);
+        $data->assign(array(
+            'languages' => $this->_languages,
+            'default_form_language' => $this->default_form_language,
+            'currency' => $currency,
+            'serviceProductOptions' => $serviceProductOptions
+        ));
+        $this->object = $product;
+
+        $this->tpl_form_vars['product'] = $product;
+        $this->tpl_form_vars['custom_form'] = $data->fetch();
+    }
+
+    public function processOptions()
+    {
+        if ($this->tabAccess['edit'] === '0') {
+            return die(json_encode(array('error' => $this->l('You do not have the right permission'))));
+        }
+        $idProduct = Tools::getValue('id_product');
+        $productOptionNames  = Tools::getValue('product_option_name');
+        $productOptionPrices = Tools::getValue('product_option_price');
+        $productOptionIds = Tools::getValue('product_option_id');
+        if ($productOptionNames && $productOptionPrices) {
+            $languages = Language::getLanguages(false);
+            foreach ($productOptionNames as $key => $name) {
+                if ($name) {
+                    if (isset($productOptionIds[$key]) && $productOptionIds[$key]) {
+                        $objServiceProductOption = new ServiceProductOption($productOptionIds[$key]);
+                    } else {
+                        $objServiceProductOption = new ServiceProductOption();
+                    }
+                    $objServiceProductOption->id_product = $idProduct;
+                    $objServiceProductOption->price_impact = $productOptionPrices[$key];
+                    foreach ($languages as $lang) {
+                        $objServiceProductOption->name[$lang['id_lang']] = $name;
+                    }
+                    $objServiceProductOption->save();
+                }
+            }
+        }
+    }
+
     protected function getCarrierList()
     {
         $carrier_list = Carrier::getCarriers($this->context->language->id, false, false, false, null, Carrier::ALL_CARRIERS);
@@ -4289,7 +4347,7 @@ class AdminNormalProductsControllerCore extends AdminController
     public function initFormModules($obj)
     {
         $id_module = Db::getInstance()->getValue('SELECT `id_module` FROM `'._DB_PREFIX_.'module` WHERE `name` = \''.pSQL($this->tab_display_module).'\'');
-        $this->tpl_form_vars['custom_form'] = Hook::exec('displayAdminNormalProductsExtra', array(), (int)$id_module);
+        $this->tpl_form_vars['custom_form'] = Hook::exec('displayAdminServiceProductsExtra', array(), (int)$id_module);
     }
 
     public function getL($key)
@@ -4447,5 +4505,30 @@ class AdminNormalProductsControllerCore extends AdminController
         ));
 
         return $tpl->fetch();
+    }
+
+    // Delete product option process
+    public function ajaxProcessDeleteServiceProductOption()
+    {
+        $response = array();
+        $response['hasError'] = true;
+        $response['error'] = $this->l('Some error occurred while deleting product option. Please try again.');
+        if ($this->tabAccess['edit'] == 1) {
+            $idProductOption = Tools::getValue('id_product_option');
+            if (Validate::isLoadedObject($objProductOption = new ServiceProductOption((int)$idProductOption))) {
+                if ($objProductOption->delete()) {
+                    $response['success'] = true;
+                    $response['hasError'] = false;
+                } else {
+                    $this->errors[] = $this->l('Unable to delete product option. Please try again.');
+                }
+            } else {
+                $response['error'] = $this->l('Product option not found. Please try again.');
+            }
+        } else {
+            $response['error'] = $this->l('You do not have the permissions to delete.');
+        }
+
+        $this->ajaxDie(json_encode($response));
     }
 }

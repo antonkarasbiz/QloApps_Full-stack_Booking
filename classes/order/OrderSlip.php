@@ -192,8 +192,8 @@ class OrderSlipCore extends ObjectModel
                 $slipRow['product_name'] = $objHtlBooking->room_type_name;
                 $slipRow['room_num'] = $objHtlBooking->room_num;
             } else {
-                $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail($slipRow['id_room_type_service_product_order_detail']);
-                $slipRow['product_name'] = $objRoomTypeServiceProductOrderDetail->name;
+                $objServiceProductOrderDetail = new ServiceProductOrderDetail($slipRow['id_service_product_order_detail']);
+                $slipRow['product_name'] = $objServiceProductOrderDetail->name;
             }
 
 
@@ -358,9 +358,9 @@ class OrderSlipCore extends ObjectModel
                 $objHtlBooking = new HotelBookingDetail($product_row['id_htl_booking']);
                 $order_detail = new OrderDetail((int)$objHtlBooking->id_order_detail);
                 $quantity = (int)$product_row['num_days'];
-            } else if (isset($product_row['id_room_type_service_product_order_detail'])) {
-                $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail($product_row['id_room_type_service_product_order_detail']);
-                $order_detail = new OrderDetail((int)$objRoomTypeServiceProductOrderDetail->id_order_detail);
+            } else if (isset($product_row['id_service_product_order_detail'])) {
+                $objServiceProductOrderDetail = new ServiceProductOrderDetail($product_row['id_service_product_order_detail']);
+                $order_detail = new OrderDetail((int)$objServiceProductOrderDetail->id_order_detail);
                 $quantity = (int)$product_row['quantity'];
             }
             $price = (float)$product_row['unit_price'];
@@ -453,10 +453,9 @@ class OrderSlipCore extends ObjectModel
             return false;
         }
 
-        foreach ($product_list as $product_row) {
-            $order_slip->addProductOrderSlip($product_row);
+        foreach ($product_list as $productRow) {
+            $order_slip->addProductOrderSlip($productRow);
         }
-
         return $order_slip->id;
     }
 
@@ -465,7 +464,7 @@ class OrderSlipCore extends ObjectModel
         return Db::getInstance()->insert('order_slip_detail', array(
             'id_order_slip' => (int)$this->id,
             'id_htl_booking' => isset($product_row['id_htl_booking']) ? (int)$product_row['id_htl_booking'] : 0,
-            'id_room_type_service_product_order_detail' => isset($product_row['id_room_type_service_product_order_detail']) ? (int)$product_row['id_room_type_service_product_order_detail'] : 0,
+            'id_service_product_order_detail' => isset($product_row['id_service_product_order_detail']) ? (int)$product_row['id_service_product_order_detail'] : 0,
             'id_order_detail' => (int)$product_row['id_order_detail'],
             'product_quantity' => $product_row['quantity'],
             'unit_price_tax_excl' => $product_row['unit_price_tax_excl'],

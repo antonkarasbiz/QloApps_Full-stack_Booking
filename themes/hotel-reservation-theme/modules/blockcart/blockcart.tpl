@@ -65,9 +65,11 @@
 												{* only show products that are booking or global without room *}
 													{if $product.booking_product || ($product.selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE)|| ($product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE) || ($product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE)}
 														{if $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE || $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE}
-															{foreach $product.hotel_wise_data as $hotel_wise_data}
-																{include file="./cartrow.tpl" hotel_wise_data=$hotel_wise_data}
-															{/foreach}
+                                                            {if isset($product.hotel_wise_data) && $product.hotel_wise_data}
+                                                                {foreach $product.hotel_wise_data as $hotel_wise_data}
+                                                                    {include file="./cartrow.tpl" hotel_wise_data=$hotel_wise_data}
+                                                                {/foreach}
+                                                            {/if}
 														{else}
 															{include file="./cartrow.tpl" hotel_wise_data=false}
 														{/if}
@@ -403,6 +405,7 @@
 		{addJsDef SELLING_PREFERENCE_WITH_ROOM_TYPE=Product::SELLING_PREFERENCE_WITH_ROOM_TYPE}
 		{addJsDef SELLING_PREFERENCE_STANDALONE=Product::SELLING_PREFERENCE_STANDALONE}
 		{addJsDef SELLING_PREFERENCE_HOTEL_STANDALONE=Product::SELLING_PREFERENCE_HOTEL_STANDALONE}
+		{addJsDef SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE=Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE}
 
 		{addJsDefL name=customizationIdMessage}{l s='Customization #' mod='blockcart' js=1}{/addJsDefL}
 		{addJsDefL name=removingLinkText}{l s='remove this product from my cart' mod='blockcart' js=1}{/addJsDefL}

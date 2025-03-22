@@ -18,17 +18,21 @@
 *}
 
 {if isset($service_product_data) && $service_product_data}
-	<table class="product" class="bordered-table" width="100%" cellpadding="4" cellspacing="0">
+{assign var=colspan value=5}
+{if $display_product_images}{assign var=colspan value=($colspan+1)}{/if}{if $isHotelOrder}{assign var=colspan value=($colspan+1)}{/if}
+	<table class="bordered-table" width="100%" cellpadding="4" cellspacing="0">
 		<thead>
 			<tr>
-				<th colspan="{if $display_product_images}7{else}6{/if}" class="header">{l s='Products Details' pdf='true'}</th>
+				<th colspan="{$colspan}" class="header">{l s='Service Products Detail' pdf='true'}</th>
 			</tr>
 			<tr>
 				{if $display_product_images}
 					<th class="product header small">{l s='Image' pdf='true'}</th>
 				{/if}
 				<th class="product header small">{l s='Name' pdf='true'}</th>
-				<th class="product header small">{l s='Hotel' pdf='true'}</th>
+                {if $isHotelOrder}
+				    <th class="product header small">{l s='Hotel' pdf='true'}</th>
+                {/if}
 				<th class="product header small">{l s='Tax Rate(s)' pdf='true'}</th>
 				<th class="product header small">{l s='Unit Price' pdf='true'} <br /> {l s='(Tax excl.)' pdf='true'}</th>
 				<th class="product header small">{l s='Qty' pdf='true'}</th>
@@ -49,24 +53,29 @@
 					<td class="product center">
 						{$product.product_name}{if isset($product.option_name) && $product.option_name} : {$product.option_name}{/if}
 					</td>
-					<td class="product center">
-						{if isset($product.hotel_name) && $product.hotel_name}{$product.hotel_name}{else}--{/if}
-					</td>
+                    {if $isHotelOrder}
+                        <td class="product center">
+                            {if isset($product.hotel_name) && $product.hotel_name}{$product.hotel_name}{else}--{/if}
+                        </td>
+                    {/if}
 					<td class="product center">
 						{$product.order_detail_tax_label}
 					</td>
-					<td class="product right">
+					<td class="product center">
 						{displayPrice currency=$order->id_currency price=$product.unit_price_tax_excl}
 					</td>
 					<td class="product center">
 						{$product.quantity}
 					</td>
-					<td  class="product right">
+					<td  class="product center">
 						{displayPrice currency=$order->id_currency price=$product.total_price_tax_excl}
 					</td>
 				</tr>
-		{/foreach}
+		    {/foreach}
 		</tbody>
 	</table>
+    <tr>
+		<td colspan="12" height="10"></td>
+	</tr>
 {/if}
 

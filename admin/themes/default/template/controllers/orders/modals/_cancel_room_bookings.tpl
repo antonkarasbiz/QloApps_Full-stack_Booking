@@ -19,11 +19,23 @@
 
 <div class="modal-body">
     {if $bookingOrderInfo|count > 0 || $serviceProducts|count > 0}
-        <form id="order_discount_form" action="{$current_index}&amp;vieworder&amp;token={$smarty.get.token|escape:'html':'UTF-8'}&amp;id_order={$order->id|intval}" method="post">
-            {if $bookingOrderInfo|count}
-                <h3>{l s='Rooms'}</h3>
-                <div class="form-group">
-                    <div class="table-responsive">
+        {if $bookingOrderInfo|count > 0 && $serviceProducts|count > 0}
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a href="#refund_rooms_tab" role="tab" data-toggle="tab">{l s='Rooms'}</a>
+                </li>
+                <li role="presentation">
+                    <a href="#refund_products_tab" aria-controls="products" role="tab" data-toggle="tab">{l s='Products'}</a>
+                </li>
+            </ul>
+        {/if}
+
+        <form id="order_refund_form" action="{$current_index}&amp;vieworder&amp;token={$smarty.get.token|escape:'html':'UTF-8'}&amp;id_order={$order->id|intval}" method="post">
+            {if $bookingOrderInfo|count > 0 && $serviceProducts|count > 0}
+                <div class="form-group tab-content clearfix">
+            {/if}
+                {if $bookingOrderInfo|count}
+                    <div id="refund_rooms_tab" class="form-group table-responsive tab-pane active">
                         <table class="table" id="customer_cart_details">
                             <thead>
                                 <tr>
@@ -52,12 +64,9 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
-            {/if}
-            {if $serviceProducts|count}
-                <h3>{l s='Products'}</h3>
-                <div class="form-group">
-                    <div class="table-responsive">
+                {/if}
+                {if $serviceProducts|count}
+                    <div id="refund_products_tab" class="form-group table-responsive tab-pane">
                         <table class="table" id="customer_cart_product_details">
                             <thead>
                                 <tr>
@@ -71,9 +80,9 @@
                                 {foreach from=$serviceProducts item=product}
                                     <tr>
                                         <td>
-                                            <input type="checkbox" name="id_room_type_service_product_order_detail[]" value="{$product.id_room_type_service_product_order_detail|escape:'html':'UTF-8'}"/>
+                                            <input type="checkbox" name="id_service_product_order_detail[]" value="{$product.id_service_product_order_detail|escape:'html':'UTF-8'}"/>
                                         </td>
-                                        <td>{$product.name|escape:'html':'UTF-8'}{if $product.option_name} : {$product.option_name|escape:'html':'UTF-8'}{/if}</td>
+                                        <td><b>{$product.name|escape:'html':'UTF-8'}{if $product.option_name} : {$product.option_name|escape:'html':'UTF-8'}{/if}</b></td>
                                         <td>{$product.quantity|escape:'html':'UTF-8'}</td>
                                         <td>{convertPriceWithCurrency price=$product.total_price_tax_incl currency=$currency->id}</td>
                                     </tr>
@@ -81,9 +90,10 @@
                             </tbody>
                         </table>
                     </div>
+                {/if}
+            {if $bookingOrderInfo|count > 0 && $serviceProducts|count > 0}
                 </div>
             {/if}
-
             <div class="form-group">
                 <label class="control-label">{l s='Reason to Cancel'}</label>
                 <textarea rows="3" class="textarea-autosize cancellation_reason" name="cancellation_reason"></textarea>

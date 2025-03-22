@@ -1069,8 +1069,6 @@ class AdminCartsControllerCore extends AdminController
         $idCart = (int) $params['id_cart'];
         $this->context->cart = new Cart($idCart);
         if ($this->tabAccess['edit'] === '1') {
-
-            $id_hotel_service_product_cart_detail = (int) $params['id_hotel_service_product_cart_detail'];
             $product = new Product($idProduct, true, $this->context->language->id);
         }
     }
@@ -1119,7 +1117,7 @@ class AdminCartsControllerCore extends AdminController
                     }
                 }
                 $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+                $objServiceProductCartDetail = new ServiceProductCartDetail();
                 $roomTypeServiceProducts = $objRoomTypeServiceProduct->getServiceProductsData($idProduct, 1, 0, false, 2, null);
                 if ($selectedRoomServiceProduct =  $objCartBookingData->getRoomRowByIdProductIdRoomInDateRange(
                     $idCart,
@@ -1128,24 +1126,25 @@ class AdminCartsControllerCore extends AdminController
                     $dateTo,
                     $idRoom
                 )) {
-                    $selectedRoomServiceProduct['selected_service'] = $objRoomTypeServiceProductCartDetail->getRoomServiceProducts(
+                    $selectedRoomServiceProduct['selected_service'] = $objServiceProductCartDetail->getServiceProductsInCart(
+                        $idCart,
+                        [],
+                        null,
                         $selectedRoomServiceProduct['id'],
+                        null,
+                        null,
+                        null,
+                        null,
                         0,
                         null,
-                        null
+                        null,
+                        1
                     );
                 }
                 $this->context->smarty->assign(array(
                     'roomTypeServiceProducts' => $roomTypeServiceProducts,
                     'selectedRoomServiceProduct' => $selectedRoomServiceProduct
                 ));
-                $htlCartBoookingata =  $objCartBookingData->getRoomRowByIdProductIdRoomInDateRange(
-                    $idCart,
-                    $idProduct,
-                    $dateFrom,
-                    $dateTo,
-                    $idRoom
-                );
             }
         }
         $response['status'] = true;

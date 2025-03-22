@@ -1110,9 +1110,9 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
     public function updateServicesAndDemandsInOrder($idOrder)
     {
         $objOrder = new Order($idOrder);
-        $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
+        $objServiceProductOrderDetail = new ServiceProductOrderDetail();
         if (isset($this->wsRequestedRoomTypes) && $this->wsRequestedRoomTypes) {
-            if ($orderedServices = $objRoomTypeServiceProductOrderDetail->getroomTypeServiceProducts($objOrder->id,
+            if ($orderedServices = $objServiceProductOrderDetail->getRoomTypeServiceProducts($objOrder->id,
                 0,
                 0,
                 0,
@@ -1133,8 +1133,8 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                     ) {
                         foreach ($orderedService['additional_services'] as $service) {
                             $objOrderDetail = new OrderDetail($service['id_order_detail']);
-                            $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail($service['id_room_type_service_product_order_detail']);
-                            $quantity = $objRoomTypeServiceProductOrderDetail->quantity;
+                            $objServiceProductOrderDetail = new ServiceProductOrderDetail($service['id_service_product_order_detail']);
+                            $quantity = $objServiceProductOrderDetail->quantity;
                             if ($objOrderDetail->product_price_calculation_method == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
                                 $quantity = $quantity * HotelHelper::getNumberOfDays(
                                     $objHotelBookingDetail->date_from,
@@ -1143,8 +1143,8 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                             }
 
                             if (isset($this->wsRequestedRoomTypes[$dateRoomJoinKey]['services'][$service['id_product']])) {
-                                $oldPriceTaxExcl = $objRoomTypeServiceProductOrderDetail->total_price_tax_excl;
-                                $oldPriceTaxIncl = $objRoomTypeServiceProductOrderDetail->total_price_tax_incl;
+                                $oldPriceTaxExcl = $objServiceProductOrderDetail->total_price_tax_excl;
+                                $oldPriceTaxIncl = $objServiceProductOrderDetail->total_price_tax_incl;
                                 if ($oldPriceTaxExcl > 0) {
                                     $oldTaxMultiplier = $oldPriceTaxIncl / $oldPriceTaxExcl;
                                 } else {
@@ -1156,13 +1156,13 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                                     $unitPriceTaxIncl = $this->wsRequestedRoomTypes[$dateRoomJoinKey]['services'][$service['id_product']]['unit_price_without_tax'] * $oldTaxMultiplier;
                                     $totalPriceTaxExcl = $unitPriceTaxExcl * $quantity;
                                     $totalPriceTaxIncl = $unitPriceTaxIncl * $quantity;
-                                    $objRoomTypeServiceProductOrderDetail->unit_price_tax_excl = Tools::ps_round($unitPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
-                                    $objRoomTypeServiceProductOrderDetail->unit_price_tax_incl = Tools::ps_round($unitPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
-                                    $objRoomTypeServiceProductOrderDetail->total_price_tax_excl = Tools::ps_round($totalPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
-                                    $objRoomTypeServiceProductOrderDetail->total_price_tax_incl = Tools::ps_round($totalPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
+                                    $objServiceProductOrderDetail->unit_price_tax_excl = Tools::ps_round($unitPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
+                                    $objServiceProductOrderDetail->unit_price_tax_incl = Tools::ps_round($unitPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
+                                    $objServiceProductOrderDetail->total_price_tax_excl = Tools::ps_round($totalPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
+                                    $objServiceProductOrderDetail->total_price_tax_incl = Tools::ps_round($totalPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
 
-                                    $priceDiffTaxExcl = $objRoomTypeServiceProductOrderDetail->total_price_tax_excl - $oldPriceTaxExcl;
-                                    $priceDiffTaxIncl = $objRoomTypeServiceProductOrderDetail->total_price_tax_incl - $oldPriceTaxIncl;
+                                    $priceDiffTaxExcl = $objServiceProductOrderDetail->total_price_tax_excl - $oldPriceTaxExcl;
+                                    $priceDiffTaxIncl = $objServiceProductOrderDetail->total_price_tax_incl - $oldPriceTaxIncl;
 
                                     $objOrderDetail->total_price_tax_excl += $priceDiffTaxExcl;
                                     $objOrderDetail->total_price_tax_incl += $priceDiffTaxIncl;
@@ -1179,13 +1179,13 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                                     $unitPriceTaxExcl = $totalPriceTaxExcl / $quantity;
                                     $unitPriceTaxIncl = $totalPriceTaxIncl / $quantity;
 
-                                    $objRoomTypeServiceProductOrderDetail->unit_price_tax_excl = Tools::ps_round($unitPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
-                                    $objRoomTypeServiceProductOrderDetail->unit_price_tax_incl = Tools::ps_round($unitPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
-                                    $objRoomTypeServiceProductOrderDetail->total_price_tax_excl = Tools::ps_round($totalPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
-                                    $objRoomTypeServiceProductOrderDetail->total_price_tax_incl = Tools::ps_round($totalPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
+                                    $objServiceProductOrderDetail->unit_price_tax_excl = Tools::ps_round($unitPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
+                                    $objServiceProductOrderDetail->unit_price_tax_incl = Tools::ps_round($unitPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
+                                    $objServiceProductOrderDetail->total_price_tax_excl = Tools::ps_round($totalPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
+                                    $objServiceProductOrderDetail->total_price_tax_incl = Tools::ps_round($totalPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
 
-                                    $priceDiffTaxExcl = $objRoomTypeServiceProductOrderDetail->total_price_tax_excl - $oldPriceTaxExcl;
-                                    $priceDiffTaxIncl = $objRoomTypeServiceProductOrderDetail->total_price_tax_incl - $oldPriceTaxIncl;
+                                    $priceDiffTaxExcl = $objServiceProductOrderDetail->total_price_tax_excl - $oldPriceTaxExcl;
+                                    $priceDiffTaxIncl = $objServiceProductOrderDetail->total_price_tax_incl - $oldPriceTaxIncl;
 
                                     $objOrderDetail->total_price_tax_excl += $priceDiffTaxExcl;
                                     $objOrderDetail->total_price_tax_incl += $priceDiffTaxIncl;
@@ -1203,13 +1203,13 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                                 $objAddress = new Address((int) $objOrder->id_address_tax);
                                 $objTaxManager = TaxManagerFactory::getManager($objAddress, $this->wsRequestedRoomTypes[$dateRoomJoinKey]['services'][$service['id_product']]['id_tax_rules_group']);
                                 $objTaxCalculator = $objTaxManager->getTaxCalculator();
-                                $unitPriceTaxIncl = $objTaxCalculator->addTaxes($objRoomTypeServiceProductOrderDetail->unit_price_tax_excl);
-                                $oldPriceTaxIncl = $objRoomTypeServiceProductOrderDetail->total_price_tax_incl;
+                                $unitPriceTaxIncl = $objTaxCalculator->addTaxes($objServiceProductOrderDetail->unit_price_tax_excl);
+                                $oldPriceTaxIncl = $objServiceProductOrderDetail->total_price_tax_incl;
 
-                                $objRoomTypeServiceProductOrderDetail->unit_price_tax_incl = Tools::ps_round($unitPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
-                                $objRoomTypeServiceProductOrderDetail->total_price_tax_incl = Tools::ps_round(($unitPriceTaxIncl * $quantity), _PS_PRICE_COMPUTE_PRECISION_);
+                                $objServiceProductOrderDetail->unit_price_tax_incl = Tools::ps_round($unitPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
+                                $objServiceProductOrderDetail->total_price_tax_incl = Tools::ps_round(($unitPriceTaxIncl * $quantity), _PS_PRICE_COMPUTE_PRECISION_);
 
-                                $priceDiffTaxIncl = $objRoomTypeServiceProductOrderDetail->total_price_tax_incl - $oldPriceTaxIncl;
+                                $priceDiffTaxIncl = $objServiceProductOrderDetail->total_price_tax_incl - $oldPriceTaxIncl;
 
                                 $objOrderDetail->total_price_tax_incl += $priceDiffTaxIncl;
                                 $objOrderDetail->unit_price_tax_incl = Tools::ps_round(($objOrderDetail->total_price_tax_incl / $objOrderDetail->product_quantity), _PS_PRICE_COMPUTE_PRECISION_);
@@ -1219,13 +1219,13 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                             } else if (isset($this->wsRequestedRoomTypes[$dateRoomJoinKey]['services'][$service['id_product']]['total_tax'])
                                 && $this->wsRequestedRoomTypes[$dateRoomJoinKey]['services'][$service['id_product']]['total_tax']
                             ) {
-                                $oldPriceTaxIncl = $objRoomTypeServiceProductOrderDetail->total_price_tax_incl;
-                                $objRoomTypeServiceProductOrderDetail->total_price_tax_incl = $objRoomTypeServiceProductOrderDetail->total_price_tax_excl + $this->wsRequestedRoomTypes[$dateRoomJoinKey]['services'][$service['id_product']]['total_tax'];
+                                $oldPriceTaxIncl = $objServiceProductOrderDetail->total_price_tax_incl;
+                                $objServiceProductOrderDetail->total_price_tax_incl = $objServiceProductOrderDetail->total_price_tax_excl + $this->wsRequestedRoomTypes[$dateRoomJoinKey]['services'][$service['id_product']]['total_tax'];
 
-                                $objRoomTypeServiceProductOrderDetail->unit_price_tax_incl = Tools::ps_round($objRoomTypeServiceProductOrderDetail->total_price_tax_incl / $quantity, _PS_PRICE_COMPUTE_PRECISION_);
-                                $objRoomTypeServiceProductOrderDetail->total_price_tax_incl = Tools::ps_round(($objRoomTypeServiceProductOrderDetail->total_price_tax_incl), _PS_PRICE_COMPUTE_PRECISION_);
+                                $objServiceProductOrderDetail->unit_price_tax_incl = Tools::ps_round($objServiceProductOrderDetail->total_price_tax_incl / $quantity, _PS_PRICE_COMPUTE_PRECISION_);
+                                $objServiceProductOrderDetail->total_price_tax_incl = Tools::ps_round(($objServiceProductOrderDetail->total_price_tax_incl), _PS_PRICE_COMPUTE_PRECISION_);
 
-                                $priceDiffTaxIncl = $objRoomTypeServiceProductOrderDetail->total_price_tax_incl - $oldPriceTaxIncl;
+                                $priceDiffTaxIncl = $objServiceProductOrderDetail->total_price_tax_incl - $oldPriceTaxIncl;
                                 $objOrderDetail->total_price_tax_incl += $priceDiffTaxIncl;
                                 $objOrderDetail->unit_price_tax_incl = Tools::ps_round(($objOrderDetail->total_price_tax_incl / $objOrderDetail->product_quantity), _PS_PRICE_COMPUTE_PRECISION_);
 
@@ -1233,7 +1233,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                                 $objOrder->total_paid += $priceDiffTaxIncl;
                             }
 
-                            $objRoomTypeServiceProductOrderDetail->save();
+                            $objServiceProductOrderDetail->save();
                             $objOrderDetail->save();
                         }
                     }
@@ -1822,18 +1822,18 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
     public function removeAutoAddedServicesFromCart()
     {
         if (Validate::isLoadedobject($this->context->cart)) {
-            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-            if ($serviceProducts = $objRoomTypeServiceProductCartDetail->getServiceProductsInCart(
+            $objServiceProductCartDetail = new ServiceProductCartDetail();
+            if ($serviceProducts = $objServiceProductCartDetail->getServiceProductsInCart(
                 $this->context->cart->id,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
+                [],
                 0,
                 null,
-                1 // for auto added products
+                null,
+                null,
+                null,
+                null,
+                0,
+                1
             )) {
                 foreach ($serviceProducts as $serviceProduct) {
                     $dateRoomJoinKey = strtotime($serviceProduct['date_from']).strtotime($serviceProduct['date_to']).$serviceProduct['id_room'];
@@ -1841,14 +1841,14 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                         foreach ($serviceProduct['selected_products_info'] as $service) {
                             // Checking if the auto add service was sent in the request
                             if (!isset($this->wsRequestedRoomTypes[$dateRoomJoinKey]['services'][$service['id_product']])
-                                && ($idRoomTypeServiceProductCartDetail = $objRoomTypeServiceProductCartDetail->alreadyExists(
+                                && ($idServiceProductCartDetail = $objServiceProductCartDetail->alreadyExists(
                                 $this->context->cart->id,
                                 $service['id_product'],
                                 $serviceProduct['htl_cart_booking_id'])
                             )) {
-                                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail((int) $idRoomTypeServiceProductCartDetail);
-                                $this->context->cart->updateQty($objRoomTypeServiceProductCartDetail->quantity, $objRoomTypeServiceProductCartDetail->id_product, null, false, 'down');
-                                $objRoomTypeServiceProductCartDetail->delete();
+                                $objServiceProductCartDetail = new ServiceProductCartDetail((int) $idServiceProductCartDetail);
+                                $this->context->cart->updateQty($objServiceProductCartDetail->quantity, $objServiceProductCartDetail->id_product, null, false, 'down');
+                                $objServiceProductCartDetail->delete();
                             }
                         }
                     }
@@ -1930,7 +1930,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
         // only perform any update if request is valid.
         // Update the information for the services that were updated in the existing rooms
         if (count($roomsToUpdate)) {
-            $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
+            $objServiceProductOrderDetail = new ServiceProductOrderDetail();
             $objBookingDemand = new HotelBookingDemands();
             foreach ($roomsToUpdate as $roomsByDate) {
                 if (isset($roomsByDate['requested'])
@@ -1959,9 +1959,23 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                         }
 
                         $idHotelBookingDetail = $roomsByDate['order'][$roomsKey]['id'];
-                        if ($existingServices = $objRoomTypeServiceProductOrderDetail->getSelectedServicesForRoom($idHotelBookingDetail)) {
-                            if (!empty($existingServices['additional_services'])) {
-                                $this->removeServicesFromOrderedRoom($existingServices['additional_services']);
+                        if ($existingServices = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            null,
+                            0,
+                            null,
+                            0,
+                            $idHotelBookingDetail
+                        )) {
+                            if (!empty($existingServices[$idHotelBookingDetail]['additional_services'])) {
+                                $this->removeServicesFromOrderedRoom($existingServices[$idHotelBookingDetail]['additional_services']);
                             }
                         }
 
@@ -1983,9 +1997,23 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                     && $roomsByDate['order']
                 ) {
                     $hotelBookingDetail = array_shift($roomsByDate['order']);
-                    if ($existingServices = $objRoomTypeServiceProductOrderDetail->getSelectedServicesForRoom($hotelBookingDetail['id'])) {
-                        if (!empty($existingServices['additional_services'])) {
-                            $this->removeServicesFromOrderedRoom($existingServices['additional_services']);
+                    if ($existingServices = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        null,
+                        0,
+                        null,
+                        0,
+                        $hotelBookingDetail['id']
+                    )) {
+                        if (!empty($existingServices[$hotelBookingDetail['id']]['additional_services'])) {
+                            $this->removeServicesFromOrderedRoom($existingServices[$hotelBookingDetail['id']]['additional_services']);
                         }
                     }
 
@@ -2209,33 +2237,40 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
 
                     if ($objBookingDetail->save()) {
                         $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
-                        $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+                        $objServiceProductCartDetail = new ServiceProductCartDetail();
                         $dateRoomJoinKey = strtotime($objCartBookingData->date_from).strtotime($objCartBookingData->date_to).$objCartBookingData->id_room;
                         if (isset($this->wsRequestedRoomTypes[$dateRoomJoinKey]['services'])
-                            && ($services = $objRoomTypeServiceProductCartDetail->getRoomServiceProducts($objCartBookingData->id))
-                        ) {
+                            && ($services = $objServiceProductCartDetail->getServiceProductsInCart(
+                                $objCartBookingData->id_cart,
+                                [],
+                                null,
+                                $objCartBookingData->id
+                            ))) {
                             foreach ($services as $service) {
                                 $insertedServiceProductIdOrderDetail = $objBookingDetail->getLastInsertedServiceIdOrderDetail($objOrder->id, $service['id_product']);
                                 $numDays = 1;
                                 if (Product::getProductPriceCalculation($service['id_product']) == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
                                     $numDays = HotelHelper::getNumberOfDays($objBookingDetail->date_from, $objBookingDetail->date_to);
                                 }
-
-                                $totalPriceTaxExcl = $objRoomTypeServiceProductPrice->getServicePrice(
+                                $totalPriceTaxExcl = Product::getServiceProductPrice(
                                     $service['id_product'],
+                                    0,
+                                    false,
                                     $roomTypeInfo['id'],
+                                    false,
                                     $service['quantity'],
                                     $objBookingDetail->date_from,
-                                    $objBookingDetail->date_to,
-                                    false
+                                    $objBookingDetail->date_to
                                 );
-                                $totalPriceTaxIncl = $objRoomTypeServiceProductPrice->getServicePrice(
+                                $totalPriceTaxIncl = Product::getServiceProductPrice(
                                     $service['id_product'],
+                                    0,
+                                    false,
                                     $roomTypeInfo['id'],
+                                    true,
                                     $service['quantity'],
                                     $objBookingDetail->date_from,
-                                    $objBookingDetail->date_to,
-                                    true
+                                    $objBookingDetail->date_to
                                 );
                                 $unitPriceTaxExcl = $totalPriceTaxExcl / ($numDays * $service['quantity']);
                                 $unitPriceTaxIncl = $totalPriceTaxIncl / ($numDays * $service['quantity']);
@@ -2295,22 +2330,22 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                                 $objOrderDetail->unit_price_tax_incl = Tools::ps_round(($objOrderDetail->total_price_tax_incl / $objOrderDetail->product_quantity), _PS_PRICE_COMPUTE_PRECISION_);
                                 $objOrderDetail->save();
 
-                                $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
-                                $objRoomTypeServiceProductOrderDetail->id_product = $service['id_product'];
-                                $objRoomTypeServiceProductOrderDetail->id_order = $objBookingDetail->id_order;
-                                $objRoomTypeServiceProductOrderDetail->id_order_detail = $insertedServiceProductIdOrderDetail;
-                                $objRoomTypeServiceProductOrderDetail->id_cart = $this->context->cart->id;
-                                $objRoomTypeServiceProductOrderDetail->id_htl_booking_detail = $objBookingDetail->id;
-                                $objRoomTypeServiceProductOrderDetail->unit_price_tax_excl = Tools::ps_round($unitPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
-                                $objRoomTypeServiceProductOrderDetail->unit_price_tax_incl = Tools::ps_round($unitPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
-                                $objRoomTypeServiceProductOrderDetail->total_price_tax_excl = Tools::ps_round($totalPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
-                                $objRoomTypeServiceProductOrderDetail->total_price_tax_incl = Tools::ps_round($totalPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
-                                $objRoomTypeServiceProductOrderDetail->name = $service['name'];
-                                $objRoomTypeServiceProductOrderDetail->quantity = $service['quantity'];
-                                $objRoomTypeServiceProductOrderDetail->save();
+                                $objServiceProductOrderDetail = new ServiceProductOrderDetail();
+                                $objServiceProductOrderDetail->id_product = $service['id_product'];
+                                $objServiceProductOrderDetail->id_order = $objBookingDetail->id_order;
+                                $objServiceProductOrderDetail->id_order_detail = $insertedServiceProductIdOrderDetail;
+                                $objServiceProductOrderDetail->id_cart = $this->context->cart->id;
+                                $objServiceProductOrderDetail->id_htl_booking_detail = $objBookingDetail->id;
+                                $objServiceProductOrderDetail->unit_price_tax_excl = Tools::ps_round($unitPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
+                                $objServiceProductOrderDetail->unit_price_tax_incl = Tools::ps_round($unitPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
+                                $objServiceProductOrderDetail->total_price_tax_excl = Tools::ps_round($totalPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
+                                $objServiceProductOrderDetail->total_price_tax_incl = Tools::ps_round($totalPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
+                                $objServiceProductOrderDetail->name = $service['name'];
+                                $objServiceProductOrderDetail->quantity = $service['quantity'];
+                                $objServiceProductOrderDetail->save();
 
-                                $objOrder->total_products += $objRoomTypeServiceProductOrderDetail->total_price_tax_excl;
-                                $objOrder->total_products_wt += $objRoomTypeServiceProductOrderDetail->total_price_tax_incl;
+                                $objOrder->total_products += $objServiceProductOrderDetail->total_price_tax_excl;
+                                $objOrder->total_products_wt += $objServiceProductOrderDetail->total_price_tax_incl;
 
                                 $objOrder->total_paid += Tools::ps_round($totalPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
                                 $objOrder->total_paid_tax_excl += Tools::ps_round($totalPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
@@ -2460,7 +2495,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
         $objOrder = new Order((int) $params['id']);
         $objBookingDemand = new HotelBookingDemands();
         $objHotelBookingDetail = new HotelBookingDetail();
-        $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
+        $objServiceProductOrderDetail = new ServiceProductOrderDetail();
         foreach ($roomsToRemove as $roomType) {
             $dateFrom = $roomType['date_from'];
             $dateTo = $roomType['date_to'];
@@ -2490,45 +2525,79 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                 1,
                 0
             );
-            $additionlServicesTI = $objRoomTypeServiceProductOrderDetail->getSelectedServicesForRoom(
-                $idHotelBooking,
+            $additionlServicesTI = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
                 1,
-                1
-            );
-            $additionlServicesTE = $objRoomTypeServiceProductOrderDetail->getSelectedServicesForRoom(
-                $idHotelBooking,
                 1,
-                0
-            );
-            $selectedAdditonalServices = $objRoomTypeServiceProductOrderDetail->getSelectedServicesForRoom(
+                0,
+                null,
+                0,
                 $idHotelBooking
             );
+            $additionlServicesTE = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                null,
+                0,
+                $idHotelBooking
+            );
+
             $diffProductsTaxIncl = $bookingPriceTaxIncl;
             $diffProductsTaxExcl = $bookingPriceTaxExcl;
             $objHotelBookingDetail = new HotelBookingDetail((int) $idHotelBooking);
             $roomQuantity = (int) HotelHelper::getNumberOfDays($dateFrom, $dateTo);
-            if (isset($selectedAdditonalServices['additional_services'])
-                && count($selectedAdditonalServices['additional_services'])
-            ) {
-                foreach ($selectedAdditonalServices['additional_services'] as $service) {
-                    $serviceOrderDetail = new OrderDetail($service['id_order_detail']);
-                    $cart_quantity = $service['quantity'];
-                    if ($service['product_price_calculation_method'] == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
-                        $cart_quantity = $cart_quantity * $quantity;
-                    }
+            if ($selectedAdditonalServices = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0,
+                null,
+                0,
+                $idHotelBooking
+            )) {
+                if (isset($selectedAdditonalServices[$idHotelBooking]['additional_services'])
+                    && count($selectedAdditonalServices[$idHotelBooking]['additional_services'])
+                ) {
+                    foreach ($selectedAdditonalServices[$idHotelBooking]['additional_services'] as $service) {
+                        $serviceOrderDetail = new OrderDetail($service['id_order_detail']);
+                        $cart_quantity = $service['quantity'];
+                        if ($service['price_calculation_method'] == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
+                            $cart_quantity = $cart_quantity * $quantity;
+                        }
 
-                    if ($cart_quantity >= $serviceOrderDetail->product_quantity) {
-                        $serviceOrderDetail->delete();
-                    } else {
-                        $serviceOrderDetail->total_price_tax_incl -= Tools::ps_round($service['total_price_tax_incl'], _PS_PRICE_COMPUTE_PRECISION_);
-                        $serviceOrderDetail->total_price_tax_excl -= Tools::ps_round($service['total_price_tax_excl'], _PS_PRICE_COMPUTE_PRECISION_);
-                        $serviceOrderDetail->product_quantity -= $cart_quantity;
+                        if ($cart_quantity >= $serviceOrderDetail->product_quantity) {
+                            $serviceOrderDetail->delete();
+                        } else {
+                            $serviceOrderDetail->total_price_tax_incl -= Tools::ps_round($service['total_price_tax_incl'], _PS_PRICE_COMPUTE_PRECISION_);
+                            $serviceOrderDetail->total_price_tax_excl -= Tools::ps_round($service['total_price_tax_excl'], _PS_PRICE_COMPUTE_PRECISION_);
+                            $serviceOrderDetail->product_quantity -= $cart_quantity;
 
-                        // update taxes
-                        $serviceOrderDetail->updateTaxAmount($objOrder);
+                            // update taxes
+                            $serviceOrderDetail->updateTaxAmount($objOrder);
 
-                        // Save order detail
-                        $serviceOrderDetail->update();
+                            // Save order detail
+                            $serviceOrderDetail->update();
+                        }
                     }
                 }
             }
@@ -2558,7 +2627,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
             $objOrder->update();
             // delete the demands of this booking
             $objBookingDemand->deleteBookingDemands($idHotelBooking);
-            $objRoomTypeServiceProductOrderDetail->deleteRoomSevices($idHotelBooking);
+            $objServiceProductOrderDetail->deleteSeviceProducts(0, $idHotelBooking);
             $objHotelCartBookingData = new HotelCartBookingData();
             $objHotelCartBookingData->deleteOrderedRoomFromCart(
                 $objOrder->id,
@@ -3018,20 +3087,20 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
     {
         if (count($services)) {
             foreach ($services as $service) {
-                $idRoomTypeServiceProductOrderDetail = $service['id_room_type_service_product_order_detail'];
-                if (Validate::isLoadedObject($objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail((int) $idRoomTypeServiceProductOrderDetail))) {
-                    $objOrderDetail = new OrderDetail((int) $objRoomTypeServiceProductOrderDetail->id_order_detail);
-                    $priceTaxExcl = $objRoomTypeServiceProductOrderDetail->total_price_tax_excl;
-                    $priceTaxIncl = $objRoomTypeServiceProductOrderDetail->total_price_tax_incl;
-                    $objHotelBookingDetail = new HotelBookingDetail($objRoomTypeServiceProductOrderDetail->id_htl_booking_detail);
+                $idServiceProductOrderDetail = $service['id_service_product_order_detail'];
+                if (Validate::isLoadedObject($objServiceProductOrderDetail = new ServiceProductOrderDetail((int) $idServiceProductOrderDetail))) {
+                    $objOrderDetail = new OrderDetail((int) $objServiceProductOrderDetail->id_order_detail);
+                    $priceTaxExcl = $objServiceProductOrderDetail->total_price_tax_excl;
+                    $priceTaxIncl = $objServiceProductOrderDetail->total_price_tax_incl;
+                    $objHotelBookingDetail = new HotelBookingDetail($objServiceProductOrderDetail->id_htl_booking_detail);
                     $numDays = 1;
                     if (Product::getProductPriceCalculation($service['id_product']) == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
                         $numDays = HotelHelper::getNumberOfDays($objHotelBookingDetail->date_from, $objHotelBookingDetail->date_to);
                     }
 
-                    $quantity = $objRoomTypeServiceProductOrderDetail->quantity * $numDays;
-                    if ($objRoomTypeServiceProductOrderDetail->delete()) {
-                        $objOrder = new Order($objRoomTypeServiceProductOrderDetail->id_order);
+                    $quantity = $objServiceProductOrderDetail->quantity * $numDays;
+                    if ($objServiceProductOrderDetail->delete()) {
+                        $objOrder = new Order($objServiceProductOrderDetail->id_order);
                         if ($quantity >= $objOrderDetail->product_quantity) {
                             $objOrderDetail->delete();
                         } else {
@@ -3068,7 +3137,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
             $this->context->currency = new Currency($objOrder->id_currency);
             $objHotelCartBookingData = new HotelCartBookingData();
             $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
-            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+            $objServiceProductCartDetail = new ServiceProductCartDetail();
             $roomHtlCartInfo = $objHotelCartBookingData->getRoomRowByIdProductIdRoomInDateRange(
                 $objHotelBookingDetail->id_cart,
                 $objHotelBookingDetail->id_product,
@@ -3091,7 +3160,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
 
             $services = $formattedServices;
             foreach ($services as $service) {
-                $objRoomTypeServiceProductCartDetail->addServiceProductInCart(
+                $objServiceProductCartDetail->addServiceProductInCart(
                     $objCart->id,
                     $service['id_product'],
                     $service['quantity'],
@@ -3105,34 +3174,39 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
             $objOrderDetail = new OrderDetail();
             $objOrderDetail->createList($objOrder, $objCart, $objOrder->getCurrentOrderState(), $productList, 0, true);
             foreach ($productList as &$product) {
-                if ($idRoomTypeServiceProductCartDetail = $objRoomTypeServiceProductCartDetail->alreadyExists(
+                if ($idServiceProductCartDetail = $objServiceProductCartDetail->alreadyExists(
                     $objCart->id,
                     $product['id_product'],
                     $roomHtlCartInfo['id'])
                 ) {
-                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail((int) $idRoomTypeServiceProductCartDetail);
+                    $objServiceProductCartDetail = new ServiceProductCartDetail((int) $idServiceProductCartDetail);
                     $numDays = 1;
                     if (Product::getProductPriceCalculation($product['id_product']) == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
                         $numDays = HotelHelper::getNumberOfDays($objHotelBookingDetail->date_from, $objHotelBookingDetail->date_to);
                     }
 
-                    $quantity = $objRoomTypeServiceProductCartDetail->quantity * $numDays;
-                    $unitPriceTaxExcl = $objRoomTypeServiceProductPrice->getServicePrice(
+                    $quantity = $objServiceProductCartDetail->quantity * $numDays;
+
+                    $unitPriceTaxExcl = Product::getServiceProductPrice(
                         (int) $product['id_product'],
                         0,
+                        false,
+                        false,
+                        false,
                         1,
                         $objHotelBookingDetail->date_from,
                         $objHotelBookingDetail->date_to,
-                        false,
                         $objCart->id
                     )/ $numDays;
-                    $unitPriceTaxIncl = $objRoomTypeServiceProductPrice->getServicePrice(
+                    $unitPriceTaxIncl = Product::getServiceProductPrice(
                         (int) $product['id_product'],
                         0,
+                        false,
+                        false,
+                        true,
                         1,
                         $objHotelBookingDetail->date_from,
                         $objHotelBookingDetail->date_to,
-                        true,
                         $objCart->id
                     )/ $numDays;
 
@@ -3176,32 +3250,32 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                         $unitPriceTaxIncl = Tools::ps_round($totalPriceTaxIncl / $quantity, _PS_PRICE_COMPUTE_PRECISION_);
                     }
 
-                    $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
-                    $objRoomTypeServiceProductOrderDetail->id_product = $product['id_product'];
-                    $objRoomTypeServiceProductOrderDetail->id_order = $objHotelBookingDetail->id_order;
-                    $objRoomTypeServiceProductOrderDetail->id_order_detail = $objOrderDetail->id;
-                    $objRoomTypeServiceProductOrderDetail->id_cart = $objCart->id;
-                    $objRoomTypeServiceProductOrderDetail->id_htl_booking_detail = $objHotelBookingDetail->id;
-                    $objRoomTypeServiceProductOrderDetail->unit_price_tax_excl = Tools::ps_round($unitPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
-                    $objRoomTypeServiceProductOrderDetail->unit_price_tax_incl = Tools::ps_round($unitPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
-                    $objRoomTypeServiceProductOrderDetail->total_price_tax_excl = Tools::ps_round($totalPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
-                    $objRoomTypeServiceProductOrderDetail->total_price_tax_incl = Tools::ps_round($totalPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
-                    $objRoomTypeServiceProductOrderDetail->name = $product['name'];
-                    $objRoomTypeServiceProductOrderDetail->quantity = $objRoomTypeServiceProductCartDetail->quantity;
-                    $objRoomTypeServiceProductOrderDetail->save();
+                    $objServiceProductOrderDetail = new ServiceProductOrderDetail();
+                    $objServiceProductOrderDetail->id_product = $product['id_product'];
+                    $objServiceProductOrderDetail->id_order = $objHotelBookingDetail->id_order;
+                    $objServiceProductOrderDetail->id_order_detail = $objOrderDetail->id;
+                    $objServiceProductOrderDetail->id_cart = $objCart->id;
+                    $objServiceProductOrderDetail->id_htl_booking_detail = $objHotelBookingDetail->id;
+                    $objServiceProductOrderDetail->unit_price_tax_excl = Tools::ps_round($unitPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
+                    $objServiceProductOrderDetail->unit_price_tax_incl = Tools::ps_round($unitPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
+                    $objServiceProductOrderDetail->total_price_tax_excl = Tools::ps_round($totalPriceTaxExcl, _PS_PRICE_COMPUTE_PRECISION_);
+                    $objServiceProductOrderDetail->total_price_tax_incl = Tools::ps_round($totalPriceTaxIncl, _PS_PRICE_COMPUTE_PRECISION_);
+                    $objServiceProductOrderDetail->name = $product['name'];
+                    $objServiceProductOrderDetail->quantity = $objServiceProductCartDetail->quantity;
+                    $objServiceProductOrderDetail->save();
 
                     // update totals amount of order
-                    $objOrder->total_products += $objRoomTypeServiceProductOrderDetail->total_price_tax_excl;
-                    $objOrder->total_products_wt += $objRoomTypeServiceProductOrderDetail->total_price_tax_incl;
+                    $objOrder->total_products += $objServiceProductOrderDetail->total_price_tax_excl;
+                    $objOrder->total_products_wt += $objServiceProductOrderDetail->total_price_tax_incl;
 
-                    $objOrder->total_paid += Tools::ps_round($objRoomTypeServiceProductOrderDetail->total_price_tax_incl, _PS_PRICE_COMPUTE_PRECISION_);
-                    $objOrder->total_paid_tax_excl += Tools::ps_round($objRoomTypeServiceProductOrderDetail->total_price_tax_excl, _PS_PRICE_COMPUTE_PRECISION_);
-                    $objOrder->total_paid_tax_incl += Tools::ps_round($objRoomTypeServiceProductOrderDetail->total_price_tax_incl, _PS_PRICE_COMPUTE_PRECISION_);
+                    $objOrder->total_paid += Tools::ps_round($objServiceProductOrderDetail->total_price_tax_incl, _PS_PRICE_COMPUTE_PRECISION_);
+                    $objOrder->total_paid_tax_excl += Tools::ps_round($objServiceProductOrderDetail->total_price_tax_excl, _PS_PRICE_COMPUTE_PRECISION_);
+                    $objOrder->total_paid_tax_incl += Tools::ps_round($objServiceProductOrderDetail->total_price_tax_incl, _PS_PRICE_COMPUTE_PRECISION_);
 
                     $objOrderDetail->unit_price_tax_incl += $unitPriceTaxIncl;
-                    $objOrderDetail->total_price_tax_incl += $unitPriceTaxIncl * $objRoomTypeServiceProductOrderDetail->quantity;
+                    $objOrderDetail->total_price_tax_incl += $unitPriceTaxIncl * $objServiceProductOrderDetail->quantity;
                     $objOrderDetail->unit_price_tax_excl += $unitPriceTaxExcl;
-                    $objOrderDetail->total_price_tax_excl += $unitPriceTaxExcl * $objRoomTypeServiceProductOrderDetail->quantity;
+                    $objOrderDetail->total_price_tax_excl += $unitPriceTaxExcl * $objServiceProductOrderDetail->quantity;
                 }
             }
 
@@ -3376,7 +3450,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
             $objCurrency = new Currency($objOrder->id_currency);
             $objBookingDetail = new HotelBookingDetail();
             $objBookingDemand = new HotelBookingDemands();
-            $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
+            $objServiceProductOrderDetail = new ServiceProductOrderDetail();
             $objOrderReturn = new OrderReturn();
             $idHotel = HotelBookingDetail::getIdHotelByIdOrder($objOrder->id);
             $objHotelBranchInformation = new HotelBranchInformation($idHotel, Configuration::get('PS_LANG_DEFAULT'));
@@ -3491,7 +3565,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                         unset($roomInfo['services']);
                     }
 
-                    if ($additionalServices = $objRoomTypeServiceProductOrderDetail->getroomTypeServiceProducts(
+                    if ($additionalServices = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
                         $orderData['id_order'],
                         0,
                         0,

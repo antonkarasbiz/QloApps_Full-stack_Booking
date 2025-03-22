@@ -400,16 +400,22 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
             'id_guest' => $this->id_guest,
         );
         $objHotelCartBookingData = new HotelCartBookingData();
-        $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+        $objServiceProductCartDetail = new ServiceProductCartDetail();
 
         if ($cartProducts = $this->context->cart->getProducts()) {
-            if ($cart_bdata = $objHotelCartBookingData->getCartFormatedBookinInfoByIdCart(
+            if ($cartBookingData = $objHotelCartBookingData->getCartFormatedBookinInfoByIdCart(
                 $this->context->cart->id
             )) {
-                $smartyVars['cart_bdata'] = $cart_bdata;
+                $smartyVars['cart_bdata'] = $cartBookingData;
             }
-            if ($normalCartProduct = $objRoomTypeServiceProductCartDetail->getCartStandardProducts($this->context->cart->id)) {
-                $smartyVars['cart_normal_data'] = $normalCartProduct;
+
+            if ($cartServiceProduct = $objServiceProductCartDetail->getServiceProductsInCart(
+                $this->context->cart->id,
+                [],
+                null,
+                0
+            )) {
+                $smartyVars['cart_standard_products_data'] = $cartServiceProduct;
             }
         }
         $rms_in_cart = $objHotelCartBookingData->getCountRoomsInCart($this->id_cart, $this->id_guest);
@@ -637,16 +643,16 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
 
         if (empty($this->errors)) {
             if ($opt) {
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                if ($objRoomTypeServiceProductCartDetail->addServiceProductInCart($id_cart, $product->id, $quantity, $id_hotel, $quantity)) {
+                $objServiceProductCartDetail = new ServiceProductCartDetail();
+                if ($objServiceProductCartDetail->addServiceProductInCart($id_cart, $product->id, $quantity, $id_hotel, $quantity)) {
                     $response = array(
                         'status' => true,
                         'total_amount' => $this->context->cart->getOrderTotal()
                     );
                 }
             } else {
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                if ($objRoomTypeServiceProductCartDetail->removeCartServiceProduct($id_cart, $id_product, false, $id_hotel)) {
+                $objServiceProductCartDetail = new ServiceProductCartDetail();
+                if ($objServiceProductCartDetail->removeCartServiceProduct($id_cart, $id_product, false, $id_hotel)) {
                     $response = array(
                         'status' => true,
                         'total_amount' => $this->context->cart->getOrderTotal()

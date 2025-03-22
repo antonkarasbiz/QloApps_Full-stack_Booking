@@ -19,18 +19,9 @@
 
 <div class="modal-body">
     <div id="edit_product">
-        <input type="hidden" id="edit_product_product_id" name="edit_product[product_id]" value="{$RoomTypeServiceProductOrderDetail->id_product}" />
-        <input type="hidden" id="edit_product_id_room_type_service_product_order_detail" name="edit_product[id_room_type_service_product_order_detail]" value="{$RoomTypeServiceProductOrderDetail->id}" />
+        <input type="hidden" id="edit_product_product_id" name="edit_product[product_id]" value="{$ServiceProductOrderDetail->id_product}" />
+        <input type="hidden" id="edit_product_id_service_product_order_detail" name="edit_product[id_service_product_order_detail]" value="{$ServiceProductOrderDetail->id}" />
         <input type="hidden" id="edit_product_id_order" name="id_order" value="{$order->id}" />
-        {* <div class="form-group">
-            <label class="control-label">{l s='Product:'}</label>
-            <div class="input-group">
-                <input type="text" id="edit_product_product_name" class="form-control" value="" placeholder="{l s='Enter the name of the product'}" />
-                <div class="input-group-addon">
-                    <i class="icon-search"></i>
-                </div>
-            </div>
-        </div> *}
         <div class="edit_product_fields">
             {hook h='displayAdminOrderEditProductFieldsBefore'}
             <div class="row form-group">
@@ -38,32 +29,13 @@
                     <label class="control-label">{l s='Unit Price (tax excl.)'}</label>
                     <div class="input-group">
                         {if $currency->format % 2}<div class="input-group-addon">{$currency->sign}</div>{/if}
-                        <input class="form-control" type="text" name="edit_product[product_price_tax_excl]" id="edit_product_product_price_tax_excl" value="{$RoomTypeServiceProductOrderDetail->unit_price_tax_excl}"/>
+                        <input class="form-control" type="text" name="edit_product[product_price_tax_excl]" id="edit_product_product_price_tax_excl" value="{$ServiceProductOrderDetail->unit_price_tax_excl}"/>
                         {if !($currency->format % 2)}<div class="input-group-addon">{$currency->sign}</div>{/if}
                     </div>
                 </div>
-                {* <div class="col-sm-6">
-                    <label class="control-label">{l s='Unit Price (tax incl.)'}</label>
-                    <div class="input-group">
-                        {if $currency->format % 2}<div class="input-group-addon">{$currency->sign}</div>{/if}
-                        <input class="form-control" type="text" name="edit_product[product_price_tax_incl]" id="edit_product_product_price_tax_incl" value="{$RoomTypeServiceProductOrderDetail->unit_price_tax_incl}"/>
-                        {if !($currency->format % 2)}<div class="input-group-addon">{$currency->sign}</div>{/if}
-                    </div>
-                </div> *}
-            </div>
-
-            <div class="">
-                <div class="row">
-                    <div class="productQuantity form-group col-sm-6">
-                        <label class="control-label">{l s='Quantity'}</label>
-                        <input type="number" class="form-control" name="edit_product[product_quantity]" id="edit_product_product_quantity" value="{$RoomTypeServiceProductOrderDetail->quantity}" min="1"/>
-                    </div>
-
-                    <div class="productOptions form-group col-sm-6" style="display: none;">
-                        <label class="control-label">{l s='Variant'}</label>
-                        <select name="edit_product[product_option]" id="edit_product_product_option">
-                        </select>
-                    </div>
+                <div class="productQuantity col-sm-6">
+                    <label class="control-label">{l s='Quantity'}</label>
+                    <input type="number" class="form-control" name="edit_product[product_quantity]" id="edit_product_product_quantity" value="{$ServiceProductOrderDetail->quantity}" min="1"/>
                 </div>
             </div>
         </div>

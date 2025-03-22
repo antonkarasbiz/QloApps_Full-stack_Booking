@@ -293,7 +293,6 @@
 
 			var params = {
 				id_product: parseInt($(cart_row).attr('data-id-product')),
-				id_hotel_service_product_cart_detail: parseInt($(cart_row).attr('data-id_hotel_service_product_cart_detail')),
 				qty: qty_to_update,
 				opt: opt,
 				id_cart: id_cart

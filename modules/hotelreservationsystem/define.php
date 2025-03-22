@@ -49,8 +49,8 @@ require_once 'classes/HotelBranchRefundRules.php';
 // linked products
 require_once 'classes/RoomTypeServiceProduct.php';
 require_once 'classes/RoomTypeServiceProductPrice.php';
-require_once 'classes/RoomTypeServiceProductCartDetail.php';
-require_once 'classes/RoomTypeServiceProductOrderDetail.php';
+require_once 'classes/ServiceProductCartDetail.php';
+require_once 'classes/ServiceProductOrderDetail.php';
 require_once 'classes/ServiceProductOption.php';
 
 

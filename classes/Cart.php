@@ -636,7 +636,6 @@ class CartCore extends ObjectModel
         }
 
         $cart_shop_context = Context::getContext()->cloneContext();
-
         foreach ($result as &$row) {
             if (isset($row['ecotax_attr']) && $row['ecotax_attr'] > 0) {
                 $row['ecotax'] = (float)$row['ecotax_attr'];
@@ -752,66 +751,11 @@ class CartCore extends ObjectModel
                     $row['total'] = Tools::processPriceRounding($totalPriceByProductTaxExcl);
                     $row['total_wt'] = Tools::processPriceRounding($totalPriceByProductTaxIncl);
                 }
-            } else if  (Product::SELLING_PREFERENCE_WITH_ROOM_TYPE == $row['selling_preference_type']) {
-                $row['total'] = 0;
-                $row['total_wt'] = 0;
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                if ($servicesWithRoom = $objRoomTypeServiceProductCartDetail->getServiceProductsInCart(
-                    $this->id,
-                    (int)$row['id_product'],
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    null,
-                    $row['auto_add_to_cart'],
-                    null,
-                    null
-                )) {
-                    foreach ($servicesWithRoom as $service) {
-                        // Rounding as per configurations
-                        $row['total'] += Tools::processPriceRounding($service['unit_price_tax_excl'], $service['quantity']);
-                        $row['total_wt'] += Tools::processPriceRounding($service['unit_price_tax_incl'], $service['quantity']);
-                    }
-                }
-            } else if  (Product::SELLING_PREFERENCE_HOTEL_STANDALONE == $row['selling_preference_type']) {
-                $row['total'] = 0;
-                $row['total_wt'] = 0;
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                $price_tax_excl = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
-                    $this->id,
-                    [],
-                    null,
-                    null,
-                    null,
-                    $row['id_product'],
-                    null,
-                    false,
-                    1
-                );
-                $price_tax_incl = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
-                    $this->id,
-                    [],
-                    null,
-                    null,
-                    null,
-                    $row['id_product'],
-                    null,
-                    true,
-                    1
-                );
-                // Rounding as per configurations
-                $row['total'] += Tools::processPriceRounding($price_tax_excl, $row['cart_quantity']);
-                $row['total_wt'] += Tools::processPriceRounding($price_tax_incl, $row['cart_quantity']);
-
-                $row['price_wt'] = $row['price_with_reduction'];
             } else {
                 $row['total'] = 0;
                 $row['total_wt'] = 0;
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                $price_tax_excl = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                $objServiceProductCartDetail = new ServiceProductCartDetail();
+                $price_tax_excl = $objServiceProductCartDetail->getServiceProductsInCart(
                     $this->id,
                     [],
                     null,
@@ -822,7 +766,7 @@ class CartCore extends ObjectModel
                     false,
                     1
                 );
-                $price_tax_incl = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                $price_tax_incl = $objServiceProductCartDetail->getServiceProductsInCart(
                     $this->id,
                     [],
                     null,
@@ -834,10 +778,8 @@ class CartCore extends ObjectModel
                     1
                 );
                 // Rounding as per configurations
-                $row['total'] += Tools::processPriceRounding($price_tax_excl, $row['cart_quantity']);
-                $row['total_wt'] += Tools::processPriceRounding($price_tax_incl, $row['cart_quantity']);
-
-                $row['price_wt'] = $row['price_with_reduction'];
+                $row['total'] += $price_tax_excl;
+                $row['total_wt'] += $price_tax_incl;
             }
 
             /*END*/
@@ -1803,8 +1745,8 @@ class CartCore extends ObjectModel
             }
             if (!$product['booking_product']) {
                 if (Product::SELLING_PREFERENCE_STANDALONE == $product['selling_preference_type']) {
-                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                    if ($servicePorducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                    $objServiceProductCartDetail = new ServiceProductCartDetail();
+                    if ($servicePorducts = $objServiceProductCartDetail->getServiceProductsInCart(
                         $this->id,
                         [],
                         null,
@@ -1829,14 +1771,14 @@ class CartCore extends ObjectModel
                 } else if (Product::SELLING_PREFERENCE_HOTEL_STANDALONE == $product['selling_preference_type']
                     || Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE == $product['selling_preference_type']
                 ) {
-                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+                    $objServiceProductCartDetail = new ServiceProductCartDetail();
                     if ($type == Cart::ONLY_ROOM_SERVICES
                         || $type == Cart::ONLY_CONVENIENCE_FEE
                         || $type == Cart::ONLY_ROOM_SERVICES_WITHOUT_AUTO_ADD
                         || $type == Cart::ONLY_ROOM_SERVICES_WITHOUT_CONVENIENCE_FEE
                         || $type == Cart::ONLY_ROOM_SERVICES_WITH_AUTO_ADD_WITHOUT_CONVENIENCE_FEE
                     ) {
-                        $servicePorducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                        $servicePorducts = $objServiceProductCartDetail->getServiceProductsInCart(
                             $this->id,
                             [],
                             0,
@@ -1845,7 +1787,7 @@ class CartCore extends ObjectModel
                             (int)$product['id_product']
                         );
                     } elseif ($type == Cart::ONLY_STANDALONE_PRODUCTS) {
-                        $servicePorducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                        $servicePorducts = $objServiceProductCartDetail->getServiceProductsInCart(
                             $this->id,
                             [],
                             null,
@@ -1854,7 +1796,7 @@ class CartCore extends ObjectModel
                             (int)$product['id_product']
                         );
                     } else {
-                        $servicePorducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                        $servicePorducts = $objServiceProductCartDetail->getServiceProductsInCart(
                             $this->id,
                             [],
                             isset($product['id_hotel']) ? $product['id_hotel'] : null,
@@ -1880,8 +1822,8 @@ class CartCore extends ObjectModel
                         }
                     }
                 } else if (Product::SELLING_PREFERENCE_WITH_ROOM_TYPE == $product['selling_preference_type']) {
-                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                    if ($servicesWithRoom = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                    $objServiceProductCartDetail = new ServiceProductCartDetail();
+                    if ($servicesWithRoom = $objServiceProductCartDetail->getServiceProductsInCart(
                         $this->id,
                         [],
                         0,
@@ -1962,7 +1904,6 @@ class CartCore extends ObjectModel
             // price of extra demands on room type in the cart
             $totalDemandsPrice += $objCartBookingData->getCartExtraDemands($this->id, $product['id_product'], 0, 0, 0, 1, 0, (int)$with_taxes);
         }
-        ppp($products_total);
         foreach ($products_total as $key => $price) {
             $order_total += $price;
         }
@@ -2431,7 +2372,7 @@ class CartCore extends ObjectModel
         $standaloneProduct = array();
         $objRoomType = new HotelRoomType();
         $objHtlCartBookingData = new HotelCartBookingData();
-        $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+        $objServiceProductCartDetail = new ServiceProductCartDetail();
         foreach ($final_package_list as $id_address => $packages) {
             foreach ($packages as $id_package => $package) {
                 foreach ($package['product_list'] as $product) {
@@ -2466,7 +2407,7 @@ class CartCore extends ObjectModel
                         ) {
                             // get standard products which are booked for room types
                             // send id_hotel = 0 for standard products with room types
-                            if ($selectedServiceProducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                            if ($selectedServiceProducts = $objServiceProductCartDetail->getServiceProductsInCart(
                                 $this->id,
                                 [],
                                 0,
@@ -2552,7 +2493,7 @@ class CartCore extends ObjectModel
                         if (Product::SELLING_PREFERENCE_HOTEL_STANDALONE == $product['selling_preference_type']
                             || Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE == $product['selling_preference_type']
                         ) {
-                            if ($selectedServiceProducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                            if ($selectedServiceProducts = $objServiceProductCartDetail->getServiceProductsInCart(
                                 $this->id,
                                 [],
                                 null,

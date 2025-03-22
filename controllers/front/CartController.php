@@ -181,8 +181,8 @@ class CartControllerCore extends FrontController
         } else {
             $idProductOption = Tools::getValue('id_product_option', null);
             if ($product->selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE) {
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                $result = $objRoomTypeServiceProductCartDetail->removeCartServiceProduct(
+                $objServiceProductCartDetail = new ServiceProductCartDetail();
+                $result = $objServiceProductCartDetail->removeCartServiceProduct(
                     $this->context->cart->id,
                     $this->id_product,
                     false,
@@ -194,14 +194,15 @@ class CartControllerCore extends FrontController
             } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE
                 || $product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
             ) {
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                $result = $objRoomTypeServiceProductCartDetail->removeCartServiceProduct(
+                $objServiceProductCartDetail = new ServiceProductCartDetail();
+
+                $result = $objServiceProductCartDetail->removeCartServiceProduct(
                     $this->context->cart->id,
                     $this->id_product,
                     false,
                     $this->id_hotel,
                     false,
-                    $idProductOption
+                    $idProductOption ? $idProductOption : null
                 );
             }
         }
@@ -294,7 +295,6 @@ class CartControllerCore extends FrontController
     {
         $mode = (Tools::getIsset('update') && $this->id_product) ? 'update' : 'add';
         $operator = Tools::getValue('op', 'up');
-
         $id_cart = $this->context->cart->id;
         $id_guest = $this->context->cart->id_guest;
 
@@ -458,6 +458,7 @@ class CartControllerCore extends FrontController
             }
         } else {
             $objHotelCartBookingData = new HotelCartBookingData();
+            $idProductOption = Tools::getValue('id_product_option');
             if ($product->selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE) {
                 // if can be added without room type then we can directly add product in cart.
                 if ($operator == 'up') {
@@ -483,7 +484,7 @@ class CartControllerCore extends FrontController
                         }
                     }
                     if (ServiceProductOption::productHasOptions($this->id_product)) {
-                        if (!$idProductOption = Tools::getValue('id_product_option')) {
+                        if (!$idProductOption) {
                             $this->errors[] = Tools::displayError('Cannot add service without a option.');
                         } else {
                             if (!ServiceProductOption::productHasOptions($this->id_product, $idProductOption)) {
@@ -498,8 +499,8 @@ class CartControllerCore extends FrontController
                 $id_hotel = Tools::getValue('id_hotel');
                 if ($operator == 'up') {
                     if ($id_hotel) {
-                        $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                        if ($cartDetail = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                        $objServiceProductCartDetail = new ServiceProductCartDetail();
+                        if ($cartDetail = $objServiceProductCartDetail->getServiceProductsInCart(
                             $id_cart,
                             [$product->selling_preference_type],
                             $id_hotel,
@@ -523,8 +524,8 @@ class CartControllerCore extends FrontController
                             }
                         }
                         if (ServiceProductOption::productHasOptions($this->id_product)) {
-                            if (!$idProductOption = Tools::getValue('id_product_option')) {
-                                $this->errors[] = Tools::displayError('Cannot add service without a option.');
+                            if (!$idProductOption) {
+                                $this->errors[] = Tools::displayError('Cannot add product without a option.');
                             } else {
                                 if (!ServiceProductOption::productHasOptions($this->id_product, $idProductOption)) {
                                     $this->errors[] = Tools::displayError('The selected option is not available.');
@@ -532,11 +533,11 @@ class CartControllerCore extends FrontController
                             }
                         }
                     } else {
-                        $this->errors[] = Tools::displayError('Cannot add service without a hotel.');
+                        $this->errors[] = Tools::displayError('Cannot add product without a hotel.');
                     }
                 }
             } else {
-                $this->errors[] = Tools::displayError('cannot add service without room in cart');
+                $this->errors[] = Tools::displayError('cannot add product without room in cart');
             }
         }
 
@@ -638,8 +639,8 @@ class CartControllerCore extends FrontController
                 } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE
                     || $product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
                 ) {
-                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                    $update_quantity = $objRoomTypeServiceProductCartDetail->updateCartServiceProduct(
+                    $objServiceProductCartDetail = new ServiceProductCartDetail();
+                    $update_quantity = $objServiceProductCartDetail->updateCartServiceProduct(
                         $this->context->cart->id,
                         $this->id_product,
                         $operator,
@@ -657,8 +658,8 @@ class CartControllerCore extends FrontController
                         ));
                     }
                 } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE) {
-                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                    $update_quantity = $objRoomTypeServiceProductCartDetail->updateCartServiceProduct(
+                    $objServiceProductCartDetail = new ServiceProductCartDetail();
+                    $update_quantity = $objServiceProductCartDetail->updateCartServiceProduct(
                         $this->context->cart->id,
                         $this->id_product,
                         $operator,
@@ -764,8 +765,8 @@ class CartControllerCore extends FrontController
             }
 
             if (empty($this->errors)) {
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                if ($objRoomTypeServiceProductCartDetail->updateCartServiceProduct(
+                $objServiceProductCartDetail = new ServiceProductCartDetail();
+                if ($objServiceProductCartDetail->updateCartServiceProduct(
                     $this->context->cart->id,
                     $idServiceProduct,
                     $operator,

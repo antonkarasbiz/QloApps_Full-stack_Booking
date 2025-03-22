@@ -399,20 +399,20 @@ class HotelReservationSystemDb
                 PRIMARY KEY (`id_product_option`, `id_lang`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8;",
 
-            "CREATE TABLE `"._DB_PREFIX_."htl_room_type_service_product_cart_detail` (
-                `id_room_type_service_product_cart_detail` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+            "CREATE TABLE `"._DB_PREFIX_."service_product_cart_detail` (
+                `id_service_product_cart_detail` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `id_product` int(11) UNSIGNED NOT NULL,
                 `quantity` int(11) UNSIGNED NOT NULL,
                 `id_cart` int(11) unsigned NOT NULL,
                 `id_hotel` int(11) UNSIGNED NOT NULL,
                 `htl_cart_booking_id` int(11) unsigned NOT NULL,
                 `id_product_option` int(11) UNSIGNED NOT NULL,
-                PRIMARY KEY (`id_room_type_service_product_cart_detail`),
+                PRIMARY KEY (`id_service_product_cart_detail`),
                 KEY `id_product` (`id_product`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
 
-            "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_room_type_service_product_order_detail` (
-                `id_room_type_service_product_order_detail` int(11) NOT NULL AUTO_INCREMENT,
+            "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."service_product_order_detail` (
+                `id_service_product_order_detail` int(11) NOT NULL AUTO_INCREMENT,
                 `id_product` int(11) NOT NULL,
                 `id_order` int(11) NOT NULL,
                 `id_order_detail` int(11) NOT NULL,
@@ -426,13 +426,14 @@ class HotelReservationSystemDb
                 `total_price_tax_incl` decimal(20,6) NOT NULL,
                 `name` varchar(255) DEFAULT NULL,
                 `option_name` varchar(255) DEFAULT NULL,
+                `hotel_name` varchar(255) DEFAULT NULL,
                 `quantity` INT(11) UNSIGNED NOT NULL,
                 `auto_added` tinyint(1) unsigned NOT NULL,
                 `is_refunded` tinyint(1) NOT NULL DEFAULT '0',
                 `is_cancelled` tinyint(1) NOT NULL DEFAULT '0',
                 `date_add` datetime NOT NULL,
                 `date_upd` datetime NOT NULL,
-                PRIMARY KEY (`id_room_type_service_product_order_detail`)
+                PRIMARY KEY (`id_service_product_order_detail`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
 
             "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_room_disable_dates` (

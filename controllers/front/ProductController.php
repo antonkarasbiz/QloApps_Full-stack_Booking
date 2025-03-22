@@ -756,13 +756,16 @@ class ProductControllerCore extends FrontController
                     }
                     $product['name'] = $objServiceProduct->name;
                     $product['allow_multiple_quantity'] = $objServiceProduct->allow_multiple_quantity;
-                    $productPrice = $objRoomTypeServiceProductPrice->getServicePrice(
+
+                    $productPrice = Product::getServiceProductPrice(
                         $product['id_product'],
+                        $idProductOption = 0,
+                        false,
                         $idProduct,
+                        $useTax,
                         $product['quantity'],
                         $dateFrom,
                         $dateTo,
-                        $useTax
                     );
                     $product['price'] = $productPrice;
                     $serviceProductsPrice += $productPrice;
@@ -842,7 +845,7 @@ class ProductControllerCore extends FrontController
                     $idHotel,
                     $serviceProductOption['id_product_option'],
                     $useTax,
-                    $quantity
+                    1
                 );
             }
 

@@ -27,7 +27,7 @@ class OrderReturnDetailCore extends ObjectModel
     public $id_htl_booking;
 
     /** @var int */
-    public $id_room_type_service_product_order_detail;
+    public $id_service_product_order_detail;
 
     /** @var float amount of the refund transaction */
     public $refunded_amount;
@@ -51,7 +51,7 @@ class OrderReturnDetailCore extends ObjectModel
         'fields' => array(
             'id_order_return' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
             'id_htl_booking' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'id_room_type_service_product_order_detail' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_service_product_order_detail' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_order_detail' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'default' => 0),
             'id_customization' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'default' => 0),
             'product_quantity' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'default' => 0),

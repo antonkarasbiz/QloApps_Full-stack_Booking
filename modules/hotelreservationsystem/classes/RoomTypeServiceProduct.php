@@ -147,13 +147,15 @@ class RoomTypeServiceProduct extends ObjectModel
             if ($services = Db::getInstance()->executeS($sql)) {
                 $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
                 foreach($services as &$service) {
-                    $service['price'] = $objRoomTypeServiceProductPrice->getServicePrice(
+                    $service['price'] = Product::getServiceProductPrice(
                         (int)$service['id_product'],
+                        0,
+                        false,
                         (int)$idProduct,
+                        $useTax,
                         1,
                         $dateFrom,
                         $dateTo,
-                        $useTax,
                         false,
                         null,
                         $use_reduc
@@ -188,31 +190,38 @@ class RoomTypeServiceProduct extends ObjectModel
             $serviceProducts = Product::getProductsProperties($idLang, $serviceProducts);
             $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
             foreach($serviceProducts as &$serviceProduct) {
-                $serviceProduct['price_tax_exc'] = $objRoomTypeServiceProductPrice->getServicePrice(
+                $serviceProduct['price_tax_exc'] = Product::getServiceProductPrice(
                     (int)$serviceProduct['id_product'],
+                    0,
+                    false,
                     (int)$idProductRoomType,
+                    false,
                     1,
                     null,
-                    null,
-                    false
+                    null
                 );
 
-                $serviceProduct['price_tax_incl'] = $objRoomTypeServiceProductPrice->getServicePrice(
+                $serviceProduct['price_tax_incl'] = Product::getServiceProductPrice(
                     (int)$serviceProduct['id_product'],
+                    0,
+                    false,
                     (int)$idProductRoomType,
+                    true,
                     1,
                     null,
-                    null,
-                    true
+                    null
                 );
+
                 $useTax = Product::$_taxCalculationMethod == PS_TAX_EXC ? false : true;
-                $serviceProduct['price_without_reduction'] = $objRoomTypeServiceProductPrice->getServicePrice(
+                $serviceProduct['price_without_reduction'] = Product::getServiceProductPrice(
                     (int)$serviceProduct['id_product'],
+                    0,
+                    false,
                     (int)$idProductRoomType,
+                    $useTax,
                     1,
                     null,
-                    null,
-                    $useTax
+                    null
                 );
                 $serviceProduct['images'] = Image::getImages((int)Context::getContext()->language->id, $serviceProduct['id_product']);
             }

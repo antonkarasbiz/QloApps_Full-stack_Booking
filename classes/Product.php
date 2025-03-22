@@ -3279,14 +3279,9 @@ class ProductCore extends ObjectModel
                 $sql->select('0 as id_product_attribute');
             }
 
-            if (ServiceProductOption::productHasOptions($id_product)) {
+            if ($id_product_option && ServiceProductOption::productHasOptions($id_product)) {
                 $sql->select('product_option.id_product_option, product_option.price_impact as option_impact_price');
-
-                if ($id_product_option) {
-                    $sql->leftJoin('product_option', 'product_option', '(product_option.id_product = p.id_product AND product_option.id_product_option = '.(int)$id_product_option.')');
-                } else {
-                    $sql->leftJoin('product_option', 'product_option', '(product_option.id_product = p.id_product)');
-                }
+                $sql->leftJoin('product_option', 'product_option', '(product_option.id_product = p.id_product AND product_option.id_product_option = '.(int)$id_product_option.')');
             }
             $res = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
@@ -6801,7 +6796,7 @@ class ProductCore extends ObjectModel
         return true;
     }
 
-    public static function getTotalStandardProductPrice(
+    public static function getServiceProductPrice(
         $idProduct,
         $idProductOption = 0,
         $idHotel = false,
@@ -6840,7 +6835,7 @@ class ProductCore extends ObjectModel
             (int)$idProductRoomType
         );
 
-        Hook::exec('actionStandardProductPricePriceModifier',
+        Hook::exec('actionServiceProductPricePriceModifier',
             array(
                 'price' => &$price,
                 'id_product' => $idProduct,

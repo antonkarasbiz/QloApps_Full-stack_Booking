@@ -1587,11 +1587,19 @@ class HotelBookingDetail extends ObjectModel
         );
     }
 
-    public static function getIdHotelByIdOrder($idOrder)
+    public static function getIdHotelByIdOrder($idOrder, $includeServiceProducts = true)
     {
-        return Db::getInstance()->getValue(
+        if (!$idHotel = Db::getInstance()->getValue(
             'SELECT `id_hotel` FROM `'._DB_PREFIX_.'htl_booking_detail` WHERE `id_order` = '.(int) $idOrder
-        );
+        )) {
+            if ($includeServiceProducts) {
+                $idHotel = Db::getInstance()->getValue(
+                    'SELECT `id_hotel` FROM `'._DB_PREFIX_.'service_product_order_detail` WHERE `id_order` = '.(int) $idOrder
+                );
+            }
+        }
+
+        return $idHotel;
     }
 
     /**
@@ -1943,7 +1951,7 @@ class HotelBookingDetail extends ObjectModel
                     );
                 }
 
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+                $objServiceProductCartDetail = new ServiceProductCartDetail();
 
                 $bookingParams = array(
                     'date_from' => $objOldHotelBooking->date_from,
@@ -2117,11 +2125,25 @@ class HotelBookingDetail extends ObjectModel
                             }
 
                             // Get Booking services of the old booking to add in the new booking creation
-                            $objServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
-                            if ($oldAdditonalServices = $objServiceProductOrderDetail->getSelectedServicesForRoom($idHotelBooking)) {
-                                if (isset($oldAdditonalServices['additional_services']) && $oldAdditonalServices['additional_services']) {
-                                    foreach ($oldAdditonalServices['additional_services'] as $service) {
-                                        $objServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail($service['id_room_type_service_product_order_detail']);
+                            $objServiceProductOrderDetail = new ServiceProductOrderDetail();
+                            if ($oldAdditonalServices = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                                null,
+                                0,
+                                null,
+                                0,
+                                $idHotelBooking
+                            )) {
+                                if (isset($oldAdditonalServices[$idHotelBooking]['additional_services']) && $oldAdditonalServices[$idHotelBooking]['additional_services']) {
+                                    foreach ($oldAdditonalServices[$idHotelBooking]['additional_services'] as $service) {
+                                        $objServiceProductOrderDetail = new ServiceProductOrderDetail($service['id_service_product_order_detail']);
                                         $objServiceProductOrderDetail->id_htl_booking_detail = $objBookingDetail->id;
                                         $objServiceProductOrderDetail->save();
                                     }
@@ -3324,7 +3346,7 @@ class HotelBookingDetail extends ObjectModel
             // things to do if order is not paid
             if (!$hasOrderDiscountOrPayment) {
                 $objHotelBookingDemands = new HotelBookingDemands();
-                $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
+                $objServiceProductOrderDetail = new ServiceProductOrderDetail();
 
                 $reduction_amount['total_price_tax_excl'] = (float) $this->total_price_tax_excl;
                 $reduction_amount['total_products_tax_excl'] = (float) $this->total_price_tax_excl;
@@ -3354,20 +3376,32 @@ class HotelBookingDetail extends ObjectModel
                 }
 
                 // reduce services amount from order and services_detail
-                if ($roomServices = $objRoomTypeServiceProductOrderDetail->getSelectedServicesForRoom(
+                if ($roomServices = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    null,
+                    null,
+                    null,
+                    0,
                     $this->id
                 )) {
-                    foreach ($roomServices['additional_services'] as $roomService) {
-                        $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail(
-                            $roomService['id_room_type_service_product_order_detail']
+                    foreach ($roomServices[$this->id]['additional_services'] as $roomService) {
+                        $objServiceProductOrderDetail = new ServiceProductOrderDetail(
+                            $roomService['id_service_product_order_detail']
                         );
-                        $reduction_amount['total_price_tax_excl'] += (float) $objRoomTypeServiceProductOrderDetail->total_price_tax_excl;
-                        $reduction_amount['total_products_tax_excl'] += (float) $objRoomTypeServiceProductOrderDetail->total_price_tax_excl;
-                        $reduction_amount['total_price_tax_incl'] += (float) $objRoomTypeServiceProductOrderDetail->total_price_tax_incl;
-                        $reduction_amount['total_products_tax_incl'] += (float) $objRoomTypeServiceProductOrderDetail->total_price_tax_incl;
+                        $reduction_amount['total_price_tax_excl'] += (float) $objServiceProductOrderDetail->total_price_tax_excl;
+                        $reduction_amount['total_products_tax_excl'] += (float) $objServiceProductOrderDetail->total_price_tax_excl;
+                        $reduction_amount['total_price_tax_incl'] += (float) $objServiceProductOrderDetail->total_price_tax_incl;
+                        $reduction_amount['total_products_tax_incl'] += (float) $objServiceProductOrderDetail->total_price_tax_incl;
 
-                        if (Validate::isLoadedObject($objOrderDetail = new OrderDetail($objRoomTypeServiceProductOrderDetail->id_order_detail))) {
-                            $objOrderDetail->product_quantity_refunded += $objRoomTypeServiceProductOrderDetail->quantity;
+                        if (Validate::isLoadedObject($objOrderDetail = new OrderDetail($objServiceProductOrderDetail->id_order_detail))) {
+                            $objOrderDetail->product_quantity_refunded += $objServiceProductOrderDetail->quantity;
                             if ($objOrderDetail->product_quantity_refunded > $objOrderDetail->product_quantity) {
                                 $objOrderDetail->product_quantity_refunded = $objOrderDetail->product_quantity;
                             }
@@ -3388,9 +3422,9 @@ class HotelBookingDetail extends ObjectModel
                             $objOrderDetail->save();
                         }
 
-                        $objRoomTypeServiceProductOrderDetail->total_price_tax_excl = 0;
-                        $objRoomTypeServiceProductOrderDetail->total_price_tax_incl = 0;
-                        $objRoomTypeServiceProductOrderDetail->save();
+                        $objServiceProductOrderDetail->total_price_tax_excl = 0;
+                        $objServiceProductOrderDetail->total_price_tax_incl = 0;
+                        $objServiceProductOrderDetail->save();
                     }
                 }
             }

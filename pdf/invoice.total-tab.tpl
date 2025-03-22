@@ -34,6 +34,16 @@
 			</td>
 		</tr>
 	{/if}
+    {if isset($footer.service_products_price_tax_excl) && $footer.service_products_price_tax_excl}
+		<tr>
+			<td class="grey" width="70%">
+				{l s='Total Products cost (tax excl.)' pdf='true'}
+			</td>
+			<td class="white" width="30%">
+				{displayPrice currency=$order->id_currency price=$footer.service_products_price_tax_excl}
+			</td>
+		</tr>
+	{/if}
 	{if isset($footer.additional_service_price_tax_excl) && $footer.additional_service_price_tax_excl}
 		<tr>
 			<td class="grey" width="70%">
@@ -41,16 +51,6 @@
 			</td>
 			<td class="white" width="30%">
 				{displayPrice currency=$order->id_currency price=($footer.additional_service_price_tax_excl)}
-			</td>
-		</tr>
-	{/if}
-	{if isset($footer.service_products_price_tax_excl) && $footer.service_products_price_tax_excl}
-		<tr>
-			<td class="grey" width="70%">
-				{l s='Total Products cost (tax excl.)' pdf='true'}
-			</td>
-			<td class="white" width="30%">
-				{displayPrice currency=$order->id_currency price=$footer.service_products_price_tax_excl}
 			</td>
 		</tr>
 	{/if}

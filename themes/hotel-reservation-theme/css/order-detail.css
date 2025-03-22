@@ -245,22 +245,22 @@
     color: #333;
 }
 
-.room-details .card-header, .service-product-details .card-header {
+.hotel-details .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.room-details .card-header .booking-actions-wrap, .service-product-details .card-header .booking-actions-wrap {
+.hotel-details .card-header .booking-actions-wrap {
     margin: -6px 0;
 }
 
-.room-details .card-header .booking-actions-wrap .col-xs-12, .service-product-details .card-header .booking-actions-wrap .col-xs-12 {
+.hotel-details .card-header .booking-actions-wrap .col-xs-12 {
     display: flex;
     flex-wrap: wrap;
 }
 
-.room-details .card-body {
+.room-details .card-body, .service-product-details .card-body {
     padding: 0;
 }
 
@@ -285,12 +285,12 @@
 }
 
 @media (max-width: 576px) {
-    .room-details .card-header {
+    .refund_element_details .card-header {
         flex-direction: column;
         align-items: flex-start;
     }
 
-    .room-details .card-header .booking-actions-wrap {
+    .refund_element_details .card-header .booking-actions-wrap {
         margin-top: 10px;
         margin-left: -10px;
     }
@@ -302,7 +302,7 @@
 }
 
 @media (min-width: 768px) and (max-width: 1200px) {
-    .room-details .card-header .booking-actions-wrap .col-xs-12, .service-product-details .card-header .booking-actions-wrap .col-xs-12 {
+    .refund_element_details .card-header .booking-actions-wrap .col-xs-12, .service-product-details .card-header .booking-actions-wrap .col-xs-12 {
         flex-wrap: nowrap;
     }
 }
@@ -859,35 +859,35 @@
     background-color: #1292FF;
 }
 
-#create-new-refund-popup .nav-tabs li a .room-type-name {
+#create-new-refund-popup .nav-tabs li a .refund_element_name {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 2px;
 }
 
-#create-new-refund-popup .tab-content .room-type-summary {
+#create-new-refund-popup .tab-content .refund_element_summary {
     padding: 10px 15px;
     border-bottom: 1px solid #E5E5E5;
 }
 
-#create-new-refund-popup .tab-content .room-type-summary .room-type-name {
+#create-new-refund-popup .tab-content .refund_element_summary .refund_element_name {
     font-size: 16px;
     font-weight: bold;
 }
 
-#create-new-refund-popup .tab-content .room-type-summary > [class*=col-xs-] > p {
+#create-new-refund-popup .tab-content .refund_element_summary > [class*=col-xs-] > p {
     font-size: 10px;
     margin-bottom: 0px;
 }
 
-#create-new-refund-popup .tab-content .room-details {
+#create-new-refund-popup .tab-content .refund_element_details {
     padding: 13px 15px 10px;
 }
 
-#create-new-refund-popup .tab-content .room-details.cancelled {
+#create-new-refund-popup .tab-content .refund_element_details.cancelled {
     background-color: #F5F5F5;
 }
-#create-new-refund-popup .tab-content .room-details.cancelled .badge-cancelled {
+#create-new-refund-popup .tab-content .refund_element_details.cancelled .badge-cancelled {
     margin-left: 6px;
     padding: 5px 10px;
     border-radius: 31px;
@@ -895,35 +895,35 @@
     background-color: #FF4B4B;
 }
 
-#create-new-refund-popup .room-details .occupancy-wrap {
+#create-new-refund-popup .refund_element_details .occupancy-wrap {
     position: relative;
 }
 
-#create-new-refund-popup .room-details .occupancy-wrap .checkbox {
+#create-new-refund-popup .refund_element_details .checkbox {
     margin: 0;
 }
 
-#create-new-refund-popup .room-details .occupancy-wrap .checker {
+#create-new-refund-popup .refund_element_details .checker {
     margin-right: 8px;
 }
 
-#create-new-refund-popup .room-details .checkbox label {
+#create-new-refund-popup .refund_element_details .checkbox label {
     font-size: 14px;
     font-weight: 600;
     color: #333;
 }
 
-#create-new-refund-popup .room-details .checkbox label + span {
+#create-new-refund-popup .refund_element_details .checkbox label + span {
     font-size: 12px;
 }
 
-#create-new-refund-popup .room-details .extra-services-wrap {
+#create-new-refund-popup .refund_element_details .extra-services-wrap, #create-new-refund-popup .refund_element_details .quantity-wrap {
     margin-top: 4px;
     padding-left: 23px;
     font-size: 10px;
 }
 
-#create-new-refund-popup .room-details .extra-services-wrap > div:not(:first-of-type) {
+#create-new-refund-popup .refund_element_details .extra-services-wrap > div:not(:first-of-type) {
     margin-top: 4px;
 }
 

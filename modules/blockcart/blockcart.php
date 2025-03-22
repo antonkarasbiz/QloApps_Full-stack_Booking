@@ -71,8 +71,8 @@ class Blockcart extends Module
             }
         }
 
-        $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-        $serviceProducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+        $objServiceProductCartDetail = new ServiceProductCartDetail();
+        $serviceProducts = $objServiceProductCartDetail->getServiceProductsInCart(
             $params['cart']->id,
             [
                 Product::SELLING_PREFERENCE_STANDALONE,
@@ -313,6 +313,12 @@ class Blockcart extends Module
                         $addedProduct['qty']
                     );
 
+                    if (isset($addedProduct['id_product_option'])
+                        && $addedProduct['id_product_option']
+                        && Validate::isLoadedObject($productOption = new ServiceProductOption($addedProduct['id_product_option'], $this->context->language->id))
+                    ) {
+                        $addedProduct['option_name'] = $productOption->name;
+                    }
                 } elseif ($objProduct->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE
                     || $objProduct->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
                 ) {
@@ -325,6 +331,13 @@ class Blockcart extends Module
                     );
                     $objHotel = new HotelBranchInformation($addedProduct['id_hotel'], $this->context->language->id);
                     $addedProduct['hotel_name'] = $objHotel->hotel_name;
+
+                    if (isset($addedProduct['id_product_option'])
+                        && $addedProduct['id_product_option']
+                        && Validate::isLoadedObject($productOption = new ServiceProductOption($addedProduct['id_product_option'], $this->context->language->id))
+                    ) {
+                        $addedProduct['option_name'] = $productOption->name;
+                    }
                 }
                 $addedProduct['price'] = Tools::displayPrice($addedProduct['unit_price'] * $addedProduct['qty']);
                 $addedProduct['unit_price'] = Tools::displayPrice($addedProduct['unit_price']);

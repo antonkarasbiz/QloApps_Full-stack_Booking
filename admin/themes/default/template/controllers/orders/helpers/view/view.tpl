@@ -843,9 +843,10 @@
                                 <input type="hidden" name="TaxMethod" value="1">
                             {/if}
                         </div>
+
                         <div class="panel" id="refundForm">
                             <div class="panel-heading">
-                                <i class="icon-bed"></i> &nbsp;{l s='Product Detail'} <span class="badge">{$hotel_service_products|count}</span>
+                                <i class="icon-bed"></i> &nbsp;{l s='Products Detail'} <span class="badge">{$hotel_service_products|count}</span>
                                 {if $can_edit && (!$order->hasBeenDelivered() && $currentState->id != Configuration::get('PS_OS_REFUND') && $currentState->id != Configuration::get('PS_OS_CANCELED'))}
                                     <button type="button" id="add_product" class="btn btn-primary pull-right">
                                         <i class="icon-plus-sign"></i> {l s='Add Product'}
@@ -863,7 +864,7 @@
                     {else}
                         <div class="panel" id="refundForm">
                             <div class="panel-heading">
-                                <i class="icon-bed"></i> &nbsp;{l s='Booking Detail'} <span class="badge">{$standalone_service_products|count}</span>
+                                <i class="icon-bed"></i> &nbsp;{l s='Products Detail'} <span class="badge">{$standalone_service_products|count}</span>
                                 {if $can_edit && (!$order->hasBeenDelivered() && $currentState->id != Configuration::get('PS_OS_REFUND') && $currentState->id != Configuration::get('PS_OS_CANCELED'))}
                                     <button type="button" id="add_product" class="btn btn-primary pull-right">
                                         <i class="icon-plus-sign"></i> {l s='Add Product'}
@@ -921,8 +922,8 @@
                             {assign var=total_convenience_fee_tax_excl value=$order->getTotalProductsWithoutTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE, 1, Product::PRICE_ADDITION_TYPE_INDEPENDENT)}
                             {assign var=total_convenience_fee_tax_incl value=$order->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE, 1, Product::PRICE_ADDITION_TYPE_INDEPENDENT)}
 
-                            {assign var=order_total_price_tax_excl value=($total_rooms_price_tax_excl + $total_room_services_and_demands_tax_excl + $total_convenience_fee_tax_excl)}
-                            {assign var=order_total_price_tax_incl value=($total_rooms_price_tax_incl + $total_room_services_and_demands_tax_incl + $total_convenience_fee_tax_incl)}
+                            {assign var=order_total_price_tax_excl value=($total_rooms_price_tax_excl + $total_room_services_and_demands_tax_excl + $total_products_price_tax_excl)}
+                            {assign var=order_total_price_tax_incl value=($total_rooms_price_tax_incl + $total_room_services_and_demands_tax_incl + $total_products_price_tax_incl)}
 
                             {if $total_rooms_price_tax_excl}
                                 <tr id="total_products">

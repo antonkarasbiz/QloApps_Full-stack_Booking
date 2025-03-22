@@ -380,14 +380,14 @@ class HotelCartBookingData extends ObjectModel
                 } else {
                     $controllerType = 'front';
                 }
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+                $objServiceProductCartDetail = new ServiceProductCartDetail();
                 foreach ($cartBookingInfo as $bookingRow) {
                     $idPsCart = $bookingRow['id_cart'];
                     $idPsProduct = $bookingRow['id_product'];
                     $objCart = new Cart($idPsCart);
                     $updQty = $objBookingDetail->getNumberOfDays($bookingRow['date_from'], $bookingRow['date_to']);
                     // remove service product for this room
-                    $objRoomTypeServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($bookingRow['id']);
+                    $objServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($bookingRow['id']);
                     // if room type is deleting from admin then reduce product cart quantity by updating directly table
                     if ($controllerType == 'admin' || $controllerType == 'moduleadmin') {
                         if ($cartQty = Cart::getProductQtyInCart($idPsCart, $idPsProduct)) {
@@ -454,7 +454,7 @@ class HotelCartBookingData extends ObjectModel
     ) {
         $chkQty = 0;
         $num_days = HotelHelper::getNumberOfDays($date_from, $date_to);
-        $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+        $objServiceProductCartDetail = new ServiceProductCartDetail();
         if (defined('_PS_ADMIN_DIR_')) {
             $PS_ROOM_UNIT_SELECTION_TYPE = Configuration::get('PS_BACKOFFICE_ROOM_BOOKING_TYPE');
         } else {
@@ -501,7 +501,7 @@ class HotelCartBookingData extends ObjectModel
                         // get auto add service product
                         if ($services = RoomTypeServiceProduct::getAutoAddServices($id_product)) {
                             foreach($services as $service) {
-                                $objRoomTypeServiceProductCartDetail->addServiceProductInCart(
+                                $objServiceProductCartDetail->addServiceProductInCart(
                                     $id_cart,
                                     $service['id_product'],
                                     1,
@@ -512,7 +512,7 @@ class HotelCartBookingData extends ObjectModel
                         }
                         if (count($serviceProducts)) {
                             foreach($serviceProducts as $product) {
-                                $objRoomTypeServiceProductCartDetail->addServiceProductInCart(
+                                $objServiceProductCartDetail->addServiceProductInCart(
                                     $id_cart,
                                     $product['id_product'],
                                     $product['quantity'],
@@ -958,18 +958,18 @@ class HotelCartBookingData extends ObjectModel
         }
 
         // validate service products if not active, deleted or not associated to a specific room type then remove from cart
-        $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+        $objServiceProductCartDetail = new ServiceProductCartDetail();
         $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
-        if ($serviceProducts = $objRoomTypeServiceProductCartDetail->getAllServiceProduct($context->cart->id)) {
+        if ($serviceProducts = $objServiceProductCartDetail->getAllServiceProduct($context->cart->id)) {
             foreach ($serviceProducts as $service) {
                 if (!Validate::isLoadedObject($product = new Product($service['id_product']))) {
-                    $objRoomTypeServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($service['htl_cart_booking_id'], $service['id_product']);
+                    $objServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($service['htl_cart_booking_id'], $service['id_product']);
                 } else {
                     if (!$product->active) {
-                        $objRoomTypeServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($service['htl_cart_booking_id'], $service['id_product']);
+                        $objServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($service['htl_cart_booking_id'], $service['id_product']);
                     } else {
                         if (!$objRoomTypeServiceProduct->isRoomTypeLinkedWithProduct($service['id_product_room_type'], $service['id_product'])) {
-                            $objRoomTypeServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($service['htl_cart_booking_id'], $service['id_product']);
+                            $objServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($service['htl_cart_booking_id'], $service['id_product']);
                         }
                     }
                 }
@@ -1094,7 +1094,7 @@ class HotelCartBookingData extends ObjectModel
         $cart_detail_data = $this->getCartCurrentDataByCartId((int) $id_cart);
         if ($cart_detail_data) {
             $objRoomDemands = new HotelRoomTypeDemand();
-            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+            $objServiceProductCartDetail = new ServiceProductCartDetail();
             $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
 
             foreach ($cart_detail_data as $key => $value) {
@@ -1177,61 +1177,68 @@ class HotelCartBookingData extends ObjectModel
                     2,
                     null
                 );
-                $cart_detail_data[$key]['selected_services'] = $objRoomTypeServiceProductCartDetail->getRoomServiceProducts(
+                $cart_detail_data[$key]['selected_services'] = $objServiceProductCartDetail->getServiceProductsInCart(
+                    $id_cart,
+                    [],
+                    null,
                     $value['id'],
+                    null,
+                    null,
+                    null,
+                    null,
                     0,
                     null,
-                    null
-                );
-                $cart_detail_data[$key]['additional_service_price'] = $objRoomTypeServiceProductCartDetail->getServiceProductsInCart(
-                    $id_cart,
-                    0,
-                    0,
-                    $value['id_product'],
-                    $value['date_from'],
-                    $value['date_to'],
-                    $value['id'],
-                    1,
-                    false
-                );
-                $cart_detail_data[$key]['additional_services_auto_add_price'] = $objRoomTypeServiceProductCartDetail->getServiceProductsInCart(
-                    $id_cart,
-                    0,
-                    0,
-                    $value['id_product'],
-                    $value['date_from'],
-                    $value['date_to'],
-                    $value['id'],
-                    1,
-                    false,
+                    null,
                     1
                 );
-                $cart_detail_data[$key]['additional_services_auto_add_with_room_price'] = $objRoomTypeServiceProductCartDetail->getServiceProductsInCart(
+                $cart_detail_data[$key]['additional_service_price'] = $objServiceProductCartDetail->getServiceProductsInCart(
                     $id_cart,
-                    0,
-                    0,
-                    $value['id_product'],
-                    $value['date_from'],
-                    $value['date_to'],
+                    [],
+                    null,
                     $value['id'],
-                    1,
+                    $value['id_product'],
+                    null,
+                    $idProductOption = null,
                     false,
                     1,
+                    0
+                );
+                $cart_detail_data[$key]['additional_services_auto_add_price'] = $objServiceProductCartDetail->getServiceProductsInCart(
+                    $id_cart,
+                    [],
                     null,
+                    $value['id'],
+                    $value['id_product'],
+                    null,
+                    null,
+                    false,
+                    1,
+                    1
+                );
+                $cart_detail_data[$key]['additional_services_auto_add_with_room_price'] = $objServiceProductCartDetail->getServiceProductsInCart(
+                    $id_cart,
+                    [],
+                    null,
+                    $value['id'],
+                    $value['id_product'],
+                    null,
+                    null,
+                    false,
+                    1,
+                    1,
                     Product::PRICE_ADDITION_TYPE_WITH_ROOM
                 );
-                $cart_detail_data[$key]['additional_services_auto_add_independent_price'] = $objRoomTypeServiceProductCartDetail->getServiceProductsInCart(
+                $cart_detail_data[$key]['additional_services_auto_add_independent_price'] = $objServiceProductCartDetail->getServiceProductsInCart(
                     $id_cart,
-                    0,
-                    0,
-                    $value['id_product'],
-                    $value['date_from'],
-                    $value['date_to'],
+                    [],
+                    null,
                     $value['id'],
-                    1,
+                    $value['id_product'],
+                    null,
+                    null,
                     false,
                     1,
-                    null,
+                    1,
                     Product::PRICE_ADDITION_TYPE_INDEPENDENT
                 );
                 // By webkul New way to calculate product prices with feature Prices
@@ -1437,7 +1444,7 @@ class HotelCartBookingData extends ObjectModel
             $objCartBookingData = new HotelCartBookingData();
             $objRoomDemands = new HotelRoomTypeDemand();
             $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
-            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+            $objServiceProductCartDetail = new ServiceProductCartDetail();
 
             foreach ($cartRoomTypes as $prodKey => $product) {
                 if (Validate::isLoadedObject(
@@ -1545,7 +1552,7 @@ class HotelCartBookingData extends ObjectModel
                                     $data_v['date_to'],
                                     1
                                 );
-                                $serviceProductPrice = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+                                $serviceProductPrice = $objServiceProductCartDetail->getServiceProductsInCart(
                                     $context->cart->id,
                                     [],
                                     null,

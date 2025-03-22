@@ -315,8 +315,8 @@ class ParentOrderControllerCore extends FrontController
             if ($cartBookingInfo = HotelCartBookingData::getHotelCartBookingData()) {
                 $this->context->smarty->assign('cart_htl_data', $cartBookingInfo);
             }
-            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-            if ($hotelProducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+            $objServiceProductCartDetail = new ServiceProductCartDetail();
+            if ($hotelProducts = $objServiceProductCartDetail->getServiceProductsInCart(
                 $this->context->cart->id,
                 [Product::SELLING_PREFERENCE_HOTEL_STANDALONE, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE],
                 $idHotel = null,
@@ -334,7 +334,7 @@ class ParentOrderControllerCore extends FrontController
                 $this->context->smarty->assign('hotel_products', $hotelProducts);
             }
 
-            $standaloneProducts = $objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+            $standaloneProducts = $objServiceProductCartDetail->getServiceProductsInCart(
                 $this->context->cart->id,
                 [Product::SELLING_PREFERENCE_STANDALONE]
             );
@@ -473,8 +473,8 @@ class ParentOrderControllerCore extends FrontController
             $this->context->customer->logout();
             Tools::redirect('');
         } elseif (!Customer::getAddressesTotalById($this->context->customer->id)) {
-            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-            if (count($objRoomTypeServiceProductCartDetail->getCartStandardProducts(
+            $objServiceProductCartDetail = new ServiceProductCartDetail();
+            if (count($objServiceProductCartDetail->getServiceProductsInCart(
                 $this->context->cart->id,
                 [Product::SELLING_PREFERENCE_STANDALONE]
             ))) {

@@ -34,6 +34,19 @@
                         <a href="{$link->getProductLink($product.id_product)|escape:'html':'UTF-8'}" title="{$product.name|escape:'html':'UTF-8'}" target="_blank" class="product-name">
                             <h3>{$product.name|escape:'html':'UTF-8'}{if $product.option_name} : {$product.option_name|escape:'html':'UTF-8'}{/if}</h3>
                         </a>
+                        {if $product['is_refunded'] || $product['is_cancelled']}
+                            <div class="num-refunded-rooms">
+                                {if $product['is_cancelled']}
+                                    <span class="badge badge-danger">
+                                        {l s='Cancelled'}
+                                    </span>
+                                {else}
+                                    <span class="badge badge-danger">
+                                        {l s='Refunded'}
+                                    </span>
+                                {/if}
+                            </div>
+                        {/if}
                     </div>
                     <div class="col-xs-12">
                         <div class="description-list">

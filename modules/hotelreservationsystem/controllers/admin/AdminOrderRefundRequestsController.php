@@ -205,6 +205,7 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
         if (!($objOrderReturn = $this->loadObject())) {
             return;
         }
+
         $refundStatuses = OrderReturnStateCore::getOrderReturnStates($this->context->language->id);
         $objCustomer = new Customer($objOrderReturn->id_customer);
         $objOrder = new Order($objOrderReturn->id_order);
@@ -373,10 +374,10 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                             $objHtlBooking = new HotelBookingDetail($idHtlBooking);
                             // perform booking refund processes in the booking tables
                             $objHtlBooking->processRefundInBookingTables();
-                        } elseif ($id_room_type_service_product_order_detail = $objOrderReturnDetail->id_room_type_service_product_order_detail) {
-                            $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail($id_room_type_service_product_order_detail);
+                        } elseif ($id_service_product_order_detail = $objOrderReturnDetail->id_service_product_order_detail) {
+                            $objServiceProductOrderDetail = new ServiceProductOrderDetail($id_service_product_order_detail);
                             // perform booking refund processes in the service product order tables
-                            $objRoomTypeServiceProductOrderDetail->processRefundInTable();
+                            $objServiceProductOrderDetail->processRefundInTables();
                         }
 
                         // save individual booking amount for every booking refund
@@ -391,7 +392,6 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
 
                         if (Tools::isSubmit('generateCreditSlip')) {
                             if ($idHtlBooking = $objOrderReturnDetail->id_htl_booking) {
-
                                 $numDays = $objHtlBooking->getNumberOfDays(
                                     $objHtlBooking->date_from,
                                     $objHtlBooking->date_to
@@ -400,7 +400,7 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                                 $objHtlBooking = new HotelBookingDetail($idHtlBooking);
                                 $idOrderDetail = $objHtlBooking->id_order_detail;
 
-                                $bookingList[$idHtlBooking] = array(
+                                $bookingList[$idRetDetail] = array(
                                     'id_htl_booking' => $idHtlBooking,
                                     'id_order_detail' => $idOrderDetail,
                                     'quantity' => $numDays,
@@ -408,13 +408,13 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                                     'unit_price' => $refundedAmount / $numDays,
                                     'amount' => $refundedAmount,
                                 );
-                            } elseif ($id_room_type_service_product_order_detail = $objOrderReturnDetail->id_room_type_service_product_order_detail) {
-                                $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail($id_room_type_service_product_order_detail);
-                                $bookingList[$idHtlBooking] = array(
-                                    'id_room_type_service_product_order_detail' => $id_room_type_service_product_order_detail,
-                                    'id_order_detail' => $objRoomTypeServiceProductOrderDetail->id_order_detail,
-                                    'quantity' => $objRoomTypeServiceProductOrderDetail->quantity,
-                                    'unit_price' => $refundedAmount / $objRoomTypeServiceProductOrderDetail->quantity,
+                            } elseif ($idServiceProductOrder = $objOrderReturnDetail->id_service_product_order_detail) {
+                                $objServiceProductOrderDetail = new ServiceProductOrderDetail($idServiceProductOrder);
+                                $bookingList[$idRetDetail] = array(
+                                    'id_service_product_order_detail' => $idServiceProductOrder,
+                                    'id_order_detail' => $objServiceProductOrderDetail->id_order_detail,
+                                    'quantity' => $objServiceProductOrderDetail->quantity,
+                                    'unit_price' => $refundedAmount / $objServiceProductOrderDetail->quantity,
                                     'amount' => $refundedAmount,
                                 );
                             }
@@ -442,12 +442,7 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
 
                     // change state of the order to refunded if all the room bookings in the order are completely refunded
                     if ($objRefundState->refunded) {
-                        $idOrderState = 0;
-                        if ($objOrder->hasCompletelyRefunded(Order::ORDER_COMPLETE_REFUND_FLAG)) {
-                            $idOrderState = Configuration::get('PS_OS_REFUND');
-                        } elseif ($objOrder->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_FLAG)) {
-                            $idOrderState = Configuration::get('PS_OS_CANCELED');
-                        }
+                        $idOrderState = $objOrder->getOrderCompleteRefundStatus();
 
                         // If order is completely refunded or cancelled then change the order state
                         if ($idOrderState) {

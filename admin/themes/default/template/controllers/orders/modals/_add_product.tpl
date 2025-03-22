@@ -50,7 +50,7 @@
                 </div>
             </div>
 
-            <div class="">
+            <div id="standard_product_options_container">
                 <div class="row">
                     <div class="productQuantity form-group col-sm-6">
                         <label class="control-label">{l s='Quantity'}</label>

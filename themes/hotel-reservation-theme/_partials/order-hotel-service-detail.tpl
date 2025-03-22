@@ -44,7 +44,6 @@
                                     <span class="badge badge-danger">
                                         {l s='Refunded'}
                                     </span>
-
                                 {/if}
                             </div>
                         {/if}

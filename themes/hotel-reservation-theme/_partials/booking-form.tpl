@@ -229,6 +229,7 @@
                         {block name='booking_form_product_option'}
                             {if isset($product_option) && $product_option}
                                 <label class="control-label">{l s='Variants'}</label>
+                                <hr>
                                 <div class="product-options-block">
                                     {foreach $product_option as $option}
                                         <div class="form-group">
@@ -238,9 +239,7 @@
                                                 <span class="pull-right">{convertPrice price=$option['price']}</span>
                                             </label>
                                         </div>
-                                        {if !$option@last}
-                                            <hr>
-                                        {/if}
+                                        <hr>
                                     {/foreach}
                                 </div>
                             {/if}

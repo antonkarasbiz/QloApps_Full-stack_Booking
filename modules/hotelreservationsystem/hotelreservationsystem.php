@@ -128,7 +128,7 @@ class HotelReservationSystem extends Module
             $obj_htl_bk_dtl = new HotelBookingDetail();
             $obj_rm_type = new HotelRoomType();
             $objBookingDemand = new HotelBookingDemands();
-            $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
+            $objServiceProductOrderDetail = new ServiceProductOrderDetail();
             $result['total_extra_demands_te'] = 0;
             $result['total_extra_demands_ti'] = 0;
             $cart_htl_data = array();
@@ -249,7 +249,7 @@ class HotelReservationSystem extends Module
                                     1
                                 );
 
-                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services'] = $objRoomTypeServiceProductOrderDetail->getroomTypeServiceProducts(
+                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services'] = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
                                     $order->id,
                                     0,
                                     0,
@@ -257,7 +257,7 @@ class HotelReservationSystem extends Module
                                     $data_v['date_from'],
                                     $data_v['date_to']
                                 );
-                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_ti'] = $objRoomTypeServiceProductOrderDetail->getroomTypeServiceProducts(
+                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_ti'] = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
                                     $order->id,
                                     0,
                                     0,
@@ -268,7 +268,7 @@ class HotelReservationSystem extends Module
                                     1,
                                     1
                                 );
-                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_te'] = $objRoomTypeServiceProductOrderDetail->getroomTypeServiceProducts(
+                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_te'] = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
                                     $order->id,
                                     0,
                                     0,

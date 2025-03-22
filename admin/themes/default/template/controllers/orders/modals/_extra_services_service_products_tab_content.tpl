@@ -41,7 +41,7 @@
 				<tbody>
 					{if isset($additionalServices) && $additionalServices}
 						{foreach $additionalServices['additional_services'] as $service}
-							<tr class="room_demand_block" data-id_room_type_service_product_order_detail="{$service['id_room_type_service_product_order_detail']}">
+							<tr class="room_demand_block" data-id_service_product_order_detail="{$service['id_service_product_order_detail']}">
 								<td>
 									<div>{$service['name']|escape:'html':'UTF-8'}</div>
 								</td>
@@ -71,16 +71,13 @@
 									<div class="input-group">
 										<span class="input-group-addon">{$currencySign}</span>
 										<input type="text" class="form-control unit_price" value="{Tools::ps_round($service['unit_price_tax_excl'], 2)}" data-id-product="{$product['id_product']}">
-										{if Product::PRICE_CALCULATION_METHOD_PER_DAY == $service.product_price_calculation_method}
+										{if Product::PRICE_CALCULATION_METHOD_PER_DAY == $service.price_calculation_method}
 											<span class="input-group-addon">{l s='/ night'}</span>
 										{/if}
 									</div>
-									{* {if $service['product_price_calculation_method'] == Product::PRICE_CALCULATION_METHOD_PER_DAY}
-										{l s='/ night'}
-									{/if} *}
 								</td>
 								<td>{displayPrice price=$service['total_price_tax_excl']|escape:'html':'UTF-8' currency=$orderCurrency}</td>
-								<td class="text-right"><a class="btn btn-danger pull-right del_room_additional_service" data-id_room_type_service_product_order_detail="{$service['id_room_type_service_product_order_detail']}" href="#"><i class="icon-trash"></i></a></td>
+								<td class="text-right"><a class="btn btn-danger pull-right del_room_additional_service" data-id_service_product_order_detail="{$service['id_service_product_order_detail']}" href="#"><i class="icon-trash"></i></a></td>
 							</tr>
 						{/foreach}
 					{else}
@@ -184,7 +181,7 @@
 						</td>
 						<td>
 							{displayPrice price=$service['unit_price_tax_excl'] currency=$orderCurrency}
-							{if $service['product_price_calculation_method'] == Product::PRICE_CALCULATION_METHOD_PER_DAY}
+							{if $service['price_calculation_method'] == Product::PRICE_CALCULATION_METHOD_PER_DAY}
 								{l s='/ night'}
 							{/if}
 						</td>
