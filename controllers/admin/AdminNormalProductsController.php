@@ -1827,7 +1827,7 @@ class AdminNormalProductsControllerCore extends AdminController
             $_POST['allow_multiple_quantity'] = 0;
         }
 
-        $_POST['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
+        // $_POST['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
         $this->copyFromPost($this->object, $this->table);
 
 
