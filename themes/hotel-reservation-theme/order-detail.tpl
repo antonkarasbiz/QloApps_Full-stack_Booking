@@ -75,7 +75,7 @@
                 {/block}
 
                 {block name='order_detail_hotel_details'}
-                    {if isset($obj_hotel_branch_information)}
+                    {if isset($obj_hotel_branch_information) && $obj_hotel_branch_information}
                         <div class="card hotel-details">
                             <div class="card-header">
                                 {l s='Hotel Details'}
