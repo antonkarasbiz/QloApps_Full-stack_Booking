@@ -98,6 +98,9 @@
       font-size: 13px;
       line-height: 18px;
       display: inline-block; }
+  .cart_block .cart-info .hotel-name {
+    padding-bottom: 4px;
+    margin-top: -8px; }
   .cart_block .cart-info .quantity-formated {
     display: inline-block;
     color: #9c9b9b;
@@ -184,8 +187,6 @@
       width: 100%; } }*/
   #header .cart_block a {
     color: #fff; }
-    #header .cart_block a:hover {
-      color: #9c9b9b; }
   #header .cart_block .cart_block_list .remove_link a,
   #header .cart_block .cart_block_list .ajax_cart_block_remove_link {
     color: #fff;
@@ -465,18 +466,18 @@
 /*# sourceMappingURL=blockcart.css.map */
 
 
-.remove_rooms_from_cart_link {
+.ajax_remove_product_option, .remove_rooms_from_cart_link {
   color: #777;
   display: block;
   width: 100%;
   height: 100%; }
-  .remove_rooms_from_cart_link:before {
+  .ajax_remove_product_option:before, .remove_rooms_from_cart_link:before {
     display: inline-block;
     content: "\f057";
     font-family: "FontAwesome";
     font-size: 18px;
     line-height: 18px; }
-  .remove_rooms_from_cart_link:hover {
+  .ajax_remove_product_option:hover, .remove_rooms_from_cart_link:hover {
     color: #515151; }
 
 .badge_style {
