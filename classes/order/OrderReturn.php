@@ -597,7 +597,7 @@ class OrderReturnCore extends ObjectModel
                             $serviceProductsData
                         );
                         $data['{refundServiceProductsTxt}'] = $objMail->getEmailTemplateContent(
-                            'service_products_refund_request_detail',
+                            'service_products_refund_request_detail_text',
                             Mail::TYPE_TEXT,
                             $serviceProductsData
                         );
@@ -614,7 +614,7 @@ class OrderReturnCore extends ObjectModel
                         )) {
                             $idHotel = reset($refundReqBookings)['id_hotel'];
                             $data['{refundBookingHtml}'] = $objMail->getEmailTemplateContent('bookings_refund_request_detail_customer', Mail::TYPE_HTML, $refundReqBookings);
-                            $data['{refundBookingTxt}'] = $objMail->getEmailTemplateContent('bookings_refund_request_detail_customer', Mail::TYPE_TEXT, $refundReqBookings);
+                            $data['{refundBookingTxt}'] = $objMail->getEmailTemplateContent('bookings_refund_request_detail_customer_text', Mail::TYPE_TEXT, $refundReqBookings);
                             $data['{refund_for_txt}'] = Mail::l('bookings', (int)$idLang);
                         }
 
@@ -648,7 +648,7 @@ class OrderReturnCore extends ObjectModel
                         )) {
                             $idHotel = $refundReqBookings[0]['id_hotel'];
                             $data['{refundBookingHtml}'] = $objMail->getEmailTemplateContent('bookings_refund_request_detail_admin', Mail::TYPE_HTML, $refundReqBookings);
-                            $data['{refundBookingTxt}'] = $objMail->getEmailTemplateContent('bookings_refund_request_detail_admin', Mail::TYPE_TEXT, $refundReqBookings);
+                            $data['{refundBookingTxt}'] = $objMail->getEmailTemplateContent('bookings_refund_request_detail_admin_text', Mail::TYPE_TEXT, $refundReqBookings);
                             $data['{refund_for_txt}'] = Mail::l('bookings', (int)$idLang);
                         }
 

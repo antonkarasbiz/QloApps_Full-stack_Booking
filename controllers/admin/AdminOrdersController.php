@@ -2738,7 +2738,21 @@ class AdminOrdersControllerCore extends AdminController
             $helper->color = 'color2';
             $helper->title = $this->l('Total Due Amount', null, null, false);
             $minValue = ('0.' . str_repeat('0', (Configuration::get('PS_PRICE_DISPLAY_PRECISION') - 1)) . '1');
-            $helper->href = $this->context->link->getAdminLink('AdminOrders').'&submitResetorder&submitFilterorder=1&orderFilter_hbd!is_refunded=0&orderFilter_amount_due%5B0%5D='.$minValue;
+
+            // get all valid order states for due amount calculations
+            $validOrderStatesFilter = '';
+            if ($allOrderStates = OrderState::getOrderStates($this->context->language->id)) {
+                $allOrderStates = array_column($allOrderStates, 'id_order_state');
+                $objHotelBooking = new HotelBookingDetail();
+                $invalidOrderStates = $objHotelBooking->getOrderStatusToFreeBookedRoom();
+
+                if ($validOrderStates = array_diff($allOrderStates, $invalidOrderStates)) {
+                    foreach ($validOrderStates as $idOrderState) {
+                        $validOrderStatesFilter .= '&orderFilter_os!id_order_state[]='.$idOrderState;
+                    }
+                }
+            }
+            $helper->href = $this->context->link->getAdminLink('AdminOrders').'&submitResetorder&submitFilterorder=1&orderFilter_amount_due%5B0%5D='.$minValue.$validOrderStatesFilter;
             $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=total_due_amount';
             $helper->tooltip = $this->l('Total due amount of all the orders created.', null, null, false);
             $this->kpis[] = $helper;

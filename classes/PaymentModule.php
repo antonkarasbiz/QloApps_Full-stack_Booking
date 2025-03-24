@@ -1206,14 +1206,14 @@ abstract class PaymentModuleCore extends Module
 
                         // changing mail format
                         $cart_booking_data = $this->cartBookingDataForMail($order);
-                        $cart_booking_data_text = $this->getEmailTemplateContent('hotel-booking-cart-data-text.tpl', Mail::TYPE_TEXT, $cart_booking_data['cart_htl_data']);
-                        $cart_booking_data_html = $this->getEmailTemplateContent('hotel-booking-cart-data.tpl', Mail::TYPE_HTML, $cart_booking_data['cart_htl_data']);
+                        $cart_booking_data_text = $this->getEmailTemplateContent('hotel_booking_cart_data_text.tpl', Mail::TYPE_TEXT, $cart_booking_data['cart_htl_data']);
+                        $cart_booking_data_html = $this->getEmailTemplateContent('hotel_booking_cart_data.tpl', Mail::TYPE_HTML, $cart_booking_data['cart_htl_data']);
 
                         $extra_demands_details_html = $this->getEmailTemplateContent('booking_extra_demands.tpl', Mail::TYPE_HTML, $cart_booking_data['cart_htl_data']);
                         $extra_demands_details_text = $this->getEmailTemplateContent('booking_extra_demands_text.tpl', Mail::TYPE_TEXT, $cart_booking_data['cart_htl_data']);
 
-                        $normal_products_data_html = $this->getEmailTemplateContent('service-product-data.tpl', Mail::TYPE_HTML, $orderServiceProducts);
-                        $normal_products_data_txt = $this->getEmailTemplateContent('service-product-data-text.tpl', Mail::TYPE_TEXT, $orderServiceProducts);
+                        $normal_products_data_html = $this->getEmailTemplateContent('service_product_data.tpl', Mail::TYPE_HTML, $orderServiceProducts);
+                        $normal_products_data_txt = $this->getEmailTemplateContent('service_product_data_text.tpl', Mail::TYPE_TEXT, $orderServiceProducts);
 
                         // get order total information html/txt files
                         // total room price
@@ -1272,8 +1272,8 @@ abstract class PaymentModuleCore extends Module
                             'has_room_bookings' => $cart_booking_data['cart_htl_data']
                         );
 
-                        $order_total_info_html = $this->getEmailTemplateContent('order-conf-total-info.tpl', Mail::TYPE_HTML, $orderTotalData);
-                        $order_total_info_txt = $this->getEmailTemplateContent('order-conf-total-info-text.tpl', Mail::TYPE_TEXT, $orderTotalData);
+                        $order_total_info_html = $this->getEmailTemplateContent('order_conf_total_info.tpl', Mail::TYPE_HTML, $orderTotalData);
+                        $order_total_info_txt = $this->getEmailTemplateContent('order_conf_total_info_text.tpl', Mail::TYPE_TEXT, $orderTotalData);
 
                         $hotelName = '';
                         if ($idOrderHotel = HotelBookingDetail::getIdHotelByIdOrder($order->id)) {
