@@ -1269,7 +1269,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
             $this->bookingCustomer = $objCustomer;
         } else {
             $objCustomer = new Customer();
-            $this->bookingCustomer = $objCustomer->getByEmail($guestDetails['email']);
+            $this->bookingCustomer = $objCustomer->getByEmail($guestDetails['email'], null, false);
         }
 
         if (isset($this->bookingCustomer->id)
