@@ -349,7 +349,7 @@ class AdminCartsControllerCore extends AdminController
     ##################################################################
     public function ajaxPreProcess()
     {
-        if ($this->tabAccess['add'] === '1') {
+        if ($this->tabAccess['edit'] === '1') {
             // prevent cart creation when kpi visibility or kpi view is updated.
             // @todo: move the below cart creation process required function.
             if (in_array(Tools::getValue('action'), array('changeKpiVisibility', 'saveKpiView'))) {
@@ -598,7 +598,7 @@ class AdminCartsControllerCore extends AdminController
 
     public function ajaxProcessUpdateCurrency()
     {
-        if ($this->tabAccess['add'] === '1') {
+        if ($this->tabAccess['edit'] === '1') {
             $currency = new Currency((int)Tools::getValue('id_currency'));
             if (Validate::isLoadedObject($currency) && !$currency->deleted && $currency->active) {
                 $this->context->cart->id_currency = (int)$currency->id;
@@ -628,7 +628,7 @@ class AdminCartsControllerCore extends AdminController
     }
     public function ajaxProcessUpdateLang()
     {
-        if ($this->tabAccess['add'] === '1') {
+        if ($this->tabAccess['edit'] === '1') {
             $lang = new Language((int)Tools::getValue('id_lang'));
             if (Validate::isLoadedObject($lang) && $lang->active) {
                 $this->context->cart->id_lang = (int)$lang->id;
@@ -699,7 +699,7 @@ class AdminCartsControllerCore extends AdminController
 
     public function ajaxProcessAddVoucher()
     {
-        if ($this->tabAccess['add'] === '1') {
+        if ($this->tabAccess['edit'] === '1') {
             $errors = array();
             if (!($id_cart_rule = Tools::getValue('id_cart_rule')) || !$cart_rule = new CartRule((int)$id_cart_rule)) {
                 $errors[] = Tools::displayError('Invalid voucher.');
@@ -717,7 +717,7 @@ class AdminCartsControllerCore extends AdminController
 
     public function ajaxProcessUpdateAddress()
     {
-        if ($this->tabAccess['add'] === '1') {
+        if ($this->tabAccess['edit'] === '1') {
             echo json_encode(array('addresses' => $this->context->customer->getAddresses((int)$this->context->cart->id_lang)));
         }
     }
@@ -1144,6 +1144,7 @@ class AdminCartsControllerCore extends AdminController
     // Process when admin changes extra demands of any room while order creation process form.tpl
     public function ajaxProcessChangeRoomDemands()
     {
+      if ($this->tabAccess['edit'] === '1') {
         $response = array('status' => false);
         if ($idCartBooking = Tools::getValue('id_cart_booking')) {
             if (Validate::isLoadedObject($objCartbookingCata = new HotelCartBookingData($idCartBooking))) {
@@ -1157,6 +1158,66 @@ class AdminCartsControllerCore extends AdminController
             }
         }
         $this->ajaxDie(json_encode($response));
+      }
+    }
+
+    public function ajaxProcessUpdateServiceProduct()
+    {
+        if ($this->tabAccess['edit'] === '1') {  
+        $operator = Tools::getValue('operator', 'up');
+        $idServiceProduct = Tools::getValue('id_product');
+        $idCartBooking = Tools::getValue('id_cart_booking');
+        $qty = Tools::getValue('qty');
+
+        if (Validate::isLoadedObject($objHotelCartBookingData = new HotelCartBookingData($idCartBooking))) {
+            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+
+            if ($operator == 'up') {
+                $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
+                if ($objRoomTypeServiceProduct->isRoomTypeLinkedWithProduct($objHotelCartBookingData->id_product, $idServiceProduct)) {
+                    // validate quanitity
+                    if (Validate::isLoadedObject($objProduct = new Product($idServiceProduct))) {
+                        if ($objProduct->allow_multiple_quantity) {
+                            if (!Validate::isUnsignedInt($qty)) {
+                                $this->errors[] = Tools::displayError('The quantity code you\'ve entered is invalid.');
+                            // } elseif ($objProduct->max_quantity && $qty > $objProduct->max_quantity) {
+                            //     $this->errors[] = Tools::displayError(sprintf('cannot add more than %d quantity.', $objProduct->max_quantity));
+                            }
+                        } else {
+                            $qty = 1;
+                        }
+                    } else {
+                        $this->errors[] = Tools::displayError('This Service is not available.');
+                    }
+                } else {
+                    $this->errors[] = Tools::displayError('This Service is not available with selected room.');
+                }
+            }
+
+            if (empty($this->errors)) {
+                if ($objRoomTypeServiceProductCartDetail->updateCartServiceProduct(
+                    $idCartBooking,
+                    $idServiceProduct,
+                    $qty,
+                    $objHotelCartBookingData->id_cart,
+                    $operator
+                )) {
+                    $this->ajaxDie(json_encode(array(
+                        'hasError' => false
+                    )));
+                } else {
+                    $this->errors[] = Tools::displayError('Unable to update services. Please try reloading the page.');
+                }
+
+            }
+        } else {
+            $this->errors[] = Tools::displayError('Room not found. Please try reloading the page.');
+        }
+        $this->ajaxDie(json_encode(array(
+            'hasError' => true,
+            'errors' => $this->errors
+        )));
+      }  
     }
 
     public static function getOrderTotalUsingTaxCalculationMethod($id_cart)
