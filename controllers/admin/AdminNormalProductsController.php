@@ -102,8 +102,8 @@ class AdminNormalProductsControllerCore extends AdminController
             // 'Seo' => $this->l('SEO'),
             'Images' => $this->l('Images'),
             'Associations' => $this->l('Associations'),
-            'Quantities' => $this->l('Quantities'),
-            'Options' => $this->l('Options'),
+            // 'Quantities' => $this->l('Quantities'), // Code For Standard product working
+            // 'Options' => $this->l('Options'),// Code For Standard product working
         );
 
         if ($this->context->shop->getContext() != Shop::CONTEXT_GROUP) {
@@ -113,8 +113,8 @@ class AdminNormalProductsControllerCore extends AdminController
                 // 'Seo' => 2,
                 'Associations' => 3,
                 'Images' => 4,
-                'Quantities' => 5,
-                'Options' => 6
+                // 'Quantities' => 5, // Code For Standard product working
+                // 'Options' => 6// Code For Standard product working
             ));
         }
 
@@ -211,7 +211,9 @@ class AdminNormalProductsControllerCore extends AdminController
 
         // show the list of the product according to the booking or service products
         $this->_where .= ' AND a.`booking_product` = 0';
-        // $this->_where .= ' AND a.`selling_preference_type` = '.(int)Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
+
+        // Code For Standard product working
+        $this->_where .= ' AND a.`selling_preference_type` = '.(int)Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
 
         $this->_group = 'GROUP BY a.`id_product`';
 
@@ -294,7 +296,7 @@ class AdminNormalProductsControllerCore extends AdminController
             'filter_key' => 'a!id_category_default',
             'optional' => true,
         );
-        // $serviceProductType = array(
+        // $serviceProductType = array( // Code For Standard product working
         //     Product::SELLING_PREFERENCE_WITH_ROOM_TYPE => $this->l('Bought with room type'),
             // Product::SELLING_PREFERENCE_STANDALONE => $this->l('Bought without room type')
         // );
@@ -1827,7 +1829,9 @@ class AdminNormalProductsControllerCore extends AdminController
             $_POST['allow_multiple_quantity'] = 0;
         }
 
-        // $_POST['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
+        // Code For Standard product working
+        $_POST['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
+
         $this->copyFromPost($this->object, $this->table);
 
 
@@ -1972,7 +1976,10 @@ class AdminNormalProductsControllerCore extends AdminController
             if (Validate::isLoadedObject($object)) {
                 $this->_removeTaxFromEcotax();
                 $product_type_before = $object->getType();
-                // $_POST['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
+
+                // Code For Standard product working
+                $_POST['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
+
                 $this->copyFromPost($object, $this->table);
                 $object->indexed = 0;
 
