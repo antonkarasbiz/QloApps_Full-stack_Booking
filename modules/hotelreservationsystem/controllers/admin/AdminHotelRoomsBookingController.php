@@ -37,9 +37,9 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
     public function init()
     {
         parent::init();
-        $this->createNewCart();
+
         if (isset($this->context->cookie->id_cart)) {
-            $objCart = new Cart(74);
+            $objCart = new Cart($this->context->cookie->id_cart);
             if (Validate::isLoadedObject($objCart) && !$objCart->orderExists()) {
                 $this->context->cart = $objCart;
 
@@ -75,7 +75,7 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
             Guest::setNewGuest($this->context->cookie);
         }
 
-        $this->context->cart = new Cart(74);
+        $this->context->cart = new Cart();
         $this->context->cart->gift = 0;
         $this->context->cart->id_shop = (int) $this->context->shop->id;
         $this->context->cart->id_lang = (($id_lang = (int) Tools::getValue('id_lang')) ? $id_lang : (int) Configuration::get('PS_LANG_DEFAULT'));
@@ -149,12 +149,6 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
             if (!Validate::isOccupancy($occupancy)) {
                 $occupancy = array();
             }
-
-            // if (Tools::getValue('booking_product')) {
-            //     $booking_product = Tools::getValue('booking_product');
-            // } else {
-            //     $booking_product = 1;
-            // }
 
             $this->id_cart = (int) $this->context->cart->id;
             $this->id_guest = (int) $this->context->cookie->id_guest;
