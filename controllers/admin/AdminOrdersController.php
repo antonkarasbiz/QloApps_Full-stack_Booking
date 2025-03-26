@@ -2989,6 +2989,13 @@ class AdminOrdersControllerCore extends AdminController
                 $product['warehouse_name'] = '--';
                 $product['warehouse_location'] = false;
             }
+
+            $objProduct = new Product($product['product_id'], false, $this->context->language->id);
+            if ($coverImageInfo = Product::getCover($product['product_id'])) {
+                $product['image_link'] = $this->context->link->getImageLink($objProduct->link_rewrite, $objProduct->id.'-'.$coverImageInfo['id_image'], 'small_default');
+            } else {
+                $product['image_link'] = $this->context->link->getImageLink($objProduct->link_rewrite, $this->context->language->iso_code.'-default', 'small_default');
+            }
             if ($product['selling_preference_type'] == Product::SELLING_PREFERENCE_HOTEL_STANDALONE) {
                 $hotelProducts = $objServiceProductOrderDetail->getServiceProductsInOrder($order->id, $product['id_order_detail'], $product['product_id'], Product::SELLING_PREFERENCE_HOTEL_STANDALONE);
                 foreach ($hotelProducts as $hotelProduct) {

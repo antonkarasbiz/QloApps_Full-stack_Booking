@@ -48,10 +48,12 @@
                         {/if}
                         <tr class="product-line-row" data-id_product="{$product.id_product}" data-id_order_detail="{$product.id_order_detail}" data-id_service_product_order_detail="{$product.id_service_product_order_detail}" data-id_hotel="{$product.id_hotel}">
                             <td>
-                                {if isset($product.image) && $product.image->id}{$product.image_tag}{/if}
+                                {if isset($product.image_link) && $product.image_link}
+                                    <img class="img img-responsive" src="{$product.image_link|escape:'html':'UTF-8'}" />
+                                {/if}
                             </td>
                             <td>
-                                <a href="{hook h='displayOrderDetailProductLink' id_product=$product.id_product}">
+                                <a href="{$link->getAdminLink('AdminNormalProducts')|escape:'html':'UTF-8'}&amp;id_product={$product['id_product']|intval}&amp;updateproduct">
                                     <span class="productName">{$product['name']}{if isset($product['option_name']) && $product['option_name']} : {$product['option_name']}{/if}</span><br />
                                 </a>
                             </td>
