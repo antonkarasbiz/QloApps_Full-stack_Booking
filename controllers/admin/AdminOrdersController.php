@@ -516,7 +516,6 @@ class AdminOrdersControllerCore extends AdminController
                         $hasOrderDiscountOrPayment = ((float)$orderTotalPaid > 0 || $orderDiscounts) ? true : false;
                         $this->toolbar_btn['cancel'] = array(
                             'short' => ($hasOrderDiscountOrPayment) ? $this->l('Refund') : $this->l('Cancel'),
-                            'href' => '#refundForm',
                             'id' => 'desc-order-standard_refund',
                             'desc' => ($hasOrderDiscountOrPayment) ? $this->l('Initiate refund') : $this->l('Cancel bookings'),
                             'class' => 'icon-exchange',
@@ -3027,8 +3026,7 @@ class AdminOrdersControllerCore extends AdminController
         }
 
 
-        //by webkul to get data to show hotel rooms order data on order detail page
-
+        //To get data to show hotel rooms order data on order detail page
         $cart_id = Cart::getCartIdByOrderId(Tools::getValue('id_order'));
         $cart_detail_data_obj = new HotelCartBookingData();
         $objBookingDetail = new HotelBookingDetail();
@@ -3318,7 +3316,13 @@ class AdminOrdersControllerCore extends AdminController
             }
         }
 
+        // send hotel standalone and standalone products
+        $objProduct = new Product();
+        $hotelStandaloneProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_HOTEL_STANDALONE);
+        $standaloneProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_STANDALONE);
         $this->tpl_view_vars = array(
+            'hotelStandaloneProducts' => $hotelStandaloneProducts,
+            'standaloneProducts' => $standaloneProducts,
             'guestFormattedAddress' => $guestFormattedAddress,
             'idOrderAddressInvoice' => $idOrderAddressInvoice,
             'ordersWithDiffInvAddr' => $ordersWithDiffInvAddr,

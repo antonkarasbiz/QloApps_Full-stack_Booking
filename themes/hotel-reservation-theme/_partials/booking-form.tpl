@@ -267,6 +267,8 @@
                                     </div>
                                 </div>
                                 <hr class="separator-hr-mg-10">
+                            {else}
+                                <input type="hidden" class="service_product_qty" id="service_product_qty" name="service_product_qty" data-id-product="{$product->id}" data-max_quantity="1" value="1">
                             {/if}
                         {/block}
                         {block name='booking_form_actions'}

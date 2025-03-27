@@ -150,7 +150,7 @@ var ajaxCart = {
         });
         //for product page 'add' button...
         if ($('.cart_block').length) {
-            $(document).off('click', '#add_to_cart  button').on('click', '#add_to_cart button', function (e) {
+            $(document).off('click', '#add_to_cart button').on('click', '#add_to_cart button', function (e) {
                 e.preventDefault();
                 var booking_product = $('#product_page_booking_product').val()
 

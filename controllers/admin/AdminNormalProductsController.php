@@ -102,8 +102,8 @@ class AdminNormalProductsControllerCore extends AdminController
             // 'Seo' => $this->l('SEO'),
             'Images' => $this->l('Images'),
             'Associations' => $this->l('Associations'),
-            // 'Quantities' => $this->l('Quantities'), // Code For Standard product working
-            // 'Options' => $this->l('Options'),// Code For Standard product working
+            'Quantities' => $this->l('Quantities'), // Code For Standard product working
+            'Options' => $this->l('Options'),// Code For Standard product working
         );
 
         if ($this->context->shop->getContext() != Shop::CONTEXT_GROUP) {
@@ -113,8 +113,8 @@ class AdminNormalProductsControllerCore extends AdminController
                 // 'Seo' => 2,
                 'Associations' => 3,
                 'Images' => 4,
-                // 'Quantities' => 5, // Code For Standard product working
-                // 'Options' => 6// Code For Standard product working
+                'Quantities' => 5, // Code For Standard product working
+                'Options' => 6// Code For Standard product working
             ));
         }
 
@@ -213,7 +213,7 @@ class AdminNormalProductsControllerCore extends AdminController
         $this->_where .= ' AND a.`booking_product` = 0';
 
         // Code For Standard product working
-        $this->_where .= ' AND a.`selling_preference_type` = '.(int)Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
+        // $this->_where .= ' AND a.`selling_preference_type` = '.(int)Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
 
         $this->_group = 'GROUP BY a.`id_product`';
 
@@ -296,17 +296,17 @@ class AdminNormalProductsControllerCore extends AdminController
             'filter_key' => 'a!id_category_default',
             'optional' => true,
         );
-        // $serviceProductType = array( // Code For Standard product working
-        //     Product::SELLING_PREFERENCE_WITH_ROOM_TYPE => $this->l('Bought with room type'),
-            // Product::SELLING_PREFERENCE_STANDALONE => $this->l('Bought without room type')
-        // );
-        // $this->fields_list['selling_preference_type'] = array(
-        //     'type' => 'select',
-        //     'list' => $serviceProductType,
-        //     'title' => $this->l('Buying option'),
-        //     'filter_key' => 'a!selling_preference_type',
-        //     'callback' => 'getBuyingOption'
-        // );
+        $serviceProductType = array( // Code For Standard product working
+            Product::SELLING_PREFERENCE_WITH_ROOM_TYPE => $this->l('Bought with room type'),
+            Product::SELLING_PREFERENCE_STANDALONE => $this->l('Bought without room type')
+        );
+        $this->fields_list['selling_preference_type'] = array(
+            'type' => 'select',
+            'list' => $serviceProductType,
+            'title' => $this->l('Buying option'),
+            'filter_key' => 'a!selling_preference_type',
+            'callback' => 'getBuyingOption'
+        );
         if (Shop::isFeatureActive() && Shop::getContext() != Shop::CONTEXT_SHOP) {
             $this->fields_list['shopname'] = array(
                 'title' => $this->l('Default shop'),
@@ -1830,7 +1830,7 @@ class AdminNormalProductsControllerCore extends AdminController
         }
 
         // Code For Standard product working
-        $_POST['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
+        // $_POST['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
 
         $this->copyFromPost($this->object, $this->table);
 
@@ -1978,7 +1978,7 @@ class AdminNormalProductsControllerCore extends AdminController
                 $product_type_before = $object->getType();
 
                 // Code For Standard product working
-                $_POST['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
+                // $_POST['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
 
                 $this->copyFromPost($object, $this->table);
                 $object->indexed = 0;

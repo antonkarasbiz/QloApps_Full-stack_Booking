@@ -825,7 +825,7 @@
                         <input type="hidden" value="{$order->getWarehouseList()|implode}" id="warehouse_list" />
                     </div>
                     {if $hotel_booking}
-                        <div class="panel" id="refundForm">
+                        <div class="panel">
                             <div class="panel-heading">
                                 <i class="icon-bed"></i> &nbsp;{l s='Rooms Booking Detail'} <span class="badge">{$order_detail_data|@count}</span>
                                 {if $can_edit && (!$order->hasBeenDelivered() && $currentState->id != Configuration::get('PS_OS_REFUND') && $currentState->id != Configuration::get('PS_OS_CANCELED'))}
@@ -844,41 +844,45 @@
                             {/if}
                         </div>
 
-                        <div class="panel" id="refundForm">
-                            <div class="panel-heading">
-                                <i class="icon-bed"></i> &nbsp;{l s='Products Detail'} <span class="badge">{$hotel_service_products|count}</span>
-                                {if $can_edit && (!$order->hasBeenDelivered() && $currentState->id != Configuration::get('PS_OS_REFUND') && $currentState->id != Configuration::get('PS_OS_CANCELED'))}
-                                    <button type="button" id="add_product" class="btn btn-primary pull-right">
-                                        <i class="icon-plus-sign"></i> {l s='Add Product'}
-                                    </button>
+                        {if $hotel_service_products || $hotelStandaloneProducts || $standaloneProducts}
+                            <div class="panel">
+                                <div class="panel-heading">
+                                    <i class="icon-bed"></i> &nbsp;{l s='Products Detail'} <span class="badge">{$hotel_service_products|count}</span>
+                                    {if $can_edit && (!$order->hasBeenDelivered() && $currentState->id != Configuration::get('PS_OS_REFUND') && $currentState->id != Configuration::get('PS_OS_CANCELED'))}
+                                        <button type="button" id="add_product" class="btn btn-primary pull-right">
+                                            <i class="icon-plus-sign"></i> {l s='Add Product'}
+                                        </button>
+                                    {/if}
+                                </div>
+                                {include file='controllers/orders/_hotel_service_products_table.tpl'}
+
+                                {if ($order->getTaxCalculationMethod() == $smarty.const.PS_TAX_EXC)}
+                                    <input type="hidden" name="TaxMethod" value="0">
+                                {else}
+                                    <input type="hidden" name="TaxMethod" value="1">
                                 {/if}
                             </div>
-                            {include file='controllers/orders/_hotel_service_products_table.tpl'}
-
-                            {if ($order->getTaxCalculationMethod() == $smarty.const.PS_TAX_EXC)}
-                                <input type="hidden" name="TaxMethod" value="0">
-                            {else}
-                                <input type="hidden" name="TaxMethod" value="1">
-                            {/if}
-                        </div>
+                        {/if}
                     {else}
-                        <div class="panel" id="refundForm">
-                            <div class="panel-heading">
-                                <i class="icon-bed"></i> &nbsp;{l s='Products Detail'} <span class="badge">{$standalone_service_products|count}</span>
-                                {if $can_edit && (!$order->hasBeenDelivered() && $currentState->id != Configuration::get('PS_OS_REFUND') && $currentState->id != Configuration::get('PS_OS_CANCELED'))}
-                                    <button type="button" id="add_product" class="btn btn-primary pull-right">
-                                        <i class="icon-plus-sign"></i> {l s='Add Product'}
-                                    </button>
+                        {if $standalone_service_products || $standaloneProducts}
+                            <div class="panel">
+                                <div class="panel-heading">
+                                    <i class="icon-bed"></i> &nbsp;{l s='Products Detail'} <span class="badge">{$standalone_service_products|count}</span>
+                                    {if $can_edit && (!$order->hasBeenDelivered() && $currentState->id != Configuration::get('PS_OS_REFUND') && $currentState->id != Configuration::get('PS_OS_CANCELED'))}
+                                        <button type="button" id="add_product" class="btn btn-primary pull-right">
+                                            <i class="icon-plus-sign"></i> {l s='Add Product'}
+                                        </button>
+                                    {/if}
+                                </div>
+                                {include file='controllers/orders/_standalone_service_products_table.tpl'}
+
+                                {if ($order->getTaxCalculationMethod() == $smarty.const.PS_TAX_EXC)}
+                                    <input type="hidden" name="TaxMethod" value="0">
+                                {else}
+                                    <input type="hidden" name="TaxMethod" value="1">
                                 {/if}
                             </div>
-                            {include file='controllers/orders/_standalone_service_products_table.tpl'}
-
-                            {if ($order->getTaxCalculationMethod() == $smarty.const.PS_TAX_EXC)}
-                                <input type="hidden" name="TaxMethod" value="0">
-                            {else}
-                                <input type="hidden" name="TaxMethod" value="1">
-                            {/if}
-                        </div>
+                        {/if}
                     {/if}
                 </form>
             </div>
