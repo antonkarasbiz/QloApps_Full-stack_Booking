@@ -6143,7 +6143,7 @@ class AdminOrdersControllerCore extends AdminController
         $del_id = Tools::getValue('del_id');
         $room_id = Tools::getValue('id_room');
         $obj_hotel_cart_detail = new HotelCartBookingData();
-        $deleted = $obj_hotel_cart_detail->deleteRowById($del_id);
+        $deleted = $obj_hotel_cart_detail->deleteCartBookingData($cart_id, $id_product, $room_id, $dt_frm, $dt_to);
         if ($deleted) {
             HotelRoomTypeFeaturePricing::deleteByIdCart($cart_id, $id_product, $room_id, $dt_frm, $dt_to );
             $obj_product_process = new HotelCartBookingData();
