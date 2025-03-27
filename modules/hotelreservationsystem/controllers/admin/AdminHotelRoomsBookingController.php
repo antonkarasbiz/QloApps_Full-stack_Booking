@@ -994,7 +994,7 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
             'invalid_occupancy_txt' => $this->l('Invalid occupancy(adults/children) found.', null, true),
             'PS_BACKDATE_ORDER_ALLOW' => $PS_BACKDATE_ORDER_ALLOW,
             // 'check_calender_var' => $check_calender_var,
-            'txtSomeErr' => $this->l('Some error occurred. Please try again.'),
+            'txtSomeErr' => $this->l('Some error occurred. Please try again.', null, true),
             'no_rm_avail_txt' => $this->l('No room available.', null, true),
             'no_realloc_rm_avail_txt' => $this->l('No room available for reallocation.', null, true),
             'no_realloc_rm_type_avail_txt' => $this->l('No room type available for reallocation.', null, true),
