@@ -214,6 +214,7 @@ class AdminAddHotelController extends ModuleAdminController
         $smartyVars['ps_img_dir'] = _PS_IMG_.'l/';
         $smartyVars['GLOBAL_MAX_BOOKING_OFFSET'] = Configuration::get('GLOBAL_MAX_BOOKING_OFFSET');
         $smartyVars['GLOBAL_MIN_BOOKING_OFFSET'] = Configuration::get('GLOBAL_MIN_BOOKING_OFFSET');
+        $smartyVars['WK_ORDER_REFUND_ALLOWED'] = Configuration::get('WK_ORDER_REFUND_ALLOWED');
 
         $this->context->smarty->assign($smartyVars);
 
@@ -316,6 +317,10 @@ class AdminAddHotelController extends ModuleAdminController
 
                 }
             }
+        }
+
+        if ($activeRefund && !Configuration::get('WK_ORDER_REFUND_ALLOWED')) {
+            $this->errors[] = $this->l('Enable order refunds to allow hotel-wise refunds.');
         }
 
         // validate Friendly URL values
