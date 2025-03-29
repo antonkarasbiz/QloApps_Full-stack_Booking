@@ -266,7 +266,9 @@
                                         <span class="clearfix"></span>
                                     </div>
                                 </div>
-                                <hr class="separator-hr-mg-10">
+                                {if $product->available_for_order}
+                                    <hr class="separator-hr-mg-10">
+                                {/if}
                             {else}
                                 <input type="hidden" class="service_product_qty" id="service_product_qty" name="service_product_qty" data-id-product="{$product->id}" data-max_quantity="1" value="1">
                             {/if}

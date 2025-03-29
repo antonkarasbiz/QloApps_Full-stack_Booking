@@ -116,12 +116,15 @@ class ProductControllerCore extends FrontController
             $this->product = new Product($id_product, true, $this->context->language->id, $this->context->shop->id);
         }
 
+        // redirect if the product is not available for front
+        if (!$this->product->show_at_front) {
+            Tools::redirect($this->context->link->getPageLink('pagenotfound'));
+        }
+
         $objHotelRoomType = new HotelRoomType();
         if ($hotelRoomInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($this->product->id)) {
             $idHotel = (int) $hotelRoomInfo['id_hotel'];
             if (!HotelHelper::validateDateRangeForHotel($dateFrom, $dateTo, $idHotel)) {
-                Tools::redirect($this->context->link->getPageLink('pagenotfound'));
-            } else if (!$this->product->booking_product || ($this->product->booking_product && !$this->product->show_at_front)) {
                 Tools::redirect($this->context->link->getPageLink('pagenotfound'));
             }
         }
