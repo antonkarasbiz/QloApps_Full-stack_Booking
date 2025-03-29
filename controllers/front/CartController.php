@@ -513,7 +513,7 @@ class CartControllerCore extends FrontController
                         }
                         if ($product->allow_multiple_quantity) {
                             $finalQuantity = $this->qty;
-                            if (isset($productCartDetail)) {
+                            if (isset($productCartDetail) && $productCartDetail) {
                                 $finalQuantity += $productCartDetail['quantity'];
                             }
                             if ($product->max_quantity && $finalQuantity > $product->max_quantity) {

@@ -71,21 +71,10 @@ class Blockcart extends Module
             }
         }
 
-        $objServiceProductCartDetail = new ServiceProductCartDetail();
-        $serviceProducts = $objServiceProductCartDetail->getServiceProductsInCart(
-            $params['cart']->id,
-            [
-                Product::SELLING_PREFERENCE_STANDALONE,
-                Product::SELLING_PREFERENCE_HOTEL_STANDALONE,
-                Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
-            ],
-            null,
-            0
-        );
-
         $priceDisplayMethod = Product::getTaxCalculationMethod((int)$this->context->cookie->id_customer);
         $nbTotalProducts = 0;
 
+        $objServiceProductCartDetail = new ServiceProductCartDetail();
         foreach ($products as $key => &$product) {
             $product['id'] = $product['id_product'];
             $product['link'] = $this->context->link->getProductLink(
@@ -134,40 +123,62 @@ class Blockcart extends Module
                     $product['total_price_tax_excl'] = 0;
                     $product['amount'] = 0;
                     $product['options'] = array();
-                    foreach ($serviceProducts as $key => $serviceProduct) {
-                        if ($serviceProduct['id_product'] == $product['id_product']) {
-                            $product['options'][] = $serviceProduct;
-                            $product['total_price_tax_incl'] += $serviceProduct['total_price_tax_incl'];
-                            $product['total_price_tax_excl'] += $serviceProduct['total_price_tax_excl'];
-                            $product['amount'] += $useTax ? $serviceProduct['total_price_tax_incl'] : $serviceProduct['total_price_tax_excl'];
+
+                    if ($serviceProducts = $objServiceProductCartDetail->getServiceProductsInCart(
+                        $params['cart']->id,
+                        [Product::SELLING_PREFERENCE_STANDALONE],
+                        0,
+                        null,
+                        null,
+                        $product['id_product'],
+                    )) {
+                        foreach ($serviceProducts as $key => $serviceProduct) {
+                            if ($serviceProduct['id_product'] == $product['id_product']) {
+                                $product['options'][] = $serviceProduct;
+                                $product['total_price_tax_incl'] += $serviceProduct['total_price_tax_incl'];
+                                $product['total_price_tax_excl'] += $serviceProduct['total_price_tax_excl'];
+                                $product['amount'] += $useTax ? $serviceProduct['total_price_tax_incl'] : $serviceProduct['total_price_tax_excl'];
+                            }
                         }
                     }
                 } elseif (Product::SELLING_PREFERENCE_HOTEL_STANDALONE == $product['selling_preference_type']
                     || Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE == $product['selling_preference_type']
                 ) {
-                    foreach ($serviceProducts as $key => $serviceProduct) {
-                        if ($serviceProduct['id_hotel']) {
-                            $nbTotalProducts += (int) $serviceProduct['quantity'];
-                            if (!isset($product['hotel_wise_data'][$serviceProduct['id_hotel']])) {
-                                $product['hotel_wise_data'][$serviceProduct['id_hotel']] = array(
-                                    'id_hotel' => $serviceProduct['id_hotel'],
-                                    'hotel_name' => $serviceProduct['hotel_name'],
-                                    'options' => array(),
-                                    'total_qty' => 0,
-                                    'total_price_tax_incl' => 0,
-                                    'total_price_tax_excl' => 0,
-                                    'amount' => 0
-                                );
+                    if ($serviceProducts = $objServiceProductCartDetail->getServiceProductsInCart(
+                        $params['cart']->id,
+                        [Product::SELLING_PREFERENCE_HOTEL_STANDALONE, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE],
+                        null,
+                        0,
+                        0,
+                        $product['id_product'],
+                    )) {
+                        foreach ($serviceProducts as $key => $serviceProduct) {
+                            if ($serviceProduct['id_hotel']
+                                && $serviceProduct['id_product'] == $product['id_product']
+                            ) {
+                                $nbTotalProducts += (int) $serviceProduct['quantity'];
+                                if (!isset($product['hotel_wise_data'][$serviceProduct['id_hotel']])) {
+                                    $product['hotel_wise_data'][$serviceProduct['id_hotel']] = array(
+                                        'id_hotel' => $serviceProduct['id_hotel'],
+                                        'hotel_name' => $serviceProduct['hotel_name'],
+                                        'options' => array(),
+                                        'total_qty' => 0,
+                                        'total_price_tax_incl' => 0,
+                                        'total_price_tax_excl' => 0,
+                                        'amount' => 0
+                                    );
+                                }
+                                $product['hotel_wise_data'][$serviceProduct['id_hotel']]['total_price_tax_incl'] += $serviceProduct['total_price_tax_incl'];
+                                $product['hotel_wise_data'][$serviceProduct['id_hotel']]['total_price_tax_excl'] += $serviceProduct['total_price_tax_excl'];
+                                $product['hotel_wise_data'][$serviceProduct['id_hotel']]['amount'] += $useTax ? $serviceProduct['total_price_tax_incl'] : $serviceProduct['total_price_tax_excl'];
+                                $product['hotel_wise_data'][$serviceProduct['id_hotel']]['total_qty'] += $serviceProduct['quantity'];
+                                $product['hotel_wise_data'][$serviceProduct['id_hotel']]['options'][] = $serviceProduct;
                             }
-                            $product['hotel_wise_data'][$serviceProduct['id_hotel']]['total_price_tax_incl'] += $serviceProduct['total_price_tax_incl'];
-                            $product['hotel_wise_data'][$serviceProduct['id_hotel']]['total_price_tax_excl'] += $serviceProduct['total_price_tax_excl'];
-                            $product['hotel_wise_data'][$serviceProduct['id_hotel']]['amount'] += $useTax ? $serviceProduct['total_price_tax_incl'] : $serviceProduct['total_price_tax_excl'];
-                            $product['hotel_wise_data'][$serviceProduct['id_hotel']]['total_qty'] += $serviceProduct['quantity'];
-                            $product['hotel_wise_data'][$serviceProduct['id_hotel']]['options'][] = $serviceProduct;
                         }
-                    }
-                    if (isset($product['hotel_wise_data'])) {
-                        $product['hotel_wise_data'] = array_values($product['hotel_wise_data']);
+
+                        if (isset($product['hotel_wise_data'])) {
+                            $product['hotel_wise_data'] = array_values($product['hotel_wise_data']);
+                        }
                     }
                 }
             } else {

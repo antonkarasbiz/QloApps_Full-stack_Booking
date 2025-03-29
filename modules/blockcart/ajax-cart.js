@@ -150,7 +150,7 @@ var ajaxCart = {
         });
         //for product page 'add' button...
         if ($('.cart_block').length) {
-            $(document).off('click', '#add_to_cart  button').on('click', '#add_to_cart button', function (e) {
+            $(document).off('click', '#add_to_cart button').on('click', '#add_to_cart button', function (e) {
                 e.preventDefault();
                 var booking_product = $('#product_page_booking_product').val()
 
@@ -693,8 +693,8 @@ var ajaxCart = {
             //look for a product to delete...
             $('.cart_block_list:first dl.products dt').each(function() {
                 //retrieve idProduct and idCombination from the displayed product in the block cart
-                var domIdProduct = $(this).data('id');
-                var firstCut = domIdProduct.replace('cart_block_product_', '');
+                var productDomId = $(this).data('id');
+                var firstCut = productDomId.replace('cart_block_product_', '');
                 var ids = firstCut.split('_');
 
                 //try to know if the current product is still in the new list
@@ -714,7 +714,7 @@ var ajaxCart = {
                         if (jsonData.products[aProduct]['id'] == ids[0] && (!ids[1] || jsonData.products[aProduct]['idCombination'] == ids[1])) {
                             stayInTheCart = true;
                             // update the product customization display (when the product is still in the cart)
-                            ajaxCart.hideOldProductCustomizations(jsonData.products[aProduct], domIdProduct);
+                            ajaxCart.hideOldProductCustomizations(jsonData.products[aProduct], productDomId);
                         }
                     }
                 }
@@ -748,7 +748,7 @@ var ajaxCart = {
         }
     },
 
-    hideOldProductCustomizations: function(product, domIdProduct) {
+    hideOldProductCustomizations: function(product, productDomId) {
         var customizationList = $('ul[data-id="customization_' + product['id'] + '_' + product['idCombination'] + '"]');
         if (customizationList.length > 0) {
             $(customizationList).find("li").each(function() {
@@ -765,11 +765,11 @@ var ajaxCart = {
             });
         }
 
-        var removeLinks = $('.deleteCustomizableProduct[data-id="' + domIdProduct + '"]').find('.ajax_cart_block_remove_link');
+        var removeLinks = $('.deleteCustomizableProduct[data-id="' + productDomId + '"]').find('.ajax_cart_block_remove_link');
         if (!product.hasCustomizedDatas && !removeLinks.length)
-            $('div[data-id="' + domIdProduct + '"]' + ' span.remove_link').html('<a class="ajax_cart_block_remove_link" rel="nofollow" href="' + baseUri + '?controller=cart&amp;delete=1&amp;id_product=' + product['id'] + '&amp;ipa=' + product['idCombination'] + '&amp;token=' + static_token + '"> </a>');
+            $('div[data-id="' + productDomId + '"]' + ' span.remove_link').html('<a class="ajax_cart_block_remove_link" rel="nofollow" href="' + baseUri + '?controller=cart&amp;delete=1&amp;id_product=' + product['id'] + '&amp;ipa=' + product['idCombination'] + '&amp;token=' + static_token + '"> </a>');
         if (product.is_gift)
-            $('div[data-id="' + domIdProduct + '"]' + ' span.remove_link').html('');
+            $('div[data-id="' + productDomId + '"]' + ' span.remove_link').html('');
     },
 
     doesCustomizationStillExist: function(product, customizationId) {
@@ -808,8 +808,9 @@ var ajaxCart = {
     },
 
     // Update product quantity
-    updateProductQuantity: function(product, quantity) {
-        $('dt[data-id=cart_block_product_' + product.id + '_' + (product.idCombination ? product.idCombination : '0') + '_' + (product.idAddressDelivery ? product.idAddressDelivery : '0') + '] .quantity').fadeTo('fast', 0, function() {
+    updateProductQuantity: function(product, quantity , hotel_wise_data = null) {
+        var productDomId = product.id + '_' + (product.idCombination ? product.idCombination : '0') + '_' + (product.idAddressDelivery ? product.idAddressDelivery : '0') + '_' + ((hotel_wise_data && typeof(hotel_wise_data.id_hotel) != 'undefined') ? hotel_wise_data.id_hotel : '0');
+        $('dt[data-id="cart_block_product_' + productDomId + '"] .quantity').fadeTo('fast', 0, function() {
             $(this).text(quantity);
             $(this).fadeTo('fast', 1, function() {
                 $(this).fadeTo('fast', 0, function() {
@@ -854,13 +855,13 @@ var ajaxCart = {
 
     addProductRow: function(product, hotel_wise_data) {
         //if product is not in the displayed cart, add a new product's line
-        var domIdProduct = product.id + '_' + (product.idCombination ? product.idCombination : '0') + '_' + (product.idAddressDelivery ? product.idAddressDelivery : '0') + '_' + ((hotel_wise_data && hotel_wise_data.id_hotel) ? hotel_wise_data.id_hotel : '0');
-        var domIdProductAttribute = product.id + '_' + (product.idCombination ? product.idCombination : '0');
+        var productDomId = product.id + '_' + (product.idCombination ? product.idCombination : '0') + '_' + (product.idAddressDelivery ? product.idAddressDelivery : '0') + '_' + ((hotel_wise_data && hotel_wise_data.id_hotel) ? hotel_wise_data.id_hotel : '0');
+        var productAttributeDomId = product.id + '_' + (product.idCombination ? product.idCombination : '0');
         var productId = parseInt(product.id);
 
-        if ($('dt[data-id="cart_block_product_' + domIdProduct + '"]').length == 0) {
+        if ($('dt[data-id="cart_block_product_' + productDomId + '"]').length == 0) {
             var productAttributeId = (product.hasAttributes ? parseInt(product.attributes) : 0);
-            var content = '<dt class="unvisible" data-id="cart_block_product_' + domIdProduct + '">';
+            var content = '<dt class="unvisible" data-id="cart_block_product_' + productDomId + '">';
             var name = $.trim($('<span />').html(product.name).text());
             name = (name.length > 30 ? name.substring(0, 27) + '...' : name);
             content += '<a class="cart-images" href="' + product.link + '" title="' + name + '"><img  src="' + product.image_cart + '" alt="' + product.name + '"></a>';
@@ -987,7 +988,7 @@ var ajaxCart = {
             content += '</dt>';
 
             if (product.hasAttributes)
-                content += '<dd data-id="cart_block_combination_of_' + domIdProduct + '" class="unvisible">';
+                content += '<dd data-id="cart_block_combination_of_' + productDomId + '" class="unvisible">';
             if (product.hasCustomizedDatas)
                 content += ajaxCart.displayNewCustomizedDatas(product);
             if (product.hasAttributes) content += '</dd>';
@@ -1022,7 +1023,7 @@ var ajaxCart = {
 
                 $("#booking_dates_container_" + product.id).find("table.table tbody").append(booking_dates_content);
             } else if (product.hasOptions) {
-                $('dt[data-id="cart_block_product_' + domIdProduct + '"] .cart_prod_cont tr.product_option_row').remove();
+                $('dt[data-id="cart_block_product_' + productDomId + '"] .cart_prod_cont tr.product_option_row').remove();
                 var product_options_content = '';
                 if (parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE
                     || parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
@@ -1045,26 +1046,26 @@ var ajaxCart = {
                         product_options_content += '</tr>';
                     });
                 }
-                $('dt[data-id="cart_block_product_' + domIdProduct + '"] .cart_prod_cont table tbody').append(product_options_content);
+                $('dt[data-id="cart_block_product_' + productDomId + '"] .cart_prod_cont table tbody').append(product_options_content);
 
             }
             //end
 
             var jsonProduct = product;
-            if ($.trim($('dt[data-id="cart_block_product_' + domIdProduct + '"] .quantity').html()) != jsonProduct.quantity || $.trim($('dt[data-id="cart_block_product_' + domIdProduct + '"] .price').html()) != jsonProduct.priceByLine) {
+            if ($.trim($('dt[data-id="cart_block_product_' + productDomId + '"] .quantity').html()) != jsonProduct.quantity || $.trim($('dt[data-id="cart_block_product_' + productDomId + '"] .price').html()) != jsonProduct.priceByLine) {
                 // Usual product
                 if (!product.is_gift) {
                     if (product.booking_product) {
-                        $('dt[data-id="cart_block_product_' + domIdProduct + '"] .price').text(formatCurrency(parseFloat(product.bookingData.total_room_type_amount), currency_format, currency_sign, currency_blank));
+                        $('dt[data-id="cart_block_product_' + productDomId + '"] .price').text(formatCurrency(parseFloat(product.bookingData.total_room_type_amount), currency_format, currency_sign, currency_blank));
                     } else if (parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE
                         || parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
                     ) {
-                        $('dt[data-id="cart_block_product_' + domIdProduct + '"] .price').text(formatCurrency(parseFloat(hotel_wise_data.amount), currency_format, currency_sign, currency_blank));
+                        $('dt[data-id="cart_block_product_' + productDomId + '"] .price').text(formatCurrency(parseFloat(hotel_wise_data.amount), currency_format, currency_sign, currency_blank));
                     } else {
-                        $('dt[data-id="cart_block_product_' + domIdProduct + '"] .price').text(formatCurrency(parseFloat(product.amount), currency_format, currency_sign, currency_blank));
+                        $('dt[data-id="cart_block_product_' + productDomId + '"] .price').text(formatCurrency(parseFloat(product.amount), currency_format, currency_sign, currency_blank));
                     }
                 } else
-                    $('dt[data-id="cart_block_product_' + domIdProduct + '"] .price').html(freeProductTranslation);
+                    $('dt[data-id="cart_block_product_' + productDomId + '"] .price').html(freeProductTranslation);
 
                 //cart_booking_data[key].total_num_rooms argument sent to update num of rooms instead of quantity
                 if (product.booking_product) {
@@ -1075,7 +1076,7 @@ var ajaxCart = {
                     && hotel_wise_data
                     && hotel_wise_data.total_qty
                 ) {
-                    ajaxCart.updateProductQuantity(jsonProduct, hotel_wise_data.total_qty);
+                    ajaxCart.updateProductQuantity(jsonProduct, hotel_wise_data.total_qty, hotel_wise_data);
                 } else {
                     ajaxCart.updateProductQuantity(jsonProduct, jsonProduct.cart_quantity);
                 }
@@ -1083,21 +1084,21 @@ var ajaxCart = {
                 // Customized product
                 if (jsonProduct.hasCustomizedDatas) {
                     customizationFormatedDatas = ajaxCart.displayNewCustomizedDatas(jsonProduct);
-                    if (!$('ul[data-id="customization_' + domIdProductAttribute + '"]').length) {
+                    if (!$('ul[data-id="customization_' + productAttributeDomId + '"]').length) {
                         if (jsonProduct.hasAttributes)
-                            $('dd[data-id="cart_block_combination_of_' + domIdProduct + '"]').append(customizationFormatedDatas);
+                            $('dd[data-id="cart_block_combination_of_' + productDomId + '"]').append(customizationFormatedDatas);
                         else
                             $('.cart_block dl.products').append(customizationFormatedDatas);
                     } else {
-                        $('ul[data-id="customization_' + domIdProductAttribute + '"]').html('');
-                        $('ul[data-id="customization_' + domIdProductAttribute + '"]').append(customizationFormatedDatas);
+                        $('ul[data-id="customization_' + productAttributeDomId + '"]').html('');
+                        $('ul[data-id="customization_' + productAttributeDomId + '"]').append(customizationFormatedDatas);
                     }
                 }
             }
         }
         $('.cart_block dl.products .unvisible').slideDown(450).removeClass('unvisible');
 
-        var removeLinks = $('dt[data-id="cart_block_product_' + domIdProduct + '"]').find('a.ajax_cart_block_remove_link');
+        var removeLinks = $('dt[data-id="cart_block_product_' + productDomId + '"]').find('a.ajax_cart_block_remove_link');
         if (product.hasCustomizedDatas && removeLinks.length)
             $(removeLinks).each(function() {
                 $(product).remove();
