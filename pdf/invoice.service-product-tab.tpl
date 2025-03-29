@@ -19,7 +19,7 @@
 
 {if isset($service_product_data) && $service_product_data}
 {assign var=colspan value=5}
-{if $display_product_images}{assign var=colspan value=($colspan+1)}{/if}{if $isHotelOrder}{assign var=colspan value=($colspan+1)}{/if}
+{if $display_product_images}{assign var=colspan value=($colspan+1)}{/if}{if $is_hotel_order}{assign var=colspan value=($colspan+1)}{/if}
 	<table class="bordered-table" width="100%" cellpadding="4" cellspacing="0">
 		<thead>
 			<tr>
@@ -30,7 +30,7 @@
 					<th class="product header small">{l s='Image' pdf='true'}</th>
 				{/if}
 				<th class="product header small">{l s='Name' pdf='true'}</th>
-                {if $isHotelOrder}
+                {if $is_hotel_order}
 				    <th class="product header small">{l s='Hotel' pdf='true'}</th>
                 {/if}
 				<th class="product header small">{l s='Tax Rate(s)' pdf='true'}</th>
@@ -53,7 +53,7 @@
 					<td class="product center">
 						{$product.product_name}{if isset($product.option_name) && $product.option_name} : {$product.option_name}{/if}
 					</td>
-                    {if $isHotelOrder}
+                    {if $is_hotel_order}
                         <td class="product center">
                             {if isset($product.hotel_name) && $product.hotel_name}{$product.hotel_name}{else}--{/if}
                         </td>

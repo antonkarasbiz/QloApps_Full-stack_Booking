@@ -611,6 +611,7 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
 
         $data = array(
             'cart_htl_data' => $cart_htl_data,
+            'is_hotel_order' => HotelBookingDetail::getIdHotelByIdOrder($this->order->id),
             'service_product_data' => $service_product_data,
             'room_extra_demands' => $room_extra_demands,
             'room_additinal_services' => $room_additinal_services,
