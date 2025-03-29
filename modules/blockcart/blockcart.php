@@ -149,7 +149,7 @@ class Blockcart extends Module
                         [Product::SELLING_PREFERENCE_HOTEL_STANDALONE, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE],
                         null,
                         0,
-                        0,
+                        null,
                         $product['id_product'],
                     )) {
                         foreach ($serviceProducts as $key => $serviceProduct) {
