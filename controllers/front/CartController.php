@@ -500,6 +500,7 @@ class CartControllerCore extends FrontController
                 if ($operator == 'up') {
                     if ($id_hotel) {
                         $objServiceProductCartDetail = new ServiceProductCartDetail();
+                        $productCartDetail = array();
                         if ($cartDetail = $objServiceProductCartDetail->getServiceProductsInCart(
                             $id_cart,
                             [$product->selling_preference_type],
@@ -518,10 +519,8 @@ class CartControllerCore extends FrontController
                             if ($product->max_quantity && $finalQuantity > $product->max_quantity) {
                                 $this->errors[] = Tools::displayError(sprintf('cannot add more than %d quantity.', $product->max_quantity));
                             }
-                        } else {
-                            if ($productCartDetail) {
-                                $this->errors[] = Tools::displayError('You can only order one quantity for this product.');
-                            }
+                        } elseif ($productCartDetail) {
+                            $this->errors[] = Tools::displayError('You can only order one quantity for this product.');
                         }
                         if (ServiceProductOption::productHasOptions($this->id_product)) {
                             if (!$idProductOption) {
