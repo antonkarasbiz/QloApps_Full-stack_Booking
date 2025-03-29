@@ -3883,22 +3883,40 @@ class AdminNormalProductsControllerCore extends AdminController
         $idProduct = Tools::getValue('id_product');
         $productOptionNames  = Tools::getValue('product_option_name');
         $productOptionPrices = Tools::getValue('product_option_price');
-        $productOptionIds = Tools::getValue('product_option_id');
+
+        // validate data
         if ($productOptionNames && $productOptionPrices) {
             $languages = Language::getLanguages(false);
             foreach ($productOptionNames as $key => $name) {
-                if ($name) {
-                    if (isset($productOptionIds[$key]) && $productOptionIds[$key]) {
-                        $objServiceProductOption = new ServiceProductOption($productOptionIds[$key]);
-                    } else {
-                        $objServiceProductOption = new ServiceProductOption();
+                if ($name || $productOptionPrices[$key]) {
+                    if (!Validate::isGenericName($name)) {
+                        $this->errors[] = $this->l('Option name is invalid for option: ').($key+1);
                     }
-                    $objServiceProductOption->id_product = $idProduct;
-                    $objServiceProductOption->price_impact = $productOptionPrices[$key];
-                    foreach ($languages as $lang) {
-                        $objServiceProductOption->name[$lang['id_lang']] = $name;
+                    if (!Validate::isFloat($productOptionPrices[$key])) {
+                        $this->errors[] = $this->l('Option price is invalid for option: ').($key+1);
                     }
-                    $objServiceProductOption->save();
+                }
+            }
+        }
+
+        if (!$this->errors) {
+            $productOptionIds = Tools::getValue('product_option_id');
+            if ($productOptionNames && $productOptionPrices) {
+                $languages = Language::getLanguages(false);
+                foreach ($productOptionNames as $key => $name) {
+                    if ($name) {
+                        if (isset($productOptionIds[$key]) && $productOptionIds[$key]) {
+                            $objServiceProductOption = new ServiceProductOption($productOptionIds[$key]);
+                        } else {
+                            $objServiceProductOption = new ServiceProductOption();
+                        }
+                        $objServiceProductOption->id_product = $idProduct;
+                        $objServiceProductOption->price_impact = $productOptionPrices[$key];
+                        foreach ($languages as $lang) {
+                            $objServiceProductOption->name[$lang['id_lang']] = $name;
+                        }
+                        $objServiceProductOption->save();
+                    }
                 }
             }
         }
