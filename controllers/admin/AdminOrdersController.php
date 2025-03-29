@@ -5107,6 +5107,43 @@ class AdminOrdersControllerCore extends AdminController
                 $this->context->currency = new Currency($objOrder->id_currency);
 
                 $objServiceProductCartDetail = new ServiceProductCartDetail();
+
+                $initialProductPriceTI = Product::getPriceStatic(
+                    $idProduct,
+                    $useTaxes,
+                    null,
+                    2,
+                    null,
+                    false,
+                    true,
+                    1,
+                    false,
+                    $objOrder->id_customer,
+                    $objCart->id,
+                    $objOrder->id_address_tax
+                );
+
+                // Creating specific price if needed
+                if ($productInformations['product_price_tax_incl'] != $initialProductPriceTI) {
+                    $objSpecificPrice = new SpecificPrice();
+                    $objSpecificPrice->id_shop = 0;
+                    $objSpecificPrice->id_shop_group = 0;
+                    $objSpecificPrice->id_currency = 0;
+                    $objSpecificPrice->id_country = 0;
+                    $objSpecificPrice->id_group = 0;
+                    $objSpecificPrice->id_customer = $objOrder->id_customer;
+                    $objSpecificPrice->id_product = $idProduct;
+                    $objSpecificPrice->id_product_attribute = 0;
+                    $objSpecificPrice->price = $productInformations['product_price_tax_excl'];
+                    $objSpecificPrice->from_quantity = 1;
+                    $objSpecificPrice->reduction = 0;
+                    $objSpecificPrice->reduction_type = 'amount';
+                    $objSpecificPrice->reduction_tax = 0;
+                    $objSpecificPrice->from = '0000-00-00 00:00:00';
+                    $objSpecificPrice->to = '0000-00-00 00:00:00';
+                    $objSpecificPrice->add();
+                }
+
                 if (!$updateQuantity = $objServiceProductCartDetail->updateCartServiceProduct(
                     $objCart->id,
                     $idProduct,
