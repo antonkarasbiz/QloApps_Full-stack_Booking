@@ -501,6 +501,7 @@ abstract class PaymentModuleCore extends Module
             // Make sure CartRule caches are empty
             CartRule::cleanCache();
             $objRoomType = new HotelRoomType();
+            $objMail = new Mail();
             $objServiceProductCartDetail = new ServiceProductCartDetail();
             $cart_rules = $this->context->cart->getCartRules();
             foreach ($order_detail_list as $key => $order_detail) {
@@ -1384,8 +1385,8 @@ abstract class PaymentModuleCore extends Module
                         if (Configuration::get('PS_ORDER_CONF_MAIL_TO_CUSTOMER')){
                             // order_header_line tpl for using on different emails as per conditions for hotel or not hotel orders
                             $headerLineParams = array('hotel_name' => $hotelName, 'has_room_bookings' => $cart_booking_data['cart_htl_data']);
-                            $data['{order_header_line_html}'] = trim(Mail::getEmailTemplateContent('order_header_line', Mail::TYPE_HTML, $headerLineParams));
-                            $data['{order_header_line_txt}'] = trim(Mail::getEmailTemplateContent('order_header_line_text', Mail::TYPE_TEXT, $headerLineParams));
+                            $data['{order_header_line_html}'] = trim($objMail->getEmailTemplateContent('order_header_line', Mail::TYPE_HTML, $headerLineParams));
+                            $data['{order_header_line_txt}'] = trim($objMail->getEmailTemplateContent('order_header_line_text', Mail::TYPE_TEXT, $headerLineParams));
                             // If order currenct state is overbooking, the send overbooking email or send order confirmation email
                             if ($isOverBookingStatus) {
                                 $subject = Mail::l('Order Not Confirmed', (int)$order->id_lang);
@@ -1439,8 +1440,8 @@ abstract class PaymentModuleCore extends Module
                         }
 
                         $headerLineParams = array('for_admin' => true, 'hotel_name' => $hotelName, 'has_room_bookings' => $cart_booking_data['cart_htl_data']);
-                        $data['{order_header_line_html}'] = trim(Mail::getEmailTemplateContent('order_header_line', Mail::TYPE_HTML, $headerLineParams));
-                        $data['{order_header_line_txt}'] = trim(Mail::getEmailTemplateContent('order_header_line_text', Mail::TYPE_TEXT, $headerLineParams));
+                        $data['{order_header_line_html}'] = trim($objMail->getEmailTemplateContent('order_header_line', Mail::TYPE_HTML, $headerLineParams));
+                        $data['{order_header_line_txt}'] = trim($objMail->getEmailTemplateContent('order_header_line_text', Mail::TYPE_TEXT, $headerLineParams));
                         if (Configuration::get('PS_ORDER_CONF_MAIL_TO_SUPERADMIN')){
                             // get superadmin employees
                             if ($superAdminEmployees = Employee::getEmployeesByProfile(_PS_ADMIN_PROFILE_, true)) {

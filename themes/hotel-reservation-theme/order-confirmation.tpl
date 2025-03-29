@@ -43,13 +43,15 @@
 	{/block}
 
 	<div class="order-confirmation-column">
-		<div class="card">
-			<div class="card-body">
-			{block name='displayPaymentReturn'}
-				{$HOOK_PAYMENT_RETURN}
-			{/block}
-			</div>
-		</div>
+        {if $HOOK_PAYMENT_RETURN}
+            <div class="card">
+                <div class="card-body">
+                {block name='displayPaymentReturn'}
+                    {$HOOK_PAYMENT_RETURN}
+                {/block}
+                </div>
+            </div>
+        {/if}
 		{if isset($order->id) && $order->id}
 			{if $is_guest}
 				<p class="cart_navigation exclusive">
