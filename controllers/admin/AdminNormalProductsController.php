@@ -296,17 +296,22 @@ class AdminNormalProductsControllerCore extends AdminController
             'filter_key' => 'a!id_category_default',
             'optional' => true,
         );
-        $serviceProductType = array( // Code For Standard product working
-            Product::SELLING_PREFERENCE_WITH_ROOM_TYPE => $this->l('Bought with room type'),
-            Product::SELLING_PREFERENCE_STANDALONE => $this->l('Bought without room type')
+
+        // Code For Standard product working
+        $sellingPreferenceTypes = array(
+            Product::SELLING_PREFERENCE_WITH_ROOM_TYPE => $this->l('With room type'),
+            Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE => $this->l('With hotel|room type'),
+            Product::SELLING_PREFERENCE_STANDALONE => $this->l('Standalone'),
+            Product::SELLING_PREFERENCE_HOTEL_STANDALONE => $this->l('With hotel'),
         );
         $this->fields_list['selling_preference_type'] = array(
             'type' => 'select',
-            'list' => $serviceProductType,
+            'list' => $sellingPreferenceTypes,
             'title' => $this->l('Buying option'),
             'filter_key' => 'a!selling_preference_type',
             'callback' => 'getBuyingOption'
         );
+
         if (Shop::isFeatureActive() && Shop::getContext() != Shop::CONTEXT_SHOP) {
             $this->fields_list['shopname'] = array(
                 'title' => $this->l('Default shop'),
@@ -365,8 +370,12 @@ class AdminNormalProductsControllerCore extends AdminController
     {
         if ($selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
             return $this->l('With room type');
+        } else if ($selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE) {
+            return $this->l('With hotel|room type');
         } else if ($selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE) {
-            return $this->l('Without room type');
+            return $this->l('Standalone');
+        } else if ($selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE) {
+            return $this->l('With hotel');
         }
 
         return '--';
