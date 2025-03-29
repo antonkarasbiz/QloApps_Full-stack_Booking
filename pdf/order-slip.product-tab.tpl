@@ -148,11 +148,11 @@
                 {foreach $productsDetails as $order_detail}
                     {cycle values=["color_line_even", "color_line_odd"] assign=bgcolor_class}
                     <tr class="product {$bgcolor_class}">
-                        <td class="product left">
+                        <td class="product center">
                             {$order_detail.product_name}
                         </td>
                         <td class="product center">
-                            {$order_detail.num_rooms}
+                            {$order_detail.product_quantity}
                         </td>
                         <td class="product right">
                             {if $tax_excluded_display}
