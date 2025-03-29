@@ -702,8 +702,9 @@ var ajaxCart = {
                 for (aProduct in jsonData.products) {
                     //we've called the variable aProduct because IE6 bug if this variable is called product
                     //if product has attributes
-                    if (parseInt(jsonData.products[aProduct]['selling_preference_type']) == SELLING_PREFERENCE_HOTEL_STANDALONE
-                        || parseInt(jsonData.products[aProduct]['selling_preference_type']) == SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
+                    if ((parseInt(jsonData.products[aProduct]['selling_preference_type']) == SELLING_PREFERENCE_HOTEL_STANDALONE
+                        || parseInt(jsonData.products[aProduct]['selling_preference_type']) == SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE)
+                        && (typeof jsonData.products[aProduct]['hotel_wise_data'] != 'undefined' && jsonData.products[aProduct]['hotel_wise_data'].length)
                     ) {
                         $.each(jsonData.products[aProduct]['hotel_wise_data'], function() {
                             if (!ids[3] || (ids[3] == this.id_hotel)) {
@@ -840,8 +841,9 @@ var ajaxCart = {
                     $('.cart_block_no_products').hide();
                 }
 
-                if (parseInt(this.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE
-                    || parseInt(this.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
+                if ((parseInt(this.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE
+                    || parseInt(this.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE)
+                    && (typeof value.hotel_wise_data != 'undefined' && value.hotel_wise_data.length)
                 ) {
 					$(value.hotel_wise_data).each(function(i, val) {
                         ajaxCart.addProductRow(value, val);

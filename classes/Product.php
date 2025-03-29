@@ -1406,7 +1406,7 @@ class ProductCore extends ObjectModel
                     ('.
                         '(`element_type` = '.RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE.' AND `id_element` = '.(int)$this->id.')
                     )
-                    AND (p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_WITH_ROOM_TYPE. '|| p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE.')'. '
+                    AND (p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_WITH_ROOM_TYPE. ' || p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE.')'. '
                     AND product_shop.`id_shop` = '.(int)$context->shop->id
                 .($sub_category? ' AND product_shop.`id_category_default` = '.(int)$sub_category : '')
                 .($front ? ' AND product_shop.`show_at_front` = 1':'')
@@ -1496,8 +1496,9 @@ class ProductCore extends ObjectModel
                     ('.
                         '(`element_type` = '.RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE.' AND `id_element` = '.(int)$this->id.')
                     )
-                    AND p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_WITH_ROOM_TYPE. '
-                    AND product_shop.`id_shop` = '.(int)$context->shop->id
+                    AND p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_WITH_ROOM_TYPE.
+                    ' || p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE.
+                    ' AND product_shop.`id_shop` = '.(int)$context->shop->id
                     .($front ? ' AND product_shop.`auto_add_to_cart` = 0 AND product_shop.`show_at_front` = 1':'')
                     .($active ? ' AND product_shop.`active` = 1' : '');
 

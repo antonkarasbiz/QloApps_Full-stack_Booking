@@ -83,11 +83,11 @@
                                     <div class="row">
                                         <div class="col-xs-12 clearfix">
                                             {if $refund_allowed}
-                                                {if !$completeRefundRequestOrCancel}
-                                                    <a class="btn btn-default pull-right order_refund_request" href="#" title="{l s='Proceed to refund'}"><span>{l s='Request Cancelation'}</span></a>
-                                                {/if}
                                                 {if isset($id_cms_refund_policy) && $id_cms_refund_policy}
                                                     <a target="_blank" class="btn btn-default pull-right refund_policy_link" href="{$link->getCMSLink($id_cms_refund_policy)|escape:'html':'UTF-8'}">{l s='Refund Policies'}</a>
+                                                {/if}
+                                                {if !$completeRefundRequestOrCancel}
+                                                    <a class="btn btn-default pull-right order_refund_request" href="#" title="{l s='Proceed to refund'}"><span>{l s='Request Cancelation'}</span></a>
                                                 {/if}
                                             {/if}
                                             {block name='displayBookingAction'}
@@ -287,7 +287,7 @@
                                         <div class="col-xs-12 clearfix">
                                             {if $refund_allowed}
                                                 {if !$completeRefundRequestOrCancel}
-                                                    <a class="btn btn-default pull-right order_refund_request" href="#" title="{l s='Proceed to refund'}"><span>{l s='Request cancellation'}</span></a>
+                                                    <a class="btn btn-default pull-right order_refund_request" href="#" title="{l s='Proceed to refund'}"><span>{l s='Request Cancelation'}</span></a>
                                                 {/if}
                                                 {if isset($id_cms_refund_policy) && $id_cms_refund_policy}
                                                     <a target="_blank" class="btn btn-default pull-right refund_policy_link" href="{$link->getCMSLink($id_cms_refund_policy)|escape:'html':'UTF-8'}">{l s='Refund Policies'}</a>
