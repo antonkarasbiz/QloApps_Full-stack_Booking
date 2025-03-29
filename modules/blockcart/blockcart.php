@@ -186,6 +186,7 @@ class Blockcart extends Module
                 $products[$key]['bookingData'] = $htlCartData[$key];
             }
         }
+
         $cart_rules = $params['cart']->getCartRules();
 
         if (empty($cart_rules)) {

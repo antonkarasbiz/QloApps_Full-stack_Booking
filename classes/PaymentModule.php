@@ -508,8 +508,6 @@ abstract class PaymentModuleCore extends Module
 
                 $order = $order_list[$key];
                 if (!$order_creation_failed && isset($order->id)) {
-                    // first set if_hotel as 0 and get the hotel id from room type info -> below
-                    $idHotel = 0;
                     if (!$secure_key) {
                         $message .= '<br />'.Tools::displayError('Warning: the secure key is empty, check your payment account before validation');
                     }
@@ -588,12 +586,7 @@ abstract class PaymentModuleCore extends Module
                         if (!$product['is_virtual']) {
                             $virtual_product &= false;
                         }
-                        // If id_hotel is not available then find id_hotel for sending mails hotel wise
-                        if (!$idHotel) {
-                            if ($roomDetail = $objRoomType->getRoomTypeInfoByIdProduct((int)$product['id_product'])) {
-                                $idHotel = $roomDetail['id_hotel'];
-                            }
-                        }
+
                         if (!$product['booking_product']
                             && ($product['selling_preference_type'] == Product::SELLING_PREFERENCE_STANDALONE
                                 || $product['selling_preference_type'] == Product::SELLING_PREFERENCE_HOTEL_STANDALONE
@@ -1015,13 +1008,18 @@ abstract class PaymentModuleCore extends Module
                                         $objServiceProductOrderDetail->id_order = $order->id;
                                         $objServiceProductOrderDetail->id_order_detail = $idOrderDetail;
                                         $objServiceProductOrderDetail->id_cart = $this->context->cart->id;
-                                        $objServiceProductOrderDetail->id_hotel = $product['id_hotel'];
                                         $objServiceProductOrderDetail->unit_price_tax_excl = $hotelProduct['unit_price_tax_excl'];
                                         $objServiceProductOrderDetail->unit_price_tax_incl = $hotelProduct['unit_price_tax_incl'];
                                         $objServiceProductOrderDetail->total_price_tax_excl = $hotelProduct['total_price_tax_excl'];
                                         $objServiceProductOrderDetail->total_price_tax_incl = $hotelProduct['total_price_tax_incl'];
                                         $objServiceProductOrderDetail->name = $hotelProduct['name'];
                                         $objServiceProductOrderDetail->option_name = $hotelProduct['option_name'];
+                                        $objServiceProductOrderDetail->id_hotel = $product['id_hotel'];
+                                        if (Validate::isLoadedObject(
+                                            $objHotelBranch = new HotelBranchInformation($product['id_hotel'], $this->context->cart->id_lang)
+                                        )) {
+                                            $objServiceProductOrderDetail->hotel_name = $objHotelBranch->hotel_name;
+                                        }
                                         $objServiceProductOrderDetail->quantity = $hotelProduct['quantity'];
                                         $objServiceProductOrderDetail->save();
 
@@ -1089,8 +1087,13 @@ abstract class PaymentModuleCore extends Module
                                         $objServiceProductOrderDetail->name = $product['name'];
                                         $objServiceProductOrderDetail->quantity = $serviceProduct['quantity'];
                                         if ($serviceProduct['id_hotel']) {
-                                            $objServiceProductOrderDetail->id_product_option = $serviceProduct['id_product_option'];
                                             $objServiceProductOrderDetail->id_hotel = $serviceProduct['id_hotel'];
+                                            if (Validate::isLoadedObject(
+                                                $objHotelBranch = new HotelBranchInformation($serviceProduct['id_hotel'], $this->context->cart->id_lang)
+                                            )) {
+                                                $objServiceProductOrderDetail->hotel_name = $objHotelBranch->hotel_name;
+                                            }
+                                            $objServiceProductOrderDetail->id_product_option = $serviceProduct['id_product_option'];
                                             $objServiceProductOrderDetail->option_name = $serviceProduct['option_name'];
                                         } else {
                                             $roomBookingDetail = $objBookingDetail->getRowByIdOrderIdProductInDateRange(
@@ -1473,7 +1476,7 @@ abstract class PaymentModuleCore extends Module
                                 }
                             }
                         }
-                        if ($idHotel && Validate::isLoadedObject($objHotel = new HotelBranchInformation($idHotel))) {
+                        if ($idOrderHotel && Validate::isLoadedObject($objHotel = new HotelBranchInformation($idOrderHotel))) {
                             if (Configuration::get('PS_ORDER_CONF_MAIL_TO_HOTEL_MANAGER')){
                                 // If order currenct state is overbooking, the send overbooking email or send order confirmation email
                                 if ($isOverBookingStatus) {
@@ -1505,7 +1508,7 @@ abstract class PaymentModuleCore extends Module
                                 }
                             }
                             if (Configuration::get('PS_ORDER_CONF_MAIL_TO_EMPLOYEE')){
-                                if ($htlAccesses = $objHotel->getHotelAccess($idHotel)) {
+                                if ($htlAccesses = $objHotel->getHotelAccess($idOrderHotel)) {
                                     $data['{customer_name}'] = $this->context->customer->firstname.' '.$this->context->customer->lastname;
                                     $data['{customer_email}'] = $this->context->customer->email;
 
