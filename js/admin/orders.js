@@ -425,8 +425,6 @@ function initProductEvents()
 
 		var tax_rate = current_product.tax_rate / 100 + 1;
 
-        console.log(current_product);
-
 		$('#add_product_product_price_tax_incl').val(ps_round(price_tax_excl * tax_rate, 2));
 	});
 

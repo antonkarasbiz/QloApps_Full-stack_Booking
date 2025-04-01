@@ -5056,6 +5056,7 @@ class AdminOrdersControllerCore extends AdminController
         $idOrder = (int) Tools::getValue('id_order');
         $idProduct = $productInformations['product_id'];
         $objOrder = new Order($idOrder);
+        $idProductOption = null;
         $addressTax = new Address($objOrder->id_address_tax, $this->context->language->id);
         if (!$this->tabAccess['edit'] == 1) {
             $response['status'] = false;
@@ -5075,12 +5076,17 @@ class AdminOrdersControllerCore extends AdminController
         } elseif (!Validate::isLoadedObject($objProduct = new Product($idProduct, false, $objOrder->id_lang))) {
             $response['status'] = false;
             $response['error'] = Tools::displayError('The product object cannot be loaded.');
-        } elseif ($objProduct->selling_preference_type != Product::SELLING_PREFERENCE_STANDALONE) {
-            if (!$addressTax->id_hotel
-                || !Validate::isLoadedObject($objHotel = new HotelBranchInformation($addressTax->id_hotel))
-            ) {
-                $response['status'] = false;
-                $response['error'] = Tools::displayError('The hotel object cannot be loaded.');
+        } elseif ($objProduct->selling_preference_type != Product::SELLING_PREFERENCE_STANDALONE
+            && (!$addressTax->id_hotel
+            || !Validate::isLoadedObject($objHotel = new HotelBranchInformation($addressTax->id_hotel)))
+        ) {
+            $response['status'] = false;
+            $response['error'] = Tools::displayError('The hotel object cannot be loaded.');
+        } elseif (ServiceProductOption::productHasOptions($idProduct)) {
+            if (!$productInformations['product_option']) {
+                $this->errors[] = Tools::displayError('Cannot add service without a option.');
+            } else {
+                $idProductOption = $productInformations['product_option'];
             }
         }
 
@@ -5111,7 +5117,7 @@ class AdminOrdersControllerCore extends AdminController
                 $initialProductPriceTI = Product::getPriceStatic(
                     $idProduct,
                     $useTaxes,
-                    null,
+                    $idProductOption,
                     2,
                     null,
                     false,
@@ -5131,9 +5137,10 @@ class AdminOrdersControllerCore extends AdminController
                     $objSpecificPrice->id_currency = 0;
                     $objSpecificPrice->id_country = 0;
                     $objSpecificPrice->id_group = 0;
+                    $objSpecificPrice->id_cart = $objCart->id;
                     $objSpecificPrice->id_customer = $objOrder->id_customer;
                     $objSpecificPrice->id_product = $idProduct;
-                    $objSpecificPrice->id_product_attribute = 0;
+                    $objSpecificPrice->id_product_attribute = $idProductOption;
                     $objSpecificPrice->price = $productInformations['product_price_tax_excl'];
                     $objSpecificPrice->from_quantity = 1;
                     $objSpecificPrice->reduction = 0;
@@ -6213,7 +6220,7 @@ class AdminOrdersControllerCore extends AdminController
 
         $idOrder = Tools::getValue('id_order');
         $idOrderDetail = Tools::getValue('id_order_detail');
-        $idProductOrderDetail = Tools::getValue('id_service_product_order_detail');
+        $idServiceProdOrderDetail = Tools::getValue('id_service_product_order_detail');
 
         $objOrder = new Order($idOrder);
         $objOrderDetail = new OrderDetail($idOrderDetail);
@@ -6227,7 +6234,7 @@ class AdminOrdersControllerCore extends AdminController
             $response['status'] = false;
             $response['error'] = Tools::displayError('Product information not found.');
         } elseif (!Validate::isLoadedObject(
-            $objServiceProductOrderDetail = new ServiceProductOrderDetail($idProductOrderDetail)
+            $objServiceProductOrderDetail = new ServiceProductOrderDetail($idServiceProdOrderDetail)
         )) {
             $response['status'] = false;
             $response['error'] = Tools::displayError('Product information not found.');
@@ -6255,26 +6262,26 @@ class AdminOrdersControllerCore extends AdminController
                 $objOrderDetail->reinjectQuantity($objOrderDetail, $qty, true);
             } else {
                 $objOrderDetail->reinjectQuantity($objOrderDetail, $qty);
-                $objOrderDetail->total_paid_tax_excl -= $total_price_tax_excl;
-                $objOrderDetail->total_paid_tax_incl -= $total_price_tax_incl;
+                $objOrderDetail->total_price_tax_incl -= (float)$total_price_tax_incl;
+                $objOrderDetail->total_price_tax_excl -= (float)$total_price_tax_excl;
                 $objOrderDetail->product_quantity -= $qty;
                 $objOrderDetail->update();
             }
 
-            $result &= $objServiceProductOrderDetail->delete();
+            if ($result &= $objServiceProductOrderDetail->delete()) {
+                // Update Order
+                $objOrder->total_paid = Tools::ps_round($objOrder->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
+                $objOrder->total_paid_tax_incl = Tools::ps_round($objOrder->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
+                $objOrder->total_paid_tax_excl = Tools::ps_round($objOrder->getOrderTotal(false), _PS_PRICE_COMPUTE_PRECISION_);
 
-            // Update Order
-            $objOrder->total_paid = Tools::ps_round($objOrder->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
-            $objOrder->total_paid_tax_incl = Tools::ps_round($objOrder->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
-            $objOrder->total_paid_tax_excl = Tools::ps_round($objOrder->getOrderTotal(false), _PS_PRICE_COMPUTE_PRECISION_);
+                $objOrder->total_products -= $total_price_tax_excl;
+                $objOrder->total_products = $objOrder->total_products > 0 ? $objOrder->total_products : 0;
 
-            $objOrder->total_products -= $total_price_tax_excl;
-            $objOrder->total_products = $objOrder->total_products > 0 ? $objOrder->total_products : 0;
+                $objOrder->total_products_wt -= $total_price_tax_incl;
+                $objOrder->total_products_wt = $objOrder->total_products_wt > 0 ? $objOrder->total_products_wt : 0;
 
-            $objOrder->total_products_wt -= $total_price_tax_incl;
-            $objOrder->total_products_wt = $objOrder->total_products_wt > 0 ? $objOrder->total_products_wt : 0;
-
-            $result &= $objOrder->update();
+                $result &= $objOrder->update();
+            }
 
             if (!$result) {
                 $response['status'] = false;

@@ -3248,7 +3248,7 @@ class ProductCore extends ObjectModel
             (int)$context->country->id,
             $id_group,
             $quantity,
-            $id_product_attribute,
+            $id_product_option,
             $id_customer,
             $id_cart,
             $real_quantity
@@ -3335,7 +3335,10 @@ class ProductCore extends ObjectModel
             $price = (float)$specific_price['price'];
         }
 
-        if (isset($result['option_impact_price'])) {
+        // add option impact only if specific price is not set for this option
+        if ((!$specific_price || !$specific_price['id_product_attribute'] || $specific_price['price'] < 0)
+            && isset($result['option_impact_price'])
+        ) {
             $price += (float)$result['option_impact_price'];
         }
 
@@ -3355,9 +3358,6 @@ class ProductCore extends ObjectModel
                 $price += $attribute_price;
             }
         }
-
-        // find and add if any auto_add services are attached
-
 
         Hook::exec(
 			'actionProductPriceModifier',

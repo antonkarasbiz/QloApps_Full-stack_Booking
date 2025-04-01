@@ -219,7 +219,10 @@ class ServiceProductCartDetail extends ObjectModel
                             $product['id_hotel'],
                             false,
                             $useTax,
-                            $qty
+                            $qty,
+                            null,
+                            null,
+                            $idCart
                         );
                     } else {
                         $context = Context::getContext();
@@ -228,15 +231,24 @@ class ServiceProductCartDetail extends ObjectModel
                             $product['id_product_option'],
                             $product['id_hotel'],
                             false,
-                            true
+                            true,
+                            1,
+                            null,
+                            null,
+                            $idCart
                         );
                         $priceTaxExcl = Product::getServiceProductPrice(
                             $objProduct->id,
                             $product['id_product_option'],
                             $product['id_hotel'],
                             false,
-                            false
+                            false,
+                            1,
+                            null,
+                            null,
+                            $idCart
                         );
+
                         $optionDetails = false;
                         if (ServiceProductOption::productHasOptions($product['id_product'])) {
                             $optionDetails = $objServiceProductOption->getProductOptions(

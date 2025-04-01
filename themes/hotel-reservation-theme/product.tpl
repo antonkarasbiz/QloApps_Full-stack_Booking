@@ -860,6 +860,7 @@
 			{addJsDefL name=service_added_txt}{l s='Service added' js=1}{/addJsDefL}
 			{addJsDefL name=service_removed_txt}{l s='Service removed' js=1}{/addJsDefL}
 			{addJsDefL name=service_updated_txt}{l s='Service updated' js=1}{/addJsDefL}
+			{addJsDefL name=max_service_product_qty_txt}{l s='Maximum allowed quantity in the cart is' js=1}{/addJsDefL}
 		{/strip}
 	{/block}
 	{/if}
