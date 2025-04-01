@@ -793,7 +793,11 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         $idProducts = array(),
         $dateFrom,
         $dateTo,
+        $quantity = 0,
         $idGroup = 0,
+        $idCart = 0,
+        $idGuest = 0,
+        $idRoom = 0,
         $withAutoRoomservices = 1,
         $useReduc = 1
     ) {
@@ -853,8 +857,14 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             $idProducts,
             $dateFrom,
             $dateTo,
-            $idGroup
+            $idGroup,
+            $idCart,
+            $idRoom
         );
+
+        if (!$quantity) {
+            $quantity = 1;
+        }
 
         foreach ($idProducts as $idProduct) {
             for($currentDate = strtotime($dateFrom); $currentDate < strtotime($dateTo); $currentDate += _TIME_1_DAY_) {
@@ -916,8 +926,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
                 }
             }
 
-            $roomTypeWisePricing[$idProduct]['total_price_tax_excl'] = Tools::processPriceRounding($roomTypeWisePricing[$idProduct]['total_price_tax_excl']);
-            $roomTypeWisePricing[$idProduct]['total_price_tax_incl'] = Tools::processPriceRounding($roomTypeWisePricing[$idProduct]['total_price_tax_incl']);
+            $roomTypeWisePricing[$idProduct]['total_price_tax_excl'] = Tools::processPriceRounding($roomTypeWisePricing[$idProduct]['total_price_tax_excl'], $quantity);
+            $roomTypeWisePricing[$idProduct]['total_price_tax_incl'] = Tools::processPriceRounding($roomTypeWisePricing[$idProduct]['total_price_tax_incl'], $quantity);
         }
 
         Hook::exec('actionRoomTypesTotalPricesModifier',
@@ -955,8 +965,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
     ) {
         $dateFrom = date('Y-m-d H:i:s', strtotime($date_from));
         $dateTo = date('Y-m-d H:i:s', strtotime($date_to));
-        $totalDurationPrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
-            $id_product,
+        $totalDurationPrice = HotelRoomTypeFeaturePricing::getRoomTypesTotalPrices(
+            array($id_product),
             $dateFrom,
             $dateTo,
             0,
@@ -968,8 +978,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             $use_reduc
         );
 
-        $totalDurationPriceTI = $totalDurationPrice['total_price_tax_incl'];
-        $totalDurationPriceTE = $totalDurationPrice['total_price_tax_excl'];
+        $totalDurationPriceTI = $totalDurationPrice[$id_product]['total_price_tax_incl'];
+        $totalDurationPriceTE = $totalDurationPrice[$id_product]['total_price_tax_excl'];
         $numDaysInDuration = HotelHelper::getNumberOfDays($dateFrom, $dateTo);
         if ($use_tax) {
             $pricePerDay = $totalDurationPriceTI/$numDaysInDuration;

@@ -1331,13 +1331,23 @@ class HotelCartBookingData extends ObjectModel
      */
     public function getCartInfoIdCartIdProduct($id_cart, $id_product, $date_from = false, $date_to = false)
     {
-        $sql = 'SELECT *
-            FROM `'._DB_PREFIX_.'htl_cart_booking_data`
-            WHERE `id_cart`='.(int) $id_cart.' AND `id_product`='.(int) $id_product;
-        if ($date_from && $date_to) {
-            $sql .= ' AND `date_from` = \''.pSQL($date_from).'\' AND `date_to` = \''.pSQL($date_to).'\'';
+        $cache_key = 'HotelCartBookingData::getCartInfoIdCartIdProduct'.(int)$id_cart.(int)$id_product.($date_from ? strtotime($date_from) : '_').($date_to ? strtotime($date_to) : '_');
+        if (!Cache::isStored($cache_key)) {
+            $sql = 'SELECT *
+                FROM `'._DB_PREFIX_.'htl_cart_booking_data`
+                WHERE `id_cart`='.(int) $id_cart.' AND `id_product`='.(int) $id_product;
+            if ($date_from && $date_to) {
+                $sql .= ' AND `date_from` = \''.pSQL($date_from).'\' AND `date_to` = \''.pSQL($date_to).'\'';
+            }
+
+            $res = Db::getInstance()->executeS($sql);
+
+            Cache::store($cache_key, $res);
+        } else {
+            $res = Cache::retrieve($cache_key);
         }
-        return Db::getInstance()->executeS($sql);
+
+        return $res;
     }
 
     /**
@@ -1419,17 +1429,21 @@ class HotelCartBookingData extends ObjectModel
         $idProducts,
         $dateFrom,
         $dateTo,
-        $idGroup
+        $idGroup,
+        $idCart = 0,
+        $idRoom = 0
     ) {
         $featurePricePriority = Configuration::get('HTL_FEATURE_PRICING_PRIORITY');
         if ($featurePricePriority = explode(';', $featurePricePriority)) {
             if ($featurePrices = Db::getInstance()->executeS(
                 'SELECT fp.`id_feature_price`, fp.`id_product`, fp.`date_from`, fp.`date_to`, fp.`impact_way`, fp.`is_special_days_exists`,
-                fp.`date_selection_type`, fp.`special_days`, fp.`impact_type`, fp.`impact_value`
+                fp.`id_cart`, fp.`id_room`, fp.`date_selection_type`, fp.`special_days`, fp.`impact_type`, fp.`impact_value`
                 FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing` fp'.
                 (Group::isFeatureActive() ? ' INNER JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_group` fpg
                 ON (fp.`id_feature_price` = fpg.`id_feature_price` AND fpg.`id_group` = '.(int) $idGroup.')' : '').'
-                WHERE fp.`id_cart` = 0 AND fp.`id_product` IN('.implode(', ', $idProducts).')  AND fp.`active`=1
+                WHERE (fp.`id_cart` = 0 '.($idCart ? ' || fp.`id_cart` = '.(int) $idCart: '' ).')
+                AND (fp.`id_room` = 0 '.($idRoom ? ' || fp.`id_room` = '.(int) $idRoom: '' ).')
+                AND fp.`id_product` IN('.implode(', ', $idProducts).')  AND fp.`active`=1
                 AND fp.`date_from` <= \''.pSQL($dateTo).'\' AND fp.`date_to` >= \''.pSQL($dateFrom).'\' '
             )) {
                 $idProductsWisefeaturePrice = array();
@@ -1686,8 +1700,8 @@ class HotelCartBookingData extends ObjectModel
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['children'] = $data_v['children'];
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['child_ages'] = json_decode($data_v['child_ages']);
 
-                                    $roomTypeDateRangePrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
-                                        $product['id_product'],
+                                    $roomTypeDateRangePrice = HotelRoomTypeFeaturePricing::getRoomTypesTotalPrices(
+                                        array($product['id_product']),
                                         $data_v['date_from'],
                                         $data_v['date_to'],
                                         0,
@@ -1696,8 +1710,8 @@ class HotelCartBookingData extends ObjectModel
                                         $context->cart->id_guest,
                                         $data_v['id_room']
                                     );
-                                    $roomTypeDateRangePriceWithoutAutoAdd = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
-                                        $product['id_product'],
+                                    $roomTypeDateRangePriceWithoutAutoAdd = HotelRoomTypeFeaturePricing::getRoomTypesTotalPrices(
+                                        array($product['id_product']),
                                         $data_v['date_from'],
                                         $data_v['date_to'],
                                         0,
@@ -1707,8 +1721,8 @@ class HotelCartBookingData extends ObjectModel
                                         $data_v['id_room'],
                                         0
                                     );
-                                    $priceWithoutDiscount = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
-                                        $product['id_product'],
+                                    $priceWithoutDiscount = HotelRoomTypeFeaturePricing::getRoomTypesTotalPrices(
+                                        array($product['id_product']),
                                         $data_v['date_from'],
                                         $data_v['date_to'],
                                         0,
@@ -1720,13 +1734,13 @@ class HotelCartBookingData extends ObjectModel
                                         0
                                     );
                                     if (!$price_tax) {
-                                        $amount = $roomTypeDateRangePrice['total_price_tax_excl'];
-                                        $amountWithoutAutoAdd = $roomTypeDateRangePriceWithoutAutoAdd['total_price_tax_excl'];
-                                        $totalPriceWithoutDiscount = $priceWithoutDiscount['total_price_tax_excl'];
+                                        $amount = $roomTypeDateRangePrice[$product['id_product']]['total_price_tax_excl'];
+                                        $amountWithoutAutoAdd = $roomTypeDateRangePriceWithoutAutoAdd[$product['id_product']]['total_price_tax_excl'];
+                                        $totalPriceWithoutDiscount = $priceWithoutDiscount[$product['id_product']]['total_price_tax_excl'];
                                     } else {
-                                        $amount = $roomTypeDateRangePrice['total_price_tax_incl'];
-                                        $amountWithoutAutoAdd = $roomTypeDateRangePriceWithoutAutoAdd['total_price_tax_incl'];
-                                        $totalPriceWithoutDiscount = $priceWithoutDiscount['total_price_tax_incl'];
+                                        $amount = $roomTypeDateRangePrice[$product['id_product']]['total_price_tax_incl'];
+                                        $amountWithoutAutoAdd = $roomTypeDateRangePriceWithoutAutoAdd[$product['id_product']]['total_price_tax_incl'];
+                                        $totalPriceWithoutDiscount = $priceWithoutDiscount[$product['id_product']]['total_price_tax_incl'];
                                     }
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['amount'] = $amount;
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['amount_without_auto_add'] = $amountWithoutAutoAdd;

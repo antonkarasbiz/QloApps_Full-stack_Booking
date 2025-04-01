@@ -1689,7 +1689,7 @@ class HotelBookingDetail extends ObjectModel
                     $numDays = 1;
                 }
                 $useTax = self::useTax();
-                $productsFeaturePriceWithoutReduction = HotelRoomTypeFeaturePricing::getRoomTypesTotalPrices($idProducts, $date_from, $date_to, 0, 1, 0);
+                $productsFeaturePriceWithoutReduction = HotelRoomTypeFeaturePricing::getRoomTypesTotalPrices($idProducts, $date_from, $date_to, 0, 0, 0, 0, 0, 1, 0);
                 foreach ($bookingData['rm_data'] as $key => $value) {
                     $product_feature = Product::getFrontFeaturesStatic($this->context->language->id, $value['id_product']);
                     $prod_amen = array();
