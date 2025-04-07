@@ -88,10 +88,4 @@
 			{/if}
 		</p>
 	</form>
-	<script>
-		function disableSubmitButton(button) {
-			$(button).attr('disabled', 'disabled');
-			$(button).closest('form').get(0).submit();
-		}
-	</script>
 {/if}
