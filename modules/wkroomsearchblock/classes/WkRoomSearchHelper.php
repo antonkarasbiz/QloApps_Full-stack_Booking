@@ -278,6 +278,7 @@ class WkRoomSearchHelper
         }
 
         $smartyVars['total_columns'] = $totalColumns;
+        Hook::exec('actionSearchPanelVariablesModifier', array('smartyVars' => &$smartyVars));
 
         Context::getContext()->smarty->assign($smartyVars);
     }

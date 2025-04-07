@@ -54,6 +54,17 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
         $idCart,
         $idHtlCartData
     ) {
+        $isServiceAvailable = Hook::exec('actionCheckServiceAvailability', array(
+            'idProduct' => $idProduct,
+            'quantity' => $quantity,
+            'idCart' => $idCart,
+            'idHtlCartData' => $idHtlCartData
+        ));
+
+        if (!$isServiceAvailable) {
+            return false;
+        }
+
         if ($id_room_type_service_product_cart_detail = $this->alreadyExists($idProduct, $idCart, $idHtlCartData)) {
             $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail($id_room_type_service_product_cart_detail);
         } else {
