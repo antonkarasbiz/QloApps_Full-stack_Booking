@@ -635,6 +635,8 @@ class CartCore extends ObjectModel
             return array();
         }
 
+        $customer = new Customer($this->id_customer);
+        Context::getContext()->customer = $customer;
         $cart_shop_context = Context::getContext()->cloneContext();
 
         foreach ($result as &$row) {

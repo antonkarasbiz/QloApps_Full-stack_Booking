@@ -651,8 +651,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         $totalPrice['total_price_tax_excl'] = 0;
         $featureImpactPriceTE = 0;
         $featureImpactPriceTI = 0;
-        $productPriceTI = Product::getPriceStatic((int) $id_product, true, false, 6, null, false, $use_reduc);
-        $productPriceTE = Product::getPriceStatic((int) $id_product, false, false, 6, null, false, $use_reduc);
+        $productPriceTI = Product::getPriceStatic((int) $id_product, 1, 0, 6, null, 0, $use_reduc, 1, 0, null, null, null, $nothing, 1, 1, null, 1, 0, $id_group);
+        $productPriceTE = Product::getPriceStatic((int) $id_product, 0, 0, 6, null, 0, $use_reduc, 1, 0, null, null, null, $nothing, 1, 1, null, 1, 0, $id_group);
         if ($productPriceTE) {
             $taxRate = (($productPriceTI-$productPriceTE)/$productPriceTE)*100;
         } else {
