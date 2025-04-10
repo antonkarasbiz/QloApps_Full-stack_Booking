@@ -235,9 +235,6 @@ $(document).ready(function(){
 
 	$(document).on('click', '.booking_occupancy_wrapper .add_new_occupancy_btn', function(e) {
         e.preventDefault();
-        if ($(this).hasClass('disabled')) {
-            return;
-        }
 
         var booking_occupancy_wrapper = $(this).closest('.booking_occupancy_wrapper');
         var occupancy_block = '';

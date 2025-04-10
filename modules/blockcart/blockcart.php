@@ -395,11 +395,6 @@ class Blockcart extends Module
 
         $this->context->controller->addCSS(($this->_path).'blockcart.css', 'all');
         if ((int) (Configuration::get('PS_BLOCK_CART_AJAX'))) {
-            Media::addJsDef(
-                array(
-                    'room_selection_error_message' => $this->l('You must check room availability before adding them to the cart.', null, true)
-                )
-            );
             $this->context->controller->addJS(($this->_path).'ajax-cart.js');
             $this->context->controller->addJqueryPlugin(array('scrollTo', 'serialScroll', 'bxslider'));
         }

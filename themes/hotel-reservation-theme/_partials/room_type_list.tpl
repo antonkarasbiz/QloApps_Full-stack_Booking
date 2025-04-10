@@ -98,7 +98,7 @@
 									<div class="col-sm-12 col-md-6 col-lg-8">
 										{block name='room_type_list_room_booking_fields'}
 											<div class="booking_room_fields">
-												{if !isset($restricted_country_mode) && !$PS_CATALOG_MODE && !$order_date_restrict}
+												{if !isset($restricted_country_mode) && !$PS_CATALOG_MODE && !$order_date_restrict && (!isset($display_all_rooms) || !$display_all_rooms)}
 													{if isset($occupancy_required_for_booking) && $occupancy_required_for_booking}
 														<div class="booking_guest_occupancy_conatiner">
 															{block name='occupancy_field'}
@@ -115,7 +115,7 @@
 													{/if}
 													{block name='room_type_list_room_book_now_button'}
 														<div>
-															<a cat_rm_check_in="{$booking_date_from|escape:'htmlall':'UTF-8'}" cat_rm_check_out="{$booking_date_to|escape:'htmlall':'UTF-8'}" href="" rm_product_id="{$room_v['id_product']}" cat_rm_book_nm_days="{$num_days|escape:'htmlall':'UTF-8'}" data-id-product-attribute="0" data-id-product="{$room_v['id_product']|intval}" class="btn btn-default button button-medium ajax_add_to_cart_button {if isset($display_all_rooms) && $display_all_rooms} display_type_room_list {/if}"><span>{l s='Book Now'}</span></a>
+															<a cat_rm_check_in="{$booking_date_from|escape:'htmlall':'UTF-8'}" cat_rm_check_out="{$booking_date_to|escape:'htmlall':'UTF-8'}" href="" rm_product_id="{$room_v['id_product']}" cat_rm_book_nm_days="{$num_days|escape:'htmlall':'UTF-8'}" data-id-product-attribute="0" data-id-product="{$room_v['id_product']|intval}" class="btn btn-default button button-medium ajax_add_to_cart_button"><span>{l s='Book Now'}</span></a>
 														</div>
 													{/block}
 												{/if}
