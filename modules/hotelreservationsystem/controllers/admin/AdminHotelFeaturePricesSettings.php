@@ -203,7 +203,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
         parent::initToolbar();
         if (empty($this->display) || $this->display == 'list')  {
             $this->page_header_toolbar_btn['bulk_add'] = array(
-                'href' => self::$currentIndex.'&add'.$this->table.'&bulkAdd'.$this->table.'&token='.$this->token,
+                'href' => self::$currentIndex.'&bulkAdd'.$this->table.'&token='.$this->token,
                 'desc' => $this->l('Bulk create rules'),
                 'imgclass' => 'new'
             );
@@ -230,6 +230,8 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
         parent::initProcess();
         if (Tools::isSubmit('bulkAdd'.$this->table)) {
             self::$currentIndex = self::$currentIndex.'&bulkAdd'.$this->table.'';
+            $this->action = 'new';
+            $this->display = 'add';
         }
 
         if (Tools::isSubmit('submitBulkAdd'.$this->table)) {
