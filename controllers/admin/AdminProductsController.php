@@ -3497,10 +3497,10 @@ class AdminProductsControllerCore extends AdminController
                         }
                         $objHotelRoomInfo->id_product = $id_product;
                         $objHotelRoomInfo->id_hotel = $id_hotel;
-                        $objHotelRoomInfo->room_num = trim($roomInfo['room_num']);
+                        $objHotelRoomInfo->room_num = $roomInfo['room_num'];
                         $objHotelRoomInfo->id_status = $roomInfo['id_status'];
-                        $objHotelRoomInfo->floor = trim($roomInfo['floor']);
-                        $objHotelRoomInfo->comment = trim($roomInfo['comment']);
+                        $objHotelRoomInfo->floor = $roomInfo['floor'];
+                        $objHotelRoomInfo->comment = $roomInfo['comment'];
                         if ($objHotelRoomInfo->save()
                             && $objHotelRoomInfo->id_status != HotelRoomInformation::STATUS_TEMPORARY_INACTIVE
                         ) {
@@ -3536,7 +3536,7 @@ class AdminProductsControllerCore extends AdminController
                     }
                 }
 
-                if (empty(trim($roomInfo['room_num'])) || !Validate::isGenericName($roomInfo['room_num'])) {
+                if ($roomInfo['room_num'] && !Validate::isGenericName($roomInfo['room_num'])) {
                     $this->errors[] = sprintf(Tools::displayError('Invalid room number for room %s.'), $roomIndex);
                 }
 
@@ -5309,6 +5309,129 @@ class AdminProductsControllerCore extends AdminController
                 }
             } else {
                 $this->errors[] = Tools::displayError('Please select at least on room for this operation.');
+            }
+        } else {
+            $this->errors[] = Tools::displayError('You do not have permission to perform this operation.');
+        }
+
+        $this->assignAlerts();
+        $response['msg'] = $this->context->smarty->fetch('alerts.tpl');
+
+        $this->ajaxDie(json_encode($response));
+    }
+
+    public function ajaxProcessbulkCreateRooms()
+    {
+        $response = array('status' => false);
+        if ($this->tabAccess['edit'] === '1') {
+            if (($idProduct = Tools::getValue('id_product'))
+                && Validate::isLoadedObject($objProduct = new Product($idProduct, null, $this->context->language->id))
+                && $objProduct->booking_product
+            ) {
+                $objRoomType = new HotelRoomType();
+                $roomTypeInfo = $objRoomType->getRoomTypeInfoByIdProduct($objProduct->id);
+                $idHotel = $roomTypeInfo['id_hotel'];
+                $rowsToHighlight = array();
+                $roomsInfo = array();
+                if (trim($floor = Tools::getValue('floor'))) {
+                    $roomsInfo['floor'] = $floor;
+                    if (!Validate::isGenericName($floor)) {
+                        $this->errors[] = Tools::displayError('Invalid value for floor.');
+                    }
+                }
+
+                if (!empty($prefix = trim(Tools::getValue('prefix')))
+                    && !Validate::isGenericName($prefix)
+                ) {
+                    $this->errors[] = Tools::displayError('Invalid Prefix.');
+                }
+
+                if (!empty($roomNumber = trim(Tools::getValue('num')))
+                    && !Validate::isUnsignedInt($roomNumber)
+                ) {
+                    $this->errors[] = Tools::displayError('Invalid Starting Room No.');
+                }
+
+                if (!($roomQuantity = Tools::getValue('qty'))) {
+                    $this->errors[] = Tools::displayError('Number of rooms is required.');
+                } else if ($roomQuantity < 1) {
+                    $this->errors[] = Tools::displayError('Invalid value for number of rooms.');
+                }
+
+                if (trim($comment = Tools::getValue('room_comment'))) {
+                    $roomsInfo['comment'] = $comment;
+                }
+
+                $roomsInfo['id_status'] = Tools::getValue('id_status');
+                $disableDates = array();
+                if ($roomsInfo['id_status'] == HotelRoomInformation::STATUS_TEMPORARY_INACTIVE) {
+                    $disableDates = Tools::getValue('disable_dates');
+                    $roomsInfo['disable_dates_json'] = json_encode($disableDates);
+                    if (!$disableDates) {
+                        $this->errors[] = Tools::displayError('Please add at least one date range for updating the rooms status to temporary inactive.');
+                    } else {
+                        $hasMissingRowError = false;
+                        foreach ($disableDates as $key => $dateRange) {
+                            if (!Validate::isDate($dateRange['date_from']) || !Validate::isDate($dateRange['date_to'])) {
+                                if (!$hasMissingRowError) {
+                                    $hasMissingRowError = true;
+                                    $this->errors[] = Tools::displayError('Some dates are missing. Please select all the date ranges.');
+                                }
+
+                                $rowsToHighlight[] = $key;
+                            }
+                        }
+                    }
+                }
+
+                if (empty($this->errors)) {
+                    if (!$prefix) {
+                        $roomsInfo['prefix'] = $objProduct->name[0].'R';
+                    } else {
+                        $roomsInfo['prefix'] = $prefix;
+                    }
+
+                    for ($i = 0; $i <= $roomQuantity; $i++) {
+                        $roomNum = $roomsInfo['prefix'];
+                        if ((int) $roomNumber) {
+                            $roomNum .= '-'.($roomNumber + $i);
+                        }
+
+                        $objHotelRoomInfo = new HotelRoomInformation();
+                        $objHotelRoomInfo->id_product = $objProduct->id;
+                        $objHotelRoomInfo->id_hotel = $idHotel;
+                        $objHotelRoomInfo->id_status = $roomsInfo['id_status'];
+                        $objHotelRoomInfo->room_num = $roomNum;
+
+                        if (isset($roomsInfo['floor']) && $roomsInfo['floor'] != '') {
+                            $objHotelRoomInfo->floor = $roomsInfo['floor'];
+                        }
+
+                        if (isset($roomsInfo['comment']) && $roomsInfo['comment'] != '') {
+                            $objHotelRoomInfo->comment = $roomsInfo['comment'];
+                        }
+
+                        if ($objHotelRoomInfo->save() && $objHotelRoomInfo->id_status == HotelRoomInformation::STATUS_TEMPORARY_INACTIVE) {
+                            foreach ($disableDates as $key => $dateRange) {
+                                $objHotelRoomDisableDates = new HotelRoomDisableDates();
+                                $objHotelRoomDisableDates->id_room_type = $objHotelRoomInfo->id_product;
+                                $objHotelRoomDisableDates->id_room = $objHotelRoomInfo->id;
+                                $objHotelRoomDisableDates->date_from = $dateRange['date_from'];
+                                $objHotelRoomDisableDates->date_to = $dateRange['date_to'];
+                                $objHotelRoomDisableDates->reason = $dateRange['reason'];
+                                $objHotelRoomDisableDates->save();
+                            }
+                        }
+                    }
+
+                    $response['status'] = true;
+                    $response['href'] = self::$currentIndex.'&update'.$this->table.'&id_product='.$idProduct.'&token='.$this->token.'&conf=4&key_tab=Configuration';
+                } else {
+                    $rowsToHighlight = array_values(array_unique($rowsToHighlight));
+                    $response['rows_to_highlight'] = $rowsToHighlight;
+                }
+            } else {
+                $this->errors[] = Tools::displayError('Room type not found.');
             }
         } else {
             $this->errors[] = Tools::displayError('You do not have permission to perform this operation.');
