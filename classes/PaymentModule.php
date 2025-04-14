@@ -1087,6 +1087,8 @@ abstract class PaymentModuleCore extends Module
                                         $objServiceProductOrderDetail->total_price_tax_incl = $serviceProduct['total_price_tax_incl'];
                                         $objServiceProductOrderDetail->name = $product['name'];
                                         $objServiceProductOrderDetail->quantity = $serviceProduct['quantity'];
+                                        $objServiceProductOrderDetail->id_product_option = $serviceProduct['id_product_option'];
+                                        $objServiceProductOrderDetail->option_name = $serviceProduct['option_name'];
                                         if ($serviceProduct['id_hotel']) {
                                             $objServiceProductOrderDetail->id_hotel = $serviceProduct['id_hotel'];
                                             if (Validate::isLoadedObject(
@@ -1094,8 +1096,6 @@ abstract class PaymentModuleCore extends Module
                                             )) {
                                                 $objServiceProductOrderDetail->hotel_name = $objHotelBranch->hotel_name;
                                             }
-                                            $objServiceProductOrderDetail->id_product_option = $serviceProduct['id_product_option'];
-                                            $objServiceProductOrderDetail->option_name = $serviceProduct['option_name'];
                                         } else {
                                             $roomBookingDetail = $objBookingDetail->getRowByIdOrderIdProductInDateRange(
                                                 $order->id,

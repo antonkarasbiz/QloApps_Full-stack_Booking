@@ -5305,6 +5305,13 @@ class AdminOrdersControllerCore extends AdminController
                             $objServiceProductOrderDetail->name = $serviceProduct['name'];
                             $objServiceProductOrderDetail->option_name = $serviceProduct['option_name'];
                             $objServiceProductOrderDetail->quantity = $serviceProduct['quantity'];
+                            if ($objServiceProductOrderDetail->id_hotel) {
+                                if (Validate::isLoadedObject(
+                                    $objHotelBranch = new HotelBranchInformation($objServiceProductOrderDetail->id_hotel, $this->context->cart->id_lang)
+                                )) {
+                                    $objServiceProductOrderDetail->hotel_name = $objHotelBranch->hotel_name;
+                                }
+                            }
                             $objServiceProductOrderDetail->save();
                         }
 
