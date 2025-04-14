@@ -139,7 +139,7 @@
 				<span class="switch prestashop-switch fixed-width-lg">
 					<input type="radio" {if isset($smarty.post.is_special_days_exists) && $smarty.post.is_special_days_exists == 1}checked="checked"{elseif isset($edit) && $objFeaturePrice->is_special_days_exists == 1}checked="checked"{/if} value="1" id="is_special_days_exists_on" name="is_special_days_exists">
 					<label for="is_special_days_exists_on">{l s='Yes' mod='hotelreservationsystem'}</label>
-					<input {if isset($smarty.post.is_special_days_exists) && $smarty.post.is_special_days_exists == 0} checked="checked" {elseif isset($edit) && $objFeaturePrice->is_special_days_exists == 0} checked="checked"{/if} type="radio" value="0" id="is_special_days_exists_off" name="is_special_days_exists">
+					<input {if isset($smarty.post.is_special_days_exists) && $smarty.post.is_special_days_exists == 0} checked="checked" {elseif (isset($edit) && $objFeaturePrice->is_special_days_exists == 0) || !isset($edit)} checked="checked"{/if} type="radio" value="0" id="is_special_days_exists_off" name="is_special_days_exists">
 					<label for="is_special_days_exists_off">{l s='No' mod='hotelreservationsystem'}</label>
 					<a class="slide-button btn"></a>
 				</span>
