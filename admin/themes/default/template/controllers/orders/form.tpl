@@ -1722,7 +1722,6 @@
 </script>
 
 <div class="leadin">{block name="leadin"}{/block}</div>
-{include file='controllers/orders/_current_cart_details_data.tpl'}
     {* If cart has errors the do not allow to proceed with this cart *}
     <div class="panel form-horizontal" id="customer_part" {if isset($is_order_created) && $is_order_created}style="display:none;"{/if}>
         <div class="panel-heading">
@@ -1812,6 +1811,7 @@
             </div>
         </div> -->*}<!-- by webkul to hide unnessesary content -->
     </div>
+	{include file='controllers/orders/_current_cart_details_data.tpl'}
 
     <form class="form-horizontal" action="{$link->getAdminLink('AdminOrders')|escape:'html':'UTF-8'}&amp;addorder=1&amp;cart_id={$cart->id}" method="post" style="display:none" id="cart_detail_form">
         <div class="panel" id="products_part" style="display:none;">
