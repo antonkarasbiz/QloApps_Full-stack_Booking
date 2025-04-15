@@ -671,8 +671,9 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         $context = Context::getContext();
         $id_currency = Validate::isLoadedObject($context->currency) ? (int)$context->currency->id : (int)Configuration::get('PS_CURRENCY_DEFAULT');
 
+        $hotelCartBookingData = new HotelCartBookingData();
         for($currentDate = date('Y-m-d', strtotime($date_from)); $currentDate < date('Y-m-d', strtotime($date_to)); $currentDate = date('Y-m-d', strtotime('+1 day', strtotime($currentDate)))) {
-            if ($use_reduc && ($featurePrice = HotelCartBookingData::getProductFeaturePricePlanByDateByPriority(
+            if ($use_reduc && ($featurePrice = $hotelCartBookingData->getProductFeaturePricePlanByDateByPriority(
                 $id_product,
                 $currentDate,
                 $id_group,
@@ -789,161 +790,6 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         return $totalPrice;
     }
 
-    public static function getRoomTypesTotalPrices(
-        $idProducts = array(),
-        $dateFrom,
-        $dateTo,
-        $quantity = 0,
-        $idGroup = 0,
-        $idCart = 0,
-        $idGuest = 0,
-        $idRoom = 0,
-        $withAutoRoomservices = 1,
-        $useReduc = 1
-    ) {
-        if (!$idProducts) {
-            return false;
-        }
-
-        // Initializations
-        if (!$idGroup) {
-            $idGroup = (int)Group::getCurrent()->id;
-        }
-
-        // if dateFrom and dateTo are same then dateTo will be the next date date of dateFrom
-        if (strtotime($dateFrom) == strtotime($dateTo)) {
-            $dateTo = date('Y-m-d H:i:s', strtotime('+1 day', strtotime($dateFrom)));
-        }
-
-
-        if ($withAutoRoomservices) {
-            $servicesWithTax = RoomTypeServiceProduct::getAutoAddServicesByIdProducts(
-                $idProducts,
-                $dateFrom,
-                $dateTo,
-                Product::PRICE_ADDITION_TYPE_WITH_ROOM,
-                true,
-                $useReduc
-            );
-            $servicesWithoutTax = RoomTypeServiceProduct::getAutoAddServicesByIdProducts(
-                $idProducts,
-                $dateFrom,
-                $dateTo,
-                Product::PRICE_ADDITION_TYPE_WITH_ROOM,
-                false,
-                $useReduc
-            );
-        }
-
-        $context = Context::getContext();
-        $idCurrency = Validate::isLoadedObject($context->currency) ? (int)$context->currency->id : (int)Configuration::get('PS_CURRENCY_DEFAULT');
-        $roomTypeWisePricing = array();
-        foreach ($idProducts as $idProduct) {
-            $productPriceTI = Product::getPriceStatic((int) $idProduct, true, false, 6, null, false, $useReduc);
-            $productPriceTE = Product::getPriceStatic((int) $idProduct, false, false, 6, null, false, $useReduc);
-            if ($productPriceTE) {
-                $roomTypeWisePricing[$idProduct]['tax_rate'] = (($productPriceTI-$productPriceTE)/$productPriceTE)*100;
-            } else {
-                $roomTypeWisePricing[$idProduct]['tax_rate'] = 0;
-            }
-
-            $roomTypeWisePricing[$idProduct]['product_price_tax_incl'] = $productPriceTI;
-            $roomTypeWisePricing[$idProduct]['product_price_tax_excl'] = $productPriceTE;
-            $roomTypeWisePricing[$idProduct]['total_price_tax_incl'] = 0;
-            $roomTypeWisePricing[$idProduct]['total_price_tax_excl'] = 0;
-        }
-
-        $featurePrices = HotelCartBookingData::getProductsWiseFeaturePricePlansByDateRangeByPriority(
-            $idProducts,
-            $dateFrom,
-            $dateTo,
-            $idGroup,
-            $idCart,
-            $idRoom
-        );
-
-        if (!$quantity) {
-            $quantity = 1;
-        }
-
-        foreach ($idProducts as $idProduct) {
-            for($currentDate = strtotime($dateFrom); $currentDate < strtotime($dateTo); $currentDate += _TIME_1_DAY_) {
-                $featureImpactPriceTI = 0;
-                $featureImpactPriceTE = 0;
-                if ($useReduc && isset($featurePrices[$idProduct][$currentDate])) {
-                    $productPriceTI = $roomTypeWisePricing[$idProduct]['product_price_tax_incl'];
-                    $productPriceTE = $roomTypeWisePricing[$idProduct]['product_price_tax_excl'];
-                    $featurePrice = $featurePrices[$idProduct][$currentDate];
-                    if ($featurePrice['impact_type'] == self::IMPACT_TYPE_PERCENTAGE) {
-                        //percentage
-                        $featureImpactPriceTI = $productPriceTI * ($featurePrice['impact_value'] / 100);
-                        $featureImpactPriceTE = $productPriceTE * ($featurePrice['impact_value'] / 100);
-                    } else {
-                        //Fixed Price
-                        $taxPrice = ($featurePrice['impact_value'] * $roomTypeWisePricing[$idProduct]['tax_rate'])/100;
-                        $featureImpactPriceTE = Tools::convertPrice($featurePrice['impact_value'], $idCurrency);
-                        $featureImpactPriceTI = Tools::convertPrice($featurePrice['impact_value']+$taxPrice, $idCurrency);
-                    }
-
-                    if ($featurePrice['impact_way'] == self::IMPACT_WAY_DECREASE) {
-                        // Decrease
-                        $priceWithFeatureTE = ($productPriceTE - $featureImpactPriceTE);
-                        $priceWithFeatureTI = ($productPriceTI - $featureImpactPriceTI);
-                    } elseif ($featurePrice['impact_way'] == self::IMPACT_WAY_INCREASE) {
-                        // Increase
-                        $priceWithFeatureTE = ($productPriceTE + $featureImpactPriceTE);
-                        $priceWithFeatureTI = ($productPriceTI + $featureImpactPriceTI);
-                    } else {
-                        // Fix
-                        $priceWithFeatureTE = $featureImpactPriceTE;
-                        $priceWithFeatureTI = $featureImpactPriceTI;
-                    }
-
-                    if ($priceWithFeatureTI < 0) {
-                        $priceWithFeatureTI = 0;
-                        $priceWithFeatureTE = 0;
-                    }
-
-                    $roomTypeWisePricing[$idProduct]['total_price_tax_incl'] += $priceWithFeatureTI;
-                    $roomTypeWisePricing[$idProduct]['total_price_tax_excl'] += $priceWithFeatureTE;
-                } else {
-                    $roomTypeWisePricing[$idProduct]['total_price_tax_incl'] += $roomTypeWisePricing[$idProduct]['product_price_tax_incl'];
-                    $roomTypeWisePricing[$idProduct]['total_price_tax_excl'] += $roomTypeWisePricing[$idProduct]['product_price_tax_excl'];
-                }
-            }
-
-            if ($withAutoRoomservices) {
-                if (isset($servicesWithTax[$idProduct])) {
-                    foreach($servicesWithTax[$idProduct] as $service) {
-                        $roomTypeWisePricing[$idProduct]['total_price_tax_incl'] += Tools::processPriceRounding($service['price']);
-                    }
-                }
-
-                if (isset($servicesWithoutTax[$idProduct])) {
-                    foreach($servicesWithoutTax[$idProduct] as $service) {
-                        $roomTypeWisePricing[$idProduct]['total_price_tax_excl'] += Tools::processPriceRounding($service['price']);
-                    }
-                }
-            }
-
-            $roomTypeWisePricing[$idProduct]['total_price_tax_excl'] = Tools::processPriceRounding($roomTypeWisePricing[$idProduct]['total_price_tax_excl'], $quantity);
-            $roomTypeWisePricing[$idProduct]['total_price_tax_incl'] = Tools::processPriceRounding($roomTypeWisePricing[$idProduct]['total_price_tax_incl'], $quantity);
-        }
-
-        Hook::exec('actionRoomTypesTotalPricesModifier',
-            array(
-                'total_prices' => &$roomTypeWisePricing,
-                'date_from' => $dateFrom,
-                'date_to' => $dateTo,
-                'id_currency' => $idCurrency,
-                'id_group' => $idGroup,
-                'use_reduc' => $useReduc,
-            )
-        );
-
-        return $roomTypeWisePricing;
-    }
-
     /**
      * [getRoomTypeFeaturePricePerDay returns per day feature price od the Room Type]
      * @param  [int] $id_product [id of the product]
@@ -965,8 +811,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
     ) {
         $dateFrom = date('Y-m-d H:i:s', strtotime($date_from));
         $dateTo = date('Y-m-d H:i:s', strtotime($date_to));
-        $totalDurationPrice = HotelRoomTypeFeaturePricing::getRoomTypesTotalPrices(
-            array($id_product),
+        $totalDurationPrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
+            $id_product,
             $dateFrom,
             $dateTo,
             0,
@@ -978,8 +824,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             $use_reduc
         );
 
-        $totalDurationPriceTI = $totalDurationPrice[$id_product]['total_price_tax_incl'];
-        $totalDurationPriceTE = $totalDurationPrice[$id_product]['total_price_tax_excl'];
+        $totalDurationPriceTI = $totalDurationPrice['total_price_tax_incl'];
+        $totalDurationPriceTE = $totalDurationPrice['total_price_tax_excl'];
         $numDaysInDuration = HotelHelper::getNumberOfDays($dateFrom, $dateTo);
         if ($use_tax) {
             $pricePerDay = $totalDurationPriceTI/$numDaysInDuration;

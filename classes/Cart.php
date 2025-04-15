@@ -733,8 +733,8 @@ class CartCore extends ObjectModel
                     $totalPriceByProductTaxExcl = 0;
                     $priceDisplay = Group::getPriceDisplayMethod(Group::getCurrent()->id);
                     foreach ($roomTypesByIdProduct as $key => $cartRoomInfo) {
-                        $roomTotalPrice = HotelRoomTypeFeaturePricing::getRoomTypesTotalPrices(
-                            array($cartRoomInfo['id_product']),
+                        $roomTotalPrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
+                            $cartRoomInfo['id_product'],
                             $cartRoomInfo['date_from'],
                             $cartRoomInfo['date_to'],
                             0,
@@ -744,8 +744,8 @@ class CartCore extends ObjectModel
                             $cartRoomInfo['id_room'],
                             0
                         );
-                        $totalPriceByProductTaxIncl += $roomTotalPrice[$cartRoomInfo['id_product']]['total_price_tax_incl'];
-                        $totalPriceByProductTaxExcl += $roomTotalPrice[$cartRoomInfo['id_product']]['total_price_tax_excl'];
+                        $totalPriceByProductTaxIncl += $roomTotalPrice['total_price_tax_incl'];
+                        $totalPriceByProductTaxExcl += $roomTotalPrice['total_price_tax_excl'];
                     }
 
                     // Rounding as per configurations
@@ -1781,8 +1781,8 @@ class CartCore extends ObjectModel
                 $priceDisplay = Group::getPriceDisplayMethod(Group::getCurrent()->id);
                 foreach ($roomTypesByIdProduct as $key => $cartRoomInfo) {
                     // get the real price of the room type
-                    $roomTotalPrice = HotelRoomTypeFeaturePricing::getRoomTypesTotalPrices(
-                        array($cartRoomInfo['id_product']),
+                    $roomTotalPrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
+                        $cartRoomInfo['id_product'],
                         $cartRoomInfo['date_from'],
                         $cartRoomInfo['date_to'],
                         0,
@@ -1793,9 +1793,9 @@ class CartCore extends ObjectModel
                         0
                     );
                     if ($with_taxes) {
-                        $totalPriceByProduct = $roomTotalPrice[$cartRoomInfo['id_product']]['total_price_tax_incl'];
+                        $totalPriceByProduct = $roomTotalPrice['total_price_tax_incl'];
                     } else {
-                        $totalPriceByProduct = $roomTotalPrice[$cartRoomInfo['id_product']]['total_price_tax_excl'];
+                        $totalPriceByProduct = $roomTotalPrice['total_price_tax_excl'];
                     }
 
                     // If customer has selected advance payment of the cart
