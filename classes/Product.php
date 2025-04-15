@@ -3060,14 +3060,16 @@ class ProductCore extends ObjectModel
         }
 
         // Initializations
-        $id_group = null;
-        if ($id_customer) {
-            $id_group = Customer::getDefaultGroupId((int)$id_customer);
-        }
+
         if (!$id_group) {
-            $id_group = (int)Group::getCurrent()->id;
+            if ($id_customer) {
+                $id_group = Customer::getDefaultGroupId((int)$id_customer);
+            }
         }
 
+        if (!$id_group || !Validate::isLoadedObject(new Group((int) $id_group))) {
+            $id_group = (int)Group::getCurrent()->id;
+        }
         // If there is cart in context or if the specified id_cart is different from the context cart id
         if (!is_object($cur_cart) || (Validate::isUnsignedInt($id_cart) && $id_cart && $cur_cart->id != $id_cart)) {
             /*
