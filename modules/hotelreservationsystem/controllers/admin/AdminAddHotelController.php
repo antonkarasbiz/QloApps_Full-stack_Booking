@@ -264,6 +264,7 @@ class AdminAddHotelController extends ModuleAdminController
         $map_formated_address = Tools::getValue('locformatedAddr');
         $map_input_text = Tools::getValue('googleInputField');
         $hotelFeatures = Tools::getValue('id_features', array());
+        $shortDescriptionMaxChar = Configuration::get('PS_SHORT_DESC_LIMIT') ? Configuration::get('PS_SHORT_DESC_LIMIT') : 400;
 
         // check if field is atleast in default language. Not available in default prestashop
         $defaultLangId = Configuration::get('PS_LANG_DEFAULT');
@@ -284,6 +285,12 @@ class AdminAddHotelController extends ModuleAdminController
                     if (!Validate::isCleanHtml($shortDescription)) {
                         $this->errors[] = sprintf($this->l('Short description is not valid in %s'), $lang['name']);
                     }
+
+                    $shortDescriptionLength = Tools::strlen($shortDescription);
+                    $shortDescriptionHtmlLength = $shortDescriptionLength - Tools::strlen(strip_tags($shortDescription));
+                    if ($shortDescriptionLength > ($shortDescriptionMaxChar + $shortDescriptionHtmlLength)) {
+                        $this->errors[] = sprintf($this->l('Short description cannot exceed %s characters in '), $shortDescriptionMaxChar).$lang['name'];
+                    }
                 }
                 if ($description = html_entity_decode(Tools::getValue('description_'.$lang['id_lang']))) {
                     if (!Validate::isCleanHtml($description)) {
@@ -300,7 +307,7 @@ class AdminAddHotelController extends ModuleAdminController
                     if (!Validate::isGenericName($metaTitle)) {
                         $this->errors[] = $this->l('Invalid Meta title in ').$lang['name'];
                     } else if (Tools::strlen($metaTitle) > 128) {
-                        $this->errors[] = $this->l('Meta title cannot be longer than 128  in ').$lang['name'];
+                        $this->errors[] = $this->l('Meta title cannot exceed 128 characters in ').$lang['name'];
                     }
                 }
 
@@ -308,7 +315,7 @@ class AdminAddHotelController extends ModuleAdminController
                     if (!Validate::isGenericName($metaDescription)) {
                         $this->errors[] = $this->l('Invalid Meta description in ').$lang['name'];
                     } else if (Tools::strlen($metaDescription) > 255) {
-                        $this->errors[] = $this->l('Meta description cannot be longer than 128  in ').$lang['name'];
+                        $this->errors[] = $this->l('Meta description cannot exceed 128 characters in ').$lang['name'];
                     }
                 }
 
@@ -316,7 +323,7 @@ class AdminAddHotelController extends ModuleAdminController
                     if (!Validate::isGenericName($metaKeyWords)) {
                         $this->errors[] = $this->l('Invalid Meta keywords in ').$lang['name'];
                     } else if (Tools::strlen($metaKeyWords) > 255) {
-                        $this->errors[] = $this->l('Meta keywords cannot be longer than 128  in ').$lang['name'];
+                        $this->errors[] = $this->l('Meta keywords cannot exceed 128 characters in ').$lang['name'];
                     }
 
                 }

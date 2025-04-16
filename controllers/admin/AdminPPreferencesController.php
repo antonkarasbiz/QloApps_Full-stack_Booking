@@ -82,9 +82,9 @@ class AdminPPreferencesControllerCore extends AdminController
                             1 => $this->l('Cart summary')
                         )
                     ),*/
-                    'PS_PRODUCT_SHORT_DESC_LIMIT' => array(
+                    'PS_SHORT_DESC_LIMIT' => array(
                         'title' => $this->l('Max size of short description'),
-                        'hint' => $this->l('Set the maximum size of room type short description (in characters).'),
+                        'hint' => $this->l('Set the maximum size of room type and hotel short description (in characters).'),
                         'validation' => 'isUnsignedInt',
                         'cast' => 'intval',
                         'type' => 'text',

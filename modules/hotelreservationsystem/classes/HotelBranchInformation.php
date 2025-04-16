@@ -1186,6 +1186,25 @@ class HotelBranchInformation extends ObjectModel
         return parent::validateFields($die, $error_return);
     }
 
+    /**
+     * @see ObjectModel::validateField()
+     */
+    public function validateField($field, $value, $id_lang = null, $skip = array(), $human_errors = false)
+    {
+        if ($field == 'short_description') {
+            $limit = (int)Configuration::get('PS_SHORT_DESC_LIMIT');
+            if ($limit <= 0) {
+                $limit = 400;
+            }
+
+            $size_without_html = Tools::strlen(strip_tags($value));
+            $size_with_html = Tools::strlen($value);
+            $this->def['fields']['short_description']['size'] = $limit + $size_with_html - $size_without_html;
+        }
+
+        return parent::validateField($field, $value, $id_lang, $skip, $human_errors);
+    }
+
     // Webservice :: function will run when hotel deleted from API
     public function deleteWs()
     {

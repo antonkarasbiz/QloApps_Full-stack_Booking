@@ -451,7 +451,7 @@
 				input_name='description_short'
 				class="autoload_rte"
 				input_value=$product->description_short
-				max=$PS_PRODUCT_SHORT_DESC_LIMIT}
+				max=$PS_SHORT_DESC_LIMIT}
 		</div>
 	</div>
 	{* <div class="form-group">
