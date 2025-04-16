@@ -960,7 +960,7 @@ class AdminCartsControllerCore extends AdminController
         }
 
         if ($this->tabAccess['edit'] === '1') {
-            HotelRoomTypeFeaturePricing::deleteByIdCart($id_cart, $id_product, $id_room, $date_from, $date_to);
+            HotelRoomTypeFeaturePricing::deleteFeaturePrices($id_cart, $id_product, $id_room, $date_from, $date_to);
             $feature_price_name = array();
             foreach (Language::getIDs(true) as $id_lang) {
                 $feature_price_name[$id_lang] = 'Auto-generated';

@@ -4681,7 +4681,7 @@ class AdminOrdersControllerCore extends AdminController
         }
 
         // delete cart feature prices after room addition success
-        HotelRoomTypeFeaturePricing::deleteByIdCart($this->context->cart->id);
+        HotelRoomTypeFeaturePricing::deleteFeaturePrices($this->context->cart->id);
 
         die(json_encode(array(
             'result' => true,
@@ -4842,7 +4842,7 @@ class AdminOrdersControllerCore extends AdminController
         }
 
         // delete cart feature prices after booking update success
-        HotelRoomTypeFeaturePricing::deleteByIdCart($cart->id);
+        HotelRoomTypeFeaturePricing::deleteFeaturePrices($cart->id);
 
         // Calculate differences of price (Before / After)
         $diff_price_tax_incl = $totalRoomPriceAfterTI - $totalRoomPriceBeforeTI;

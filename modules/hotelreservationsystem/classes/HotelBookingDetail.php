@@ -2136,7 +2136,7 @@ class HotelBookingDetail extends ObjectModel
                 }
 
                 // delete cart feature prices after room addition success
-                HotelRoomTypeFeaturePricing::deleteByIdCart($this->context->cart->id);
+                HotelRoomTypeFeaturePricing::deleteFeaturePrices($this->context->cart->id);
 
                 // ===============================================================
                 // END: Add Process of the old booking
