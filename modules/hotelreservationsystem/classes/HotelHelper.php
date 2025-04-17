@@ -1044,14 +1044,13 @@ class HotelHelper
         Configuration::updateValue('WK_ROOM_LEFT_WARNING_NUMBER', 10);
         Configuration::updateValue('WK_HTL_ESTABLISHMENT_YEAR', 2010);
 
-        Configuration::updateValue(
-            'WK_HOTEL_GLOBAL_ADDRESS',
-            'The Hotel Prime, Monticello Dr, Montgomery, 10010'
-        );
-        Configuration::updateValue('WK_HOTEL_GLOBAL_CONTACT_NUMBER', '0987654321');
-        Configuration::updateValue('WK_HOTEL_GLOBAL_CONTACT_EMAIL', 'hotelprime@htl.com');
+        Configuration::updateValue('PS_SHOP_ADDR1', 'The Hotel Prime, Monticello Dr, Montgomery, 10010');
+        Configuration::updateValue('PS_SHOP_PHONE', '0987654321');
+        Configuration::updateValue('PS_SHOP_EMAIL', 'hotelprime@htl.com');
+
         Configuration::updateValue('WK_CUSTOMER_SUPPORT_PHONE_NUMBER', '0987654321');
         Configuration::updateValue('WK_CUSTOMER_SUPPORT_EMAIL', 'hotelprime@htl.com');
+        Configuration::updateValue('WK_CONTACT_DISPLAY_HOTEL_LIST', 0);
 
         Configuration::updateValue('WK_TITLE_HEADER_BLOCK', $home_banner_default_title);
         Configuration::updateValue('WK_CONTENT_HEADER_BLOCK', $home_banner_default_content);

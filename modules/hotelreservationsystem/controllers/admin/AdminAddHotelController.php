@@ -254,6 +254,7 @@ class AdminAddHotelController extends ModuleAdminController
         $zipcode = Tools::getValue('hotel_postal_code');
         $address = Tools::getValue('address');
         $active = Tools::getValue('ENABLE_HOTEL');
+        $fax = Tools::getValue('fax');
         $activeRefund = Tools::getValue('active_refund');
         $enableUseGlobalMaxOrderDate = Tools::getValue('enable_use_global_max_order_date');
         $maximumBookingDate = Tools::getValue('maximum_booking_date');
@@ -371,6 +372,10 @@ class AdminAddHotelController extends ModuleAdminController
             $this->errors[] = $this->l('Address is required field.');
         }
 
+        if ($fax && !Validate::isGenericName($fax)) {
+            $this->errors[] = $this->l('Field fax in invalid.');
+        }
+
         if (!$country) {
             $this->errors[] = $this->l('Country is required field.');
         } else {
@@ -474,6 +479,7 @@ class AdminAddHotelController extends ModuleAdminController
             }
             $objHotelBranch->active = $active;
             $objHotelBranch->active_refund = $activeRefund;
+            $objHotelBranch->fax = $fax;
 
             // lang fields
             $hotelCatName = array();

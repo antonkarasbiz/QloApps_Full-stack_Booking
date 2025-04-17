@@ -120,6 +120,12 @@
     <keywords/>
     <url_rewrite>seguimiento-pedido</url_rewrite>
   </meta>
+  <meta id='properties' id_shop='1'>
+    <title>Nuestras propiedades</title>
+    <description/>
+    <keywords/>
+    <url_rewrite>properties</url_rewrite>
+  </meta>
   <meta id='order-slip' id_shop='1'>
     <title>Albarán</title>
     <description/>

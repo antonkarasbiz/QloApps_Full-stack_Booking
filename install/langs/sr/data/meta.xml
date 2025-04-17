@@ -114,6 +114,12 @@
     <keywords/>
     <url_rewrite>my-account</url_rewrite>
   </meta>
+  <meta id='properties' id_shop='1'>
+    <title>Our hotels</title>
+    <description/>
+    <keywords/>
+    <url_rewrite>properties</url_rewrite>
+  </meta>
   <meta id="order-follow" id_shop="1">
     <title>Order follow</title>
     <description/>

@@ -682,9 +682,6 @@ class HotelReservationSystem extends Module
         $configKeys = array(
             'WK_HOTEL_LOCATION_ENABLE',
             'WK_ROOM_LEFT_WARNING_NUMBER',
-            'WK_HOTEL_GLOBAL_ADDRESS',
-            'WK_HOTEL_GLOBAL_CONTACT_EMAIL',
-            'WK_HOTEL_GLOBAL_CONTACT_NUMBER',
             'WK_HTL_ESTABLISHMENT_YEAR',
             'WK_HTL_CHAIN_NAME',
             'WK_TITLE_HEADER_BLOCK',
@@ -698,6 +695,7 @@ class HotelReservationSystem extends Module
             'WK_HOTEL_NAME_ENABLE',
             'WK_CUSTOMER_SUPPORT_PHONE_NUMBER',
             'WK_CUSTOMER_SUPPORT_EMAIL',
+            'WK_CONTACT_DISPLAY_HOTEL_LIST'
         );
         foreach ($configKeys as $key) {
             if (!Configuration::deleteByName($key)) {

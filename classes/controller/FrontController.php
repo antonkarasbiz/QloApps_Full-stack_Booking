@@ -1192,6 +1192,7 @@ class FrontControllerCore extends Controller
             'token'                 => Tools::getToken(),
             'priceDisplayPrecision' => _PS_PRICE_DISPLAY_PRECISION_,
             'content_only'          => (int)Tools::getValue('content_only'),
+            'WK_DISPLAY_OUR_HOTEL_TAB_IN_HEADER' => Configuration::get('WK_DISPLAY_OUR_HOTEL_TAB_IN_HEADER'),
         ));
 
         $this->context->smarty->assign($this->initLogoAndFavicon());

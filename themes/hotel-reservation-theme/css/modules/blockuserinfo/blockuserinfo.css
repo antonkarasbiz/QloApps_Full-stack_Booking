@@ -37,6 +37,11 @@
 #user_info_acc span.caret {
   border-top-color: #fff; }
 
+div.our_hotel_tab a{
+  color: #fff;
+  font-size: 17px;
+  font-weight: 400;}
+
 @media (max-width: 450px) {
   .hide_xs {
     display: none; }

@@ -65,6 +65,7 @@ class HotelReservationSystemDb
                 `map_formated_address` text NOT NULL,
                 `map_input_text` text NOT NULL,
                 `active_refund` tinyint(1) unsigned NOT NULL DEFAULT '0',
+                `fax` varchar(255) DEFAULT NULL,
                 `date_add` datetime NOT NULL,
                 `date_upd` datetime NOT NULL,
                 PRIMARY KEY (`id`)

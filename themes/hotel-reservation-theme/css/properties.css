@@ -1,11 +1,45 @@
+/**
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License version 3.0
+* that is bundled with this package in the file LICENSE.md
+* It is also available through the world-wide-web at this URL:
+* https://opensource.org/license/osl-3-0-php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to support@qloapps.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade this module to a newer
+* versions in the future. If you wish to customize this module for your needs
+* please refer to https://store.webkul.com/customisation-guidelines for more information.
+*
+* @author Webkul IN
+* @copyright Since 2010 Webkul
+* @license https://opensource.org/license/osl-3-0-php Open Software License version 3.0
+*/
+
 .margin-top-50 {
   margin-top: 50px;
 }
-.margin-bottom-50 {
-  margin-bottom: 50px;
+.margin-bottom-30 {
+  margin-bottom: 30px;
+}
+.margin-bottom-20 {
+  margin-bottom: 20px;
+}
+.margin-top-20 {
+  margin-top: 20px;
 }
 .htl-contact-page {
   padding: 10px;
+}
+.page-heading {
+  font-size: 32px;
+}
+.empty-properties-container{
+  margin: 30px;
 }
 .htl-contact-page .contact-header {
   font-size: 42px;
@@ -45,6 +79,10 @@
     width: 90%;
     text-align: left;
 }
+.title-container {
+  margin-left: 150px;
+  margin-right: 150px;
+  color: #333333;}
 .htl-contact-page .contact_type_ul {
   font-size: 14px;
   font-weight: 400;
@@ -105,7 +143,6 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
-  margin-top: 80px;
 }
 .hotels-container .hotel-header {
   margin-bottom: 40px;
@@ -126,10 +163,9 @@
   float: left;
   padding: 15px 0px;
   width: 100%;
-  height: 90%;
 }
 .htl-contact-page .hotel-city-container>span {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 400;
   color: rgba(0, 0, 0, 1);
 }
@@ -137,16 +173,20 @@
   font-size: 18px;
   font-weight: 400;
   color: rgba(0, 0, 0, 1);
-  margin-bottom: 10px;
-}
-.hotel-address-container .hotel-name > span {
-  border-bottom: 2px solid rgba(0, 0, 0, 0.3);
+  margin-bottom: 15px;
 }
 .hotel-address-container span.htl-address-icon {
   background-image: url(../../../modules/hotelreservationsystem/views/img/Slices/icon-contact.png);
 }
 .hotel-address-container img.htl-img {
   border-radius: 6px;
+}
+.empty-properties-image-container {
+  background-image: url(../../../modules/hotelreservationsystem/views/img/Slices/no-hotel.png) ;
+  background-repeat:no-repeat;
+  background-position: center center;
+  padding: 200px 0px 10px 0px;
+  display: block;
 }
 .hotel-address-container span.htl-phone-icon {
   background-image: url(../../../modules/hotelreservationsystem/views/img/Slices/icon-contact.png);
@@ -163,12 +203,46 @@
 .htl-contact-page .hotel-city-container {
   margin-bottom: 10px;
 }
-.hotel-city-container span.htl-map-icon {
+span.htl-map-icon {
   background-image: url(../../../modules/hotelreservationsystem/views/img/Slices/icon-contact.png);
   padding: 1px 20px 0px 0px;
   background-position: 0px 0px;
   margin-right: 5px;
   font-size: 14px;
+}
+.view_rooms_btn, .htl-map-direction-btn {
+  border-radius: 4px;
+  padding: 10px 12px;
+  text-transform: uppercase;
+}
+
+.htl-map-direction-btn{
+  background-color: #DEDEDE;
+  color: #333333;
+}
+.view_rooms_btn {
+  background-color: #1292FF;
+  border-color: #1292FF;
+  font-weight: 600;
+}
+.view_rooms_btn:hover {
+  background-color: #3c89cb;
+  border-color: #3a75a7;
+}
+.pagination-container {
+  text-align: center;
+}
+.hotel-branch-info-actions{
+  display: flex;
+  gap: 10px;
+}
+.pagination-container .pagination > li > a, .pagination-container .pagination > li > span {
+  border: unset;
+}
+.pagination-container .pagination > li .active {
+  border: 1px solid #333333;
+  border-radius: 12px;
+  z-index: 10;
 }
 .hotel-address-container p.hotel-branch-info-value {
   font-size: 14px;
@@ -181,70 +255,6 @@
   color: rgba(0, 0, 0, 1);
   font-weight: 400;
 }
-.hotel-address-container .htl-map-direction-btn {
-  background-color: #D9D9D9;
-  border-radius: 4px;
-  padding: 6px 20px;
-  text-transform: uppercase;
-}
-.contact-subdiv p {
-  font-size: 15px;
-  color: #404040;
-  font-weight: 400;
-}
-.contact-subdiv p i {
-  color: #2F85CE;
-}
-.contact_input {
-  color: #9a9a9a;
-  font-size: 16px;
-  font-weight: 600;
-  height: 47px;
-  margin-bottom: 20px;
-  padding: 10px;
-}
-.contact_textarea {
-  color: #9a9a9a;
-  height: 150px !important;
-  margin-bottom: 20px;
-  padding: 10px;
-  font-size: 16px;
-  font-weight: 600;
-}
-#id_contact {
-    color: #999999;
-    font-weight: bold;
-    text-align: left;
-    width: 90%;
-}
-.contact_type_input {
-  color: #999999;
-  font-size: 16px;
-  font-weight: 400;
-  height: 48px;
-  padding: 7px 5px 7px 12px;
-}
-.contact_type_input::-webkit-input-placeholder {
-  color: #999999;
-  font-weight: 400;
-}
-.contact_type_input:-moz-placeholder {
-
-  /* Firefox 18- */
-  color: #999999;
-  font-weight: 400;
-}
-.contact_type_input::-moz-placeholder {
-
-  /* Firefox 19+ */
-  color: #999999;
-  font-weight: 400;
-}
-.contact_type_input:-ms-input-placeholder {
-  color: #999999;
-  font-weight: 400;
-}
-
 /* ==== google map ==== */
 #googleMapWrapper {
   clear: both;
@@ -273,10 +283,4 @@
 .gm-btn-get-directions:focus {
   outline: none;
   color: #427fed;
-}
-.margin-bottom-30 {
-  margin-bottom: 30px;
-}
-.margin-top-30 {
-  margin-top: 30px;
 }

@@ -164,6 +164,20 @@ class WkCustomNavigationLink extends ObjectModel
         $objCustomNavigationLink->link = 'index';
         $objCustomNavigationLink->save();
 
+        $objCustomNavigationLink = new WkCustomNavigationLink();
+        foreach ($languages as $language) {
+            $objCustomNavigationLink->name[$language['id_lang']] = 'Our hotels';
+        }
+
+        $objCustomNavigationLink->position = $this->getHigherPosition();
+        $objCustomNavigationLink->id_cms = 0;
+        $objCustomNavigationLink->show_at_navigation = 1;
+        $objCustomNavigationLink->show_at_footer = 0;
+        $objCustomNavigationLink->active = 1;
+        $objCustomNavigationLink->link = Context::getContext()->link->getPageLink('properties');
+        $objCustomNavigationLink->is_custom_link = 1;
+        $objCustomNavigationLink->save();
+
         // enter modules links
         $modsElems = array();
         // if module is installing or resetting
