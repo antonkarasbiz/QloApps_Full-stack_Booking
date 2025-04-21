@@ -147,6 +147,19 @@
 		{/if}
 	</div>
 
+	<div class="form-group" id="bed_types_selection">
+			<label class="control-label col-sm-3 required">
+				{l s='Bed Types'}
+			</label>
+			<div class="col-sm-5">
+				<select name="id_bed_types[]" id="id_bed_types" class="form-control" multiple>
+					{foreach from=$bed_types_info item=bed_type_info}
+						<option value="{$bed_type_info['id_bed_type']}" {if isset($selected_bed_types) && in_array($bed_type_info['id_bed_type'], $selected_bed_types)}selected{/if}>{$bed_type_info['name']}</option>
+					{/foreach}
+				</select>
+			</div>
+	</div>
+
 	<div class="form-group hidden">
 		<label class="control-label col-lg-3" for="reference">
 			<span class="label-tooltip" data-toggle="tooltip"

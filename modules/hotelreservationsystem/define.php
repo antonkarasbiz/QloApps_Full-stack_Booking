@@ -44,6 +44,7 @@ require_once 'classes/HotelRoomTypeRestrictionDateRange.php';
 require_once 'classes/QloWebservice.php';
 require_once 'classes/QloRoomType.php';
 require_once 'classes/HotelRoomDisableDates.php';
+require_once 'classes/HotelRoomTypeBedType.php';
 require_once 'classes/HotelBranchRefundRules.php';
 
 // linked products
