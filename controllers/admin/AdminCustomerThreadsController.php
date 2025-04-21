@@ -864,8 +864,15 @@ class AdminCustomerThreadsControllerCore extends AdminController
 
             $content = '';
             if (!$message['private']) {
-                if ($message['id_employee']) {
-                    $content .= $this->l('Message to: ').' <span class="badge">'.($message['customer_name']).'</span><br/><br/>';
+                $customerName = false;
+                if (!$message['id_customer']) {
+                    $customerName = $message['user_name'];
+                } else if ($message['customer_name']) {
+                    $customerName = $message['customer_name'];
+                }
+
+                if ($message['id_employee'] && $customerName) {
+                    $content .= $this->l('Message to: ').' <span class="badge">'.($customerName).'</span><br/><br/>';
                 }
             } else {
                 $content .= '<span class="label label-info">'.$this->l('Private').'</span><br/><br/>';
