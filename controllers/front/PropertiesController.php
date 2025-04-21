@@ -132,6 +132,7 @@ class PropertiesControllerCore extends FrontController
                 'hotelLocationArray' => $hotelLocationArray,
                 'viewOnMap' => Configuration::get('WK_GOOGLE_ACTIVE_MAP'),
                 'displayHotelMap' => $displayHotelMap,
+                'WK_HTL_SHORT_DESC' => Configuration::get('WK_HTL_SHORT_DESC', $this->context->language->id),
                 'currentIndex' => $this->context->link->getPageLink('properties')
             )
         );

@@ -169,12 +169,14 @@ class WkCustomNavigationLink extends ObjectModel
             $objCustomNavigationLink->name[$language['id_lang']] = 'Our hotels';
         }
 
+        $https_link = (Tools::usingSecureMode() && Configuration::get('PS_SSL_ENABLED')) ? 'https://' : 'http://';
+        $objLink = new Link($https_link, $https_link);
         $objCustomNavigationLink->position = $this->getHigherPosition();
         $objCustomNavigationLink->id_cms = 0;
         $objCustomNavigationLink->show_at_navigation = 1;
         $objCustomNavigationLink->show_at_footer = 0;
         $objCustomNavigationLink->active = 1;
-        $objCustomNavigationLink->link = Context::getContext()->link->getPageLink('properties');
+        $objCustomNavigationLink->link = $objLink->getPageLink('properties');
         $objCustomNavigationLink->is_custom_link = 1;
         $objCustomNavigationLink->save();
 
