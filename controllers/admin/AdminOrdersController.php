@@ -5785,8 +5785,8 @@ class AdminOrdersControllerCore extends AdminController
         // If order is refunded, the validate changes which are not allowed
         $objOrderReturn = new OrderReturn();
         $refundReqBookings = $objOrderReturn->getOrderRefundRequestedBookings($order->id, 0, 1);
+        $objBookingDetail = new HotelBookingDetail($id_hotel_booking);
         if ($refundReqBookings && (in_array($id_hotel_booking, $refundReqBookings))) {
-            $objBookingDetail = new HotelBookingDetail($id_hotel_booking);
             // If order is cancelled, we can't edit order
             if ($objBookingDetail->is_refunded && $objBookingDetail->is_cancelled) {
                 die(json_encode(array(
@@ -5802,6 +5802,22 @@ class AdminOrdersControllerCore extends AdminController
                     'error' => Tools::displayError('Check-In/Check-Out dates cannot be changed if booking is refunded.'),
                 )));
             }
+        }
+
+        if ($objBookingDetail->id_status != HotelBookingDetail::STATUS_ALLOTED
+            && strtotime($old_date_from) != strtotime($new_date_from)
+        ) {
+            die(json_encode(array(
+                'result' => false,
+                'error' => Tools::displayError('You cannot update the start date for a booking that has already been checked in.'),
+            )));
+        } else if ($objBookingDetail->id_status == HotelBookingDetail::STATUS_CHECKED_OUT
+            && strtotime($old_date_to) != strtotime($new_date_to)
+        ) {
+            die(json_encode(array(
+                'result' => false,
+                'error' => Tools::displayError('You cannot update the end date for a booking that has already been checked out.'),
+            )));
         }
 
         if (!Validate::isPrice($product_price_tax_incl) || !Validate::isPrice($product_price_tax_excl)) {
