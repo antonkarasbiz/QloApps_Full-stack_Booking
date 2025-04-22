@@ -20,7 +20,11 @@
 * @license https://opensource.org/license/osl-3-0-php Open Software License version 3.0
 */
 
-function disableSubmitButton(button) {
-    $(button).attr('disabled', 'disabled');
-    $(button).closest('form').get(0).submit();
-}
+
+$(document).ready(function () {
+    $(document).on('click', '.confirm_order', function(e){
+        e.preventDefault();
+        $(e.target).attr('disabled', 'disabled');
+        $(e.target).closest('form').get(0).submit();
+    });
+});
