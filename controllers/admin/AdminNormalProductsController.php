@@ -1408,8 +1408,7 @@ class AdminNormalProductsControllerCore extends AdminController
                 'ajaxfileupload',
                 'date',
                 'tagify',
-                'select2',
-                'validate'
+                'select2'
             ));
 
             $this->addJS(array(
@@ -2168,7 +2167,7 @@ class AdminNormalProductsControllerCore extends AdminController
             if ($this->isProductFieldUpdated('description_short', $language['id_lang']) && ($value = Tools::getValue('description_short_'.$language['id_lang']))) {
                 if (Tools::strlen(strip_tags($value)) > $limit) {
                     $this->errors[] = sprintf(
-                        Tools::displayError('This %1$s field (%2$s) is too long: %3$d chars max (current count %4$d).'),
+                        Tools::displayError('This %1$s field in %2$s is too long: %3$d chars max (current count %4$d).'),
                         call_user_func(array($className, 'displayFieldName'), 'description_short'),
                         $language['name'],
                         $limit,
