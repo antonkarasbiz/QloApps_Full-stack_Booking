@@ -23,7 +23,7 @@
 $(document).ready(function () {
     $(document).on('click', '.confirm_order', function(e){
         e.preventDefault();
-        $(e.target).attr('disabled', 'disabled');
-        $(e.target).closest('form').get(0).submit();
+        $(this).attr('disabled', 'disabled');
+        $(this).closest('form').get(0).submit();
     });
 });
