@@ -134,4 +134,9 @@
 	<div class="noRoomsAvailAlert">
 		<span>{l s='No room available for this hotel!'}</span>
 	</div>
+	{hook h='displayAfterNoRoomAvailableBlock'}
 {/if}
+
+{block name='displayRoomTypeListAfter'}
+	{hook h='displayRoomTypeListAfter'}
+{/block}
