@@ -136,8 +136,13 @@ const BookingSearchManager = {
                     success: function(result) {
                         if (result.status) {
                             $('#hotel_cat_id').val('');
-                            $('#id_hotel_button').html(result.html_hotel_options);
-                            $('#id_hotel_button').trigger('chosen:updated');
+                            if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+                                $('#id_hotel_button').focus()
+                            }
+                            else{
+                                $('#id_hotel_button').html(result.html_hotel_options);
+                                $('#id_hotel_button').trigger('chosen:updated');
+                            }
                             // Resetting the data from previously selected hotel
                             $('#preparation_time').val(0);
                             var max_order_date = $('#max_order_date').val();
