@@ -5391,7 +5391,7 @@ class AdminProductsControllerCore extends AdminController
                         $roomsInfo['prefix'] = $prefix;
                     }
 
-                    for ($i = 0; $i <= $roomQuantity; $i++) {
+                    for ($i = 0; $i < $roomQuantity; $i++) {
                         $roomNum = $roomsInfo['prefix'];
                         if ((int) $roomNumber) {
                             $roomNum .= '-'.($roomNumber + $i);
