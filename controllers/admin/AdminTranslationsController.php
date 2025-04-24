@@ -1966,6 +1966,7 @@ class AdminTranslationsControllerCore extends AdminController
         }
 
 
+        unset($GLOBALS[$name_var]);
         // count will contain the number of expressions of the page
         $count = 0;
         foreach ($tabs_array as $array) {
