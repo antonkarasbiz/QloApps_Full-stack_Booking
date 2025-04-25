@@ -123,6 +123,7 @@ class AdminAddHotelController extends ModuleAdminController
         $smartyVars['currentLang'] = Language::getLanguage((int) $currentLangId);
 
         $smartyVars['defaultCurrency'] = Configuration::get('PS_CURRENCY_DEFAULT');
+        $smartyVars['PS_SHORT_DESC_LIMIT'] = Configuration::get('PS_SHORT_DESC_LIMIT');
 
         $countries = Country::getCountries($this->context->language->id, true);
         $smartyVars['country_var'] = $countries;

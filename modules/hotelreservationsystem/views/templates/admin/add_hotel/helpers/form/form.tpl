@@ -150,6 +150,7 @@
 									<textarea
 									name="short_description_{$language.id_lang}"
 									id="short_description_{$language.id_lang}"
+									{if isset($PS_SHORT_DESC_LIMIT) && $PS_SHORT_DESC_LIMIT} maxlength="{$PS_SHORT_DESC_LIMIT|intval}"{/if}
 									cols="2" rows="3"
 									class="form-control">{if isset($smarty.post.$short_desc_name)}{$smarty.post.$short_desc_name}{elseif isset($edit)}{$hotel_info.short_description[{$language.id_lang}]}{/if}</textarea>
 								</div>
