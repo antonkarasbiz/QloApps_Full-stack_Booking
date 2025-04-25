@@ -57,7 +57,7 @@ class TranslateCore
                 $iso = Language::getIsoById((int)Configuration::get('PS_LANG_DEFAULT'));
             }
             if (file_exists(_PS_TRANSLATIONS_DIR_.$iso.'/admin.php')) {
-                include_once(_PS_TRANSLATIONS_DIR_.$iso.'/admin.php');
+                include(_PS_TRANSLATIONS_DIR_.$iso.'/admin.php');
             }
         }
 
