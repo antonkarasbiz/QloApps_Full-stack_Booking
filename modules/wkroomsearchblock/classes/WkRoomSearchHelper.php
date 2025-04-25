@@ -163,15 +163,12 @@ class WkRoomSearchHelper
                         }
                     }
 
-                    $smartyVars['date_from'] = $dateFrom;
-                    $smartyVars['date_to'] = $dateTo;
-
-                    $objBookingDetail = new HotelBookingDetail();
-                    $searchedData['num_days'] = $objBookingDetail->getNumberOfDays($dateFrom, $dateTo);
-
+                    $searchedData['num_days'] = HotelHelper::getNumberOfDays($dateFrom, $dateTo);
                     $searchedData['parent_data'] = $htlCategoryInfo;
-                    $searchedData['date_from'] = $dateFrom;
-                    $searchedData['date_to'] = $dateTo;
+                    if (Tools::getValue('date_from') && Tools::getValue('date_to')) {
+                        $searchedData['date_from'] = $dateFrom;
+                        $searchedData['date_to'] = $dateTo;
+                    }
 
                     if ($locationCategoryId) {
                         $objLocationCategory = new Category($locationCategoryId, $context->language->id);

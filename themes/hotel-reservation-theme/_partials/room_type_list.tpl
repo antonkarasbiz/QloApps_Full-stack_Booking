@@ -70,8 +70,7 @@
 									{/block}
 									{block name='room_type_list_room_price'}
 										<div class="col-sm-12 col-md-7 col-lg-6">
-											{if !isset($restricted_country_mode) && !$PS_CATALOG_MODE && !$order_date_restrict}
-
+											{if !isset($restricted_country_mode) && !$PS_CATALOG_MODE && !$order_date_restrict  && (!isset($display_all_rooms) || !$display_all_rooms)}
 												<p class="rm_price_cont">
 													{if $room_v['feature_price_diff'] >= 0}
 														<span class="rm_price_val {if $room_v['feature_price_diff']>0}room_type_old_price{/if}">
@@ -97,29 +96,47 @@
 									{/block}
 									<div class="col-sm-12 col-md-6 col-lg-8">
 										{block name='room_type_list_room_booking_fields'}
-											<div class="booking_room_fields">
-												{if !isset($restricted_country_mode) && !$PS_CATALOG_MODE && !$order_date_restrict && (!isset($display_all_rooms) || !$display_all_rooms)}
-													{if isset($occupancy_required_for_booking) && $occupancy_required_for_booking}
-														<div class="booking_guest_occupancy_conatiner">
-															{block name='occupancy_field'}
-																{include file="./occupancy_field.tpl" room_type_info=$room_v total_available_rooms=$room_v['room_left']}
-															{/block}
-														</div>
-													{else}
-														<div>
-															<label>{l s='Qty:'}</label>
-															{block name='quantity_field'}
-																{include file="./quantity_field.tpl" total_available_rooms=$room_v['room_left']}
-															{/block}
-														</div>
-													{/if}
-													{block name='room_type_list_room_book_now_button'}
-														<div>
-															<a cat_rm_check_in="{$booking_date_from|escape:'htmlall':'UTF-8'}" cat_rm_check_out="{$booking_date_to|escape:'htmlall':'UTF-8'}" href="" rm_product_id="{$room_v['id_product']}" cat_rm_book_nm_days="{$num_days|escape:'htmlall':'UTF-8'}" data-id-product-attribute="0" data-id-product="{$room_v['id_product']|intval}" class="btn btn-default button button-medium ajax_add_to_cart_button"><span>{l s='Book Now'}</span></a>
+											{if !isset($restricted_country_mode) && !$PS_CATALOG_MODE && !$order_date_restrict}
+												{if (!isset($display_all_rooms) || !$display_all_rooms)}
+													<div class="booking_room_fields">
+														{if isset($occupancy_required_for_booking) && $occupancy_required_for_booking}
+															<div class="booking_guest_occupancy_conatiner">
+																{block name='occupancy_field'}
+																	{include file="./occupancy_field.tpl" room_type_info=$room_v total_available_rooms=$room_v['room_left']}
+																{/block}
+															</div>
+														{else}
+															<div>
+																<label>{l s='Qty:'}</label>
+																{block name='quantity_field'}
+																	{include file="./quantity_field.tpl" total_available_rooms=$room_v['room_left']}
+																{/block}
+															</div>
+														{/if}
+														{block name='room_type_list_room_book_now_button'}
+															<div>
+																<a cat_rm_check_in="{$booking_date_from|escape:'htmlall':'UTF-8'}" cat_rm_check_out="{$booking_date_to|escape:'htmlall':'UTF-8'}" href="" rm_product_id="{$room_v['id_product']}" cat_rm_book_nm_days="{$num_days|escape:'htmlall':'UTF-8'}" data-id-product-attribute="0" data-id-product="{$room_v['id_product']|intval}" class="btn btn-default button button-medium ajax_add_to_cart_button"><span>{l s='Book Now'}</span></a>
+															</div>
+														{/block}
+													</div>
+												{else}
+													{block name='room_type_list_room_price'}
+														<div class="pull-right">
+															{if $room_v['feature_price_diff'] >= 0}
+																<span class="rm_price_val {if $room_v['feature_price_diff']>0}room_type_old_price{/if}">
+																	{displayPrice price = $room_v['price_without_reduction']|round:2|floatVal}
+																</span>
+															{/if}
+															{if $room_v['feature_price_diff']}
+																<span class="rm_price_val">
+																	{displayPrice price = $room_v['feature_price']|round:2|floatVal}
+																</span>
+															{/if}
+															<span class="rm_price_txt">/{l s='Per Night'}</span>
 														</div>
 													{/block}
 												{/if}
-											</div>
+											{/if}
 										{/block}
 									</div>
 								</div>
