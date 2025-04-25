@@ -509,18 +509,16 @@ class AdminAddHotelController extends ModuleAdminController
                     );
                 }
 
-                $cleanShortDescription = Tools::getDescriptionClean(
-                    Tools::getValue('short_description_'.$lang['id_lang'])
-                );
+                $cleanShortDescription = Tools::getDescriptionClean(Tools::getValue('short_description_'.$lang['id_lang']));
                 //Remove TinyMCE's Non-Breaking Spaces
                 $cleanShortDescription = str_replace(chr(0xC2).chr(0xA0), "", $cleanShortDescription);
                 if (!trim($cleanShortDescription)) {
-                    $objHotelBranch->short_description[$lang['id_lang']] = Tools::getValue(
-                        'short_description_'.$defaultLangId
+                    $objHotelBranch->short_description[$lang['id_lang']] = Tools::getDescriptionClean(
+                        Tools::getValue('short_description_'.$defaultLangId)
                     );
                 } else {
-                    $objHotelBranch->short_description[$lang['id_lang']] = Tools::getValue(
-                        'short_description_'.$lang['id_lang']
+                    $objHotelBranch->short_description[$lang['id_lang']] = Tools::getDescriptionClean(
+                        Tools::getValue('short_description_'.$lang['id_lang'])
                     );
                 }
                 $cleanDescription = Tools::getDescriptionClean(

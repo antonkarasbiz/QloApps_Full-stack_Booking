@@ -151,7 +151,7 @@
 									name="short_description_{$language.id_lang}"
 									id="short_description_{$language.id_lang}"
 									cols="2" rows="3"
-									class="wk_tinymce form-control">{if isset($smarty.post.$short_desc_name)}{$smarty.post.$short_desc_name}{elseif isset($edit)}{$hotel_info.short_description[{$language.id_lang}]}{/if}</textarea>
+									class="form-control">{if isset($smarty.post.$short_desc_name)}{$smarty.post.$short_desc_name}{elseif isset($edit)}{$hotel_info.short_description[{$language.id_lang}]}{/if}</textarea>
 								</div>
 							{/foreach}
 						</div>
