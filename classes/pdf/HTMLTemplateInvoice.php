@@ -317,13 +317,12 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
         $formattedHotelAddress = false;
         if (Module::isInstalled('hotelreservationsystem')) {
             $obj_htl_bk_dtl = new HotelBookingDetail();
-            $obj_rm_type = new HotelRoomType();
             $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
-            $objHotelBranchInfo = new HotelBranchInformation((int) $order_obj->getOrderHotelId());
-            // since hotel address has same firstname and lastname we are going to remove the lastname
+            $objHotelBranchInfo = new HotelBranchInformation((int) $order_obj->getOrderHotelId(), $this->context->language->id);
             $invoiceAddressPatternRules['avoid'] = array('lastname');
             if ($idHotelAddress = $objHotelBranchInfo->getHotelIdAddress()) {
                 $objHotelAddress = new Address((int) $idHotelAddress);
+                $objHotelAddress->firstname = $objHotelBranchInfo->hotel_name;
                 $formattedHotelAddress = AddressFormat::generateAddress($objHotelAddress, $invoiceAddressPatternRules, '<br />', ' ');
             }
 
