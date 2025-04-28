@@ -457,8 +457,6 @@ class AdminAddressesControllerCore extends AdminController
         ** we delete its id_address to force the creation of a new one */
         if ((int)Tools::getValue('id_order')) {
             $this->_redirect = false;
-            // set deleted=1 as customer can have only one address and this address is for an order only
-            $_POST['deleted'] = 1;
         }
 
         // Check the requires fields which are settings in the BO
