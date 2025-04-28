@@ -689,17 +689,18 @@
     overflow-y: auto;
     max-height: 200px;
     background: #fff;
-    margin: 0;
-    margin-top: 2px;
-	font-size: 14px;
 	z-index: 10;
 	box-shadow: 0 4px 5px rgba(0, 0, 0, 0.15);
 	position: absolute;
 	width: 90%;}
-
+.customer_guest_detail_email_list{
+	width: 92%;}
 .customer_guest_detail_li {
-	white-space: nowrap;
-	padding: 15px;}
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+	padding: 10px;}
 .customer_guest_detail_li.active {
 	color: #fff;
 	background-color: #379bf0;}

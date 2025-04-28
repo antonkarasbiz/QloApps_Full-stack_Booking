@@ -193,41 +193,47 @@ $(document).ready(function()
 				let firstName = '';
 				let lastName = '';
 				let email = '';
+				let target = false
 				if ($(e.target).prop('id') == 'customer_guest_detail_firstname') {
 					firstName = $('#customer_guest_detail_firstname').val()
 				} else if ($(e.target).prop('id') == 'customer_guest_detail_lastname') {
 					lastName = $('#customer_guest_detail_lastname').val()
 				} else if ($(e.target).prop('id') == 'customer_guest_detail_email') {
-					email = $('#customer_guest_detail_email').val()
+					email = $('#customer_guest_detail_email').val();
 				}
 
 				let targetElem = $(this);
-				customerGuestDetailAjax = $.ajax({
-					type: 'POST',
-					url: orderOpcUrl,
-					async: false,
-					cache: false,
-					dataType : "json",
-					data: {
-						token : static_token,
-						ajax : true,
-						method : 'getCustomerGuestDetail',
-						firstname : firstName,
-						lastname : lastName,
-						email : email,
-					},
-					success: function(data) {
-						if (data.status) {
-							let listElem = $('<ul>').addClass('customer_guest_detail_ul');
-							$.each(data.guestDetails, function(index, guestDetail) {
-								let itemElem = $('<li>').addClass('customer_guest_detail_li').text(guestDetail.firstname + ' '+ guestDetail.lastname + ' ('+ guestDetail.email+')');
-								$(itemElem).attr('data-guest_detail', JSON.stringify(guestDetail));
-								$(listElem).append(itemElem);
-							});
-							$(targetElem).closest('.form-group').append($(listElem).prop('outerHTML'));
+				if ($.trim($(targetElem).val()) != '') {
+					customerGuestDetailAjax = $.ajax({
+						type: 'POST',
+						url: orderOpcUrl,
+						async: false,
+						cache: false,
+						dataType : "json",
+						data: {
+							token : static_token,
+							ajax : true,
+							method : 'getCustomerGuestDetail',
+							firstname : firstName,
+							lastname : lastName,
+							email : email,
+						},
+						success: function(data) {
+							if (data.status) {
+								let listElem = $('<ul>').addClass('customer_guest_detail_ul');
+								$.each(data.guestDetails, function(index, guestDetail) {
+									let itemElem = $('<li>').addClass('customer_guest_detail_li').text(guestDetail.firstname + ' '+ guestDetail.lastname + ' ('+ guestDetail.email+')');
+									$(itemElem).attr('data-guest_detail', JSON.stringify(guestDetail));
+									$(listElem).append(itemElem);
+								});
+								if ($(targetElem).prop('id') == 'customer_guest_detail_email') {
+									$(listElem).addClass('customer_guest_detail_email_list');
+								}
+								$(targetElem).closest('.form-group').append($(listElem).prop('outerHTML'));
+							}
 						}
-					}
-				});
+					});
+				}
 			}, 200);
 		}
 	});
