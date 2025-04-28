@@ -57,35 +57,56 @@
 					</ul>
 				</div>
 			{/if}
+			<div class="col-xs-3 col-xs-offset-3 help-block">
+				{l s='Use {room_type_name} to generate dynamic feature price names.' mod='hotelreservationsystem'}
+			</div>
 		</div>
 
-		{if isset($bulk_add)}
-			<div class="form-group room-type-name">
-				<label class="col-sm-3 control-label required" for="feature_price_name" >
-					{l s='Select Room Types:' mod='hotelreservationsystem'}
+		{if !isset($objFeaturePrice) || !$objFeaturePrice->id}
+			<div class="form-group">
+				<label class="control-label col-lg-3">
+					<span class="label-tooltip" data-toggle="tooltip" data-html="true" title="" data-original-title="{l s='Enable this option to create advance price rules for multiple room types.' mod='hotelreservationsystem'}">
+						{l s='Create for multiple room types' mod='hotelreservationsystem'}
+					</span>
 				</label>
-				<div class="col-sm-7">
-					{$hotel_tree}
+				<div class="col-lg-9 ">
+					<span class="switch prestashop-switch fixed-width-lg">
+						<input type="radio" {if isset($smarty.post.create_multiple) && $smarty.post.create_multiple == 1}checked="checked" {/if} value="1" id="create_multiple_on" name="create_multiple">
+						<label for="create_multiple_on">{l s='Yes' mod='hotelreservationsystem'}</label>
+						<input {if !isset($smarty.post.create_multiple) || isset($smarty.post.create_multiple) && $smarty.post.create_multiple == 0} checked="checked" {/if} type="radio" value="0" id="create_multiple_off" name="create_multiple">
+						<label for="create_multiple_off">{l s='No' mod='hotelreservationsystem'}</label>
+						<a class="slide-button btn"></a>
+					</span>
 				</div>
 			</div>
-		{else}
-			<div class="form-group room-type-name">
-				<label class="col-sm-3 control-label required" for="feature_price_name" >
-					{l s='Room Type :' mod='hotelreservationsystem'}
-				</label>
-				<div class="col-sm-3">
-					<input autocomplete="off" type="text" id="room_type_name" name="room_type_name" class="form-control" placeholder= "{l s='Enter room type name' mod='hotelreservationsystem'}" value="{if isset($productName)}{$productName}{/if}"/>
-					<input type="hidden" id="room_type_id" name="room_type_id" class="form-control" value="{if isset($objFeaturePrice->id_product)}{$objFeaturePrice->id_product}{else}0{/if}"/>
-					<div class="dropdown">
-						<ul class="room_type_search_results_ul"></ul>
-					</div>
-					<p class="error-block" style="display:none; color: #CD5D5D;">{l s='No match found for this search. Please try with an existing name.' mod='hotelreservationsystem'}</p>
-					<div class="help-block">
-						{l s='Enter room type name and select the room for which you are going to create this advanced price rule.' mod='hotelreservationsystem'}
+			{if isset($hotel_tree)}
+				<div class="form-group room-type-name-tree">
+					<label class="col-sm-3 control-label required" for="feature_price_name" >
+						{l s='Room Types:' mod='hotelreservationsystem'}
+					</label>
+					<div class="col-sm-7">
+						{$hotel_tree}
 					</div>
 				</div>
-			</div>
+			{/if}
 		{/if}
+
+		<div class="form-group room-type-name">
+			<label class="col-sm-3 control-label required" for="feature_price_name" >
+				{l s='Room Type :' mod='hotelreservationsystem'}
+			</label>
+			<div class="col-sm-3">
+				<input autocomplete="off" type="text" id="room_type_name" name="room_type_name" class="form-control" placeholder= "{l s='Enter room type name' mod='hotelreservationsystem'}" value="{if isset($productName)}{$productName}{/if}"/>
+				<input type="hidden" id="room_type_id" name="room_type_id" class="form-control" value="{if isset($objFeaturePrice->id_product)}{$objFeaturePrice->id_product}{else}0{/if}"/>
+				<div class="dropdown">
+					<ul class="room_type_search_results_ul"></ul>
+				</div>
+				<p class="error-block" style="display:none; color: #CD5D5D;">{l s='No match found for this search. Please try with an existing name.' mod='hotelreservationsystem'}</p>
+				<div class="help-block">
+					{l s='Enter room type name and select the room for which you are going to create this advanced price rule.' mod='hotelreservationsystem'}
+				</div>
+			</div>
+		</div>
 
 		<div class="form-group">
             <label for="date_selection_type" class="control-label col-lg-3">
