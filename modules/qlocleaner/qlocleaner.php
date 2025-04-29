@@ -854,8 +854,6 @@ class QloCleaner extends Module
             'htl_room_type_service_product_order_detail',
             'htl_room_type_service_product_cart_detail',
             'htl_hotel_service_product_cart_detail',
-            'htl_order_refund_rules',
-            'htl_order_refund_rules_lang',
         );
     }
 }
