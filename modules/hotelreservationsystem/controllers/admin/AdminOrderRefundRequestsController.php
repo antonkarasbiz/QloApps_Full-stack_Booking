@@ -196,8 +196,10 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
         if ($this->action == 'export' && empty($this->_listsql)) {
             $this->_select .= ', GROUP_CONCAT(hbd.`room_num`) AS room_num, GROUP_CONCAT(DISTINCT(hbd.`room_type_name`)) AS room_type_name, hbd.`id`, a.`id_order_return`,
                 hbd.`hotel_name`, GROUP_CONCAT(hbd.`date_from`) AS date_from, GROUP_CONCAT(hbd.`date_to`) AS date_to';
-            $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'order_return_detail` ordd ON (ordd.`id_order_return` = a.`id_order_return`)';
-            $this->_join .= ' LEFT JOIN '._DB_PREFIX_.'htl_booking_detail hbd ON (hbd.`id` = ordd.`id_htl_booking`)';
+            if (!Tools::getValue('id_order')) {
+                $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'order_return_detail` ordrd ON (ordrd.`id_order_return` = a.`id_order_return`)';
+            }
+            $this->_join .= ' LEFT JOIN '._DB_PREFIX_.'htl_booking_detail hbd ON (hbd.`id` = ordrd.`id_htl_booking`)';
             $this->_group = ' GROUP BY a.`id_order_return`';
             $this->fields_list = array_merge($this->fields_list, array(
                 'room_num' => array(

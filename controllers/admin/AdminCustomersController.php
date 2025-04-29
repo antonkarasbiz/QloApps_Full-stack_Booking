@@ -157,7 +157,8 @@ class AdminCustomersControllerCore extends AdminController
                 'active' => 'status',
                 'type' => 'bool',
                 'orderby' => false,
-                'filter_key' => 'a!active'
+                'filter_key' => 'a!active',
+                'callback' => 'formatStatusAsLabel',
             ),
             'newsletter' => array(
                 'title' => $this->l('Newsletter'),
@@ -240,6 +241,17 @@ class AdminCustomersControllerCore extends AdminController
         if (isset($filters[$prefix.$this->table.'Filter_deleted']) && $filters[$prefix.$this->table.'Filter_deleted'] == 1) {
             $this->deleted = false;
         }
+    }
+
+    public function formatStatusAsLabel($val, $row)
+    {
+        if ($val) {
+            $str_return = $this->l('Yes');
+        } else {
+            $str_return = $this->l('No');
+        }
+
+        return $str_return;
     }
 
     public function getCustomerStatusLabel($deleted, $tr)
@@ -1059,6 +1071,14 @@ class AdminCustomersControllerCore extends AdminController
             $this->errors[] = Tools::displayError('Unknown delete mode:').' '.$this->deleted;
             return;
         }
+    }
+
+    public function processExport($text_delimiter = '"')
+    {
+        $this->fields_list['newsletter']['callback'] = 'formatStatusAsLabel';
+        $this->fields_list['optin']['callback'] = 'formatStatusAsLabel';
+
+        return parent::processExport($text_delimiter);
     }
 
     protected function processBulkDelete()

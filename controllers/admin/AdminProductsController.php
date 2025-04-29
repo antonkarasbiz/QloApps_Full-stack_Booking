@@ -219,7 +219,7 @@ class AdminProductsControllerCore extends AdminController
 
         if ($join_category) {
             $this->_join .= ' INNER JOIN `'._DB_PREFIX_.'category_product` cp ON (cp.`id_product` = a.`id_product` AND cp.`id_category` = '.(int)$this->_category->id.') ';
-            $this->_select .= ' , cp.`position`, ';
+            $this->_select .= ' , cp.`position` ';
         }
 
         // show the list of the product according to the booking or service products
@@ -283,6 +283,13 @@ class AdminProductsControllerCore extends AdminController
             'type' => 'range',
             'align' => 'center',
         );
+        $this->fields_list['max_guests'] = array(
+            'title' => $this->l('Maximum Occupancy'),
+            'filter_key' => 'hrt!max_guests',
+            'type' => 'range',
+            'align' => 'center',
+            'optional' => true,
+        );
         // use it for total rooms
         $this->fields_list['num_rooms'] = array(
             'title' => $this->l('Total Rooms'),
@@ -319,15 +326,6 @@ class AdminProductsControllerCore extends AdminController
             'visible_default' => true,
             'orderby' => false
         );
-
-        $this->fields_list['max_guests'] = array(
-            'title' => $this->l('Maximum Occupancy'),
-            'filter_key' => 'hrt!max_guests',
-            'type' => 'range',
-            'align' => 'center',
-            'optional' => true,
-        );
-
         $this->fields_list['show_at_front'] = array(
             'title' => $this->l('Show at front'),
             'align' => 'text-center',
@@ -453,6 +451,7 @@ class AdminProductsControllerCore extends AdminController
             );
         }
     }
+
     public function formatStatusAsLabel($val, $row)
     {
         if ($val) {
@@ -463,7 +462,6 @@ class AdminProductsControllerCore extends AdminController
 
         return $str_return;
     }
-
 
     private function buildCategoryOptions($category)
     {
@@ -669,6 +667,7 @@ class AdminProductsControllerCore extends AdminController
                 )
             );
 
+            unset($this->fields_list['id_category_default']);
             unset($this->fields_list['id_global_demand']);
             unset($this->fields_list['id_feature']);
             unset($this->fields_list['id_service_product']);

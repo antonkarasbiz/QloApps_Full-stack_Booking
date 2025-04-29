@@ -380,6 +380,29 @@ class AdminAddressesControllerCore extends AdminController
         return parent::renderForm();
     }
 
+    public function processExport($text_delimiter = '"')
+    {
+        $this->fields_list = array_merge($this->fields_list, array(
+            'email' => array(
+                'title' => $this->l('Customer Email')
+            ),
+            'phone' => array(
+                'title' => $this->l('Phone')
+            ),
+            'phone_mobile' => array(
+                'title' => $this->l('Mobile phone')
+            ),
+            'dni' => array(
+                'title' => $this->l('Identification Number')
+            ),
+            'vat_number' => array(
+                'title' => $this->l('VAT number')
+            ),
+        ));
+
+        return parent::processExport($text_delimiter);
+    }
+
     // public function postProcess()
     // {
 
