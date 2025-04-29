@@ -30,6 +30,8 @@
 class TranslateCore
 {
     public static $ignore_folder = array('.', '..', '.svn', '.git', '.htaccess', 'index.php');
+    public static $langAdmLoaded = false;
+    public static $_LANGADM = array();
 
     /**
      * Get a translation for an admin controller
@@ -43,21 +45,19 @@ class TranslateCore
     public static function getAdminTranslation($string, $class = 'AdminTab', $addslashes = false, $htmlentities = true, $sprintf = null)
     {
         static $modules_tabs = null;
-
-        // @todo remove global keyword in translations files and use static
-        global $_LANGADM;
-
         if ($modules_tabs === null) {
             $modules_tabs = Tab::getModuleTabList();
         }
 
-        if ($_LANGADM == null) {
+        if (!self::$langAdmLoaded) {
             $iso = Context::getContext()->language->iso_code;
             if (empty($iso)) {
                 $iso = Language::getIsoById((int)Configuration::get('PS_LANG_DEFAULT'));
             }
             if (file_exists(_PS_TRANSLATIONS_DIR_.$iso.'/admin.php')) {
-                include(_PS_TRANSLATIONS_DIR_.$iso.'/admin.php');
+                self::$langAdmLoaded = true;
+                include_once(_PS_TRANSLATIONS_DIR_.$iso.'/admin.php');
+                self::$_LANGADM = $GLOBALS['_LANGADM'];
             }
         }
 
@@ -71,10 +71,10 @@ class TranslateCore
 
         $string = preg_replace("/\\\*'/", "\'", $string);
         $key = md5($string);
-        if (isset($_LANGADM[$class.$key])) {
-            $str = $_LANGADM[$class.$key];
+        if (isset(self::$_LANGADM[$class.$key])) {
+            $str = self::$_LANGADM[$class.$key];
         } else {
-            $str = Translate::getGenericAdminTranslation($string, $key, $_LANGADM);
+            $str = Translate::getGenericAdminTranslation($string, $key, self::$_LANGADM);
         }
 
         if ($htmlentities) {
