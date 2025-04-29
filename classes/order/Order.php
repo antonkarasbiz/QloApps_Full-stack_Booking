@@ -2858,17 +2858,6 @@ class OrderCore extends ObjectModel
     }
 
     /**
-     * Get the Hotel Id of the order
-     * @return int|bool Hotel Id of the order
-     */
-    public function getOrderHotelId()
-    {
-        return Db::getInstance()->getValue(
-            'SELECT `id_hotel` FROM `'._DB_PREFIX_.'htl_booking_detail` WHERE `id_order` = '.(int) $this->id
-        );
-    }
-
-    /**
      * @param bool $useTax: if true, total with tax, if false, total without tax
      * @param bool $withDiscounts: if true, total including discount, if false, total excluding discount
      * @return float total of the order

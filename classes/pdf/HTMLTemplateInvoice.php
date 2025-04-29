@@ -318,7 +318,7 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
         if (Module::isInstalled('hotelreservationsystem')) {
             $obj_htl_bk_dtl = new HotelBookingDetail();
             $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
-            $objHotelBranchInfo = new HotelBranchInformation((int) $order_obj->getOrderHotelId(), $this->context->language->id);
+            $objHotelBranchInfo = new HotelBranchInformation((int) HotelBookingDetail::getIdHotelByIdOrder($order_obj->id), $this->context->language->id);
             $invoiceAddressPatternRules['avoid'] = array('lastname');
             if ($idHotelAddress = $objHotelBranchInfo->getHotelIdAddress()) {
                 $objHotelAddress = new Address((int) $idHotelAddress);
