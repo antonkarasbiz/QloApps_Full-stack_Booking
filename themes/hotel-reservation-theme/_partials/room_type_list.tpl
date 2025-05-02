@@ -88,7 +88,7 @@
 										</div>
 									{/block}
 								</div>
-								<div class="row">
+								<div class="row room_type_list_actions">
 									{block name='room_type_list_room_max_guests'}
 										<div class="col-sm-12 col-md-6 col-lg-4 visible-md visible-lg">
 											<div class="capa_txt"><span>{$room_v['max_guests']|escape:'htmlall':'UTF-8'} {l s='Max guests:'}</span><br><span class="capa_data"> {$room_v['max_adults']|escape:'htmlall':'UTF-8'} {l s='Adults'}, {$room_v['max_children']|escape:'htmlall':'UTF-8'} {if $room_v['children'] > 1}{l s='Children'}{else}{l s='Child'}{/if}</span></div>
@@ -121,7 +121,7 @@
 													</div>
 												{else}
 													{block name='room_type_list_room_price'}
-														<div class="pull-right">
+														<div class="rm_price_cont">
 															{if $room_v['feature_price_diff'] >= 0}
 																<span class="rm_price_val {if $room_v['feature_price_diff']>0}room_type_old_price{/if}">
 																	{displayPrice price = $room_v['price_without_reduction']|round:2|floatVal}
