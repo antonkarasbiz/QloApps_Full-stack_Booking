@@ -384,20 +384,22 @@ $(document).ready(function() {
         if (min_booking_offset) {
             start_date.setDate(start_date.getDate() + parseInt(min_booking_offset));
             start_date.setHours(0, 0, 0, 0);
-            let selectedDateFrom = new Date(Date.parse(dateFrom));
-            let selectedDateTo = new Date(Date.parse(dateTo));
-            if (selectedDateFrom < start_date
-                || selectedDateTo < start_date
-            ) {
-                $('#check_in_time').val('');
-                $('#check_out_time').val('');
-            }
         }
 
+        let selectedDateFrom = new Date(Date.parse(dateFrom));
+        let selectedDateTo = new Date(Date.parse(dateTo));
         if (max_order_date) {
             max_order_date = $.datepicker.parseDate('yy-mm-dd', max_order_date );
         } else {
             max_order_date = false;
+        }
+
+        if (selectedDateFrom < start_date
+            || selectedDateTo < start_date
+            || (max_order_date && max_order_date < selectedDateTo)
+        ) {
+            $('#check_in_time').val('');
+            $('#check_out_time').val('');
         }
 
         if (typeof $('#daterange_value').data('dateRangePicker') != 'undefined') {
