@@ -1674,7 +1674,7 @@ class AdminOrdersControllerCore extends AdminController
                 $this->errors[] = Tools::displayError('The invoice for edit note was unable to load. ');
             }
         } elseif (Tools::isSubmit('submitAddOrder') && ($id_cart = Tools::getValue('id_cart'))) {
-            if ($this->tabAccess['edit'] === '1') {
+            if ($this->tabAccess['add'] === '1') {
                 $objCart = new Cart($id_cart);
                 if (Validate::isLoadedObject($objCart)) {
                     $this->context->cart = $objCart;
@@ -7100,63 +7100,6 @@ class AdminOrdersControllerCore extends AdminController
         }
 
         die(json_encode($response));
-    }
-
-    public function ajaxProcessUpdateServiceProduct()
-    {
-        $operator = Tools::getValue('operator', 'up');
-        $idServiceProduct = Tools::getValue('id_product');
-        $idCartBooking = Tools::getValue('id_cart_booking');
-        $qty = Tools::getValue('qty');
-
-        if (Validate::isLoadedObject($objHotelCartBookingData = new HotelCartBookingData($idCartBooking))) {
-            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-
-            if ($operator == 'up') {
-                $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
-                if ($objRoomTypeServiceProduct->isRoomTypeLinkedWithProduct($objHotelCartBookingData->id_product, $idServiceProduct)) {
-                    // validate quanitity
-                    if (Validate::isLoadedObject($objProduct = new Product($idServiceProduct))) {
-                        if ($objProduct->allow_multiple_quantity) {
-                            if (!Validate::isUnsignedInt($qty)) {
-                                $this->errors[] = Tools::displayError('The quantity code you\'ve entered is invalid.');
-                            // } elseif ($objProduct->max_quantity && $qty > $objProduct->max_quantity) {
-                            //     $this->errors[] = Tools::displayError(sprintf('cannot add more than %d quantity.', $objProduct->max_quantity));
-                            }
-                        } else {
-                            $qty = 1;
-                        }
-                    } else {
-                        $this->errors[] = Tools::displayError('This Service is not available.');
-                    }
-                } else {
-                    $this->errors[] = Tools::displayError('This Service is not available with selected room.');
-                }
-            }
-
-            if (empty($this->errors)) {
-                if ($objRoomTypeServiceProductCartDetail->updateCartServiceProduct(
-                    $idCartBooking,
-                    $idServiceProduct,
-                    $qty,
-                    $objHotelCartBookingData->id_cart,
-                    $operator
-                )) {
-                    $this->ajaxDie(json_encode(array(
-                        'hasError' => false
-                    )));
-                } else {
-                    $this->errors[] = Tools::displayError('Unable to update services. Please try reloading the page.');
-                }
-
-            }
-        } else {
-            $this->errors[] = Tools::displayError('Room not found. Please try reloading the page.');
-        }
-        $this->ajaxDie(json_encode(array(
-            'hasError' => true,
-            'errors' => $this->errors
-        )));
     }
 
     // To change the status of the room
