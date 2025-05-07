@@ -6173,8 +6173,7 @@ class AdminOrdersControllerCore extends AdminController
         $del_id = Tools::getValue('del_id');
         $room_id = Tools::getValue('id_room');
         $obj_hotel_cart_detail = new HotelCartBookingData();
-        $deleted = $obj_hotel_cart_detail->deleteCartBookingData($cart_id, $id_product, $room_id, $dt_frm, $dt_to);
-        if ($deleted) {
+        if ($obj_hotel_cart_detail->deleteCartBookingData($cart_id, $id_product, $room_id, $dt_frm, $dt_to)) {
             HotelRoomTypeFeaturePricing::deleteByIdCart($cart_id, $id_product, $room_id, $dt_frm, $dt_to );
             $obj_product_process = new HotelCartBookingData();
             $num_cart_rooms = 0;
@@ -6182,14 +6181,8 @@ class AdminOrdersControllerCore extends AdminController
                 $num_cart_rooms = count($rooms);
             }
 
-            $numDays = HotelHelper::getNumberOfDays($dt_frm, $dt_to);
-            $changed = $obj_product_process->changeProductDataByRoomId($room_id, $id_product, $numDays, $cart_id);
-            if ($changed) {
-                $result['status'] = 'deleted';
-                $result['cart_rooms'] = $num_cart_rooms;
-            } else {
-                $result['status'] = 'failed';
-            }
+            $result['status'] = 'deleted';
+            $result['cart_rooms'] = $num_cart_rooms;
         } else {
             $result['status'] = 'failed';
         }
