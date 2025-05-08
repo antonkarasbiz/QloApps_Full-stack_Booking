@@ -40,10 +40,6 @@
 			<page>sitemap</page>
 			<configurable>1</configurable>
 		</meta>
-		<meta id="properties">
-			<page>properties</page>
-			<configurable>1</configurable>
-		</meta>
 		<meta id="supplier">
 			<page>supplier</page>
 			<configurable>1</configurable>
@@ -150,6 +146,10 @@
 		</meta>
 		<meta id="products-comparison">
 			<page>products-comparison</page>
+			<configurable>1</configurable>
+		</meta>
+		<meta id="properties">
+			<page>properties</page>
 			<configurable>1</configurable>
 		</meta>
 	</entities>
