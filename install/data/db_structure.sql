@@ -658,6 +658,7 @@ CREATE TABLE `PREFIX_customer_thread` (
   `id_lang` int(10) unsigned NOT NULL,
   `id_contact` int(10) unsigned NOT NULL,
   `id_customer` int(10) unsigned DEFAULT NULL,
+  `id_employee` int(10) unsigned DEFAULT NULL,
   `id_order` int(10) unsigned DEFAULT NULL,
   `user_name` VARCHAR(128) DEFAULT NULL,
   `phone` VARCHAR(32) DEFAULT NULL,

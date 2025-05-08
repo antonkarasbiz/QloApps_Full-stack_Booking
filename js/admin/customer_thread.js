@@ -22,6 +22,14 @@ $(document).ready(function() {
         $('[name="PS_CUSTOMER_SERVICE_EMAIL_MESSAGE"]').closest('.form-group').hide();
     }
 
+    if ($('#PS_CUSTOMER_SERVICE_NAME_REQUIRED_on').prop('checked')) {
+        $('[name="PS_CUSTOMER_SERVICE_NAME_DISPLAY"]').closest('.form-group').hide();
+    }
+
+    if ($('#PS_CUSTOMER_SERVICE_PHONE_REQUIRED_on').prop('checked')) {
+        $('[name="PS_CUSTOMER_SERVICE_PHONE_DISPLAY"]').closest('.form-group').hide();
+    }
+
     $(document).on('change', '[name="PS_CUSTOMER_SERVICE_CONTACT_ALLOW"]', function() {
         if ($('#PS_CUSTOMER_SERVICE_CONTACT_ALLOW_on').prop('checked')) {
             $('[name="PS_CUSTOMER_SERVICE_EMAIL_MESSAGE"]').closest('.form-group').hide();
@@ -29,4 +37,23 @@ $(document).ready(function() {
             $('[name="PS_CUSTOMER_SERVICE_EMAIL_MESSAGE"]').closest('.form-group').show();
         }
     });
+
+    $(document).on('change', '[name="PS_CUSTOMER_SERVICE_NAME_REQUIRED"]', function() {
+        if ($('#PS_CUSTOMER_SERVICE_NAME_REQUIRED_on').prop('checked')) {
+            $('[name="PS_CUSTOMER_SERVICE_NAME_DISPLAY"]').closest('.form-group').hide();
+            $('#PS_CUSTOMER_SERVICE_NAME_DISPLAY_on').prop('checked', true);
+        } else {
+            $('[name="PS_CUSTOMER_SERVICE_NAME_DISPLAY"]').closest('.form-group').show();
+        }
+    });
+
+    $(document).on('change', '[name="PS_CUSTOMER_SERVICE_PHONE_REQUIRED"]', function() {
+        if ($('#PS_CUSTOMER_SERVICE_PHONE_REQUIRED_on').prop('checked')) {
+            $('[name="PS_CUSTOMER_SERVICE_PHONE_DISPLAY"]').closest('.form-group').hide();
+            $('#PS_CUSTOMER_SERVICE_PHONE_DISPLAY_on').prop('checked', true);
+        } else {
+            $('[name="PS_CUSTOMER_SERVICE_PHONE_DISPLAY"]').closest('.form-group').show();
+        }
+    });
+
 });

@@ -953,7 +953,13 @@
 	<configuration id="PS_CUSTOMER_SERVICE_NAME_REQUIRED" name="PS_CUSTOMER_SERVICE_NAME_REQUIRED">
       <value>1</value>
     </configuration>
+	<configuration id="PS_CUSTOMER_SERVICE_NAME_DISPLAY" name="PS_CUSTOMER_SERVICE_NAME_DISPLAY">
+      <value>1</value>
+    </configuration>
 	<configuration id="PS_CUSTOMER_SERVICE_PHONE_REQUIRED" name="PS_CUSTOMER_SERVICE_PHONE_REQUIRED">
+      <value>1</value>
+    </configuration>
+	<configuration id="PS_CUSTOMER_SERVICE_PHONE_DISPLAY" name="PS_CUSTOMER_SERVICE_PHONE_DISPLAY">
       <value>1</value>
     </configuration>
 	<configuration id="PS_CUSTOMER_SERVICE_CONTACT_ALLOW" name="PS_CUSTOMER_SERVICE_CONTACT_ALLOW">

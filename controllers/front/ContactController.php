@@ -118,11 +118,7 @@ class ContactControllerCore extends FrontController
                     if ($contact->customer_service) {
                         if ((int)$id_customer_thread) {
                             $ct = new CustomerThread($id_customer_thread);
-                            $ct->status = CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN;
-                            $ct->id_lang = (int)$this->context->language->id;
-                            $ct->id_contact = (int)$id_contact;
                             $ct->id_order = (int)$id_order;
-                            $ct->update();
                         } else {
                             $ct = new CustomerThread();
                             if (isset($customer->id)) {
@@ -132,15 +128,15 @@ class ContactControllerCore extends FrontController
                             $ct->phone = $phone;
                             $ct->user_name = $userName;
                             $ct->subject = $subject;
-                            $ct->id_contact = (int)$id_contact;
-                            $ct->id_lang = (int)$this->context->language->id;
                             $ct->email = $from;
-                            $ct->status = CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN;
                             $ct->token = Tools::passwdGen(12);
-                            $ct->add();
                         }
 
-                        if ($ct->id) {
+                        $ct->status = CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN;
+                        $ct->id_lang = (int)$this->context->language->id;
+                        $ct->id_contact = (int)$id_contact;
+
+                        if ($ct->save()) {
                             $cm = new CustomerMessage();
                             $cm->id_customer_thread = $ct->id;
                             $cm->message = $message;
@@ -163,15 +159,16 @@ class ContactControllerCore extends FrontController
 
                     if (!count($this->errors)) {
                         $var_list = array(
-                                        '{order_name}' => '-',
-                                        '{attached_file}' => '-',
-                                        '{message}' => Tools::nl2br(stripslashes($message)),
-                                        '{email}' =>  $from,
-                                        '{product_name}' => '',
-                                    );
+                            '{order_name}' => '-',
+                            '{attached_file}' => ' ',
+                            '{message}' => Tools::nl2br(stripslashes($message)),
+                            '{email}' =>  $from,
+                            '{product_name}' => '',
+                            '{subject}' => $ct->subject,
+                        );
 
                         if (isset($file_attachment['name'])) {
-                            $var_list['{attached_file}'] = $file_attachment['name'];
+                            $var_list['{attached_file}'] = '<span style="color:#333"><strong>'.$this->l('Attached file').':</strong></span>'.$file_attachment['name'];
                         }
 
                         $id_product = (int)Tools::getValue('id_product');
@@ -253,9 +250,13 @@ class ContactControllerCore extends FrontController
 
         $email = Tools::safeOutput(Tools::getValue('from',
         ((isset($this->context->cookie) && isset($this->context->cookie->email) && Validate::isEmail($this->context->cookie->email)) ? $this->context->cookie->email : '')));
+        $customerName = isset($this->context->customer) ? $this->context->customer->firstname.' '.$this->context->customer->lastname : '';
+        $customerPhone = isset($this->context->customer) ? $this->context->customer->phone: '';
         $this->context->smarty->assign(array(
             'errors' => $this->errors,
             'email' => $email,
+            'customerName' => $customerName,
+            'customerPhone' => $customerPhone,
             'fileupload' => Configuration::get('PS_CUSTOMER_SERVICE_FILE_UPLOAD'),
             'max_upload_size' => (int)Tools::getMaxUploadSize()
         ));
@@ -315,7 +316,9 @@ class ContactControllerCore extends FrontController
                 'message' => html_entity_decode(Tools::getValue('message')),
 	            'contactKey' => $contactKey,
                 'contactNameRequired' => Configuration::get('PS_CUSTOMER_SERVICE_NAME_REQUIRED'),
+                'displayContactName' => Configuration::get('PS_CUSTOMER_SERVICE_NAME_DISPLAY'),
                 'contactPhoneRequired' => Configuration::get('PS_CUSTOMER_SERVICE_PHONE_REQUIRED'),
+                'displayContactPhone' => Configuration::get('PS_CUSTOMER_SERVICE_PHONE_DISPLAY'),
                 'allowContactSelection' => Configuration::get('PS_CUSTOMER_SERVICE_CONTACT_ALLOW')
             )
         );

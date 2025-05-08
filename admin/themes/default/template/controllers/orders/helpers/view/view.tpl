@@ -703,13 +703,13 @@
                 </div>
 
                 {* Order Internal notes *}
-                {if (sizeof($messages))}
+                {if isset($messages) && $messages}
                     <div class="panel order-notes">
                         <div class="panel-heading">
-                            <i class="icon-undo"></i> &nbsp;{l s='Order Notes'}
+                            <i class="icon-undo"></i> &nbsp;{l s='Order Private Notes'}
                         </div>
                         <div class="panel-content">
-                            {foreach from=$messages item=message}
+                            {foreach from=$messages item=message name=customerMessage}
                                 <div class="message-body">
                                     <p class="message-item-text">
                                         {$message['message']|escape:'html':'UTF-8'|nl2br}
@@ -726,6 +726,7 @@
                                         {/if}
                                     </p>
                                 </div>
+                                {if !$smarty.foreach.customerMessage.last}<hr/>{/if}
                                 {* {if ($message['is_new_for_me'])}
                                     <a class="new_message" title="{l s='Mark this message as \'viewed\''}" href="{$smarty.server.REQUEST_URI}&amp;token={$smarty.get.token}&amp;messageReaded={$message['id_message']}">
                                         <i class="icon-ok"></i>

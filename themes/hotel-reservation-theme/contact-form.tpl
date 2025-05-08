@@ -75,14 +75,16 @@
 				{else}
 					<form action="{$link->getPageLink('contact')}" method="post" class="contact-form-box" enctype="multipart/form-data">
 				{/if}
+					{if isset($displayContactName) && $displayContactName}
 						<div class="form-group row">
 							<div class="col-sm-12">
 								<label for="user_name" class="control-label">
 									{l s='Name'}{if isset($contactNameRequired) && $contactNameRequired}*{/if}
 								</label>
-								<input class="form-control contact_input" type="text" id="user_name" name="user_name" value="{if isset($smarty.post.user_name)}{$smarty.post.user_name}{elseif isset($customerThread.user_name)}{$customerThread.user_name|escape:'html':'UTF-8'}{/if}" {if isset($customerThread.user_name)} readonly{/if}/>
+								<input class="form-control contact_input" type="text" id="user_name" name="user_name" value="{if isset($smarty.post.user_name)}{$smarty.post.user_name}{elseif isset($customerThread.user_name)}{$customerThread.user_name|escape:'html':'UTF-8'}{elseif isset($customerName)}{$customerName}{/if}" {if isset($customerThread.user_name)} readonly{/if}/>
 							</div>
 						</div>
+					{/if}
 						<div class="form-group row">
 							<div class="col-sm-12">
 								<label for="Email" class="control-label">
@@ -95,18 +97,20 @@
 								{/if}
 							</div>
 						</div>
+					{if isset($displayContactPhone) && $displayContactPhone}
 						<div class="form-group row">
 							<div class="col-sm-12">
 								<label for="phone" class="control-label">
 									{l s='Phone'}{if isset($contactPhoneRequired) && $contactPhoneRequired}*{/if}
 								</label>
-								<input class="form-control contact_input" type="text" id="phone" name="phone" value="{if isset($smarty.post.phone)}{$smarty.post.phone}{else if isset($customerThread.phone)}{$customerThread.phone|escape:'html':'UTF-8'}{/if}" {if isset($customerThread.phone)}readonly="readonly"{/if}/>
+								<input class="form-control contact_input" type="text" id="phone" name="phone" value="{if isset($smarty.post.phone)}{$smarty.post.phone}{else if isset($customerThread.phone)}{$customerThread.phone|escape:'html':'UTF-8'}{elseif isset($customerPhone)}{$customerPhone}{/if}" {if isset($customerThread.phone)}readonly="readonly"{/if}/>
 							</div>
 						</div>
+					{/if}
 						<div class="form-group row">
 							<div class="col-sm-12">
 								<label for="subject" class="control-label">
-									{l s='Subject'}*
+									{l s='Title'}*
 								</label>
 								<input class="form-control contact_input" type="text" id="subject" name="subject" value="{if isset($smarty.post.subject)}{$smarty.post.subject}{else if isset($customerThread.subject)}{$customerThread.subject|escape:'html':'UTF-8'}{/if}" {if isset($customerThread.subject)}readonly="readonly"{/if}/>
 							</div>
@@ -150,9 +154,6 @@
 								<textarea class="form-control contact_textarea" id="message" name="message">{if isset($message)}{$message|escape:'html':'UTF-8'|stripslashes}{/if}</textarea>
 							</div>
 						</div>
-						<div class="form-group">
-							{l s='* Required fields'}
-						</div>
 						{if $fileupload == 1}
 							<div class="form-group row">
 								<div class="col-sm-12">
@@ -164,6 +165,9 @@
 								</div>
 							</div>
 						{/if}
+						<div class="form-group">
+							{l s='* Required fields'}
+						</div>
 						{hook h='displayGDPRConsent' moduleName='contactform'}
 						{hook h='displayContactFormFieldsAfter'}
 						<div class="form-group">

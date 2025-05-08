@@ -30,6 +30,7 @@ class CustomerThreadCore extends ObjectModel
     public $id_shop;
     public $id_lang;
     public $id_contact;
+    public $id_employee;
     public $id_customer;
     public $id_order;
     public $user_name;
@@ -60,6 +61,7 @@ class CustomerThreadCore extends ObjectModel
             'subject' => array('type' => self::TYPE_STRING, 'validate' => 'isCleanHtml'),
             'id_shop' =>    array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_customer' =>array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_employee' =>array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_order' =>    array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'email' =>        array('type' => self::TYPE_STRING, 'validate' => 'isEmail', 'size' => 254),
             'token' =>        array('type' => self::TYPE_STRING, 'validate' => 'isGenericName', 'required' => true),

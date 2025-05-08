@@ -2610,7 +2610,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
         $message = strip_tags($remark, '<br>');
         $saveMessage = true;
         $idCart = Cart::getCartIdByOrderId($objOrder->id);
-        if ($customerMessages = Message::getMessagesByOrderId($objOrder->id, true)) {
+        if ($customerMessages = Message::getMessagesByOrderId($objOrder->id, false)) {
             foreach ($customerMessages as $customerMessage) {
                 if ($customerMessage['message'] == $message) {
                     $saveMessage = false;
@@ -3424,7 +3424,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
             }
 
             $params['associations']['remarks'] = array();
-            if ($customerMessages = Message::getMessagesByOrderId($objOrder->id, true)) {
+            if ($customerMessages = Message::getMessagesByOrderId($objOrder->id)) {
                 foreach ($customerMessages as $customerMessage) {
                     $message = $customerMessage['message'];
                     $params['associations']['remarks'][] = $message;

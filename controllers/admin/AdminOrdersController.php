@@ -1424,6 +1424,10 @@ class AdminOrdersControllerCore extends AdminController
                             $customer_thread = new CustomerThread();
                             $customer_thread->id_contact = 0;
                             $customer_thread->id_customer = (int)$order->id_customer;
+                            $customer_thread->user_name = $customer->firstname.' '.$customer->lastname;
+                            $customer_thread->phone = $customer->phone;
+                            $customer_thread->subject = $order->reference;
+                            $customer_thread->id_employee = (int)$this->context->employee->id;
                             $customer_thread->id_shop = (int)$this->context->shop->id;
                             $customer_thread->id_order = (int)$order->id;
                             $customer_thread->id_lang = (int)$this->context->language->id;
@@ -1461,7 +1465,7 @@ class AdminOrdersControllerCore extends AdminController
                             if (@Mail::Send(
                                 (int)$order->id_lang,
                                 'order_merchant_comment',
-                                Mail::l('New message regarding your order', (int)$order->id_lang),
+                                Mail::l('New message regarding your booking', (int)$order->id_lang),
                                 $varsTpl,
                                 $customer->email,
                                 $customer->firstname.' '.$customer->lastname,

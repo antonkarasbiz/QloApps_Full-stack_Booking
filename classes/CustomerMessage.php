@@ -74,7 +74,7 @@ class CustomerMessageCore extends ObjectModel
         ),
     );
 
-    public static function getMessagesByOrderId($id_order, $private = true, $limit = false)
+    public static function getMessagesByOrderId($id_order, $private = null, $limit = false)
     {
         return Db::getInstance()->executeS('
 			SELECT cm.*,
@@ -91,7 +91,7 @@ class CustomerMessageCore extends ObjectModel
 			LEFT OUTER JOIN `'._DB_PREFIX_.'employee` e
 				ON e.`id_employee` = cm.`id_employee`
 			WHERE ct.id_order = '.(int)$id_order.'
-			'.(!$private ? 'AND cm.`private` = 0' : '').'
+			'.(!is_null($private) ? 'AND cm.`private` = '.(int) $private : '').'
 			GROUP BY cm.id_customer_message
 			ORDER BY cm.date_add DESC'.
             (($limit) ? ' LIMIT '.(int) $limit: ' ')

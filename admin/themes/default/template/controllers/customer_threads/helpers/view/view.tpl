@@ -111,8 +111,8 @@
 			{l s="Choose a template"}
 		</button>
 		-->
-		<button class="submitReply btn btn-default pull-right" name="submitReply"><i class="icon-mail-reply"></i> {l s="Send"}</button>
-		<button class="submitReply btn btn-default pull-right" name="submitReplyAndClose"><i class="icon-reply-all"></i> {l s='Reply And Close'}</button>
+		<button class="submitReply btn btn-default" name="submitReplyAndClose"><i class="icon-reply-all"></i> {l s='Reply And Close'}</button>
+		<button class="submitReply btn btn-default" name="submitReply"><i class="icon-mail-reply"></i> {l s='Reply And Open'}</button>
 		<button class="submitReply btn btn-default pull-right" name="submitReplyAsPrivate"><i class="icon-lock"></i> {l s='Add Private Message'}</button>
 		<input type="hidden" name="id_customer_thread" value="{$thread->id|intval}" />
 		<input type="hidden" name="msg_email" value="{$thread->email}" />

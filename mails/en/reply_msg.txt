@@ -3,6 +3,8 @@
 
 {headingtext},
 
+{subject}
+
 {reply}
 
 Please do not reply directly to this email, we will not receive it.
