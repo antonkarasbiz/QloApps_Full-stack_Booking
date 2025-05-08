@@ -85,6 +85,7 @@ class QloCleaner extends Module
             }
             Hook::exec('actionCleanData', array('method' => 'checkAndFix'));
             $html .= $this->displayConfirmation($conf);
+            Cache::getInstance()->flush();
         } elseif (Tools::isSubmit('submitCleanAndOptimize')) {
             $logs = self::cleanAndOptimize();
             if (count($logs)) {
@@ -95,14 +96,17 @@ class QloCleaner extends Module
             }
             Hook::exec('actionCleanData', array('method' => 'cleanAndOptimize'));
             $html .= $this->displayConfirmation($conf);
+            Cache::getInstance()->flush();
         } elseif (Tools::getValue('submitTruncateCatalog') && Tools::getValue('checkTruncateCatalog')) {
             self::truncate('catalog');
             Hook::exec('actionCleanData', array('method' => 'catalog'));
             $html .= $this->displayConfirmation($this->l('Catalog truncated successfuly, please run functional Integrity constraints to clean the database.'));
+            Cache::getInstance()->flush();
         } elseif (Tools::getValue('submitTruncateSales') && Tools::getValue('checkTruncateSales')) {
             self::truncate('sales');
             Hook::exec('actionCleanData', array('method' => 'sales'));
             $html .= $this->displayConfirmation($this->l('Orders and customers truncated successfuly, please run functional Integrity constraints to clean the database'));
+            Cache::getInstance()->flush();
         }
 
         $html .= $this->context->smarty->fetch(_PS_MODULE_DIR_.$this->name.'/views/templates/admin/qlocleaner_script.tpl');
