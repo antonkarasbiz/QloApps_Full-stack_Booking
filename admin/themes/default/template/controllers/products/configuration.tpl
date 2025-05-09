@@ -125,6 +125,9 @@
 						{for $k=0 to 1}
 							{assign var="var_name_room_info" value="rooms_info[`$k`]"}
 							<tr class="room_data_values" data-row-index="{$k}">
+                                <td class="center">
+                                    <input type="checkbox" value="" disabled name="bulk_update_room[]">
+                                </td>
 								<td class="col-sm-1 center">
 									<input class="form-control" type="text" name="{$var_name_room_info|cat:'[room_num]'}">
 								</td>
