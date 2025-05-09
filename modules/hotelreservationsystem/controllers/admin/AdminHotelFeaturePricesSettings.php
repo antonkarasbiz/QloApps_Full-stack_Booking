@@ -372,11 +372,6 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
         $jsonSpecialDays = json_encode($specialDays);
         $defaultLangId = Configuration::get('PS_LANG_DEFAULT');
         $createMultiple = Tools::getValue('create_multiple');
-        if (!$createMultiple) {
-            $roomTypeIds = array($roomTypeId);
-        } else {
-            $roomTypeIds = Tools::getValue('room_type_box');
-        }
 
         $objFeaturePricing = new HotelRoomTypeFeaturePricing();
         if ($priceImpactWay == HotelRoomTypeFeaturePricing::IMPACT_WAY_FIX_PRICE) {
@@ -384,41 +379,64 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
         }
 
         $languages = Language::getLanguages(false);
-        $objDefaultLang = new language($defaultLangId);
+        $objDefaultLang = new Language($defaultLangId);
         if (!($priceRuleNameDefault = Tools::getValue('feature_price_name_'.$defaultLangId))) {
-            $this->errors[] = sprintf(
-                $this->l('Advanced price rule name is required at least in %s'),
-                $objDefaultLang->name
-            );
+            $this->errors[] = sprintf($this->l('Advanced price rule name is required at least in %s'), $objDefaultLang->name);
         } else {
             if (preg_match('{room_type_name}', $priceRuleNameDefault)) {
                 $priceRuleNameDefault = str_replace('{room_type_name}', '%s', $priceRuleNameDefault);
             }
         }
 
+        $toUpdatePriceRuleName = false;
         $validateRules = call_user_func(
             array('HotelRoomTypeFeaturePricing', 'getValidationRules'),
             'HotelRoomTypeFeaturePricing'
         );
+        foreach ($languages as $lang) {
+            $priceRuleName = Tools::getValue('feature_price_name_'.$lang['id_lang']);
+            if (preg_match('{room_type_name}', $priceRuleName)) {
+                $priceRuleName = str_replace('{room_type_name}', '%s', $priceRuleName);
+                $toUpdatePriceRuleName = true;
+            }
+            if (!Validate::isCatalogName($priceRuleName)) {
+                $this->errors[] = $this->l('Advanced price rule name is invalid in ').$lang['name'];
+            } elseif (Tools::strlen($priceRuleName) > $validateRules['sizeLang']['feature_price_name']) {
+                $this->errors[] = sprintf(
+                    $this->l('Advanced price rule Name field is too long (%d chars max).'),
+                    $validateRules['sizeLang']['feature_price_name'],
+                );
+            }
+        }
+
         $featurePricingName = array();
-        if ($roomTypeIds) {
+        $roomTypeIds = array();
+        if (!$createMultiple) {
+            if ($roomTypeId) {
+                $roomTypeIds = array($roomTypeId);
+            } else {
+                $this->errors[] = $this->l('Room type is not selected. Please try again.');
+            }
+        } else if (!$roomTypeIds = Tools::getValue('room_type_box')) {
+            $this->errors[] = $this->l('Please select at least one room type for creating multiple price rules.');
+        }
+
+        if ($roomTypeIds && !$this->errors) {
             foreach ($roomTypeIds as $idRoomType) {
                 $objProduct = new Product((int) $idRoomType);
                 foreach ($languages as $lang) {
                     $priceRuleName = Tools::getValue('feature_price_name_'.$lang['id_lang']);
-                    if ($priceRuleName) {
+                    if ($priceRuleName && $toUpdatePriceRuleName) {
                         if (preg_match('{room_type_name}', $priceRuleName)) {
                             $priceRuleName = str_replace('{room_type_name}', $objProduct->name[$lang['id_lang']], $priceRuleName);
                         }
-                    }
-
-                    if (!Validate::isCatalogName($priceRuleName)) {
-                        $this->errors[] = $this->l('Advanced price rule name is invalid in ').$lang['name'];
-                    } elseif (Tools::strlen($priceRuleName) > $validateRules['sizeLang']['feature_price_name']) {
-                        $this->errors[] = sprintf(
-                            $this->l('Advanced price rule Name field is too long (%d chars max).'),
-                            $validateRules['sizeLang']['feature_price_name']
-                        );
+                        if (Tools::strlen($priceRuleName) > $validateRules['sizeLang']['feature_price_name']) {
+                            $this->errors[] = sprintf(
+                                $this->l('Advanced price rule Name field is too long (%d chars max) for "%s" room type.'),
+                                $validateRules['sizeLang']['feature_price_name'],
+                                $objProduct->name[$lang['id_lang']]
+                            );
+                        }
                     }
 
                     if ($priceRuleName) {
@@ -428,10 +446,6 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                     }
                 }
             }
-        }
-
-        if (!$roomTypeId && !$createMultiple) {
-            $this->errors[] = $this->l('Room is not selected. Please try again.');
         }
 
         if ($dateSelectionType == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_SPECIFIC) {
@@ -485,9 +499,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
             $this->errors[] = $this->l('Please select at least one day for week days restriction.');
         }
 
-        if ($createMultiple && empty($roomTypeIds)) {
-            $this->errors[] = $this->l('Please select at least one room type for creating multiple price rules.');
-        } else if (empty($this->errors)) {
+        if (empty($this->errors)) {
             foreach ($roomTypeIds as $idRoomType)   {
                 $isPlanTypeExists = $this->validateExistingFeaturePrice(
                     $dateSelectionType,
