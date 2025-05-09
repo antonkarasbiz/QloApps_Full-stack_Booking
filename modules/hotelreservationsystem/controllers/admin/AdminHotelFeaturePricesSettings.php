@@ -474,10 +474,6 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
             $this->errors[] = $this->l('Please enter a valid impact value.');
         } else if (!Validate::isPrice($impactValue)) {
             $this->errors[] = $this->l('Invalid value of impact value.');
-        } else if ($priceImpactType == HotelRoomTypeFeaturePricing::IMPACT_TYPE_PERCENTAGE
-            && $impactValue > 100 // check if percentage added is greater then 100
-        ) {
-            $this->errors[] = $this->l('Invalid value of impact value.');
         }
 
         if (!(bool)$groups) {

@@ -41,6 +41,9 @@
 					{assign var="feature_price_name" value="feature_price_name_`$language.id_lang`"}
 					<input type="text" id="{$feature_price_name}" name="{$feature_price_name}" value="{if isset($objFeaturePrice->feature_price_name[$language.id_lang]) && $objFeaturePrice->feature_price_name[$language.id_lang]}{$objFeaturePrice->feature_price_name[$language.id_lang]}{else if isset($smarty.post.$feature_price_name)}{$smarty.post.$feature_price_name}{/if}" data-lang-name="{$language.name}" placeholder="{l s='Enter advanced price rule name' mod='hotelreservationsystem'}" class="form-control feature_price_name_all" {if $currentLang.id_lang != $language.id_lang}style="display:none;"{/if}/>
 				{/foreach}
+				<div class="help-block">
+					{l s='Use {room_type_name} to generate dynamic feature price names.' mod='hotelreservationsystem'}
+				</div>
 			</div>
 			{if $languages|@count > 1}
 				<div class="col-lg-2">
@@ -57,9 +60,6 @@
 					</ul>
 				</div>
 			{/if}
-			<div class="col-xs-3 col-xs-offset-3 help-block">
-				{l s='Use {room_type_name} to generate dynamic feature price names.' mod='hotelreservationsystem'}
-			</div>
 		</div>
 
 		{if !isset($objFeaturePrice) || !$objFeaturePrice->id}
