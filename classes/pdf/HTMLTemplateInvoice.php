@@ -314,12 +314,12 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
         $service_product_data = array();
         $room_extra_demands = array();
         $room_additinal_services = array();
-        $formattedHotelAddress = false;
+        $formattedHotelAddress = '';
         if (Module::isInstalled('hotelreservationsystem')) {
             $obj_htl_bk_dtl = new HotelBookingDetail();
             $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
             $objHotelBranchInfo = new HotelBranchInformation((int) HotelBookingDetail::getIdHotelByIdOrder($order_obj->id), $this->context->language->id);
-            $invoiceAddressPatternRules['avoid'] = array('lastname');
+            $invoiceAddressPatternRules['avoid'][] = 'lastname';
             if ($idHotelAddress = $objHotelBranchInfo->getHotelIdAddress()) {
                 $objHotelAddress = new Address((int) $idHotelAddress);
                 $objHotelAddress->firstname = $objHotelBranchInfo->hotel_name;
