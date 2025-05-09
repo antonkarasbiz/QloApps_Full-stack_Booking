@@ -2524,10 +2524,13 @@ class HotelBookingDetail extends ObjectModel
         $new_date_from,
         $new_date_to
     ) {
-        $sql = 'SELECT * FROM `'._DB_PREFIX_.'htl_booking_detail` WHERE `id_room`='.(int)$id_room.
-        ' AND `date_from` < \''.pSQL($new_date_to).'\' AND `date_to` > \''.pSQL($new_date_from).
-        '\' AND `date_from` != \''.pSQL($old_date_from).'\' AND `date_to` != \''.pSQL($old_date_to).
-        '\' AND `is_refunded`=0 AND `is_back_order`=0';
+        $sql = 'SELECT * FROM `'._DB_PREFIX_.'htl_booking_detail` WHERE `id_room`='.(int)$id_room.'
+        AND `date_from` < \''.pSQL($new_date_to).'\' AND `date_from` != \''.pSQL($old_date_from).'\'
+        AND IF(`id_status` !='.HotelBookingDetail::STATUS_CHECKED_OUT.',
+            `date_to` != \''.pSQL($old_date_to).'\' AND `date_to` > \''.pSQL($new_date_from).'\',
+            `check_out` != \''.pSQL($old_date_to).'\' AND `check_out` > \''.pSQL($new_date_from).'\'
+        )
+        AND `is_refunded`=0 AND `is_back_order`=0';
 
         return Db::getInstance()->executeS($sql);
     }
