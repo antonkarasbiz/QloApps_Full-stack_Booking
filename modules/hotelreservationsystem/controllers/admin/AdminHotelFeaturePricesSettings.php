@@ -403,7 +403,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                 $this->errors[] = $this->l('Advanced price rule name is invalid in ').$lang['name'];
             } elseif (Tools::strlen($priceRuleName) > $validateRules['sizeLang']['feature_price_name']) {
                 $this->errors[] = sprintf(
-                    $this->l('Advanced price rule Name field is too long (%d chars max).'),
+                    $this->l('Advanced price rule Name field is too long (%d chars max) in ').$lang['name'],
                     $validateRules['sizeLang']['feature_price_name'],
                 );
             }
@@ -432,7 +432,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                         }
                         if (Tools::strlen($priceRuleName) > $validateRules['sizeLang']['feature_price_name']) {
                             $this->errors[] = sprintf(
-                                $this->l('Advanced price rule Name field is too long (%d chars max) for "%s" room type.'),
+                                $this->l('Advanced price rule Name field is too long (%d chars max) for "%s" room type in ').$lang['name'],
                                 $validateRules['sizeLang']['feature_price_name'],
                                 $objProduct->name[$lang['id_lang']]
                             );
