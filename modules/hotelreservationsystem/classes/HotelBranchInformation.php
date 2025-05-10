@@ -1194,12 +1194,10 @@ class HotelBranchInformation extends ObjectModel
         if ($field == 'short_description') {
             $limit = (int)Configuration::get('PS_SHORT_DESC_LIMIT');
             if ($limit <= 0) {
-                $limit = 400;
+                $limit = Configuration::PS_SHORT_DESC_LIMIT;
             }
 
-            $size_without_html = Tools::strlen(strip_tags($value));
-            $size_with_html = Tools::strlen($value);
-            $this->def['fields']['short_description']['size'] = $limit + $size_with_html - $size_without_html;
+            $this->def['fields']['short_description']['size'] = $limit;
         }
 
         return parent::validateField($field, $value, $id_lang, $skip, $human_errors);

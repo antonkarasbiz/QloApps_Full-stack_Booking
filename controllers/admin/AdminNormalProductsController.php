@@ -657,7 +657,7 @@ class AdminNormalProductsControllerCore extends AdminController
             }
             $limit = (int)Configuration::get('PS_SHORT_DESC_LIMIT');
             if ($limit <= 0) {
-                $limit = 400;
+                $limit = Configuration::PS_SHORT_DESC_LIMIT;
             }
             $className = 'Product';
             foreach (Language::getLanguages(true) as $language) {
@@ -2180,7 +2180,7 @@ class AdminNormalProductsControllerCore extends AdminController
         // Check description short size without html
         $limit = (int)Configuration::get('PS_SHORT_DESC_LIMIT');
         if ($limit <= 0) {
-            $limit = 400;
+            $limit = Configuration::PS_SHORT_DESC_LIMIT;
         }
         foreach ($languages as $language) {
             if ($this->isProductFieldUpdated('description_short', $language['id_lang']) && ($value = Tools::getValue('description_short_'.$language['id_lang']))) {
@@ -3545,7 +3545,7 @@ class AdminNormalProductsControllerCore extends AdminController
             'token' => $this->token,
             'currency' => $currency,
             'link' => $this->context->link,
-            'PS_SHORT_DESC_LIMIT' => Configuration::get('PS_SHORT_DESC_LIMIT') ? Configuration::get('PS_SHORT_DESC_LIMIT') : 400
+            'PS_SHORT_DESC_LIMIT' => Configuration::get('PS_SHORT_DESC_LIMIT') ? Configuration::get('PS_SHORT_DESC_LIMIT') : Configuration::PS_SHORT_DESC_LIMIT
         ));
         $data->assign($this->tpl_form_vars);
 

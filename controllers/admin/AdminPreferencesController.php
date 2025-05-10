@@ -193,7 +193,7 @@ class AdminPreferencesControllerCore extends AdminController
                     'type' => 'text',
                     'suffix' => $this->l('characters'),
                     'class' => 'fixed-width-xl',
-                    'desc' => $this->l('If set to 0, the maximum limit will be 400 characters.')
+                    'desc' => sprintf($this->l('If set to 0, the maximum limit will be %d characters.'), Configuration::PS_SHORT_DESC_LIMIT)
                 ),
                 // 'PS_DISPLAY_SUPPLIERS' => array(
                 //     'title' => $this->l('Display suppliers and manufacturers'),

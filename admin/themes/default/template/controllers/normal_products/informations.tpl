@@ -446,11 +446,11 @@
 		</label>
 		<div class="col-lg-9">
 			{include
-				file="controllers/products/textarea_lang.tpl"
+				file="controllers/normal_products/textarea_lang.tpl"
 				languages=$languages
 				input_name='description_short'
 				input_value=$product->description_short
-				max=$PS_SHORT_DESC_LIMIT}
+				maxlength=$PS_SHORT_DESC_LIMIT}
 		</div>
 	</div>
 	{* <div class="form-group">

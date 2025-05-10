@@ -815,7 +815,7 @@ class AdminProductsControllerCore extends AdminController
             $room_type_info = $obj_hotel_room_type->getRoomTypeInfoByIdProduct($id_product_old);
             $limit = (int)Configuration::get('PS_SHORT_DESC_LIMIT');
             if ($limit <= 0) {
-                $limit = 400;
+                $limit = Configuration::PS_SHORT_DESC_LIMIT;
             }
             $className = 'Product';
             if ($room_type_info && $room_type_info['id_hotel'] == $id_hotel_new) {
@@ -2190,7 +2190,7 @@ class AdminProductsControllerCore extends AdminController
         // Check description short size without html
         $limit = (int)Configuration::get('PS_SHORT_DESC_LIMIT');
         if ($limit <= 0) {
-            $limit = 400;
+            $limit = Configuration::PS_SHORT_DESC_LIMIT;
         }
         foreach ($languages as $language) {
             if ($this->isProductFieldUpdated('description_short', $language['id_lang']) && ($value = Tools::getValue('description_short_'.$language['id_lang']))) {
@@ -4387,7 +4387,7 @@ class AdminProductsControllerCore extends AdminController
             'token' => $this->token,
             'currency' => $currency,
             'link' => $this->context->link,
-            'PS_SHORT_DESC_LIMIT' => Configuration::get('PS_SHORT_DESC_LIMIT') ? Configuration::get('PS_SHORT_DESC_LIMIT') : 400,
+            'PS_SHORT_DESC_LIMIT' => Configuration::get('PS_SHORT_DESC_LIMIT') ? Configuration::get('PS_SHORT_DESC_LIMIT') : Configuration::PS_SHORT_DESC_LIMIT,
             'category_position' => Tools::getValue('category_position', $product->getPositionInCategory()),
         ));
         $data->assign($this->tpl_form_vars);
