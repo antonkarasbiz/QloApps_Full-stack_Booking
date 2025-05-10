@@ -58,6 +58,13 @@ class AdminHotelBedTypesController extends ModuleAdminController
 
         $this->addRowAction('edit');
         $this->addRowAction('delete');
+        $this->bulk_actions = array(
+            'delete' => array(
+                'text' => $this->l('Delete selected'),
+                'confirm' => $this->l('Delete selected items?'),
+                'icon' => 'icon-trash'
+            )
+        );
     }
 
     public function initPageHeaderToolbar()
