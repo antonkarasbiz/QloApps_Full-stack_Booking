@@ -813,10 +813,24 @@ class AdminProductsControllerCore extends AdminController
             $id_hotel_new = Tools::getValue('id_hotel');
             $obj_hotel_room_type = new HotelRoomType();
             $room_type_info = $obj_hotel_room_type->getRoomTypeInfoByIdProduct($id_product_old);
+            $limit = (int)Configuration::get('PS_SHORT_DESC_LIMIT');
+            if ($limit <= 0) {
+                $limit = 400;
+            }
+            $className = 'Product';
             if ($room_type_info && $room_type_info['id_hotel'] == $id_hotel_new) {
                 foreach (Language::getLanguages(true) as $language) {
                     $product->name[$language['id_lang']] = $product->name[$language['id_lang']].
                     ' - '.$this->l('Duplicate');
+                    if (Tools::strlen(strip_tags($product->description_short[$language['id_lang']])) > $limit) {
+                        $this->errors[] = sprintf(
+                            Tools::displayError('This %1$s field in %2$s is too long: %3$d chars max (current count %4$d).'),
+                            call_user_func(array($className, 'displayFieldName'), 'description_short'),
+                            $language['name'],
+                            $limit,
+                            Tools::strlen(strip_tags($product->description_short[$language['id_lang']]))
+                        );
+                    }
                 }
             }
 
@@ -828,66 +842,69 @@ class AdminProductsControllerCore extends AdminController
             foreach (Language::getLanguages(true) as $language) {
                 $product->link_rewrite[$language['id_lang']] = Tools::str2url($product->name[$language['id_lang']]);
             }
-            if ($product->add()
-                // && Category::duplicateProductCategories($id_product_old, $product->id)
-                && Product::duplicateSuppliers($id_product_old, $product->id)
-                && ($combination_images = Product::duplicateAttributes($id_product_old, $product->id)) !== false
-                && GroupReduction::duplicateReduction($id_product_old, $product->id)
-                && Product::duplicateAccessories($id_product_old, $product->id)
-                && Product::duplicateFeatures($id_product_old, $product->id)
-                && Pack::duplicate($id_product_old, $product->id)
-                && Product::duplicateCustomizationFields($id_product_old, $product->id)
-                && Product::duplicateTags($id_product_old, $product->id)
-                && Product::duplicateDownload($id_product_old, $product->id)
-            ) {
-                $obj_hotel_room_type = new HotelRoomType();
-                $room_type_info = $obj_hotel_room_type->getRoomTypeInfoByIdProduct($id_product_old);
-                $id_room_type_old = $room_type_info['id'];
-                if (!$id_hotel_new) {
-                    $id_hotel_new = $room_type_info['id_hotel'];
-                }
 
-                if ($product->hasAttributes()) {
-                    Product::updateDefaultAttribute($product->id);
-                } else {
-                    Product::duplicateSpecificPrices($id_product_old, $product->id);
-                }
+            if (!$this->errors) {
+                if ($product->add()
+                    // && Category::duplicateProductCategories($id_product_old, $product->id)
+                    && Product::duplicateSuppliers($id_product_old, $product->id)
+                    && ($combination_images = Product::duplicateAttributes($id_product_old, $product->id)) !== false
+                    && GroupReduction::duplicateReduction($id_product_old, $product->id)
+                    && Product::duplicateAccessories($id_product_old, $product->id)
+                    && Product::duplicateFeatures($id_product_old, $product->id)
+                    && Pack::duplicate($id_product_old, $product->id)
+                    && Product::duplicateCustomizationFields($id_product_old, $product->id)
+                    && Product::duplicateTags($id_product_old, $product->id)
+                    && Product::duplicateDownload($id_product_old, $product->id)
+                ) {
+                    $obj_hotel_room_type = new HotelRoomType();
+                    $room_type_info = $obj_hotel_room_type->getRoomTypeInfoByIdProduct($id_product_old);
+                    $id_room_type_old = $room_type_info['id'];
+                    if (!$id_hotel_new) {
+                        $id_hotel_new = $room_type_info['id_hotel'];
+                    }
 
-                $id_room_type_new = HotelRoomType::duplicateRoomType(
-                    $id_product_old,
-                    $product->id,
-                    $id_hotel_new,
-                    true
-                );
-                if ($id_room_type_new) {
-                    if (!HotelRoomType::duplicateRooms(
+                    if ($product->hasAttributes()) {
+                        Product::updateDefaultAttribute($product->id);
+                    } else {
+                        Product::duplicateSpecificPrices($id_product_old, $product->id);
+                    }
+
+                    $id_room_type_new = HotelRoomType::duplicateRoomType(
                         $id_product_old,
-                        $id_room_type_new,
                         $product->id,
-                        $id_hotel_new
-                    )) {
-                        $this->errors[] = Tools::displayError('An error occurred while duplicating rooms.');
+                        $id_hotel_new,
+                        true
+                    );
+                    if ($id_room_type_new) {
+                        if (!HotelRoomType::duplicateRooms(
+                            $id_product_old,
+                            $id_room_type_new,
+                            $product->id,
+                            $id_hotel_new
+                        )) {
+                            $this->errors[] = Tools::displayError('An error occurred while duplicating rooms.');
+                        }
+                        if (!HotelRoomTypeDemand::duplicateRoomTypeDemands($id_product_old, $product->id)) {
+                            $this->errors[] = Tools::displayError(
+                                'An error occurred while duplicating additional facilities.'
+                            );
+                        }
+                    } else {
+                        $this->errors[] = Tools::displayError('An error occurred while duplicating room type.');
                     }
-                    if (!HotelRoomTypeDemand::duplicateRoomTypeDemands($id_product_old, $product->id)) {
-                        $this->errors[] = Tools::displayError(
-                            'An error occurred while duplicating additional facilities.'
-                        );
-                    }
-                } else {
-                    $this->errors[] = Tools::displayError('An error occurred while duplicating room type.');
-                }
 
-                if (!Tools::getValue('noimage') && !Image::duplicateProductImages($id_product_old, $product->id, $combination_images)) {
-                    $this->errors[] = Tools::displayError('An error occurred while copying images.');
-                } else {
-                    Hook::exec('actionProductAdd', array('id_product' => (int)$product->id, 'product' => $product));
-                    if (in_array($product->visibility, array('both', 'search')) && Configuration::get('PS_SEARCH_INDEXATION')) {
-                        Search::indexation(false, $product->id);
+                    if (!Tools::getValue('noimage') && !Image::duplicateProductImages($id_product_old, $product->id, $combination_images)) {
+                        $this->errors[] = Tools::displayError('An error occurred while copying images.');
+                    } else {
+                        Hook::exec('actionProductAdd', array('id_product' => (int)$product->id, 'product' => $product));
+                        if (in_array($product->visibility, array('both', 'search')) && Configuration::get('PS_SEARCH_INDEXATION')) {
+                            Search::indexation(false, $product->id);
+                        }
+                        $this->redirect_after = self::$currentIndex.(Tools::getIsset('id_category') ? '&id_category='.(int)Tools::getValue('id_category') : '').'&conf=19&token='.$this->token;
                     }
-                    $this->redirect_after = self::$currentIndex.(Tools::getIsset('id_category') ? '&id_category='.(int)Tools::getValue('id_category') : '').'&conf=19&token='.$this->token;
+                } else {
+                    $this->errors[] = Tools::displayError('An error occurred while creating an object.');
                 }
-            } else {
-                $this->errors[] = Tools::displayError('An error occurred while creating an object.');
             }
         }
     }
