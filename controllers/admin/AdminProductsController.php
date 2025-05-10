@@ -321,6 +321,7 @@ class AdminProductsControllerCore extends AdminController
             'filter_key' => $alias.'!active',
             'align' => 'text-center',
             'type' => 'select',
+            'callback' => 'formatStatusAsLabel',
             'list' => array(1 => $this->l('Yes'), 0 => $this->l('No')),
             'optional' => true,
             'visible_default' => true,
@@ -635,20 +636,24 @@ class AdminProductsControllerCore extends AdminController
             $orderWay = 'ASC';
         }
         if ($this->action == 'export' && empty($this->_listsql)) {
-            $this->_select .= ' , trg.`name` AS `id_tax_rules_group`, GROUP_CONCAT(fpl.`name`) AS `features`, hrtdl.`global_demands`';
+            $this->_select .= ' , trg.`name` AS `id_tax_rules_group`, `features`, hrtdl.`global_demands`';
             $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'tax_rules_group` trg
                 ON trg.`id_tax_rules_group` = a.`id_tax_rules_group`
-                LEFT JOIN `'._DB_PREFIX_.'feature_lang` fpl
-                ON (fp.`id_feature` = fpl.`id_feature` AND fpl.`id_lang`='.(int) $this->context->language->id.')';
+                LEFT JOIN (SELECT GROUP_CONCAT(fpl.`name`) AS features, fp.`id_product`
+                    FROM `'._DB_PREFIX_.'feature_lang` fpl
+                    LEFT JOIN `'._DB_PREFIX_.'feature_product` fp
+                    ON (fp.`id_feature` = fpl.`id_feature`)
+                    WHERE fpl.`id_lang`='.(int) $this->context->language->id.'
+                    GROUP BY fp.`id_product`
+                ) AS fpl ON (a.`id_product` = fpl.`id_product`)';
 
-            $this->_join .= ' LEFT JOIN (SELECT
-                    `id_global_demand`, `id_lang`,
-                    GROUP_CONCAT(`name`) AS `global_demands`,
-                    GROUP_CONCAT(`id_global_demand`)
-                    FROM `'._DB_PREFIX_.'htl_room_type_global_demand_lang`
+            $this->_join .= ' LEFT JOIN (SELECT hrtgd.`id_product`, `id_lang`, GROUP_CONCAT(`name`) AS `global_demands`
+                    FROM `'._DB_PREFIX_.'htl_room_type_global_demand_lang` hrtgdl
+                    LEFT JOIN `'._DB_PREFIX_.'htl_room_type_demand` hrtgd
+                    ON hrtgd.`id_global_demand` = hrtgdl.`id_global_demand`
                     WHERE `id_lang`='.(int) $this->context->language->id.'
-                    GROUP BY `id_global_demand`
-                ) AS hrtdl ON (hrtdl.`id_global_demand` = hrtd.`id_global_demand` AND hrtdl.`id_lang`= b.`id_lang` )';
+                    GROUP BY hrtgd.`id_product`
+                ) AS hrtdl ON (hrtdl.`id_product` = a.`id_product`)';
 
             $this->fields_list = array_merge($this->fields_list, array(
                    'id_tax_rules_group' => array(

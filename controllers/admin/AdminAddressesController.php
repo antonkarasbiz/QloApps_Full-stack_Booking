@@ -383,21 +383,13 @@ class AdminAddressesControllerCore extends AdminController
     public function processExport($text_delimiter = '"')
     {
         $this->fields_list = array_merge($this->fields_list, array(
-            'email' => array(
-                'title' => $this->l('Customer Email')
-            ),
-            'phone' => array(
-                'title' => $this->l('Phone')
-            ),
-            'phone_mobile' => array(
-                'title' => $this->l('Mobile phone')
-            ),
-            'dni' => array(
-                'title' => $this->l('Identification Number')
-            ),
-            'vat_number' => array(
-                'title' => $this->l('VAT number')
-            ),
+            'email' => array('title' => $this->l('Customer Email')),
+            'phone' => array('title' => $this->l('Phone')),
+            'phone_mobile' => array('title' => $this->l('Mobile phone')),
+            'address1' => array('title' => $this->l('Address (2)')),
+            'dni' => array('title' => $this->l('Identification Number')),
+            'vat_number' => array('title' => $this->l('VAT number')),
+            'other' => array('title' => $this->l('Other')),
         ));
 
         return parent::processExport($text_delimiter);
