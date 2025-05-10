@@ -214,8 +214,19 @@ class AddressCore extends ObjectModel
         }
 
         // If address is already used in any order, it will not be edited directly, set address to "deleted" and create a new address
-        if ($this->isUsed() && $this->deleted == 0) {
-            return $this->updateUsedAddress($this);
+        if ($usedCount = $this->isUsed()) {
+            if ($this->deleted == 0) {
+                return $this->updateUsedAddress($this);
+            } else if ($usedCount >= 2
+                && ($idOrder = Tools::getValue('id_order')) // if address is updated from the order detail page
+                && (Validate::isLoadedObject($objOrder = new Order((int) $idOrder)))
+            ) {
+                $objAddress = clone $this;
+                $objAddress->deleted = 1;
+                $objAddress->add();
+
+                return $objAddress;
+            }
         }
 
         return parent::update($null_values);
