@@ -1205,23 +1205,9 @@ class AdminOrdersControllerCore extends AdminController
             $this->_select .= ', c.`email`, cgd.`phone`, a.`total_paid_real`,
                 orf.`cancellation_date`, orf.`cancellation_fee`,
                 cy.`iso_code` AS country, st.`iso_code` as state, ad.`city`,
-                CONCAT(ad.`address1`, \', \', ad.`postcode`) AS `cus_address`,
-                GROUP_CONCAT(
-                    CASE
-                        WHEN hbd.`id_status`='.HotelBookingDetail::STATUS_ALLOTED.' THEN \''.$this->l('Alloted').'\'
-                        WHEN hbd.`id_status`='.HotelBookingDetail::STATUS_CHECKED_IN.' THEN \''.$this->l('Checked in').'\'
-                        WHEN hbd.`id_status`='.HotelBookingDetail::STATUS_CHECKED_OUT.' THEN \''.$this->l('Checked out').'\'
-                        ELSE \''.$this->l('Invalid status').'\'
-                    END
-                ) AS `room_status`,
-                GROUP_CONCAT(DISTINCT(hbd.`room_type_name`)) AS `room_types`,
-                GROUP_CONCAT(hbd.`date_from`) AS `date_from`,
-                GROUP_CONCAT(hbd.`date_to`) AS `date_to`,
-                GROUP_CONCAT(hbd.`room_num`) AS `rooms`,
-                GROUP_CONCAT(hbd.`check_in`) AS `check_in_dates`,
-                GROUP_CONCAT(hbd.`check_out`) AS `check_out_dates`';
+                CONCAT(ad.`address1`, \', \', ad.`postcode`) AS `cus_address`, hbdtl.*';
 
-            $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'cart_customer_guest_detail` cgd ON cgd.`email` = c.`email` AND  cgd.`id_cart` = 0
+            $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'cart_customer_guest_detail` cgd ON cgd.`email` = c.`email` AND cgd.`id_cart` = 0
                 LEFT JOIN `'._DB_PREFIX_.'address` ad ON a.`id_customer`= ad.`id_customer` AND ad.`id_customer`!=0
                 LEFT JOIN `'._DB_PREFIX_.'country` cy ON cy.`id_country`= ad.`id_country`
                 LEFT JOIN `'._DB_PREFIX_.'state` st ON st.`id_state`= ad.`id_state`
@@ -1232,7 +1218,25 @@ class AdminOrdersControllerCore extends AdminController
                     LEFT JOIN `'._DB_PREFIX_.'order_return_state` refst
                         ON refst.`id_order_return_state` = ref.`state` AND refst.`refunded` = 1
                     GROUP BY ref.`id_order`
-                ) AS orf ON orf.`id_order` = a.`id_order`';
+                ) AS orf ON orf.`id_order` = a.`id_order`
+                LEFT JOIN (
+                    SELECT GROUP_CONCAT(
+                        CASE
+                            WHEN `id_status`='.HotelBookingDetail::STATUS_ALLOTED.' THEN \''.$this->l('Alloted').'\'
+                            WHEN `id_status`='.HotelBookingDetail::STATUS_CHECKED_IN.' THEN \''.$this->l('Checked in').'\'
+                            WHEN `id_status`='.HotelBookingDetail::STATUS_CHECKED_OUT.' THEN \''.$this->l('Checked out').'\'
+                            ELSE \''.$this->l('Invalid status').'\'
+                        END
+                    ) AS `room_status`, `id_order`,
+                    GROUP_CONCAT(DISTINCT(`room_type_name`)) AS `room_types`,
+                    GROUP_CONCAT(`date_from`) AS `date_from`,
+                    GROUP_CONCAT(`date_to`) AS `date_to`,
+                    GROUP_CONCAT(`room_num`) AS `rooms`,
+                    GROUP_CONCAT(`check_in`) AS `check_in_dates`,
+                    GROUP_CONCAT(`check_out`) AS `check_out_dates`
+                    FROM `'._DB_PREFIX_.'htl_booking_detail`
+                    GROUP BY `id_order`
+                ) AS hbdtl ON hbdtl.`id_order` = a.`id_order`';
 
             $this->fields_list = array_merge($this->fields_list, array(
                 'email' => array(

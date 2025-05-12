@@ -194,19 +194,33 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
         $id_lang_shop = false
     ){
         if ($this->action == 'export' && empty($this->_listsql)) {
-            $this->_select .= ', GROUP_CONCAT(hbd.`room_num`) AS room_num, GROUP_CONCAT(DISTINCT(hbd.`room_type_name`)) AS room_type_name, hbd.`id`, a.`id_order_return`,
-                hbd.`hotel_name`, GROUP_CONCAT(hbd.`date_from`) AS date_from, GROUP_CONCAT(hbd.`date_to`) AS date_to';
-            if (!Tools::getValue('id_order')) {
-                $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'order_return_detail` ordrd ON (ordrd.`id_order_return` = a.`id_order_return`)';
+            if (Tools::getValue('id_order')) {
+                $this->_select .= ', ordtl.*';
+            }  else {
+                $this->_select .= ', GROUP_CONCAT(ordtl.`room_num`) AS `room_num`,
+                    GROUP_CONCAT(DISTINCT ordtl.`room_type_name`) AS `room_type_name`,
+                    ordtl.`hotel_name`, ordtl.`id_order`,
+                    GROUP_CONCAT(ordtl.`date_from`) AS `date_from`,
+                    GROUP_CONCAT(ordtl.`date_to`) AS `date_to`';
             }
-            $this->_join .= ' LEFT JOIN '._DB_PREFIX_.'htl_booking_detail hbd ON (hbd.`id` = ordrd.`id_htl_booking`)';
-            $this->_group = ' GROUP BY a.`id_order_return`';
+
+            $this->_join .= ' LEFT JOIN (
+                SELECT GROUP_CONCAT(hbd.`room_num`) AS room_num,
+                GROUP_CONCAT(DISTINCT(hbd.`room_type_name`)) AS room_type_name,
+                ord.`id_order_return`, hbd.`hotel_name`, hbd.`id_order`,
+                GROUP_CONCAT(hbd.`date_from`) AS date_from,
+                GROUP_CONCAT(hbd.`date_to`) AS date_to
+                FROM `'._DB_PREFIX_.'order_return_detail` ord
+                LEFT JOIN `'._DB_PREFIX_.'htl_booking_detail` hbd ON ord.`id_htl_booking` = hbd.`id`
+                GROUP BY ord.`id_order_return`
+            ) AS ordtl ON (ordtl.`id_order_return` = a.`id_order_return`)';
             $this->fields_list = array_merge($this->fields_list, array(
                 'room_num' => array(
-                    'title' => $this->l('Room num')
+                    'title' => $this->l('Room num(s)')
                 ),
                 'room_type_name' => array(
-                    'title' => $this->l('Room type')
+                    'title' => $this->l('Room type(s)'),
+                    'callback' => 'getUniqueRoomTypeNames'
                 ),
                 'hotel_name' => array(
                     'title' => $this->l('Hotel')
@@ -228,6 +242,17 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
             $limit,
             $id_lang_shop
         );
+    }
+
+    public function getUniqueRoomTypeNames($roomTypeNames, $tr)
+    {
+        if ($roomTypeNames) {
+            $roomTypeNames = explode(',', $roomTypeNames);
+            $roomTypeNames = array_unique($roomTypeNames);
+            $roomTypeNames = implode(',', $roomTypeNames);
+        }
+
+        return $roomTypeNames;
     }
 
     public function initToolbar()
