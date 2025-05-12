@@ -147,6 +147,9 @@ class TranslateCore
         }
 
         $iso = $language->iso_code;
+        if (!isset(self::$moduleTranslations[$iso])) {
+            self::$moduleTranslations[$iso] = array();
+        }
         if ((isset(Context::getContext()->language) && !isset($translations_merged[$name])) || $force_refresh) {
             $files_by_priority = array(
                 // Translations in theme
