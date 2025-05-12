@@ -19,9 +19,7 @@
 
 <div class="panel">
 	<div class="panel-heading">
-		{if isset($bulk_add)}
-			<i class='icon-list'></i>&nbsp{l s='Bulk Create Advanced Price Rule' mod='hotelreservationsystem'}
-		{else if isset($edit)}
+		{if isset($edit)}
 			<i class='icon-pencil'></i>&nbsp{l s='Edit Advanced Price Rule' mod='hotelreservationsystem'}
 		{else}
 			<i class='icon-plus'></i>&nbsp{l s='Add New Advanced Price Rule' mod='hotelreservationsystem'}
@@ -352,18 +350,12 @@
 			<a href="{$link->getAdminLink('AdminHotelFeaturePricesSettings')|escape:'html':'UTF-8'}" class="btn btn-default">
 				<i class="process-icon-cancel"></i>{l s='Cancel' mod='hotelreservationsystem'}
 			</a>
-			{if isset($bulk_add)}
-				<button type="submit" name="submitBulkAdd{$table|escape:'html':'UTF-8'}" class="btn btn-default pull-right">
-					<i class="process-icon-save"></i> {l s='Save' mod='hotelreservationsystem'}
-				</button>
-			{else}
-				<button type="submit" name="submitAdd{$table|escape:'html':'UTF-8'}" class="btn btn-default pull-right">
-					<i class="process-icon-save"></i> {l s='Save' mod='hotelreservationsystem'}
-				</button>
-				<button type="submit" name="submitAdd{$table|escape:'html':'UTF-8'}AndStay" class="btn btn-default pull-right">
-					<i class="process-icon-save"></i> {l s='Save and stay' mod='hotelreservationsystem'}
-				</button>
-			{/if}
+			<button type="submit" name="submitAdd{$table|escape:'html':'UTF-8'}" class="btn btn-default pull-right">
+				<i class="process-icon-save"></i> {l s='Save' mod='hotelreservationsystem'}
+			</button>
+			<button type="submit" name="submitAdd{$table|escape:'html':'UTF-8'}AndStay" class="btn btn-default pull-right">
+				<i class="process-icon-save"></i> {l s='Save and stay' mod='hotelreservationsystem'}
+			</button>
 		</div>
 	</form>
 </div>
