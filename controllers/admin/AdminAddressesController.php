@@ -460,8 +460,6 @@ class AdminAddressesControllerCore extends AdminController
             // set deleted=1 as customer can have only one address and this address is for an order only
             $_POST['deleted'] = 1;
             // Clearing the cache for customer address.
-            $cache_id = 'Address::getFirstCustomerAddressId_'.(int) $this->id_customer.'-'.(bool)true;
-            Cache::clean($cache_id);
             // if the deleted address is the customer current address then we will create a new one using the same information.
             if (($customerAddressId = Address::getFirstCustomerAddressId((int) $address->id_customer))
                 && $customerAddressId == $address->id
