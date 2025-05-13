@@ -1680,6 +1680,8 @@ class AdminOrdersControllerCore extends AdminController
                     $this->context->cart = $objCart;
                     $this->context->currency = new Currency((int)$objCart->id_currency);
 
+                    // Setting the customer in context to get the order total with the group discount.
+                    $this->context->customer = new Customer($objCart->id_customer);
                     $this->errors = HotelCartBookingData::validateCartBookings();
                     $orderTotal = $objCart->getOrderTotal(true, Cart::BOTH);
                     if ($objCart->is_advance_payment) {
