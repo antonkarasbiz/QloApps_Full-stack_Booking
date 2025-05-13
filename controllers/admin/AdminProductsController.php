@@ -2966,7 +2966,7 @@ class AdminProductsControllerCore extends AdminController
                                     $bookedDate['date_from_formatted'] = Tools::displayDate($bookedDate['date_from']);
                                     $bookedDate['date_to_formatted'] = Tools::displayDate($bookedDate['date_to']);
                                 }
-                                $room['booked_dates'] = $bookedDates;
+                                $room['booked_dates'] = json_encode($bookedDates);
 
                                 if ($room['id_status'] == HotelRoomInformation::STATUS_TEMPORARY_INACTIVE) {
                                     $disableDates = $objRoomDisableDates->getRoomDisableDates($room['id']);
@@ -3497,10 +3497,10 @@ class AdminProductsControllerCore extends AdminController
                         }
                         $objHotelRoomInfo->id_product = $id_product;
                         $objHotelRoomInfo->id_hotel = $id_hotel;
-                        $objHotelRoomInfo->room_num = $roomInfo['room_num'];
+                        $objHotelRoomInfo->room_num = trim($roomInfo['room_num']);
                         $objHotelRoomInfo->id_status = $roomInfo['id_status'];
-                        $objHotelRoomInfo->floor = $roomInfo['floor'];
-                        $objHotelRoomInfo->comment = $roomInfo['comment'];
+                        $objHotelRoomInfo->floor = trim($roomInfo['floor']);
+                        $objHotelRoomInfo->comment = trim($roomInfo['comment']);
                         if ($objHotelRoomInfo->save()
                             && $objHotelRoomInfo->id_status != HotelRoomInformation::STATUS_TEMPORARY_INACTIVE
                         ) {
@@ -3536,7 +3536,7 @@ class AdminProductsControllerCore extends AdminController
                     }
                 }
 
-                if ($roomInfo['room_num'] && !Validate::isGenericName($roomInfo['room_num'])) {
+                if (empty(trim($roomInfo['room_num'])) || !Validate::isGenericName($roomInfo['room_num'])) {
                     $this->errors[] = sprintf(Tools::displayError('Invalid room number for room %s.'), $roomIndex);
                 }
 

@@ -1701,67 +1701,67 @@
             $('#back_to_service_btn').hide();
         });
 
-        // Add new custom service: Show hide new custom service form
-        $(document).on('click', '#btn_new_room_service', function() {
-            $('#add_new_room_services_block').show();
-            $('#back_to_service_btn').show();
-            $('#room_type_services_desc').hide();
-        });
+		// Add new custom service: Show hide new custom service form
+		$(document).on('click', '#btn_new_room_service', function() {
+			$('#add_new_room_services_block').show();
+			$('#back_to_service_btn').show();
+			$('#room_type_services_desc').hide();
+		});
 
-        // Add new custom service: change auto added option
-        $(document).on('change', '#add_new_room_services_form input[name="new_service_auto_added"]', function() {
-            var room_type_tax_rule_group_exist = $("#room_type_tax_rule_group_exist").val();
-            if ($(this).val() == 1) {
-                $("#new_service_price_tax_rule_container").hide();
-                $("#new_service_price_addition_type_container").show();
-                $("#new_service_qty_container").hide();
-            } else {
-                $("#new_service_price_addition_type_container").hide();
-                $("#new_service_qty_container").show();
-                $("#new_service_price_tax_rule_container").show();
-            }
-        });
+		// Add new custom service: change auto added option
+		$(document).on('change', '#add_new_room_services_form input[name="new_service_auto_added"]', function() {
+			var room_type_tax_rule_group_exist = $("#room_type_tax_rule_group_exist").val();
+			if ($(this).val() == 1) {
+				$("#new_service_price_tax_rule_container").hide();
+				$("#new_service_price_addition_type_container").show();
+				$("#new_service_qty_container").hide();
+			} else {
+				$("#new_service_price_addition_type_container").hide();
+				$("#new_service_qty_container").show();
+				$("#new_service_price_tax_rule_container").show();
+			}
+		});
 
-        // Add new custom service to the room
-        $(document).on('submit', '#add_new_room_services_form', function(e) {
-            e.preventDefault();
-            var form_data = new FormData(this);
-            form_data.append('ajax', true);
-            form_data.append('action', 'addNewRoomServices');
+		// Add new custom service to the room
+		$(document).on('submit', '#add_new_room_services_form', function(e) {
+			e.preventDefault();
+			var form_data = new FormData(this);
+			form_data.append('ajax', true);
+			form_data.append('action', 'addNewRoomServices');
 
-            $(".loading_overlay").show();
-            $.ajax({
-                type: 'POST',
-                headers: {
-                    "cache-control": "no-cache"
-                },
-                url: "{$link->getAdminLink('AdminCarts')|addslashes}",
-                dataType: 'JSON',
-                cache: false,
-                data: form_data,
-                processData: false,
-                contentType: false,
-                success: function(jsonData) {
-                    if (!jsonData.hasError) {
-                        if (jsonData.service_panel) {
-                            $('#room_type_service_product_desc').replaceWith(jsonData.service_panel);
-                        }
-                        showSuccessMessage(txtExtraDemandSucc);
-                    } else {
-                        var errorHtml = error_found_txt + ':<br>';
-                        errorHtml += '<ol>';
-                        $.each(jsonData.errors, function(key, errorMsg) {
-                            errorHtml += '<li>' + errorMsg + '</li>';
-                        });
-                        errorHtml += '</ol>';
-                        showErrorMessage(errorHtml);
-                    }
-                },
-                complete: function() {
-                    $(".loading_overlay").hide();
-                }
-            });
-        });
+			$(".loading_overlay").show();
+			$.ajax({
+				type: 'POST',
+				headers: {
+					"cache-control": "no-cache"
+				},
+				url: "{$link->getAdminLink('AdminCarts')|addslashes}",
+				dataType: 'JSON',
+				cache: false,
+				data: form_data,
+				processData: false,
+				contentType: false,
+				success: function(jsonData) {
+					if (!jsonData.hasError) {
+						if (jsonData.service_panel) {
+							$('#room_type_service_product_desc').replaceWith(jsonData.service_panel);
+						}
+						showSuccessMessage(txtExtraDemandSucc);
+					} else {
+						var errorHtml = error_found_txt + ':<br>';
+						errorHtml += '<ol>';
+						$.each(jsonData.errors, function(key, errorMsg) {
+							errorHtml += '<li>' + errorMsg + '</li>';
+						});
+						errorHtml += '</ol>';
+						showErrorMessage(errorHtml);
+					}
+				},
+				complete: function() {
+					$(".loading_overlay").hide();
+				}
+			});
+		});
 
         $(document).on('click', '.change_room_type_service_product', function() {
             if ($(this).prop('checked')) {
@@ -1770,6 +1770,7 @@
                 $("#selected_service_product_"+$(this).val()).val(0);
             }
 		});
+
         $(document).on('submit', '#update_selected_room_services_form', function(e) {
             e.preventDefault();
             var form_data = new FormData(this);
@@ -1815,7 +1816,6 @@
 </script>
 
 <div class="leadin">{block name="leadin"}{/block}</div>
-{include file='controllers/orders/_current_cart_details_data.tpl'}
     {* If cart has errors the do not allow to proceed with this cart *}
     <div class="panel form-horizontal" id="customer_part" {if isset($is_order_created) && $is_order_created}style="display:none;"{/if}>
         <div class="panel-heading">
@@ -1905,6 +1905,7 @@
             </div>
         </div> -->*}<!-- by webkul to hide unnessesary content -->
     </div>
+	{include file='controllers/orders/_current_cart_details_data.tpl'}
 
     <form class="form-horizontal" action="{$link->getAdminLink('AdminOrders')|escape:'html':'UTF-8'}&amp;addorder=1&amp;cart_id={$cart->id}" method="post" style="display:none" id="cart_detail_form">
         <div class="panel" id="products_part" style="display:none;">
@@ -2282,6 +2283,19 @@
                     {else}
                         {assign var=is_full_payment value=true}
                     {/if}
+					<div class="form-group">
+						<label class="control-label col-lg-3">{l s="Send mails"}</label>
+						<div class="col-lg-9">
+							<span class="switch prestashop-switch fixed-width-lg">
+								<input type="radio" name="send_mails" id="send_mails_on" value="1" checked="checked">
+								<label for="send_mails_on">{l s="Yes"}</label>
+								<input type="radio" name="send_mails" id="send_mails_off" value="0">
+								<label for="send_mails_off">{l s="No"}</label>
+								<a class="slide-button btn"></a>
+							</span>
+							<p class="help-block">{l s='If disabled, no mail related to this order will be sent during order creation.'}</p>
+						</div>
+					</div>
                     <div class="form-group" {if $order_total <= 0}style="display: none;"{/if}>
                         <label class="control-label col-lg-3">{l s="Full payment"}</label>
                         <div class="col-lg-9">

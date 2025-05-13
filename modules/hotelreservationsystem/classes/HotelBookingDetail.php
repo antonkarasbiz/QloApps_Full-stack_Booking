@@ -62,6 +62,7 @@ class HotelBookingDetail extends ObjectModel
     public $adults;
     public $children;
     public $child_ages;
+    public $planned_check_out;
 
     public $date_add;
     public $date_upd;
@@ -124,6 +125,7 @@ class HotelBookingDetail extends ObjectModel
             'email' => array('type' => self::TYPE_STRING, 'validate' => 'isEmail', 'size' => 255, 'required' => true),
             'check_in_time' => array('type' => self::TYPE_STRING, 'required' => true),
             'check_out_time' => array('type' => self::TYPE_STRING, 'required' => true),
+            'planned_check_out' => array('type' => self::TYPE_STRING, 'required' => true),
             'adults' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
             'children' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'child_ages' => array('type' => self::TYPE_STRING),
@@ -1872,6 +1874,7 @@ class HotelBookingDetail extends ObjectModel
         $reallocatedBookingId = 0;
         // get the cart booking data for the given booking
         if (Validate::isLoadedObject($objOldHotelBooking = new HotelBookingDetail($idHotelBooking))) {
+            $objectHotelBookingFrom = clone $objOldHotelBooking;
             $objHotelRoomInfo = new HotelRoomInformation($idRoom);
             $idNewRoomType = $objHotelRoomInfo->id_product;
             if ($objOldHotelBooking->id_product != $idNewRoomType) {
@@ -2098,6 +2101,7 @@ class HotelBookingDetail extends ObjectModel
 
                         if ($result &= $objBookingDetail->save()) {
                             $reallocatedBookingId = $objBookingDetail->id;
+                            $objectHotelBookingTo = $objBookingDetail;
                             // Get Booking Demands of the old booking to add in the new booking creation
                             $objBookingDemand = new HotelBookingDemands();
                             if ($oldBookingDemands = $objBookingDemand->getRoomTypeBookingExtraDemands(
@@ -2278,6 +2282,7 @@ class HotelBookingDetail extends ObjectModel
                 $result &= $objOldHotelBooking->save();
 
                 $reallocatedBookingId = $objOldHotelBooking->id;
+                $objectHotelBookingTo = $objOldHotelBooking;
             }
 
             if ($result && $reallocatedBookingId) {
@@ -2286,6 +2291,8 @@ class HotelBookingDetail extends ObjectModel
                     array(
                         'id_htl_booking_from' => $idHotelBooking,
                         'id_htl_booking_to' => $reallocatedBookingId,
+                        'objectHotelBookingFrom' => $objectHotelBookingFrom,
+                        'objectHotelBookingTo' => $objectHotelBookingTo,
                     )
                 );
 
@@ -3659,5 +3666,19 @@ class HotelBookingDetail extends ObjectModel
         }
 
         return $result;
+    }
+
+    public function add($auto_date = true, $null_values = false)
+    {
+        if (!$this->planned_check_out) {
+            $objHotelBranchInfo  = new HotelBranchInformation((int) $this->id_hotel);
+            $dateTo = new DateTime($this->date_to);
+            $timeParts = explode(':', $objHotelBranchInfo->check_out);
+            $dateTo->setTime($timeParts[0], $timeParts[1]);
+
+            $this->planned_check_out = $dateTo->format('Y-m-d H:i:s');
+        }
+
+        return parent::add($auto_date, $null_values);
     }
 }
