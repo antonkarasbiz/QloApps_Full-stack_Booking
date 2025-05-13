@@ -108,7 +108,7 @@ class AdminHotelBedTypesController extends ModuleAdminController
                     'required' => true,
                     'col' => 4,
                     'hint' => $this->l('Enter the width of the Bed type in ').Configuration::get('PS_DIMENSION_UNIT'),
-                    'desc' => $this->l('Enter the width of the Bed type in ').Configuration::get('PS_DIMENSION_UNIT'),
+                    'suffix' => Configuration::get('PS_DIMENSION_UNIT'),
                 ),
                 array(
                     'type' => 'text',
@@ -117,7 +117,7 @@ class AdminHotelBedTypesController extends ModuleAdminController
                     'col' => 4,
                     'required' => true,
                     'hint' => $this->l('Enter the length of the Bed type in ').Configuration::get('PS_DIMENSION_UNIT'),
-                    'desc' => $this->l('Enter the length of the Bed type in ').Configuration::get('PS_DIMENSION_UNIT'),
+                    'suffix' => Configuration::get('PS_DIMENSION_UNIT'),
                 ),
             ),
             'submit' => array(

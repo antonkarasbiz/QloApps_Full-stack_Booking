@@ -263,7 +263,7 @@
 														{/if}
 													{/block}
 													{block name='product_info_tab_room_bed_type'}
-														{if isset($room_type_info['id_bed_types']) && isset($bed_types_info)  && $bed_types_info}
+														{if isset($room_type_info['id_bed_types']) && isset($bed_types_info) && $bed_types_info}
 															{assign var="bed_types" value=$room_type_info['id_bed_types']|json_decode}
 															{if $bed_types}
 																<div class="info_margin_div">
@@ -273,7 +273,7 @@
 																	<div class="room_info_content">
 																		{foreach $bed_types as $bed_type}
 																			{if isset($bed_types_info[$bed_type])}
-																				<p>{$bed_types_info[$bed_type]['name']} ({$bed_types_info[$bed_type]['area']} {$dimension_unit}<sup>2</sup>)</p>
+																				<p>{$bed_types_info[$bed_type]['name']}: {$bed_types_info[$bed_type]['area']} {l s='sq.'}{$dimension_unit}</p>
 																			{/if}
 																		{/foreach}
 																	</div>
