@@ -43,6 +43,10 @@ class HotelOrderRestrictDate extends ObjectModel
         ),
     );
 
+    /**
+     * @param int $id_hotel
+     * @return array hote wise restriction.
+     */
     public static function getDataByHotelId($idHotel)
     {
         return Db::getInstance()->getRow(
@@ -50,57 +54,49 @@ class HotelOrderRestrictDate extends ObjectModel
         );
     }
 
-    /*Max date of ordering for order restrict*/
+    /**
+     * @param int $id_hotel
+     * @return string Max date of ordering for order restrict
+     */
     public static function getMaxOrderDate($idHotel)
     {
         $result = self::getDataByHotelId($idHotel);
         if (is_array($result) && count($result) && !$result['use_global_max_booking_offset']) {
-            return date('Y-m-d H:i:s', strtotime('+ '.$result['max_booking_offset'].' days'));
+            return date('Y-m-d H:i:s', strtotime('+ '.($result['max_booking_offset'] + 1).' days'));
         }
 
-        if ($globalBookingDate = Configuration::get('GLOBAL_MAX_BOOKING_OFFSET')) {
-            return date('Y-m-d H:i:s', strtotime('+ '.$globalBookingDate.' days'));
-        }
+        // since this cannot be zero, this function will always return a date.
+        $globalBookingDate = (int) Configuration::get('PS_MAX_BOOKING_OFFSET');
 
-        return 0;
+        return date('Y-m-d H:i:s', strtotime('+ '.($globalBookingDate + 1).' days'));
     }
 
     /**
      * @param int $id_hotel
-     * @return int|false
+     * @return int Maximum allowable number of days between booking date and check-in date.
      */
-    public static function getMaxBookingOffset($idHotel)
+    public static function getMaximumBookingOffset($idHotel)
     {
         $result = self::getDataByHotelId($idHotel);
         if (is_array($result) && count($result) && !$result['use_global_max_booking_offset']) {
             return $result['max_booking_offset'];
         }
 
-        if ($globalBookingDate = Configuration::get('GLOBAL_MAX_BOOKING_OFFSET')) {
-            return $globalBookingDate;
-        }
-
-        return 0;
+        return (int) Configuration::get('PS_MAX_BOOKING_OFFSET');
     }
-
 
     /**
      * @param int $id_hotel
-     * @return int|false
+     * @return int Minimum number of days required between booking and check-in.
      */
-    public static function getMinBookingOffset($idHotel)
+    public static function getMinimumBookingOffset($idHotel)
     {
         $result = self::getDataByHotelId($idHotel);
         if (is_array($result) && count($result) && !$result['use_global_min_booking_offset']) {
             return (int) $result['min_booking_offset'];
         }
 
-        $globalPreparationTime = Configuration::get('GLOBAL_MIN_BOOKING_OFFSET');
-        if ($globalPreparationTime != '0') {
-            return (int) $globalPreparationTime;
-        }
-
-        return false;
+        return (int) Configuration::get('PS_MIN_BOOKING_OFFSET');
     }
 
     public static function validateOrderRestrictDateOnPayment(&$controller)

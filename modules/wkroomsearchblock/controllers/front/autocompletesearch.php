@@ -47,7 +47,7 @@ class WkRoomSearchBlockAutoCompleteSearchModuleFrontController extends ModuleFro
                     if ($hotelInfo = $obj_htl_info->hotelBranchInfoByCategoryId($category['id_category'])) {
                         $maxOrderDate = HotelOrderRestrictDate::getMaxOrderDate($hotelInfo['id']);
                         $maxOrderDate = date('Y-m-d', strtotime($maxOrderDate));
-                        $minBookingOffset = (int) HotelOrderRestrictDate::getMinBookingOffset($hotelInfo['id']);
+                        $minBookingOffset = (int) HotelOrderRestrictDate::getMinimumBookingOffset($hotelInfo['id']);
                         $hotelsInfo[] = array(
                             'id_hotel' => $hotelInfo['id'],
                             'id_category' => $hotelInfo['id_category'],

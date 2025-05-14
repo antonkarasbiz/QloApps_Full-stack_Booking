@@ -1029,7 +1029,7 @@ class HotelCartBookingData extends ObjectModel
                                         }
                                     }
 
-                                    $minBookingOffset = HotelOrderRestrictDate::getMinBookingOffset($roomData['id_hotel']);
+                                    $minBookingOffset = HotelOrderRestrictDate::getMinimumBookingOffset($roomData['id_hotel']);
                                     if ($minBookingOffset !== false) {
                                         $minOrderDate = date('Y-m-d', strtotime('+'. ($minBookingOffset) .' days'));
                                         if (strtotime($minOrderDate) > strtotime($roomData['date_from'])) {

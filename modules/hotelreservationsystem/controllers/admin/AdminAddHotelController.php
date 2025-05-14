@@ -212,8 +212,8 @@ class AdminAddHotelController extends ModuleAdminController
         $smartyVars['state_var'] = $stateOptions;
         $smartyVars['enabledDisplayMap'] = Configuration::get('PS_API_KEY') && Configuration::get('WK_GOOGLE_ACTIVE_MAP');
         $smartyVars['ps_img_dir'] = _PS_IMG_.'l/';
-        $smartyVars['GLOBAL_MAX_BOOKING_OFFSET'] = Configuration::get('GLOBAL_MAX_BOOKING_OFFSET');
-        $smartyVars['GLOBAL_MIN_BOOKING_OFFSET'] = Configuration::get('GLOBAL_MIN_BOOKING_OFFSET');
+        $smartyVars['PS_MAX_BOOKING_OFFSET'] = (int) Configuration::get('PS_MAX_BOOKING_OFFSET');
+        $smartyVars['PS_MIN_BOOKING_OFFSET'] = (int) Configuration::get('PS_MIN_BOOKING_OFFSET');
         $smartyVars['WK_ORDER_REFUND_ALLOWED'] = Configuration::get('WK_ORDER_REFUND_ALLOWED');
 
         $this->context->smarty->assign($smartyVars);
@@ -450,9 +450,9 @@ class AdminAddHotelController extends ModuleAdminController
                         $this->errors[] = $this->l('Field Maximum booking offset cannot be be less than or equal to Minimum booking offset.');
                     }
                 } else {
-                    if (!$enableUseGlobalMaxBookingOffset && $maxBookingOffset <= Configuration::get('GLOBAL_MIN_BOOKING_OFFSET')) {
+                    if (!$enableUseGlobalMaxBookingOffset && $maxBookingOffset <= Configuration::get('PS_MIN_BOOKING_OFFSET')) {
                         $this->errors[] = $this->l('Field Maximum booking offset cannot be be less than or equal to global Minimum booking offset.');
-                    } else if (!$enableUseGlobalMinBookingOffset && $minBookingOffset >= Configuration::get('GLOBAL_MAX_BOOKING_OFFSET')) {
+                    } else if (!$enableUseGlobalMinBookingOffset && $minBookingOffset >= Configuration::get('PS_MAX_BOOKING_OFFSET')) {
                         $this->errors[] = $this->l('Field Minimum booking offset cannot be be greater than or equal to Global Maximum booking offset.');
                     }
                 }
@@ -771,7 +771,7 @@ class AdminAddHotelController extends ModuleAdminController
 
             $conf = 3;
             if ($idHotel) {
-                $con = 4;
+                $conf = 4;
             }
 
             if (Tools::isSubmit('submitAdd'.$this->table.'AndStay')) {

@@ -1131,12 +1131,12 @@ class HotelBranchInformation extends ObjectModel
                 $message = Tools::displayError('Maximum booking cannot be less than or equal to Minimum booking offset.');
             } else if (!$this->use_global_max_booking_offset
                 && $this->use_global_min_booking_offset
-                && $this->max_booking_offset <= Configuration::get('GLOBAL_MIN_BOOKING_OFFSET')
+                && $this->max_booking_offset <= Configuration::get('PS_MIN_BOOKING_OFFSET')
             ) {
                 $message = Tools::displayError('Maximum booking cannot be less than or equal to Global Minimum booking offset.');
             } else if ($this->use_global_max_booking_offset
                 && !$this->use_global_min_booking_offset
-                && $this->min_booking_offset >= Configuration::get('GLOBAL_MAX_BOOKING_OFFSET')
+                && $this->min_booking_offset >= Configuration::get('PS_MAX_BOOKING_OFFSET')
             ) {
                 $message = Tools::displayError('Minimum booking offset cannot be be greater than or equal to Global Maximum booking offset.');
             } elseif (!Validate::isLoadedObject($objCountry = new Country($this->id_country))) {

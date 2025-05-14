@@ -1414,7 +1414,7 @@ class AdminImportControllerCore extends AdminController
                         $objHotelOrderRestrictDate->use_global_min_booking_offset = true;
 
                         if (isset($info['max_booking_offset'])
-                            && (Configuration::get('GLOBAL_MIN_BOOKING_OFFSET') < $info['max_booking_offset']
+                            && (Configuration::get('PS_MIN_BOOKING_OFFSET') < $info['max_booking_offset']
                             || isset($info['min_booking_offset']) && $info['min_booking_offset'] < $info['max_booking_offset'])
                         ) {
                             $objHotelOrderRestrictDate->use_global_max_booking_offset = false;
@@ -1422,7 +1422,7 @@ class AdminImportControllerCore extends AdminController
                         }
 
                         if (isset($info['min_booking_offset'])
-                            && (Configuration::get('GLOBAL_MAX_BOOKING_OFFSET') > $info['min_booking_offset']
+                            && (Configuration::get('PS_MAX_BOOKING_OFFSET') > $info['min_booking_offset']
                             || isset($info['max_booking_offset']) && $info['max_booking_offset'] > $info['min_booking_offset'])
                         ) {
                             $objHotelOrderRestrictDate->use_global_min_booking_offset = false;

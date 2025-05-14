@@ -437,7 +437,7 @@
 									<label for="enable_use_global_max_booking_offset_off">{l s='No' mod='hotelreservationsystem'}</label>
 									<a class="slide-button btn"></a>
 								</span>
-								<div class="help-block">{l s='Global maximum booking offset:' mod='hotelreservationsystem'} {$GLOBAL_MAX_BOOKING_OFFSET}</div>
+								<div class="help-block">{l s='Global maximum booking offset:' mod='hotelreservationsystem'} {$PS_MAX_BOOKING_OFFSET}</div>
 							</div>
 						</div>
 						<div class="form-group" {if isset($smarty.post.enable_use_global_max_booking_offset)} {if !$smarty.post.enable_use_global_max_booking_offset} style="display:block;" {else} style="display:none;" {/if} {elseif isset($order_restrict_date_info.use_global_max_booking_offset) && !$order_restrict_date_info.use_global_max_booking_offset} style="display:block;" {else} style="display:none;" {/if}>
@@ -458,7 +458,7 @@
 									<label for="enable_use_global_min_booking_offset_off">{l s='No' mod='hotelreservationsystem'}</label>
 									<a class="slide-button btn"></a>
 								</span>
-								<div class="help-block">{l s='Global minimum booking offset :' mod='hotelreservationsystem'} {$GLOBAL_MIN_BOOKING_OFFSET}</div>
+								<div class="help-block">{l s='Global minimum booking offset :' mod='hotelreservationsystem'} {$PS_MIN_BOOKING_OFFSET}</div>
 							</div>
 						</div>
 						<div class="form-group" {if isset($smarty.post.enable_use_global_min_booking_offset)} {if !$smarty.post.enable_use_global_min_booking_offset} style="display:block;" {else} style="display:none;" {/if} {else if isset($edit) && isset($order_restrict_date_info.use_global_min_booking_offset) && !$order_restrict_date_info.use_global_min_booking_offset} style="display:block;" {else} style="display:none;" {/if}>

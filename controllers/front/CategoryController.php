@@ -156,7 +156,7 @@ class CategoryControllerCore extends FrontController
         $currency = new Currency($this->context->currency->id);
 
         if ($id_hotel = HotelBranchInformation::getHotelIdByIdCategory($id_category)) {
-            $minBookingOffset = (int) HotelOrderRestrictDate::getMinBookingOffset($id_hotel);
+            $minBookingOffset = (int) HotelOrderRestrictDate::getMinimumBookingOffset($id_hotel);
             if ($minBookingOffset
                 && strtotime(date('Y-m-d', strtotime('+'. ($minBookingOffset) .' days'))) > strtotime($date_from)
             ) {

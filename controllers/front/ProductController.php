@@ -334,7 +334,7 @@ class ProductControllerCore extends FrontController
                     $date_from = Tools::getValue('date_from');
                     $date_to = Tools::getValue('date_to');
 
-                    $minBookingOffset = (int) HotelOrderRestrictDate::getMinBookingOffset($hotel_id);
+                    $minBookingOffset = (int) HotelOrderRestrictDate::getMinimumBookingOffset($hotel_id);
                     if (!($date_from = Tools::getValue('date_from'))) {
                         $date_from = date('Y-m-d');
                     }

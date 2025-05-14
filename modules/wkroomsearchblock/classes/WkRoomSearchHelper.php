@@ -144,7 +144,7 @@ class WkRoomSearchHelper
                     $idHotel = HotelBranchInformation::getHotelIdByIdCategory($idHotelCategory);
                     $htlCategoryInfo = $objHotelInfo->getCategoryDataByIdCategory((int) $objCategory->id_parent);
                     $searchedData['htl_dtl'] = $objHotelInfo->hotelBranchesInfo(0, 1, 1, $idHotel);
-                    $minBookingOffset = (int) HotelOrderRestrictDate::getMinBookingOffset($idHotel);
+                    $minBookingOffset = (int) HotelOrderRestrictDate::getMinimumBookingOffset($idHotel);
                     if ($minBookingOffset
                         && strtotime(date('Y-m-d', strtotime('+'. ($minBookingOffset) .' days'))) > strtotime($dateFrom)
                     ) {
@@ -237,7 +237,7 @@ class WkRoomSearchHelper
                 $hotelsInfo[$key]['id'] = $hotel_info['id'];
                 $hotelsInfo[$key]['hotel_name'] = $hotel_info['hotel_name'];
                 $hotelsInfo[$key]['max_order_date'] = date('Y-m-d', strtotime($maxOrderDate));
-                $hotelsInfo[$key]['min_booking_offset'] = (int) HotelOrderRestrictDate::getMinBookingOffset($hotel_info['id']);
+                $hotelsInfo[$key]['min_booking_offset'] = (int) HotelOrderRestrictDate::getMinimumBookingOffset($hotel_info['id']);
             } else {
                 unset($hotelsInfo[$key]);
             }
@@ -251,7 +251,7 @@ class WkRoomSearchHelper
 
         $maxOrderDate = HotelOrderRestrictDate::getMaxOrderDate($idHotel);
         $smartyVars['max_order_date'] = date('Y-m-d', strtotime($maxOrderDate));
-        $smartyVars['min_booking_offset'] = (int) HotelOrderRestrictDate::getMinBookingOffset($idHotel);
+        $smartyVars['min_booking_offset'] = (int) HotelOrderRestrictDate::getMinimumBookingOffset($idHotel);
 
         if (!$locationEnabled
             && !$smartyVars['show_hotel_name']
