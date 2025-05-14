@@ -5520,12 +5520,12 @@ class AdminOrdersControllerCore extends AdminController
             }
 
             if (isset($roomHtlCartInfo['id'])) {
-                if ($id_room_type_service_product_cart_detail = $objRoomTypeServiceProductCartDetail->alreadyExists(
+                if ($idRoomTypServiceProductCartDetail = $objRoomTypeServiceProductCartDetail->alreadyExists(
                     $service['id_product'],
                     $service['id_cart'],
                     $roomHtlCartInfo['id']
                 )) {
-                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail((int) $id_room_type_service_product_cart_detail);
+                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail((int) $idRoomTypServiceProductCartDetail);
                     $serviceQuantity = $objRoomTypeServiceProductCartDetail->quantity;
                     if ($objRoomTypeServiceProductCartDetail->delete()) {
                         $objCart = new Cart($service['id_cart']);
@@ -5613,7 +5613,7 @@ class AdminOrdersControllerCore extends AdminController
             $objBookingDetail->date_from,
             $objBookingDetail->date_to,
             1,
-            1
+            $objBookingDetail->id_order
         );
 
         $objBookingDetail->delete();
