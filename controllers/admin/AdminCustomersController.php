@@ -80,7 +80,6 @@ class AdminCustomersControllerCore extends AdminController
         $this->_join = 'LEFT JOIN '._DB_PREFIX_.'gender_lang gl ON (a.id_gender = gl.id_gender AND gl.id_lang = '.(int)$this->context->language->id.')';
         $this->_join .= ' LEFT JOIN '._DB_PREFIX_.'group_lang grl ON (a.id_default_group = grl.id_group AND grl.id_lang = '.(int)$this->context->language->id.')';
         $this->_join .= ' LEFT JOIN '._DB_PREFIX_.'orders o ON (a.id_customer = o.id_customer)';
-        $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'cart_customer_guest_detail` cgd ON cgd.`email` = a.`email` AND  cgd.`id_cart` = 0 ';
         $this->_group = 'GROUP BY a.`id_customer`';
 
         $this->fields_list = array(
@@ -206,7 +205,6 @@ class AdminCustomersControllerCore extends AdminController
 
         $this->_select = '
         a.date_add, gl.name as title, grl.name as default_group_name, COUNT(o.`id_order`) as total_orders,
-        cgd.`phone`,
         o.`date_add` as order_date, SUM(total_paid_real / conversion_rate) as total_spent, (
             SELECT c.date_add FROM '._DB_PREFIX_.'guest g
             LEFT JOIN '._DB_PREFIX_.'connections c ON c.id_guest = g.id_guest
