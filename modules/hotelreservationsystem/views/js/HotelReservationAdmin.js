@@ -664,7 +664,7 @@ $(document).ready(function() {
 	      },
 	      onSelect: function(selectedDate) {
             let objDateToMin = $.datepicker.parseDate('dd-mm-yy', selectedDate);
-            objDateToMin.setDate(objDateToMin.getDate() + 1);
+            objDateToMin.setDate(objDateToMin.getDate());
 
             $('#feature_plan_date_to').datepicker('option', 'minDate', objDateToMin);
 	      },
@@ -689,7 +689,7 @@ $(document).ready(function() {
                 objDateToMin = new Date();
             }
 
-            objDateToMin.setDate(objDateToMin.getDate() + 1);
+            objDateToMin.setDate(objDateToMin.getDate());
             $('#feature_plan_date_to').datepicker('option', 'minDate', objDateToMin);
         },
         //for calender Css
