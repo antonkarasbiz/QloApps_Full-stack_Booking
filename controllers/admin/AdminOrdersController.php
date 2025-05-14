@@ -6539,12 +6539,12 @@ class AdminOrdersControllerCore extends AdminController
 
                 if ($res &= $objRoomTypeServiceProductOrderDetail->delete()) {
                     if (isset($roomHtlCartInfo['id'])) {
-                        if ($id_room_type_service_product_cart_detail = $objRoomTypeServiceProductCartDetail->alreadyExists(
+                        if ($idRoomTypServiceProductCartDetail = $objRoomTypeServiceProductCartDetail->alreadyExists(
                             $idServiceProduct,
                             $objRoomTypeServiceProductOrderDetail->id_cart,
                             $roomHtlCartInfo['id']
                         )) {
-                            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail($id_room_type_service_product_cart_detail);
+                            $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail($idRoomTypServiceProductCartDetail);
                             if ($objRoomTypeServiceProductCartDetail->delete()) {
                                 $objCart = new Cart($objRoomTypeServiceProductOrderDetail->id_cart);
                                 $objCart->updateQty((int)abs($quantity), $objRoomTypeServiceProductOrderDetail->id_product, null, false, 'down');
@@ -6748,12 +6748,12 @@ class AdminOrdersControllerCore extends AdminController
                             $unitPriceTaxExcl = 0;
                             foreach ($productList as &$product) {
                                 // This is used to get the actual quanity of the service as it is calculated incorrectly if the service is per night
-                                if ($id_room_type_service_product_cart_detail = $objRoomTypeServiceProductCartDetail->alreadyExists(
+                                if ($idRoomTypServiceProductCartDetail = $objRoomTypeServiceProductCartDetail->alreadyExists(
                                     $service['id'],
                                     $cart->id,
                                     $roomHtlCartInfo['id'])
                                 ) {
-                                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail((int) $id_room_type_service_product_cart_detail);
+                                    $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail((int) $idRoomTypServiceProductCartDetail);
 
                                     $unitPriceTaxExcl = $objRoomTypeServiceProductPrice->getServicePrice(
                                         (int)$product['id_product'],
