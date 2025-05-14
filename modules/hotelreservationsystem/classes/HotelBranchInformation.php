@@ -1064,7 +1064,7 @@ class HotelBranchInformation extends ObjectModel
     public function setWsHotelRestrictions()
     {
         if ($this->id) {
-            // save maximum booking date and preparation time
+            // save maximum booking offset and min booking offset
             if ($restrictDateInfo = HotelOrderRestrictDate::getDataByHotelId($this->id)) {
                 $objHotelRestrictDate = new HotelOrderRestrictDate($restrictDateInfo['id']);
             } else {

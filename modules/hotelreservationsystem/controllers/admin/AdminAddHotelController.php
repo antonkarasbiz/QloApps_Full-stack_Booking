@@ -741,7 +741,7 @@ class AdminAddHotelController extends ModuleAdminController
             $objHotelBranch->updateRoomTypeCategories();
 
             if ($idHotel) {
-                // save maximum booking date and preparation time
+                // save maximum booking offset and minimum booking offset
                 $objHotelOrderRestrictDate = new HotelOrderRestrictDate();
                 $restrictDateInfo = HotelOrderRestrictDate::getDataByHotelId($newIdHotel);
                 if ($restrictDateInfo) {

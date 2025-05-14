@@ -223,12 +223,12 @@ const BookingSearchManager = {
 
                 if ($(selectedHotel).val().trim() != '') {
                     const maxOrderDate = $(selectedHotel).attr('data-max_order_date');
-                    const preparationTime = $(selectedHotel).attr('data-min_booking_offset')
+                    const minBookingOffset = $(selectedHotel).attr('data-min_booking_offset')
 
-                    createDateRangePicker(maxOrderDate, preparationTime, $('#check_in_time').val(), $('#check_out_time').val());
+                    createDateRangePicker(maxOrderDate, minBookingOffset, $('#check_in_time').val(), $('#check_out_time').val());
 
                     $('#max_order_date').val(maxOrderDate);
-                    $('#min_booking_offset').val(preparationTime);
+                    $('#min_booking_offset').val(minBookingOffset);
                     $('#id_hotel').val($(selectedHotel).attr('data-id-hotel'));
                     $('#hotel_cat_id').val($(selectedHotel).attr('data-hotel-cat-id'));
 
