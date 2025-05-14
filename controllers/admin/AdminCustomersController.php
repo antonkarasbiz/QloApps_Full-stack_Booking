@@ -147,7 +147,7 @@ class AdminCustomersControllerCore extends AdminController
             ),
             'phone' => array(
                 'title' => $this->l('Phone'),
-                'filter_key' => 'cgd!phone',
+                'filter_key' => 'a!phone',
                 'optional' => true,
                 'visible_default' => false,
             ),
