@@ -28,6 +28,15 @@
     <input type="hidden" name="product_price_tax_excl" value="{Tools::ps_round($data.original_unit_price_tax_excl, 2)}" />
     <input type="hidden" name="product_price_tax_incl" value="{Tools::ps_round($data.original_unit_price_tax_incl, 2)}" />
 
+    {if isset($data.id_status) && ($data.id_status != HotelBookingDetail::STATUS_ALLOTED)}
+        <div class="alert alert-info">
+            {if $data.id_status == HotelBookingDetail::STATUS_CHECKED_IN}
+                {l s='This booking has already been checked in, so the check-in date cannot be updated.'}
+            {else if HotelBookingDetail::STATUS_CHECKED_OUT}
+                {l s='This booking has already been checked out, so the check-in and check-out date cannot be updated.'}
+            {/if}
+        </div>
+    {/if}
     <div class="edit_room_fields">
         <div class="row form-group">
             <div class="col-sm-6 room_check_in_div">
