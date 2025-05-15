@@ -569,6 +569,28 @@ $(document).ready(function() {
 
     /* ----  AdminHotelFeaturePricesSettingsController Admin ---- */
 
+    if ($('input[name="create_multiple"]:checked').val() == 1) {
+        $('.room-type-name').hide();
+        $('.room-type-name-tree').show();
+        $('[name="submitAddhtl_room_type_feature_pricingAndStay"]').hide();
+    } else {
+        $('.room-type-name').show();
+        $('[name="submitAddhtl_room_type_feature_pricingAndStay"]').show();
+        $('.room-type-name-tree').hide();
+    }
+
+    $(document).on('change', 'input[name="create_multiple"]', function() {
+        if ($('input[name="create_multiple"]:checked').val() == 1) {
+            $('.room-type-name').hide();
+            $('.room-type-name-tree').show();
+            $('[name="submitAddhtl_room_type_feature_pricingAndStay"]').hide();
+        } else {
+            $('.room-type-name').show();
+            $('[name="submitAddhtl_room_type_feature_pricingAndStay"]').show();
+            $('.room-type-name-tree').hide();
+        }
+    });
+
     $('#date_selection_type').on('change', function() {
         if ($('#date_selection_type').val() == date_selection_types.specific) {
             $(".specific_date_type").show(200);
@@ -680,7 +702,7 @@ $(document).ready(function() {
 	      },
 	      onSelect: function(selectedDate) {
             let objDateToMin = $.datepicker.parseDate('dd-mm-yy', selectedDate);
-            objDateToMin.setDate(objDateToMin.getDate() + 1);
+            objDateToMin.setDate(objDateToMin.getDate());
 
             $('#feature_plan_date_to').datepicker('option', 'minDate', objDateToMin);
 	      },
@@ -705,7 +727,7 @@ $(document).ready(function() {
                 objDateToMin = new Date();
             }
 
-            objDateToMin.setDate(objDateToMin.getDate() + 1);
+            objDateToMin.setDate(objDateToMin.getDate());
             $('#feature_plan_date_to').datepicker('option', 'minDate', objDateToMin);
         },
         //for calender Css
