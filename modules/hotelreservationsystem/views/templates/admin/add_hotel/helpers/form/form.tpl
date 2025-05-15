@@ -427,23 +427,23 @@
 					{if isset($hotel_info.id) && $hotel_info.id}
 						<div class="form-group">
 							<label class="control-label col-lg-3">
-								<span>{l s='Use Global maximum booking offset:' mod='hotelreservationsystem'}</span>
+								<span>{l s='Use Global Maximum checkout offset:' mod='hotelreservationsystem'}</span>
 							</label>
 							<div class="col-lg-6">
 								<span class="switch prestashop-switch fixed-width-lg">
-									<input type="radio" {if isset($smarty.post.enable_use_global_max_booking_offset)} {if $smarty.post.enable_use_global_max_booking_offset} checked="checked"{/if} {elseif isset($edit) && isset($order_restrict_date_info.use_global_max_booking_offset) && $order_restrict_date_info.use_global_max_booking_offset} checked="checked" {else if isset($order_restrict_date_info) && !$order_restrict_date_info} checked="checked" {/if} value="1" id="enable_use_global_max_booking_offset_on" name="enable_use_global_max_booking_offset">
-									<label for="enable_use_global_max_booking_offset_on">{l s='Yes' mod='hotelreservationsystem'}</label>
-									<input type="radio" {if isset($smarty.post.enable_use_global_max_booking_offset)} {if !$smarty.post.enable_use_global_max_booking_offset} checked="checked"{/if} {elseif isset($edit) && isset($order_restrict_date_info.use_global_max_booking_offset) && !$order_restrict_date_info.use_global_max_booking_offset} checked="checked" {/if} value="0" id="enable_use_global_max_booking_offset_off" name="enable_use_global_max_booking_offset">
-									<label for="enable_use_global_max_booking_offset_off">{l s='No' mod='hotelreservationsystem'}</label>
+									<input type="radio" {if isset($smarty.post.enable_use_global_max_checkout_offset)} {if $smarty.post.enable_use_global_max_checkout_offset} checked="checked"{/if} {elseif isset($edit) && isset($order_restrict_date_info.use_global_max_checkout_offset) && $order_restrict_date_info.use_global_max_checkout_offset} checked="checked" {else if isset($order_restrict_date_info) && !$order_restrict_date_info} checked="checked" {/if} value="1" id="enable_use_global_max_checkout_offset_on" name="enable_use_global_max_checkout_offset">
+									<label for="enable_use_global_max_checkout_offset_on">{l s='Yes' mod='hotelreservationsystem'}</label>
+									<input type="radio" {if isset($smarty.post.enable_use_global_max_checkout_offset)} {if !$smarty.post.enable_use_global_max_checkout_offset} checked="checked"{/if} {elseif isset($edit) && isset($order_restrict_date_info.use_global_max_checkout_offset) && !$order_restrict_date_info.use_global_max_checkout_offset} checked="checked" {/if} value="0" id="enable_use_global_max_checkout_offset_off" name="enable_use_global_max_checkout_offset">
+									<label for="enable_use_global_max_checkout_offset_off">{l s='No' mod='hotelreservationsystem'}</label>
 									<a class="slide-button btn"></a>
 								</span>
-								<div class="help-block">{l s='Global maximum booking offset:' mod='hotelreservationsystem'} {$PS_MAX_BOOKING_OFFSET}</div>
+								<div class="help-block">{l s='Global Maximum checkout offset:' mod='hotelreservationsystem'} {$PS_MAX_CHECKOUT_OFFSET}</div>
 							</div>
 						</div>
-						<div class="form-group" {if isset($smarty.post.enable_use_global_max_booking_offset)} {if !$smarty.post.enable_use_global_max_booking_offset} style="display:block;" {else} style="display:none;" {/if} {elseif isset($order_restrict_date_info.use_global_max_booking_offset) && !$order_restrict_date_info.use_global_max_booking_offset} style="display:block;" {else} style="display:none;" {/if}>
-							<label class="control-label col-sm-3 required" for="max_booking_offset">{l s='Maximum booking offset :' mod='hotelreservationsystem'}</label>
+						<div class="form-group" {if isset($smarty.post.enable_use_global_max_checkout_offset)} {if !$smarty.post.enable_use_global_max_checkout_offset} style="display:block;" {else} style="display:none;" {/if} {elseif isset($order_restrict_date_info.use_global_max_checkout_offset) && !$order_restrict_date_info.use_global_max_checkout_offset} style="display:block;" {else} style="display:none;" {/if}>
+							<label class="control-label col-sm-3 required" for="max_checkout_offset">{l s='Maximum checkout offset :' mod='hotelreservationsystem'}</label>
 							<div class="col-sm-2">
-								<input type="text" class="form-control" id="max_booking_offset" name="max_booking_offset" value="{if isset($smarty.post.max_booking_offset)}{$smarty.post.max_booking_offset}{elseif isset($order_restrict_date_info.max_booking_offset)}{$order_restrict_date_info.max_booking_offset|escape:'htmlall':'UTF-8'}{/if}" />
+								<input type="text" class="form-control" id="max_checkout_offset" name="max_checkout_offset" value="{if isset($smarty.post.max_checkout_offset)}{$smarty.post.max_checkout_offset}{elseif isset($order_restrict_date_info.max_checkout_offset)}{$order_restrict_date_info.max_checkout_offset|escape:'htmlall':'UTF-8'}{/if}" />
 							</div>
 						</div>
 						<div class="form-group">

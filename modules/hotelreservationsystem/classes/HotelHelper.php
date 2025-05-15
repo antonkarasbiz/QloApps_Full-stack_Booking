@@ -1063,7 +1063,7 @@ class HotelHelper
         Configuration::updateValue('WK_GLOBAL_CHILD_MAX_AGE', 15);
         Configuration::updateValue('WK_GLOBAL_MAX_CHILD_IN_ROOM', 0);
 
-        Configuration::updateValue('PS_MAX_BOOKING_OFFSET', 365);
+        Configuration::updateValue('PS_MAX_CHECKOUT_OFFSET', 365);
         Configuration::updateValue('PS_MIN_BOOKING_OFFSET', 0);
 
         Configuration::updateValue('HTL_FEATURE_PRICING_PRIORITY', 'specific_date;special_day;date_range');

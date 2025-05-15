@@ -396,7 +396,7 @@ $(document).ready(function() {
 
         if (selectedDateFrom < start_date
             || selectedDateTo < start_date
-            || (max_order_date && max_order_date < selectedDateTo)
+            || (max_order_date && (max_order_date < selectedDateTo))
         ) {
             $('#check_in_time').val('');
             $('#check_out_time').val('');

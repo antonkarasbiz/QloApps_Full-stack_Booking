@@ -71,8 +71,8 @@ class HotelBranchInformation extends ObjectModel
     public $zipcode;
     public $address;
     public $phone;
-    public $use_global_max_booking_offset = 1;
-    public $max_booking_offset = '1000';
+    public $use_global_max_checkout_offset = 1;
+    public $max_checkout_offset = '1000';
     public $use_global_min_booking_offset = 1;
     public $min_booking_offset = '0';
 
@@ -106,8 +106,8 @@ class HotelBranchInformation extends ObjectModel
                     'subResourceName' => 'hotels'
                 )
             ),
-            'use_global_max_booking_offset' => array(),
-            'max_booking_offset' => array(),
+            'use_global_max_checkout_offset' => array(),
+            'max_checkout_offset' => array(),
             'use_global_min_booking_offset' => array(),
             'min_booking_offset' => array(),
         ),
@@ -149,8 +149,8 @@ class HotelBranchInformation extends ObjectModel
             }
 
             if ($hotelRestrictions = HotelOrderRestrictDate::getDataByHotelId($id)) {
-                $this->use_global_max_booking_offset = $hotelRestrictions['use_global_max_booking_offset'];
-                $this->max_booking_offset = $hotelRestrictions['max_booking_offset'];
+                $this->use_global_max_checkout_offset = $hotelRestrictions['use_global_max_checkout_offset'];
+                $this->max_checkout_offset = $hotelRestrictions['max_checkout_offset'];
                 $this->use_global_min_booking_offset = $hotelRestrictions['use_global_min_booking_offset'];
                 $this->min_booking_offset = $hotelRestrictions['min_booking_offset'];
             }
@@ -1064,7 +1064,7 @@ class HotelBranchInformation extends ObjectModel
     public function setWsHotelRestrictions()
     {
         if ($this->id) {
-            // save maximum booking offset and min booking offset
+            // save Maximum checkout offset and min booking offset
             if ($restrictDateInfo = HotelOrderRestrictDate::getDataByHotelId($this->id)) {
                 $objHotelRestrictDate = new HotelOrderRestrictDate($restrictDateInfo['id']);
             } else {
@@ -1072,9 +1072,9 @@ class HotelBranchInformation extends ObjectModel
             }
 
             $objHotelRestrictDate->id_hotel = $this->id;
-            $objHotelRestrictDate->use_global_max_booking_offset = $this->use_global_max_booking_offset;
-            if (!$this->use_global_max_booking_offset) {
-                $objHotelRestrictDate->max_booking_offset = $this->max_booking_offset;
+            $objHotelRestrictDate->use_global_max_checkout_offset = $this->use_global_max_checkout_offset;
+            if (!$this->use_global_max_checkout_offset) {
+                $objHotelRestrictDate->max_checkout_offset = $this->max_checkout_offset;
             }
             $objHotelRestrictDate->use_global_min_booking_offset = $this->use_global_min_booking_offset;
             if (!$this->use_global_min_booking_offset) {
@@ -1111,34 +1111,34 @@ class HotelBranchInformation extends ObjectModel
                 $message = Tools::displayError('City is required field.');
             } elseif (!Validate::isCityName($this->city)) {
                 $message = Tools::displayError('Enter a Valid City Name.');
-            } elseif (!Validate::isBool($this->use_global_max_booking_offset)) {
-                $message = Tools::displayError('invalid value for use_global_max_booking_offset.');
+            } elseif (!Validate::isBool($this->use_global_max_checkout_offset)) {
+                $message = Tools::displayError('invalid value for use global max checkout offset.');
             } elseif (!Validate::isBool($this->use_global_min_booking_offset)) {
-                $message = Tools::displayError('invalid value for use_global_min_booking_offset.');
-            } elseif (!$this->use_global_max_booking_offset && $this->max_booking_offset == '') {
-                $message = Tools::displayError('Maximum booking offset is required.');
-            } elseif (!$this->use_global_max_booking_offset && (!$this->max_booking_offset || !Validate::isUnsignedInt($this->max_booking_offset))) {
-                $message = Tools::displayError('Maximum booking offset is invalid.');
+                $message = Tools::displayError('invalid value for use global min booking offset.');
+            } elseif (!$this->use_global_max_checkout_offset && $this->max_checkout_offset == '') {
+                $message = Tools::displayError('Maximum checkout offset is required.');
+            } elseif (!$this->use_global_max_checkout_offset && (!$this->max_checkout_offset || !Validate::isUnsignedInt($this->max_checkout_offset))) {
+                $message = Tools::displayError('Maximum checkout offset is invalid.');
             } elseif (!$this->use_global_min_booking_offset && $this->min_booking_offset === '') {
                 $message = Tools::displayError('Minimum booking offset is a required.');
             } elseif (!$this->use_global_min_booking_offset && !Validate::isUnsignedInt($this->min_booking_offset)) {
                 $message = Tools::displayError('Minimum booking offset is invalid.');
             } else if (!$this->use_global_min_booking_offset
-                && !$this->use_global_max_booking_offset
-                && $this->max_booking_offset
-                && $this->max_booking_offset <= $this->min_booking_offset
+                && !$this->use_global_max_checkout_offset
+                && $this->max_checkout_offset
+                && $this->max_checkout_offset <= $this->min_booking_offset
             ) {
-                $message = Tools::displayError('Maximum booking cannot be less than or equal to Minimum booking offset.');
-            } else if (!$this->use_global_max_booking_offset
+                $message = Tools::displayError('Maximum checkout offset cannot be less than or equal to Minimum booking offset.');
+            } else if (!$this->use_global_max_checkout_offset
                 && $this->use_global_min_booking_offset
-                && $this->max_booking_offset <= Configuration::get('PS_MIN_BOOKING_OFFSET')
+                && $this->max_checkout_offset <= Configuration::get('PS_MIN_BOOKING_OFFSET')
             ) {
-                $message = Tools::displayError('Maximum booking cannot be less than or equal to Global Minimum booking offset.');
-            } else if ($this->use_global_max_booking_offset
+                $message = Tools::displayError('Maximum checkout offset cannot be less than or equal to Global Minimum booking offset.');
+            } else if ($this->use_global_max_checkout_offset
                 && !$this->use_global_min_booking_offset
-                && $this->min_booking_offset >= Configuration::get('PS_MAX_BOOKING_OFFSET')
+                && $this->min_booking_offset >= Configuration::get('PS_MAX_CHECKOUT_OFFSET')
             ) {
-                $message = Tools::displayError('Minimum booking offset cannot be be greater than or equal to Global Maximum booking offset.');
+                $message = Tools::displayError('Minimum booking offset cannot be be greater than or equal to Global Maximum checkout offset.');
             } elseif (!Validate::isLoadedObject($objCountry = new Country($this->id_country))) {
                 $message = Tools::displayError('country is invalid.');
             } elseif ($this->id_state

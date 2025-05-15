@@ -22,8 +22,8 @@ class HotelOrderRestrictDate extends ObjectModel
 {
     public $id;
     public $id_hotel;
-    public $use_global_max_booking_offset;
-    public $max_booking_offset;
+    public $use_global_max_checkout_offset;
+    public $max_checkout_offset;
     public $use_global_min_booking_offset;
     public $min_booking_offset;
     public $date_add;
@@ -34,8 +34,8 @@ class HotelOrderRestrictDate extends ObjectModel
         'primary' => 'id',
         'fields' => array(
             'id_hotel' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
-            'use_global_max_booking_offset' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
-            'max_booking_offset' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'use_global_max_checkout_offset' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
+            'max_checkout_offset' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'use_global_min_booking_offset' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'min_booking_offset' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'date_add' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
@@ -56,33 +56,33 @@ class HotelOrderRestrictDate extends ObjectModel
 
     /**
      * @param int $id_hotel
-     * @return string Max date of ordering for order restrict
+     * @return string Maximum checkout date according to the max booking offset for the hotel.
      */
     public static function getMaxOrderDate($idHotel)
     {
         $result = self::getDataByHotelId($idHotel);
-        if (is_array($result) && count($result) && !$result['use_global_max_booking_offset']) {
-            return date('Y-m-d H:i:s', strtotime('+ '.($result['max_booking_offset'] + 1).' days'));
+        if (is_array($result) && count($result) && !$result['use_global_max_checkout_offset']) {
+            return date('Y-m-d H:i:s', strtotime('+ '.$result['max_checkout_offset'].' days'));
         }
 
         // since this cannot be zero, this function will always return a date.
-        $globalBookingDate = (int) Configuration::get('PS_MAX_BOOKING_OFFSET');
+        $globalBookingDate = (int) Configuration::get('PS_MAX_CHECKOUT_OFFSET');
 
-        return date('Y-m-d H:i:s', strtotime('+ '.($globalBookingDate + 1).' days'));
+        return date('Y-m-d H:i:s', strtotime('+ '.$globalBookingDate.' days'));
     }
 
     /**
      * @param int $id_hotel
-     * @return int Maximum allowable number of days between booking date and check-in date.
+     * @return int Maximum allowable number of days between booking date and checkout date.
      */
-    public static function getMaximumBookingOffset($idHotel)
+    public static function getMaximumCheckoutOffset($idHotel)
     {
         $result = self::getDataByHotelId($idHotel);
-        if (is_array($result) && count($result) && !$result['use_global_max_booking_offset']) {
-            return $result['max_booking_offset'];
+        if (is_array($result) && count($result) && !$result['use_global_max_checkout_offset']) {
+            return $result['max_checkout_offset'];
         }
 
-        return (int) Configuration::get('PS_MAX_BOOKING_OFFSET');
+        return (int) Configuration::get('PS_MAX_CHECKOUT_OFFSET');
     }
 
     /**

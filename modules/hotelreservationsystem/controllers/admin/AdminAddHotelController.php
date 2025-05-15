@@ -212,7 +212,7 @@ class AdminAddHotelController extends ModuleAdminController
         $smartyVars['state_var'] = $stateOptions;
         $smartyVars['enabledDisplayMap'] = Configuration::get('PS_API_KEY') && Configuration::get('WK_GOOGLE_ACTIVE_MAP');
         $smartyVars['ps_img_dir'] = _PS_IMG_.'l/';
-        $smartyVars['PS_MAX_BOOKING_OFFSET'] = (int) Configuration::get('PS_MAX_BOOKING_OFFSET');
+        $smartyVars['PS_MAX_CHECKOUT_OFFSET'] = (int) Configuration::get('PS_MAX_CHECKOUT_OFFSET');
         $smartyVars['PS_MIN_BOOKING_OFFSET'] = (int) Configuration::get('PS_MIN_BOOKING_OFFSET');
         $smartyVars['WK_ORDER_REFUND_ALLOWED'] = Configuration::get('WK_ORDER_REFUND_ALLOWED');
 
@@ -251,8 +251,8 @@ class AdminAddHotelController extends ModuleAdminController
         $address = Tools::getValue('address');
         $active = Tools::getValue('ENABLE_HOTEL');
         $activeRefund = Tools::getValue('active_refund');
-        $enableUseGlobalMaxBookingOffset = Tools::getValue('enable_use_global_max_booking_offset');
-        $maxBookingOffset = trim(Tools::getValue('max_booking_offset'));
+        $enableUseGlobalMaxCheckoutOffset = Tools::getValue('enable_use_global_max_checkout_offset');
+        $maxCheckoutOffset = trim(Tools::getValue('max_checkout_offset'));
         $enableUseGlobalMinBookingOffset = Tools::getValue('enable_use_global_min_booking_offset');
         $minBookingOffset = trim(Tools::getValue('min_booking_offset'));
         $latitude = Tools::getValue('loclatitude');
@@ -428,11 +428,11 @@ class AdminAddHotelController extends ModuleAdminController
         }
 
         if ($idHotel) {
-            if (!$enableUseGlobalMaxBookingOffset) {
-                if ($maxBookingOffset === '') {
-                    $this->errors[] = $this->l('Maximum booking offset is a required field.');
-                } elseif (!$maxBookingOffset || !Validate::isUnsignedInt($maxBookingOffset)) {
-                    $this->errors[] = $this->l('Maximum booking offset is invalid.');
+            if (!$enableUseGlobalMaxCheckoutOffset) {
+                if ($maxCheckoutOffset === '') {
+                    $this->errors[] = $this->l('Maximum checkout offset is a required field.');
+                } elseif (!$maxCheckoutOffset || !Validate::isUnsignedInt($maxCheckoutOffset)) {
+                    $this->errors[] = $this->l('Maximum checkout offset is invalid.');
                 }
             }
 
@@ -445,15 +445,15 @@ class AdminAddHotelController extends ModuleAdminController
             }
 
             if (empty($this->errors)) {
-                if (!$enableUseGlobalMaxBookingOffset && !$enableUseGlobalMinBookingOffset) {
-                    if ($maxBookingOffset && $maxBookingOffset <= $minBookingOffset) {
-                        $this->errors[] = $this->l('Field Maximum booking offset cannot be be less than or equal to Minimum booking offset.');
+                if (!$enableUseGlobalMaxCheckoutOffset && !$enableUseGlobalMinBookingOffset) {
+                    if ($maxCheckoutOffset && $maxCheckoutOffset <= $minBookingOffset) {
+                        $this->errors[] = $this->l('Field Maximum checkout offset cannot be be less than or equal to Minimum booking offset.');
                     }
                 } else {
-                    if (!$enableUseGlobalMaxBookingOffset && $maxBookingOffset <= Configuration::get('PS_MIN_BOOKING_OFFSET')) {
-                        $this->errors[] = $this->l('Field Maximum booking offset cannot be be less than or equal to global Minimum booking offset.');
-                    } else if (!$enableUseGlobalMinBookingOffset && $minBookingOffset >= Configuration::get('PS_MAX_BOOKING_OFFSET')) {
-                        $this->errors[] = $this->l('Field Minimum booking offset cannot be be greater than or equal to Global Maximum booking offset.');
+                    if (!$enableUseGlobalMaxCheckoutOffset && $maxCheckoutOffset <= Configuration::get('PS_MIN_BOOKING_OFFSET')) {
+                        $this->errors[] = $this->l('Field Maximum checkout offset cannot be be less than or equal to global Minimum booking offset.');
+                    } else if (!$enableUseGlobalMinBookingOffset && $minBookingOffset >= Configuration::get('PS_MAX_CHECKOUT_OFFSET')) {
+                        $this->errors[] = $this->l('Field Minimum booking offset cannot be be greater than or equal to Global Maximum checkout offset.');
                     }
                 }
             }
@@ -741,7 +741,7 @@ class AdminAddHotelController extends ModuleAdminController
             $objHotelBranch->updateRoomTypeCategories();
 
             if ($idHotel) {
-                // save maximum booking offset and minimum booking offset
+                // save Maximum checkout offset and minimum booking offset
                 $objHotelOrderRestrictDate = new HotelOrderRestrictDate();
                 $restrictDateInfo = HotelOrderRestrictDate::getDataByHotelId($newIdHotel);
                 if ($restrictDateInfo) {
@@ -749,11 +749,11 @@ class AdminAddHotelController extends ModuleAdminController
                 }
 
                 $objHotelOrderRestrictDate->id_hotel = $newIdHotel;
-                $objHotelOrderRestrictDate->use_global_max_booking_offset = $enableUseGlobalMaxBookingOffset;
+                $objHotelOrderRestrictDate->use_global_max_checkout_offset = $enableUseGlobalMaxCheckoutOffset;
                 $objHotelOrderRestrictDate->use_global_min_booking_offset = $enableUseGlobalMinBookingOffset;
 
-                if (!$enableUseGlobalMaxBookingOffset) {
-                    $objHotelOrderRestrictDate->max_booking_offset = $maxBookingOffset;
+                if (!$enableUseGlobalMaxCheckoutOffset) {
+                    $objHotelOrderRestrictDate->max_checkout_offset = $maxCheckoutOffset;
                 }
 
                 if (!$enableUseGlobalMinBookingOffset) {

@@ -789,11 +789,11 @@ $(document).ready(function() {
         });
     }
 
-    $('input[name="enable_use_global_max_booking_offset"]').on('change', function () {
+    $('input[name="enable_use_global_max_checkout_offset"]').on('change', function () {
         if (parseInt($(this).val())) {
-            $('input[name="max_booking_offset"]').closest('.form-group').hide(200);
+            $('input[name="max_checkout_offset"]').closest('.form-group').hide(200);
         } else {
-            $('input[name="max_booking_offset"]').closest('.form-group').show(200);
+            $('input[name="max_checkout_offset"]').closest('.form-group').show(200);
         }
     });
 

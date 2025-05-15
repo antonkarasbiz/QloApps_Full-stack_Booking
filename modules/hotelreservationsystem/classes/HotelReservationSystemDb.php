@@ -268,8 +268,8 @@ class HotelReservationSystemDb
             "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_order_restrict_date` (
                 `id` int(11) NOT NULL AUTO_INCREMENT,
                 `id_hotel` int(11) NOT NULL,
-                `use_global_max_booking_offset` tinyint(1) NOT NULL,
-                `max_booking_offset` int(11) NOT NULL,
+                `use_global_max_checkout_offset` tinyint(1) NOT NULL,
+                `max_checkout_offset` int(11) NOT NULL,
                 `use_global_min_booking_offset` tinyint(1) NOT NULL,
                 `min_booking_offset` int(11) NOT NULL,
                 `date_add` datetime NOT NULL,

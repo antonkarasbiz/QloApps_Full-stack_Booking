@@ -87,9 +87,9 @@ class AdminOrderPreferencesControllerCore extends AdminController
                 'title' => $this->l('Order Restrict'),
                 'icon' => 'icon-cogs',
                 'fields' => array(
-                    'PS_MAX_BOOKING_OFFSET' => array(
-                        'title' => $this->l('Maximum booking offset'),
-                        'hint' => $this->l('The maximum booking offset defines the number of days from today till which bookings can be made. It is used to limiting how far in advance reservations are allowed to the guest.'),
+                    'PS_MAX_CHECKOUT_OFFSET' => array(
+                        'title' => $this->l('Maximum checkout offset'),
+                        'hint' => $this->l('The maximum checkout offset defines how many days from today checkout is allowed. For example, if this value is set to 10 and someone is booking on March 1st, they can only select a checkout date up to March 11th.'),
                         'type' => 'text',
                         'class' => 'fixed-width-xl',
                         'suffix' => $this->l('day(s)'),
@@ -329,12 +329,12 @@ class AdminOrderPreferencesControllerCore extends AdminController
             $this->errors[] = Tools::displayError('Please assign a valid CMS page for Terms and Conditions.');
         }
 
-        $maxBookingOffset = Tools::getValue('PS_MAX_BOOKING_OFFSET');
+        $maxCheckoutOffset = Tools::getValue('PS_MAX_CHECKOUT_OFFSET');
         $minBookingOffset = Tools::getValue('PS_MIN_BOOKING_OFFSET');
-        if ($maxBookingOffset === '') {
-            $this->errors[] = Tools::displayError('Field \'Maximum booking offset\' can not be empty.');
-        } elseif (!$maxBookingOffset || !Validate::isUnsignedInt($maxBookingOffset)) {
-            $this->errors[] = Tools::displayError('Field \'Maximum booking offset\' is invalid.');
+        if ($maxCheckoutOffset === '') {
+            $this->errors[] = Tools::displayError('Field \'Maximum checkout offset\' can not be empty.');
+        } elseif (!$maxCheckoutOffset || !Validate::isUnsignedInt($maxCheckoutOffset)) {
+            $this->errors[] = Tools::displayError('Field \'Maximum checkout offset\' is invalid.');
         }
 
         if ($minBookingOffset === '') {
@@ -343,8 +343,8 @@ class AdminOrderPreferencesControllerCore extends AdminController
             $this->errors[] = Tools::displayError('Field \'Minimum booking offset\' is invalid.');
         }
 
-        if ($maxBookingOffset && $maxBookingOffset <= $minBookingOffset) {
-            $this->errors[] = Tools::displayError('Field \'Maximum booking offset\' cannot be be less than or equal to \'Minimum booking offset\'.');
+        if ($maxCheckoutOffset && $maxCheckoutOffset <= $minBookingOffset) {
+            $this->errors[] = Tools::displayError('Field \'Maximum checkout offset\' cannot be be less than or equal to \'Minimum booking offset\'.');
         }
     }
 
