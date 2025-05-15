@@ -257,12 +257,14 @@ class AdminNormalProductsControllerCore extends AdminController
             'title' => $this->l('Available for order'),
             'filter_key' => 'a!available_for_order',
             'type' => 'bool',
+            'callback' => 'formatStatusAsLabel',
         );
         $this->fields_list['price_addition_type'] = array(
             'displayed' => false,
             'title' => $this->l('Price display preference'),
             'filter_key' => 'a!price_addition_type',
             'type' => 'select',
+            'callback' => 'getPriceDisplayPreference',
             'list' => $priceAdditionType,
         );
         $this->fields_list['price_calculation_method_txt'] = array(
@@ -311,7 +313,8 @@ class AdminNormalProductsControllerCore extends AdminController
             'title' => $this->l('Base price'),
             'type' => 'price',
             'align' => 'text-left',
-            'filter_key' => 'a!price'
+            'filter_key' => 'a!price',
+            'callback' => 'displayPrice',
         );
         $this->fields_list['price_final'] = array(
             'title' => $this->l('Final price'),
@@ -319,7 +322,8 @@ class AdminNormalProductsControllerCore extends AdminController
             'align' => 'text-left',
             'havingFilter' => true,
             'orderby' => false,
-            'search' => false
+            'search' => false,
+            'callback' => 'displayPrice',
         );
 
         $this->fields_list['active'] = array(
@@ -329,6 +333,7 @@ class AdminNormalProductsControllerCore extends AdminController
             'align' => 'text-center',
             'type' => 'bool',
             'class' => 'fixed-width-sm',
+            'callback' => 'formatStatusAsLabel',
             'orderby' => false
         );
 
@@ -340,6 +345,34 @@ class AdminNormalProductsControllerCore extends AdminController
                 'position' => 'position'
             );
         }
+    }
+
+    public function formatStatusAsLabel($val, $row)
+    {
+        if ($val) {
+            $str_return = $this->l('Yes');
+        } else {
+            $str_return = $this->l('No');
+        }
+
+        return $str_return;
+    }
+
+    public function getPriceDisplayPreference($val, $row)
+    {
+        $str_return = $val;
+        if ($val == Product::PRICE_ADDITION_TYPE_WITH_ROOM) {
+            $str_return = $this->l('Add price in room price');
+        } else if ($val == Product::PRICE_ADDITION_TYPE_INDEPENDENT) {
+            $str_return = $this->l('Convenience Fee');
+        }
+
+        return $str_return;
+    }
+
+    public static function displayPrice($basePrice, $tr)
+    {
+        return Tools::displayPrice($basePrice, (int) Configuration::get('PS_CURRENCY_DEFAULT'));
     }
 
     private function buildCategoryOptions($category)
