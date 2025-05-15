@@ -28,11 +28,7 @@
 			<table class="table hotel-room">
 				<thead>
 					<tr class="nodrag nodrop">
-                        <th class="center">
-                            <label class="control-label">
-                                <input type="checkbox" class="select_all" name="rooms_checkbox">
-                            </label>
-                        </th>
+                        <th class="center"></th>
 						<th class="col-sm-2 center">
 							<label class="control-label required">
 								<span class="label-tooltip" data-toggle="tooltip" data-original-title="{l s='Enter room number. For eg. A-101, A-102 etc. Invalid characters <>;=#{}'}">
@@ -84,7 +80,7 @@
 							{assign var="var_name_room_info" value="rooms_info[`$key`]"}
 							<tr class="room_data_values" data-row-index="{$key}">
                                 <td class="center">
-									<input type="checkbox" value="{$room_info['id']}" name="bulk_update_room[]">
+                                    <input type="checkbox" {if isset($room_info['id'])}value="{$room_info['id']}"{else}disabled{/if} name="bulk_update_room[]">
 								</td>
 								<td class="col-sm-1 center">
 									<input class="form-control" type="text" value="{$room_info['room_num']}" name="{$var_name_room_info|cat:'[room_num]'}">
@@ -109,7 +105,7 @@
 								</td>
 								<td class="col-sm-1 center">
 									{if isset($room_info['id'])}
-                                        {if isset($room_info['booked_dates']) && $room_info['booked_dates']}
+                                        {if isset($room_info['booked_dates']) && json_decode($room_info['booked_dates'])}
                                             <input type="hidden" class="booked-dates" name="{$var_name_room_info|cat:'[booked_dates]'}" value='{$room_info['booked_dates']|escape:'html':'UTF-8'}'>
                                             <a href="#" class="view_htl_room btn btn-default" data-toggle="modal" data-target="#room-dates-modal" data-id-room="{$room_info['id']}"><i class="icon-info"></i></a>
                                         {/if}
@@ -166,18 +162,35 @@
 				<div class="col-sm-12">
                     <div class="btn-group rooms_bulk_actions dropup">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                            <i class="icon icon-list"></i>
                             {l s='Bulk actions'}
+                            <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu">
                             <li>
-                                <a id="bulk-create-rooms-button" class="bulkCreateRoomModal" data-toggle="modal" data-target="#bulkCreateRoomModal" type="button" data-size="s" data-style="expand-right">
-                                    {l s='Bulk Create'}
+                                <a href="#" id="select-all-rooms">
+                                    <i class="icon-check-sign"></i>&nbsp;{l s='Select all'}
                                 </a>
                             </li>
                             <li>
-                                <a id="bulk-update-rooms-button" class="bulkUpdateRoomModal" data-toggle="modal" data-target="#bulkUpdateRoomModal" type="button" data-size="s" data-style="expand-right" disabled>
-                                    {l s='Bulk Update'}
+                                <a href="#" id="unselect-all-rooms">
+                                    <i class="icon-check-empty"></i>&nbsp;{l s='Unselect all'}
+                                </a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="#" id="bulk-update-rooms-button" class="bulkUpdateRoomModal" data-toggle="modal" data-target="#bulkUpdateRoomModal" type="button" data-size="s" data-style="expand-right" disabled>
+                                    <i class="icon-edit"></i>&nbsp;{l s='Update selection'}
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" id="bulk-delete-rooms-button">
+                                    <i class="icon-trash"></i>&nbsp;{l s='Delete selection'}
+                                </a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a id="bulk-create-rooms-button" class="bulkCreateRoomModal" data-toggle="modal" data-target="#bulkCreateRoomModal" type="button" data-size="s" data-style="expand-right">
+                                    <i class="icon-plus"></i>&nbsp;{l s='Create Multiple'}
                                 </a>
                             </li>
                         </ul>
@@ -926,15 +939,31 @@
         });
 
         $('[name="rooms_checkbox"]').on('change', function() {
-            if ($(this).hasClass('select_all')) {
-                $(this).addClass('unselect_all').removeClass('select_all');
-                $('[name="bulk_update_room[]"]').prop('checked', true);
-            } else {
-                $(this).addClass('select_all').removeClass('unselect_all');
-                $('[name="bulk_update_room[]"]').prop('checked', false);
-            }
+            BulkUpdateRoomModal.toggleBulkUpdateButton();
+        });
+
+        $('#select-all-rooms').on('click', function(e) {
+            e.preventDefault();
+            $('[type="checkbox"][name="bulk_update_room[]"]').each(function(){
+                if (!$(this).prop('disabled')) {
+                    $(this).prop('checked', true);
+                }
+            });
+            BulkUpdateRoomModal.toggleBulkUpdateButton();
+        });
+
+        $('#unselect-all-rooms').on('click', function(e) {
+            e.preventDefault();
+            $('[type="checkbox"][name="bulk_update_room[]"]').each(function(){
+                $(this).prop('checked', false);
+            });
 
             BulkUpdateRoomModal.toggleBulkUpdateButton();
+        });
+
+        $('#bulk-delete-rooms-button').on('click', function(e) {
+            e.preventDefault();
+            BulkUpdateRoomModal.submitBulkDelete();
         });
 
         $(document).on('change', 'select[name="bulk_update_room_status"], select[name="bulk_create_room_status"]', function(){
@@ -1120,6 +1149,12 @@
                         $('#page-loader').hide();
                     }
                 });
+            },
+            submitBulkDelete: function() {
+                if (confirm("{l s='Delete selected rooms?'}")) {
+                    $('#product_form').append('<input type="hidden" name="submitBulkDeleteRooms" value="1"/>');
+                    $('form#product_form').submit();
+                }
             },
             addInvalidRowDataMarkers: function(rowsToHighlight) {
                 if (rowsToHighlight.length != 0) {

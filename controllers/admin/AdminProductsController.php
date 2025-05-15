@@ -1430,6 +1430,11 @@ class AdminProductsControllerCore extends AdminController
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to edit this.');
             }
+        }
+        // Room bulk deletion process
+        else if (Tools::isSubmit('submitBulkDeleteRooms')) {
+            $this->action = 'bulkDeleteRooms';
+            $this->display = 'edit';
         } elseif (Tools::isSubmit('submitProductCustomization')) {
             if ($this->tabAccess['edit'] === '1') {
                 $this->action = 'productCustomization';
@@ -3470,47 +3475,75 @@ class AdminProductsControllerCore extends AdminController
         }
     }
 
+    public function processBulkDeleteRooms()
+    {
+        if ($this->tabAccess['edit'] == 1) {
+            if ($idRooms = Tools::getValue('bulk_update_room')) {
+                foreach ($idRooms as $idRoom) {
+                    $objRoomInfo = new HotelRoomInformation((int)$idRoom);
+                    if ($objRoomInfo->getFutureBookings($idRoom)) {
+                        $this->errors[] = sprintf(Tools::displayError('The %s room cannot be deleted as this room contains future booking.'), $objRoomInfo->room_num);
+                    } else {
+                        $objRoomInfo->delete();
+                    }
+                }
+            } else {
+                $this->errors[] = Tools::displayError('You must select at least one room to delete.');
+            }
+        } else {
+            $this->errors[] = Tools::displayError('You do not have the permission for this action.');
+        }
+
+        if (empty($this->errors)) {
+            $this->redirect_after = self::$currentIndex.'&id_product='.$this->id_object.'&update'.$this->table.'&conf=2&key_tab=Configuration&token='.$this->token;
+        }
+    }
+
     public function processConfiguration()
     {
         // Check if save of configuration tab is submitted
-        if (Tools::getValue('checkConfSubmit')) {
-            $id_product = Tools::getValue('id_product');
-            $id_hotel = Tools::getValue('id_hotel');
+        if ($this->tabAccess['edit'] == 1) {
+            if (Tools::getValue('checkConfSubmit')) {
+                $id_product = Tools::getValue('id_product');
+                $id_hotel = Tools::getValue('id_hotel');
 
-            if (!$id_product || !Validate::isUnsignedInt($id_product)) {
-                $this->errors[] = Tools::displayError('There is some problem while setting room information.');
-            }
-            if (!$id_hotel || !Validate::isUnsignedInt($id_hotel)) {
-                $this->errors[] = Tools::displayError('Please select a hotel.');
-            }
+                if (!$id_product || !Validate::isUnsignedInt($id_product)) {
+                    $this->errors[] = Tools::displayError('There is some problem while setting room information.');
+                }
+                if (!$id_hotel || !Validate::isUnsignedInt($id_hotel)) {
+                    $this->errors[] = Tools::displayError('Please select a hotel.');
+                }
 
-            $this->validateConfigurationPostData();
-            if (!count($this->errors)) {
-                $roomsInfo = Tools::getValue('rooms_info');
-                if (is_array($roomsInfo) && count($roomsInfo)) {
-                    foreach ($roomsInfo as $roomInfo) {
-                        $objHotelRoomInfo = null;
-                        if (isset($roomInfo['id']) && $roomInfo['id']) {
-                            $objHotelRoomInfo = new HotelRoomInformation($roomInfo['id']);
-                        } else {
-                            $objHotelRoomInfo = new HotelRoomInformation();
-                        }
-                        $objHotelRoomInfo->id_product = $id_product;
-                        $objHotelRoomInfo->id_hotel = $id_hotel;
-                        $objHotelRoomInfo->room_num = $roomInfo['room_num'];
-                        $objHotelRoomInfo->id_status = $roomInfo['id_status'];
-                        $objHotelRoomInfo->floor = $roomInfo['floor'];
-                        $objHotelRoomInfo->comment = $roomInfo['comment'];
-                        if ($objHotelRoomInfo->save()
-                            && $objHotelRoomInfo->id_status != HotelRoomInformation::STATUS_TEMPORARY_INACTIVE
-                        ) {
-                            // directly deleting the dates since we are validating the dates using hooks before this.
-                            $objRoomDisableDates = new HotelRoomDisableDates();
-                            $objRoomDisableDates->deleteRoomDisableDates($objHotelRoomInfo->id);
+                $this->validateConfigurationPostData();
+                if (!count($this->errors)) {
+                    $roomsInfo = Tools::getValue('rooms_info');
+                    if (is_array($roomsInfo) && count($roomsInfo)) {
+                        foreach ($roomsInfo as $roomInfo) {
+                            $objHotelRoomInfo = null;
+                            if (isset($roomInfo['id']) && $roomInfo['id']) {
+                                $objHotelRoomInfo = new HotelRoomInformation($roomInfo['id']);
+                            } else {
+                                $objHotelRoomInfo = new HotelRoomInformation();
+                            }
+                            $objHotelRoomInfo->id_product = $id_product;
+                            $objHotelRoomInfo->id_hotel = $id_hotel;
+                            $objHotelRoomInfo->room_num = $roomInfo['room_num'];
+                            $objHotelRoomInfo->id_status = $roomInfo['id_status'];
+                            $objHotelRoomInfo->floor = $roomInfo['floor'];
+                            $objHotelRoomInfo->comment = $roomInfo['comment'];
+                            if ($objHotelRoomInfo->save()
+                                && $objHotelRoomInfo->id_status != HotelRoomInformation::STATUS_TEMPORARY_INACTIVE
+                            ) {
+                                // directly deleting the dates since we are validating the dates using hooks before this.
+                                $objRoomDisableDates = new HotelRoomDisableDates();
+                                $objRoomDisableDates->deleteRoomDisableDates($objHotelRoomInfo->id);
+                            }
                         }
                     }
                 }
             }
+        } else {
+            $this->errors[] = Tools::displayError('You do not have the permission for this action.');
         }
     }
 
@@ -3570,9 +3603,8 @@ class AdminProductsControllerCore extends AdminController
         );
         if ($this->tabAccess['edit'] == 1) {
             $idRoom = Tools::getValue('id');
-            $objRoomInfo = new HotelRoomInformation((int)$idRoom);
-            $objHotelRoomInformation = new HotelRoomInformation();
-            if ($objHotelRoomInformation->getFutureBookings($idRoom)) {
+            $objRoomInfo = new HotelRoomInformation((int) $idRoom);
+            if ($objRoomInfo->getFutureBookings($idRoom)) {
                 $this->errors[] = $this->l('This room cannot be deleted as this room contains future booking.');
             }
             if (empty($this->errors)) {
