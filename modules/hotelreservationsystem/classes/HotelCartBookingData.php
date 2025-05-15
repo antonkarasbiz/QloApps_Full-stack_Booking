@@ -1331,7 +1331,7 @@ class HotelCartBookingData extends ObjectModel
      */
     public function getCartInfoIdCartIdProduct($id_cart, $id_product, $date_from = false, $date_to = false)
     {
-        $cache_key = 'HotelCartBookingData::getCartInfoIdCartIdProduct'.(int)$id_cart.(int)$id_product.($date_from ? strtotime($date_from) : '_').($date_to ? strtotime($date_to) : '_');
+        $cache_key = 'HotelCartBookingData::getCartInfoIdCartIdProduct_'.(int)$id_cart.'_'.(int)$id_product.'_'.($date_from ? strtotime($date_from) : 'null').'_'.($date_to ? strtotime($date_to) : 'null');
         if (!Cache::isStored($cache_key)) {
             $sql = 'SELECT *
                 FROM `'._DB_PREFIX_.'htl_cart_booking_data`

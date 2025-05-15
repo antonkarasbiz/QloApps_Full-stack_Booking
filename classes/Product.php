@@ -982,7 +982,7 @@ class ProductCore extends ObjectModel
 
     public static function isBookingProduct($id_product)
     {
-        $cache_key = 'Product::isBookingProduct'.(int)$id_product;
+        $cache_key = 'Product::isBookingProduct_'.(int)$id_product;
         if (!Cache::isStored($cache_key)) {
             $res =  Db::getInstance()->getValue('
                 SELECT `booking_product` FROM `'._DB_PREFIX_.'product` p
