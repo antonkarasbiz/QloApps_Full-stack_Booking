@@ -217,7 +217,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
 
         $idLang = Context::getContext()->language->id;
 
-        $sql = 'SELECT rscd.`id_product`, rscd.`quantity`, cbd.`id_cart`, cbd.`id` as `htl_cart_booking_id` ,
+        $sql = 'SELECT rscd.`id_product`, rscd.`quantity`, cbd.`id_cart`, rscd.`id_cart` as service_id_cart, cbd.`id` as `htl_cart_booking_id` ,
             cbd.`id_product` as `room_type_id_product`, cbd.`adults`, cbd.`children`, cbd.`date_from`, cbd.`date_to`';
         if (!$getTotalPrice) {
             $sql .= ', pl.`name`, cbd.`id_guest`, cbd.`id_customer`, p.`auto_add_to_cart`, p.`price_addition_type`,
@@ -233,7 +233,8 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
             $sql .=  ' LEFT JOIN `'._DB_PREFIX_.'product_lang` pl
                 ON (pl.`id_product` = p.`id_product` AND pl.`id_lang` = '.(int)$idLang.')';
         }
-        $sql .= ' WHERE 1';
+
+        $sql .= ' WHERE 1 AND rscd.`id_product`!=0';
 
         if (!is_null($autoAddToCart)) {
             $sql .= ' AND p.`auto_add_to_cart` = '. (int)$autoAddToCart;
@@ -334,6 +335,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                                 'name' => $product['name'],
                                 'quantity' => $product['quantity'],
                                 'auto_add_to_cart' => $product['auto_add_to_cart'],
+                                'id_cart' => $product['service_id_cart'],
                                 'allow_multiple_quantity' => $product['allow_multiple_quantity'],
                                 'price_addition_type' => $product['price_addition_type'],
                                 'price_calculation_method' => $product['price_calculation_method'],
@@ -449,6 +451,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                                 'quantity' => $product['quantity'],
                                 'auto_add_to_cart' => $product['auto_add_to_cart'],
                                 'allow_multiple_quantity' => $product['allow_multiple_quantity'],
+                                'id_cart' => $product['service_id_cart'],
                                 'price_addition_type' => $product['price_addition_type'],
                                 'price_calculation_method' => $product['price_calculation_method'],
                                 'unit_price_tax_excl' => ($objRoomTypeServiceProductPrice->getServicePrice(
