@@ -59,7 +59,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
             'id_product' => $idProduct,
             'quantity' => $quantity,
             'id_cart' => $idCart,
-            'id_hotel_cart_data' => $idHtlCartData,
+            'htl_cart_booking_id' => $idHtlCartData,
             'is_service_available' => &$isAvailable,
         ));
 
