@@ -182,7 +182,6 @@ class wkhotelfilterblock extends Module
                     $max_adult = HotelRoomType::getMaxAdults($id_hotel);
                     $max_child = HotelRoomType::getMaxChild($id_hotel);
 
-                    $category = new Category($htl_id_category);
                     $urlData = array ();
                     if (!($date_from = Tools::getValue('date_from'))) {
                         $date_from = date('Y-m-d H:i:s');
@@ -203,15 +202,15 @@ class wkhotelfilterblock extends Module
 
                     $obj_rm_type = new HotelRoomType();
                     $room_types = $obj_rm_type->getIdProductByHotelId($id_hotel, 0, 1, 1);
+                    $occupancy = Tools::getValue('occupancy');
 
                     $prod_price = array();
                     if ($room_types) {
                         foreach ($room_types as $key => $value) {
-                            $prod_price[] = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, HotelBookingDetail::useTax());
+                            $prod_price[] = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, HotelBookingDetail::useTax(), 0, 0, 0, 0, 1, 1, $occupancy);
                         }
                     }
 
-                    // Create URL of category
                     if (Configuration::get('PS_REWRITING_SETTINGS')) {
                         $categoryUrl = $this->context->link->getCategoryLink(
                             new Category($htl_id_category, $this->context->language->id),

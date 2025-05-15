@@ -33,6 +33,8 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
         $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'customer` cust ON (cust.`id_customer` = ord.`id_customer`)';
 
         $this->_orderWay = 'DESC';
+        $this->allow_export = true;
+        $this->_new_list_header_design = true;
         if ($idOrder = Tools::getValue('id_order')) {
             $this->_select .= ', orsl.`name` as `status_name`, ors.`color`, COUNT(ordrd.`id_order_return_detail`) as num_rooms';
             $this->_join .= 'LEFT JOIN '._DB_PREFIX_.'order_return_state ors ON (ors.`id_order_return_state` = a.`state`)';
@@ -176,7 +178,81 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
 
     public function setCustomerLink($customerName, $row)
     {
+        if ($this->action == 'export') {
+            return  $customerName.' (#'.$row['id_customer'].')';
+        }
+
         return '<a href="'.$this->context->link->getAdminLink('AdminCustomers').'&id_customer='.$row['id_customer'].'&viewcustomer">'.$customerName.' (#'.$row['id_customer'].')</a>';
+    }
+
+    public function getList(
+        $id_lang,
+        $order_by = null,
+        $order_way = null,
+        $start = 0,
+        $limit = null,
+        $id_lang_shop = false
+    ){
+        if ($this->action == 'export' && empty($this->_listsql)) {
+            if (Tools::getValue('id_order')) {
+                $this->_select .= ', ordtl.*';
+            }  else {
+                $this->_select .= ', GROUP_CONCAT(ordtl.`room_num`) AS `room_num`,
+                    GROUP_CONCAT(DISTINCT ordtl.`room_type_name`) AS `room_type_name`,
+                    ordtl.`hotel_name`, ordtl.`id_order`,
+                    GROUP_CONCAT(ordtl.`date_from`) AS `date_from`,
+                    GROUP_CONCAT(ordtl.`date_to`) AS `date_to`';
+            }
+
+            $this->_join .= ' LEFT JOIN (
+                SELECT GROUP_CONCAT(hbd.`room_num`) AS room_num,
+                GROUP_CONCAT(DISTINCT(hbd.`room_type_name`)) AS room_type_name,
+                ord.`id_order_return`, hbd.`hotel_name`, hbd.`id_order`,
+                GROUP_CONCAT(hbd.`date_from`) AS date_from,
+                GROUP_CONCAT(hbd.`date_to`) AS date_to
+                FROM `'._DB_PREFIX_.'order_return_detail` ord
+                LEFT JOIN `'._DB_PREFIX_.'htl_booking_detail` hbd ON ord.`id_htl_booking` = hbd.`id`
+                GROUP BY ord.`id_order_return`
+            ) AS ordtl ON (ordtl.`id_order_return` = a.`id_order_return`)';
+            $this->fields_list = array_merge($this->fields_list, array(
+                'room_num' => array(
+                    'title' => $this->l('Room num(s)')
+                ),
+                'room_type_name' => array(
+                    'title' => $this->l('Room type(s)'),
+                    'callback' => 'getUniqueRoomTypeNames'
+                ),
+                'hotel_name' => array(
+                    'title' => $this->l('Hotel')
+                ),
+                'date_from' => array(
+                    'title' => $this->l('Date From')
+                ),
+                'date_to' => array(
+                    'title' => $this->l('Date To')
+                ),
+            ));
+        }
+
+        parent::getList(
+            $id_lang,
+            $order_by,
+            $order_way,
+            $start,
+            $limit,
+            $id_lang_shop
+        );
+    }
+
+    public function getUniqueRoomTypeNames($roomTypeNames, $tr)
+    {
+        if ($roomTypeNames) {
+            $roomTypeNames = explode(',', $roomTypeNames);
+            $roomTypeNames = array_unique($roomTypeNames);
+            $roomTypeNames = implode(',', $roomTypeNames);
+        }
+
+        return $roomTypeNames;
     }
 
     public function initToolbar()
