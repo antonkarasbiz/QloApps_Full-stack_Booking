@@ -357,7 +357,7 @@
 				languages=$languages
 				input_name='description_short'
 				input_value=$product->description_short
-				maxlength=$PS_PRODUCT_SHORT_DESC_LIMIT}
+				maxlength=$PS_SHORT_DESC_LIMIT}
 		</div>
 	</div>
 	<div class="form-group">

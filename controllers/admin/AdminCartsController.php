@@ -302,6 +302,31 @@ class AdminCartsControllerCore extends AdminController
             $product['image'] = (isset($image['id_image']) ? ImageManager::thumbnail(_PS_IMG_DIR_.'p/'.$image_product->getExistingImgPath().'.jpg', 'product_mini_'.(int)$product['id_product'].(isset($product['id_product_attribute']) ? '_'.(int)$product['id_product_attribute'] : '').'.jpg', 45, 'jpg') : '--');
         }
 
+        // by webkul to show rooms available in the cart
+        $cartHtlData = array();
+        $objHotelCartBookingData = new HotelCartBookingData();
+        $objHotelRoomType = new HotelRoomType();
+        if ($cartHtlData = $objHotelCartBookingData->getCartFormatedBookinInfoByIdCart((int) $cart->id)) {
+            foreach ($cartHtlData as $key => $value) {
+                $cartHtlData[$key]['room_type_info'] = $objHotelRoomType->getRoomTypeInfoByIdProduct($value['id_product']);
+                if (isset($value['selected_services']) && $value['selected_services']) {
+                    foreach ($value['selected_services'] as $service) {
+                        if ($service['id_cart'] != $value['id_cart']) {
+                            if ($tax_calculation_method == PS_TAX_EXC) {
+                                $total_price += ($service['quantity'] * $service['total_price_tax_excl']);
+                                $total_products += ($service['quantity'] * $service['total_price_tax_excl']);
+                            } else {
+                                $total_price += ($service['quantity'] * $service['total_price_tax_incl']);
+                                $total_products += ($service['quantity'] * $service['total_price_tax_incl']);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            $cartHtlData = array();
+        }
+
         $helper = new HelperKpi();
         $helper->id = 'box-kpi-cart';
         $helper->icon = 'icon-shopping-cart';
@@ -310,17 +335,6 @@ class AdminCartsControllerCore extends AdminController
         $helper->subtitle = sprintf($this->l('Cart #%06d', null, null, false), $cart->id);
         $helper->value = Tools::displayPrice($total_price, $currency);
         $kpi = $helper->generate();
-        // by webkul to show rooms available in the cart
-        $cartHtlData = array();
-        $objHotelCartBookingData = new HotelCartBookingData();
-        $objHotelRoomType = new HotelRoomType();
-        if ($cartHtlData = $objHotelCartBookingData->getCartFormatedBookinInfoByIdCart((int) $cart->id)) {
-            foreach ($cartHtlData as $key => $value) {
-                $cartHtlData[$key]['room_type_info'] = $objHotelRoomType->getRoomTypeInfoByIdProduct($value['id_product']);
-            }
-        } else {
-            $cartHtlData = array();
-        }
         //end
         $this->tpl_view_vars = array(
             'cart_htl_data' => $cartHtlData,//by webkul hotel rooms in order data

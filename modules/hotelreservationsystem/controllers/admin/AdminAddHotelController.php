@@ -123,6 +123,10 @@ class AdminAddHotelController extends ModuleAdminController
         $smartyVars['currentLang'] = Language::getLanguage((int) $currentLangId);
 
         $smartyVars['defaultCurrency'] = Configuration::get('PS_CURRENCY_DEFAULT');
+        $smartyVars['PS_SHORT_DESC_LIMIT'] = Configuration::get('PS_SHORT_DESC_LIMIT');
+        if (!$smartyVars['PS_SHORT_DESC_LIMIT']) {
+            $smartyVars['PS_SHORT_DESC_LIMIT'] = Configuration::PS_SHORT_DESC_LIMIT;
+        }
 
         $countries = Country::getCountries($this->context->language->id, true);
         $smartyVars['country_var'] = $countries;
@@ -264,6 +268,7 @@ class AdminAddHotelController extends ModuleAdminController
         $map_formated_address = Tools::getValue('locformatedAddr');
         $map_input_text = Tools::getValue('googleInputField');
         $hotelFeatures = Tools::getValue('id_features', array());
+        $shortDescriptionMaxChar = Configuration::get('PS_SHORT_DESC_LIMIT') ? Configuration::get('PS_SHORT_DESC_LIMIT') : Configuration::PS_SHORT_DESC_LIMIT;
 
         // check if field is atleast in default language. Not available in default prestashop
         $defaultLangId = Configuration::get('PS_LANG_DEFAULT');
@@ -280,45 +285,53 @@ class AdminAddHotelController extends ModuleAdminController
                         $this->errors[] = $this->l('Invalid Hotel name in ').$lang['name'];
                     }
                 }
-                if ($shortDescription = html_entity_decode(Tools::getValue('short_description_'.$lang['id_lang']))) {
-                    if (!Validate::isCleanHtml($shortDescription)) {
-                        $this->errors[] = sprintf($this->l('Short description is not valid in %s'), $lang['name']);
-                    }
-                }
-                if ($description = html_entity_decode(Tools::getValue('description_'.$lang['id_lang']))) {
-                    if (!Validate::isCleanHtml($description)) {
-                        $this->errors[] = sprintf($this->l('Description is not valid in %s'), $lang['name']);
-                    }
-                }
-                if ($policies = html_entity_decode(Tools::getValue('policies_'.$lang['id_lang']))) {
-                    if (!Validate::isCleanHtml($policies)) {
-                        $this->errors[] = sprintf($this->l('policies are not valid in %s'), $lang['name']);
-                    }
+            }
+        }
+
+        foreach ($languages as $lang) {
+            if ($shortDescription = html_entity_decode(Tools::getValue('short_description_'.$lang['id_lang']))) {
+                if (!Validate::isCleanHtml($shortDescription)) {
+                    $this->errors[] = sprintf($this->l('Short description is not valid in %s'), $lang['name']);
                 }
 
-                if ($metaTitle = trim(Tools::getValue('meta_title_'.$lang['id_lang']))) {
-                    if (!Validate::isGenericName($metaTitle)) {
-                        $this->errors[] = $this->l('Invalid Meta title in ').$lang['name'];
-                    } else if (Tools::strlen($metaTitle) > 128) {
-                        $this->errors[] = $this->l('Meta title cannot be longer than 128  in ').$lang['name'];
-                    }
+                $shortDescriptionLength = Tools::strlen($shortDescription);
+                if ($shortDescriptionLength > $shortDescriptionMaxChar) {
+                    $this->errors[] = sprintf($this->l('Short description cannot exceed %s characters in '), $shortDescriptionMaxChar).$lang['name'];
                 }
+            }
 
-                if ($metaDescription = trim(Tools::getValue('meta_description_'.$lang['id_lang']))) {
-                    if (!Validate::isGenericName($metaDescription)) {
-                        $this->errors[] = $this->l('Invalid Meta description in ').$lang['name'];
-                    } else if (Tools::strlen($metaDescription) > 255) {
-                        $this->errors[] = $this->l('Meta description cannot be longer than 128  in ').$lang['name'];
-                    }
+            if ($description = html_entity_decode(Tools::getValue('description_'.$lang['id_lang']))) {
+                if (!Validate::isCleanHtml($description)) {
+                    $this->errors[] = sprintf($this->l('Description is not valid in %s'), $lang['name']);
                 }
+            }
+            if ($policies = html_entity_decode(Tools::getValue('policies_'.$lang['id_lang']))) {
+                if (!Validate::isCleanHtml($policies)) {
+                    $this->errors[] = sprintf($this->l('policies are not valid in %s'), $lang['name']);
+                }
+            }
 
-                if ($metaKeyWords = trim(Tools::getValue('meta_keywords_'.$lang['id_lang']))) {
-                    if (!Validate::isGenericName($metaKeyWords)) {
-                        $this->errors[] = $this->l('Invalid Meta keywords in ').$lang['name'];
-                    } else if (Tools::strlen($metaKeyWords) > 255) {
-                        $this->errors[] = $this->l('Meta keywords cannot be longer than 128  in ').$lang['name'];
-                    }
+            if ($metaTitle = trim(Tools::getValue('meta_title_'.$lang['id_lang']))) {
+                if (!Validate::isGenericName($metaTitle)) {
+                    $this->errors[] = $this->l('Invalid Meta title in ').$lang['name'];
+                } else if (Tools::strlen($metaTitle) > 128) {
+                    $this->errors[] = $this->l('Meta title cannot exceed 128 characters in ').$lang['name'];
+                }
+            }
 
+            if ($metaDescription = trim(Tools::getValue('meta_description_'.$lang['id_lang']))) {
+                if (!Validate::isGenericName($metaDescription)) {
+                    $this->errors[] = $this->l('Invalid Meta description in ').$lang['name'];
+                } else if (Tools::strlen($metaDescription) > 255) {
+                    $this->errors[] = $this->l('Meta description cannot exceed 128 characters in ').$lang['name'];
+                }
+            }
+
+            if ($metaKeyWords = trim(Tools::getValue('meta_keywords_'.$lang['id_lang']))) {
+                if (!Validate::isGenericName($metaKeyWords)) {
+                    $this->errors[] = $this->l('Invalid Meta keywords in ').$lang['name'];
+                } else if (Tools::strlen($metaKeyWords) > 255) {
+                    $this->errors[] = $this->l('Meta keywords cannot exceed 128 characters in ').$lang['name'];
                 }
             }
         }
@@ -502,18 +515,16 @@ class AdminAddHotelController extends ModuleAdminController
                     );
                 }
 
-                $cleanShortDescription = Tools::getDescriptionClean(
-                    Tools::getValue('short_description_'.$lang['id_lang'])
-                );
+                $cleanShortDescription = Tools::getDescriptionClean(Tools::getValue('short_description_'.$lang['id_lang']));
                 //Remove TinyMCE's Non-Breaking Spaces
                 $cleanShortDescription = str_replace(chr(0xC2).chr(0xA0), "", $cleanShortDescription);
                 if (!trim($cleanShortDescription)) {
-                    $objHotelBranch->short_description[$lang['id_lang']] = Tools::getValue(
-                        'short_description_'.$defaultLangId
+                    $objHotelBranch->short_description[$lang['id_lang']] = Tools::getDescriptionClean(
+                        Tools::getValue('short_description_'.$defaultLangId)
                     );
                 } else {
-                    $objHotelBranch->short_description[$lang['id_lang']] = Tools::getValue(
-                        'short_description_'.$lang['id_lang']
+                    $objHotelBranch->short_description[$lang['id_lang']] = Tools::getDescriptionClean(
+                        Tools::getValue('short_description_'.$lang['id_lang'])
                     );
                 }
                 $cleanDescription = Tools::getDescriptionClean(
