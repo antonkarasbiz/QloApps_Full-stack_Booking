@@ -184,6 +184,12 @@ class CustomerGuestDetailCore extends ObjectModel
         );
     }
 
+    /**
+     * Retrieves guest information using the email.
+     *
+     * @param int email
+     * @return int|false id customer guest details.
+     */
     public static function getIdCustomerGuest($email, $idCustomer = null, $idCart = 0)
     {
         return Db::getInstance()->getValue(
@@ -196,6 +202,11 @@ class CustomerGuestDetailCore extends ObjectModel
         );
     }
 
+    /**
+     * Validates the Guest profile details.
+     *
+     * @return bool return true or false after validating the guest profile.
+     */
     public function validateGuestInfo()
     {
         $isValid = true;
