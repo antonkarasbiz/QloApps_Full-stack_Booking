@@ -346,7 +346,8 @@ class HotelCartBookingData extends ObjectModel
         $idRoom = 0,
         $dateFrom = 0,
         $dateTo = 0,
-        $updPsCart = 1
+        $updPsCart = 1,
+        $idOrder = 0
     ) {
         $where = '1';
         if ($idCart) {
@@ -364,8 +365,8 @@ class HotelCartBookingData extends ObjectModel
         if ($dateTo) {
             $where .= ' AND `date_to`=\''.pSQL($dateTo).'\'';
         }
-        // we have to delete only rows which order is not created
-        $where .= ' AND `id_order`= 0';
+
+        $where .= ' AND `id_order`='.(int) $idOrder;
         // If rooms is deleting from cart the we need to delete the ps_cart quantity of the product from table
         // if product will delete the prestashop will handle
         $numRooms = 0;
