@@ -242,10 +242,6 @@ class HotelBookingDetail extends ObjectModel
             $params['full_detail'] = 0;
         }
 
-        if (!isset($params['room_info_detailed'])) {
-            $params['room_info_detailed'] = 0;
-        }
-
         Hook::exec('actionBookingDataParamsModifier', array('params' => &$params));
 
         return $params;
@@ -1710,7 +1706,8 @@ class HotelBookingDetail extends ObjectModel
                         unset($bookingData['rm_data'][$key]);
                         continue;
                     }
-                    if (count($value['data']['available']) || $room_info_detailed) {
+
+                    if (count($value['data']['available']) || (isset($display_all_room_types) && $display_all_room_types)) {
                         $prod_price = Product::getPriceStatic($value['id_product'], self::useTax());
                         $productPriceWithoutReduction = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, self::useTax(), 0, 0, 0, 0, 1, 0);
                         $cover_image_arr = Product::getCover($value['id_product']);

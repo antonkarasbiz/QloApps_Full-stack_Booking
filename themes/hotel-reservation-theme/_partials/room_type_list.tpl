@@ -20,9 +20,9 @@
 {block name='displayRoomTypeListBefore'}
 	{hook h='displayRoomTypeListBefore'}
 {/block}
-{if isset($booking_data['stats']) && $booking_data['stats']['num_avail'] || isset($display_all_rooms) && $display_all_rooms}
+{if isset($booking_data['stats']) && $booking_data['stats']['num_avail'] || isset($display_all_room_types) && $display_all_room_types}
 	{foreach from=$booking_data['rm_data'] key=room_k item=room_v}
-		{if $room_v['data']['available']|count || isset($display_all_rooms) && $display_all_rooms }
+		{if $room_v['data']['available']|count || isset($display_all_room_types) && $display_all_room_types }
 			<div class="col-sm-12 room_cont" data-id-product="{$room_v['id_product']|escape:'htmlall':'UTF-8'}">
 				<div class="row">
 					{block name='room_type_list_room_image'}
@@ -41,7 +41,7 @@
 								<div class="row">
 									<p class="rm_heading col-sm-12 col-md-7">{$room_v['name']|escape:'htmlall':'UTF-8'}</p>
 									{if !isset($restricted_country_mode) && !$PS_CATALOG_MODE && !$order_date_restrict}
-										<p class="rm_left col-sm-12 col-md-5" {if isset($display_all_rooms) && $display_all_rooms || $room_v['room_left'] > $warning_num} style="display:none"{/if}>
+										<p class="rm_left col-sm-12 col-md-5" {if isset($display_all_room_types) && $display_all_room_types || $room_v['room_left'] > $warning_num} style="display:none"{/if}>
 											{l s='Hurry!'} <span class="remain_rm_qty">{$room_v['room_left']|escape:'htmlall':'UTF-8'}</span> {l s='rooms left'}
 										</p>
 									{/if}
@@ -70,7 +70,7 @@
 									{/block}
 									{block name='room_type_list_room_price'}
 										<div class="col-sm-12 col-md-7 col-lg-6">
-											{if !isset($restricted_country_mode) && !$PS_CATALOG_MODE && !$order_date_restrict  && (!isset($display_all_rooms) || !$display_all_rooms)}
+											{if !isset($restricted_country_mode) && !$PS_CATALOG_MODE && !$order_date_restrict  && (!isset($display_all_room_types) || !$display_all_room_types)}
 												<p class="rm_price_cont">
 													{if $room_v['feature_price_diff'] >= 0}
 														<span class="rm_price_val {if $room_v['feature_price_diff']>0}room_type_old_price{/if}">
@@ -97,7 +97,7 @@
 									<div class="col-sm-12 col-md-6 col-lg-8">
 										{block name='room_type_list_room_booking_fields'}
 											{if !isset($restricted_country_mode) && !$PS_CATALOG_MODE && !$order_date_restrict}
-												{if (!isset($display_all_rooms) || !$display_all_rooms)}
+												{if (!isset($display_all_room_types) || !$display_all_room_types)}
 													<div class="booking_room_fields">
 														{if isset($occupancy_required_for_booking) && $occupancy_required_for_booking}
 															<div class="booking_guest_occupancy_conatiner">
