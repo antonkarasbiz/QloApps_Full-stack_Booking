@@ -68,7 +68,7 @@ class CustomerGuestDetailCore extends ObjectModel
      * @param int id_customer_guest_detail
      * @return bool True on success, false on failure
      */
-    public static function saveCustomerGuestInCart($idCart, $idCustomerGuestDetail)
+    public function saveCustomerGuestInCart($idCart, $idCustomerGuestDetail)
     {
         return Db::getInstance()->insert(
             'cart_customer_guest',
@@ -85,7 +85,7 @@ class CustomerGuestDetailCore extends ObjectModel
      * @param int id_cart
      * @return bool True on success, false on failure
      */
-    public static function deleteCustomerGuestInCart($idCart)
+    public function deleteCustomerGuestInCart($idCart)
     {
         return Db::getInstance()->delete(
             'cart_customer_guest',
@@ -193,15 +193,6 @@ class CustomerGuestDetailCore extends ObjectModel
             WHERE cgd.`email` = "'.pSQL($email).'"'.
             (!is_null($idCart) ? ' AND (ccg.`id_cart` = '.(int) $idCart.' '. (($idCart) ? ')'  : ' OR ISNULL(ccg.`id_cart`)) ') : ' ').
             (!is_null($idCustomer) ? ' AND cgd.`id_customer` = '.(int) $idCustomer : ' ')
-        );
-    }
-
-    public static function getCustomerPhone($email, $idCustomer = null)
-    {
-        return Db::getInstance()->getValue(
-            'SELECT `phone` FROM `'._DB_PREFIX_.'customer_guest_detail`
-            WHERE 1 AND `email` = "'.pSQL($email).'"'.
-            (!is_null($idCustomer) ? ' AND `id_customer` ='.(int) $idCustomer: ' ')
         );
     }
 

@@ -97,13 +97,16 @@ class AdminCustomersControllerCore extends AdminController
                 'order_key' => 'gl!name'
             ),
             'firstname' => array(
-                'title' => $this->l('First name')
+                'title' => $this->l('First name'),
+                'filter_key' => 'a!firstname'
             ),
             'lastname' => array(
-                'title' => $this->l('Last name')
+                'title' => $this->l('Last name'),
+                'filter_key' => 'a!lastname'
             ),
             'email' => array(
-                'title' => $this->l('Email address')
+                'title' => $this->l('Email address'),
+                'filter_key' => 'a!email'
             ),
         );
 
@@ -141,13 +144,20 @@ class AdminCustomersControllerCore extends AdminController
                 'align' => 'text-right',
                 'badge_success' => true
             ),
+            'phone' => array(
+                'title' => $this->l('Phone'),
+                'filter_key' => 'a!phone',
+                'optional' => true,
+                'visible_default' => false,
+            ),
             'active' => array(
                 'title' => $this->l('Enabled'),
                 'align' => 'text-center',
                 'active' => 'status',
                 'type' => 'bool',
                 'orderby' => false,
-                'filter_key' => 'a!active'
+                'filter_key' => 'a!active',
+                'callback' => 'formatStatusAsLabel',
             ),
             'newsletter' => array(
                 'title' => $this->l('Newsletter'),
@@ -179,6 +189,7 @@ class AdminCustomersControllerCore extends AdminController
                 'title' => $this->l('Banned'),
                 'type' => 'bool',
                 'displayed' => false,
+                'callback' => 'getCustomerStatusLabel',
             ),
             'order_date' => array(
                 'title' => $this->l('Order date'),
@@ -230,6 +241,28 @@ class AdminCustomersControllerCore extends AdminController
         }
     }
 
+    public function formatStatusAsLabel($val, $row)
+    {
+        if ($val) {
+            $str_return = $this->l('Yes');
+        } else {
+            $str_return = $this->l('No');
+        }
+
+        return $str_return;
+    }
+
+    public function getCustomerStatusLabel($deleted, $tr)
+    {
+        if ($deleted == Customer::STATUS_DELETED) {
+            return $this->l('Deleted');
+        } else if ($deleted == Customer::STATUS_BANNED) {
+            return $this->l('Banned');
+        }
+
+        return;
+    }
+
     public function initContent()
     {
         if ($this->action == 'select_delete') {
@@ -263,8 +296,11 @@ class AdminCustomersControllerCore extends AdminController
 
     public function getList($id_lang, $orderBy = null, $orderWay = null, $start = 0, $limit = null, $id_lang_shop = null)
     {
-        parent::getList($id_lang, $orderBy, $orderWay, $start, $limit, $id_lang_shop);
+        if ($this->action == 'export')  {
+            $this->deleted = false;
+        }
 
+        parent::getList($id_lang, $orderBy, $orderWay, $start, $limit, $id_lang_shop);
         if ($this->_list) {
             foreach ($this->_list as &$row) {
                 $row['badge_success'] = $row['total_spent'] > 0;
@@ -1037,6 +1073,14 @@ class AdminCustomersControllerCore extends AdminController
             $this->errors[] = Tools::displayError('Unknown delete mode:').' '.$this->deleted;
             return;
         }
+    }
+
+    public function processExport($text_delimiter = '"')
+    {
+        $this->fields_list['newsletter']['callback'] = 'formatStatusAsLabel';
+        $this->fields_list['optin']['callback'] = 'formatStatusAsLabel';
+
+        return parent::processExport($text_delimiter);
     }
 
     protected function processBulkDelete()

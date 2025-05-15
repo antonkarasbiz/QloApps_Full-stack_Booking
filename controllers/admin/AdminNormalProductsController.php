@@ -257,12 +257,14 @@ class AdminNormalProductsControllerCore extends AdminController
             'title' => $this->l('Available for order'),
             'filter_key' => 'a!available_for_order',
             'type' => 'bool',
+            'callback' => 'formatStatusAsLabel',
         );
         $this->fields_list['price_addition_type'] = array(
             'displayed' => false,
             'title' => $this->l('Price display preference'),
             'filter_key' => 'a!price_addition_type',
             'type' => 'select',
+            'callback' => 'getPriceDisplayPreference',
             'list' => $priceAdditionType,
         );
         $this->fields_list['price_calculation_method_txt'] = array(
@@ -311,7 +313,8 @@ class AdminNormalProductsControllerCore extends AdminController
             'title' => $this->l('Base price'),
             'type' => 'price',
             'align' => 'text-left',
-            'filter_key' => 'a!price'
+            'filter_key' => 'a!price',
+            'callback' => 'displayPrice',
         );
         $this->fields_list['price_final'] = array(
             'title' => $this->l('Final price'),
@@ -319,7 +322,8 @@ class AdminNormalProductsControllerCore extends AdminController
             'align' => 'text-left',
             'havingFilter' => true,
             'orderby' => false,
-            'search' => false
+            'search' => false,
+            'callback' => 'displayPrice',
         );
 
         $this->fields_list['active'] = array(
@@ -329,6 +333,7 @@ class AdminNormalProductsControllerCore extends AdminController
             'align' => 'text-center',
             'type' => 'bool',
             'class' => 'fixed-width-sm',
+            'callback' => 'formatStatusAsLabel',
             'orderby' => false
         );
 
@@ -340,6 +345,34 @@ class AdminNormalProductsControllerCore extends AdminController
                 'position' => 'position'
             );
         }
+    }
+
+    public function formatStatusAsLabel($val, $row)
+    {
+        if ($val) {
+            $str_return = $this->l('Yes');
+        } else {
+            $str_return = $this->l('No');
+        }
+
+        return $str_return;
+    }
+
+    public function getPriceDisplayPreference($val, $row)
+    {
+        $str_return = $val;
+        if ($val == Product::PRICE_ADDITION_TYPE_WITH_ROOM) {
+            $str_return = $this->l('Add price in room price');
+        } else if ($val == Product::PRICE_ADDITION_TYPE_INDEPENDENT) {
+            $str_return = $this->l('Convenience Fee');
+        }
+
+        return $str_return;
+    }
+
+    public static function displayPrice($basePrice, $tr)
+    {
+        return Tools::displayPrice($basePrice, (int) Configuration::get('PS_CURRENCY_DEFAULT'));
     }
 
     private function buildCategoryOptions($category)
@@ -655,33 +688,52 @@ class AdminNormalProductsControllerCore extends AdminController
                     }
                 }
             }
+            $limit = (int)Configuration::get('PS_SHORT_DESC_LIMIT');
+            if ($limit <= 0) {
+                $limit = Configuration::PS_SHORT_DESC_LIMIT;
+            }
+            $className = 'Product';
+            foreach (Language::getLanguages(true) as $language) {
+                if (Tools::strlen(strip_tags($product->name[$language['id_lang']])) > $limit) {
+                    $this->errors[] = sprintf(
+                        Tools::displayError('This %1$s field in %2$s is too long: %3$d chars max (current count %4$d).'),
+                        call_user_func(array($className, 'displayFieldName'), 'description_short'),
+                        $language['name'],
+                        $limit,
+                        Tools::strlen(strip_tags($product->name[$language['id_lang']]))
+                    );
+                }
+            }
             unset($product->id);
             unset($product->id_product);
             $product->indexed = 0;
             $product->active = 0;
-            if ($product->add()
-            && Category::duplicateProductCategories($id_product_old, $product->id)
-            && ($combination_images = Product::duplicateAttributes($id_product_old, $product->id)) !== false
-            && GroupReduction::duplicateReduction($id_product_old, $product->id)
-            // && Product::duplicateFeatures($id_product_old, $product->id)
-            && Product::duplicateTags($id_product_old, $product->id)) {
-                if ($product->hasAttributes()) {
-                    Product::updateDefaultAttribute($product->id);
-                } else {
-                    Product::duplicateSpecificPrices($id_product_old, $product->id);
-                }
-
-                if (!Tools::getValue('noimage') && !Image::duplicateProductImages($id_product_old, $product->id, $combination_images)) {
-                    $this->errors[] = Tools::displayError('An error occurred while copying images.');
-                } else {
-                    Hook::exec('actionProductAdd', array('id_product' => (int)$product->id, 'product' => $product));
-                    if (in_array($product->visibility, array('both', 'search')) && Configuration::get('PS_SEARCH_INDEXATION')) {
-                        Search::indexation(false, $product->id);
+            if (!$this->errors) {
+                if ($product->add()
+                    && Category::duplicateProductCategories($id_product_old, $product->id)
+                    && ($combination_images = Product::duplicateAttributes($id_product_old, $product->id)) !== false
+                    && GroupReduction::duplicateReduction($id_product_old, $product->id)
+                    // && Product::duplicateFeatures($id_product_old, $product->id)
+                    && Product::duplicateTags($id_product_old, $product->id)
+                ) {
+                    if ($product->hasAttributes()) {
+                        Product::updateDefaultAttribute($product->id);
+                    } else {
+                        Product::duplicateSpecificPrices($id_product_old, $product->id);
                     }
-                    $this->redirect_after = self::$currentIndex.(Tools::getIsset('id_category') ? '&id_category='.(int)Tools::getValue('id_category') : '').'&conf=19&token='.$this->token;
+
+                    if (!Tools::getValue('noimage') && !Image::duplicateProductImages($id_product_old, $product->id, $combination_images)) {
+                        $this->errors[] = Tools::displayError('An error occurred while copying images.');
+                    } else {
+                        Hook::exec('actionProductAdd', array('id_product' => (int)$product->id, 'product' => $product));
+                        if (in_array($product->visibility, array('both', 'search')) && Configuration::get('PS_SEARCH_INDEXATION')) {
+                            Search::indexation(false, $product->id);
+                        }
+                        $this->redirect_after = self::$currentIndex.(Tools::getIsset('id_category') ? '&id_category='.(int)Tools::getValue('id_category') : '').'&conf=19&token='.$this->token;
+                    }
+                } else {
+                    $this->errors[] = Tools::displayError('An error occurred while creating an object.');
                 }
-            } else {
-                $this->errors[] = Tools::displayError('An error occurred while creating an object.');
             }
         }
     }
@@ -1408,8 +1460,7 @@ class AdminNormalProductsControllerCore extends AdminController
                 'ajaxfileupload',
                 'date',
                 'tagify',
-                'select2',
-                'validate'
+                'select2'
             ));
 
             $this->addJS(array(
@@ -2160,15 +2211,15 @@ class AdminNormalProductsControllerCore extends AdminController
         }
 
         // Check description short size without html
-        $limit = (int)Configuration::get('PS_PRODUCT_SHORT_DESC_LIMIT');
+        $limit = (int)Configuration::get('PS_SHORT_DESC_LIMIT');
         if ($limit <= 0) {
-            $limit = 400;
+            $limit = Configuration::PS_SHORT_DESC_LIMIT;
         }
         foreach ($languages as $language) {
             if ($this->isProductFieldUpdated('description_short', $language['id_lang']) && ($value = Tools::getValue('description_short_'.$language['id_lang']))) {
                 if (Tools::strlen(strip_tags($value)) > $limit) {
                     $this->errors[] = sprintf(
-                        Tools::displayError('This %1$s field (%2$s) is too long: %3$d chars max (current count %4$d).'),
+                        Tools::displayError('This %1$s field in %2$s is too long: %3$d chars max (current count %4$d).'),
                         call_user_func(array($className, 'displayFieldName'), 'description_short'),
                         $language['name'],
                         $limit,
@@ -3527,7 +3578,7 @@ class AdminNormalProductsControllerCore extends AdminController
             'token' => $this->token,
             'currency' => $currency,
             'link' => $this->context->link,
-            'PS_PRODUCT_SHORT_DESC_LIMIT' => Configuration::get('PS_PRODUCT_SHORT_DESC_LIMIT') ? Configuration::get('PS_PRODUCT_SHORT_DESC_LIMIT') : 400
+            'PS_SHORT_DESC_LIMIT' => Configuration::get('PS_SHORT_DESC_LIMIT') ? Configuration::get('PS_SHORT_DESC_LIMIT') : Configuration::PS_SHORT_DESC_LIMIT
         ));
         $data->assign($this->tpl_form_vars);
 
