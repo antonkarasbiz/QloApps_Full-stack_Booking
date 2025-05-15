@@ -31,9 +31,9 @@
     {if isset($data.id_status) && ($data.id_status != HotelBookingDetail::STATUS_ALLOTED)}
         <div class="alert alert-info">
             {if $data.id_status == HotelBookingDetail::STATUS_CHECKED_IN}
-                {l s='This booking has already been checked in, so the check-in date cannot be updated.'}
+                {l s='The check-in date cannot be changed as the booking has already been checked in.'}
             {else if HotelBookingDetail::STATUS_CHECKED_OUT}
-                {l s='This booking has already been checked out, so the check-in and check-out date cannot be updated.'}
+                {l s='The check-in and check-out date cannot be changed as the booking has already been checked out.'}
             {/if}
         </div>
     {/if}
