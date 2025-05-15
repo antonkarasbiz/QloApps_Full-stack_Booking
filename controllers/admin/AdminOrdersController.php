@@ -3628,7 +3628,7 @@ class AdminOrdersControllerCore extends AdminController
                 }
             }
         }
-        $this->content = json_encode($to_return);
+        $this->ajaxDie(json_encode($to_return));
     }
 
     // public function ajaxProcessSearchProducts()
@@ -4701,11 +4701,19 @@ class AdminOrdersControllerCore extends AdminController
                 $objBookingDetail->children = $objCartBookingData->children;
                 $objBookingDetail->child_ages = $objCartBookingData->child_ages;
 
+                $occupancy = array(
+                    array(
+                        'adults' => $objCartBookingData->adults,
+                        'children' => $objCartBookingData->children,
+                        'child_ages' => json_decode($objCartBookingData->child_ages)
+                    )
+                );
+
                 $total_price = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
                     $idProduct,
                     $objCartBookingData->date_from,
                     $objCartBookingData->date_to,
-                    0,
+                    $occupancy,
                     Group::getCurrent()->id,
                     $this->context->cart->id,
                     $this->context->cookie->id_guest,
@@ -7359,6 +7367,13 @@ class AdminOrdersControllerCore extends AdminController
                     // set context currency So that we can get prices in the order currency
                     $objOrder = new Order($objHotelBooking->id_order);
                     $this->context->currency = new Currency($objOrder->id_currency);
+                    $occupancy = array(
+                        array(
+                            'adults' => $objHotelBooking->adults,
+                            'children' => $objHotelBooking->children,
+                            'child_ages' => json_decode($objHotelBooking->child_ages)
+                        )
+                    );
                     $newRoomTotalPrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
                         $idNewRoomType,
                         $objHotelBooking->date_from,

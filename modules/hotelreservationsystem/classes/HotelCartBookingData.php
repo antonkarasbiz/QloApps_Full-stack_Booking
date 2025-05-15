@@ -1113,7 +1113,13 @@ class HotelCartBookingData extends ObjectModel
                 $cart_detail_data[$key]['date_to'] = $value['date_to'];
 
                 $cart_detail_data[$key]['child_ages'] = json_decode($value['child_ages']);
-
+                $occupancy = array(
+                    array(
+                        'adults' => $value['adults'],
+                        'children' => $value['children'],
+                        'child_ages' => json_decode($value['child_ages'])
+                    )
+                );
                 $unit_price = Product::getPriceStatic($value['id_product'], true);
                 $unit_price_tax_excl = Product::getPriceStatic($value['id_product'], false);
                 $productPriceWithoutReduction = $productObj->getPriceWithoutReduct(false);
@@ -1126,7 +1132,9 @@ class HotelCartBookingData extends ObjectModel
                     $id_cart,
                     $value['id_guest'],
                     $value['id_room'],
-                    0
+                    0,
+                    1,
+                    $occupancy
                 );
                 $feature_price_tax_excl = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay(
                     $value['id_product'],
@@ -1137,7 +1145,9 @@ class HotelCartBookingData extends ObjectModel
                     $id_cart,
                     $value['id_guest'],
                     $value['id_room'],
-                    0
+                    0,
+                    1,
+                    $occupancy
                 );
                 $feature_price_diff = (float)($productPriceWithoutReduction - $feature_price);
                 $cart_detail_data[$key]['product_price'] = $unit_price;
@@ -1239,7 +1249,7 @@ class HotelCartBookingData extends ObjectModel
                     $value['id_product'],
                     $value['date_from'],
                     $value['date_to'],
-                    0,
+                    $occupancy,
                     0,
                     $id_cart,
                     $value['id_guest'],
@@ -1557,7 +1567,13 @@ class HotelCartBookingData extends ObjectModel
                                     1
                                 );
                                 $totalAdditionalServicePrice = $demandPrice + $serviceProductPrice;
-
+                                $occupancy = array(
+                                    array(
+                                        'adults' => $data_v['adults'],
+                                        'children' => $data_v['children'],
+                                        'child_ages' => json_decode($data_v['child_ages'])
+                                    )
+                                );
                                 if (isset($cartHotelData[$prodKey]['date_diff'][$dateJoin])) {
                                     $numDays = $objBookingDetail->getNumberOfDays($data_v['date_from'], $data_v['date_to']);
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['demand_price'] += $totalAdditionalServicePrice;
@@ -1573,7 +1589,7 @@ class HotelCartBookingData extends ObjectModel
                                         $product['id_product'],
                                         $data_v['date_from'],
                                         $data_v['date_to'],
-                                        0,
+                                        $occupancy,
                                         0,
                                         $context->cart->id,
                                         $context->cart->id_guest,
@@ -1583,7 +1599,7 @@ class HotelCartBookingData extends ObjectModel
                                         $product['id_product'],
                                         $data_v['date_from'],
                                         $data_v['date_to'],
-                                        0,
+                                        $occupancy,
                                         0,
                                         $context->cart->id,
                                         $context->cart->id_guest,
@@ -1594,7 +1610,7 @@ class HotelCartBookingData extends ObjectModel
                                         $product['id_product'],
                                         $data_v['date_from'],
                                         $data_v['date_to'],
-                                        0,
+                                        $occupancy,
                                         0,
                                         $context->cart->id,
                                         $context->cart->id_guest,
@@ -1635,7 +1651,7 @@ class HotelCartBookingData extends ObjectModel
                                         $product['id_product'],
                                         $data_v['date_from'],
                                         $data_v['date_to'],
-                                        0,
+                                        $occupancy,
                                         0,
                                         $context->cart->id,
                                         $context->cart->id_guest,
@@ -1645,7 +1661,7 @@ class HotelCartBookingData extends ObjectModel
                                         $product['id_product'],
                                         $data_v['date_from'],
                                         $data_v['date_to'],
-                                        0,
+                                        $occupancy,
                                         0,
                                         $context->cart->id,
                                         $context->cart->id_guest,
@@ -1656,7 +1672,7 @@ class HotelCartBookingData extends ObjectModel
                                         $product['id_product'],
                                         $data_v['date_from'],
                                         $data_v['date_to'],
-                                        0,
+                                        $occupancy,
                                         0,
                                         $context->cart->id,
                                         $context->cart->id_guest,
