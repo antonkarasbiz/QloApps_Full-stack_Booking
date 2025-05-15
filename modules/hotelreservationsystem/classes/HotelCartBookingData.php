@@ -1079,6 +1079,8 @@ class HotelCartBookingData extends ObjectModel
             }
         }
 
+        Hook::exec('actionCartBookingsErrorsModifier', array('errors' => &$errors));
+
         return $errors;
     }
 

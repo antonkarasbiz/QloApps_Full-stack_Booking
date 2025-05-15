@@ -27,6 +27,7 @@
                     <i class="process-icon-refresh"></i>
                 </a>
             </span>
+            {hook h='displayDashGuestCycleHeader'}
         </header>
 
         <section>

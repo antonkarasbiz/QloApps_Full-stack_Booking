@@ -152,3 +152,7 @@
 		<span>{l s='No room available for this hotel!'}</span>
 	</div>
 {/if}
+
+{block name='displayRoomTypeListAfter'}
+	{hook h='displayRoomTypeListAfter'}
+{/block}

@@ -2499,6 +2499,7 @@ class HotelHelper
         $startDate = new DateTime($dateFrom);
         $endDate = new DateTime($dateTo);
         $daysDifference = $startDate->diff($endDate)->days;
+        Hook::exec('actionDatesDifferenceModifier', array('date_from'=> $dateFrom, 'date_to'=> $dateTo, 'days_difference'=> &$daysDifference));
 
         return $daysDifference;
     }

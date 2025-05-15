@@ -160,6 +160,8 @@ class RoomTypeServiceProduct extends ObjectModel
                     );
                 }
 
+                Hook::exec('actionAutoAddServicesModifier', array('services' => &$services, 'dateFrom' => $dateFrom, 'dateTo' => $dateTo));
+
                 return $services;
             }
         }
