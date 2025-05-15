@@ -184,7 +184,7 @@ class CategoryControllerCore extends FrontController
             );
 
             if ($displayAllRoomsTypes) {
-                $bookingParams['display_all_room_types'] = 1;
+                $bookingParams['get_all_room_types'] = 1;
             }
 
             $booking_data = $objBookingDetail->dataForFrontSearch($bookingParams);
@@ -336,7 +336,7 @@ class CategoryControllerCore extends FrontController
             );
 
             if ($displayAllRoomsTypes) {
-                $bookingParams['display_all_room_types'] = 1;
+                $bookingParams['get_all_room_types'] = 1;
             }
 
             $booking_data = $objBookingDetail->dataForFrontSearch($bookingParams);
