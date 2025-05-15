@@ -145,7 +145,6 @@ class RoomTypeServiceProduct extends ObjectModel
                 $sql .= ' AND p.`price_addition_type` = '.$priceAdditionType;
             }
             if ($services = Db::getInstance()->executeS($sql)) {
-                Hook::exec('actionAutoAddServices', array('services' => &$services, 'dateFrom' => $dateFrom, 'dateTo' => $dateTo));
                 $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
                 foreach($services as &$service) {
                     $service['price'] = $objRoomTypeServiceProductPrice->getServicePrice(
@@ -160,6 +159,8 @@ class RoomTypeServiceProduct extends ObjectModel
                         $use_reduc
                     );
                 }
+
+                Hook::exec('actionAutoAddServicesModifier', array('services' => &$services, 'dateFrom' => $dateFrom, 'dateTo' => $dateTo));
 
                 return $services;
             }

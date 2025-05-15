@@ -54,14 +54,16 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
         $idCart,
         $idHtlCartData
     ) {
-        $isServiceAvailable = Hook::exec('actionCheckServiceAvailability', array(
-            'idProduct' => $idProduct,
+        $isAvailable = true;
+        Hook::exec('actionCheckServiceAvailability', array(
+            'id_product' => $idProduct,
             'quantity' => $quantity,
-            'idCart' => $idCart,
-            'idHtlCartData' => $idHtlCartData
+            'id_cart' => $idCart,
+            'id_hotel_cart_data' => $idHtlCartData,
+            'is_service_available' => &$isAvailable,
         ));
 
-        if (!$isServiceAvailable) {
+        if (!$isAvailable) {
             return false;
         }
 

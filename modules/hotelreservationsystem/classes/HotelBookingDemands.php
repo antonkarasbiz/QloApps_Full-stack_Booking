@@ -103,10 +103,8 @@ class HotelBookingDemands extends ObjectModel
             $sql .= ' AND hb.`id_room`='.(int)$idRoom;
         }
         if ($dateFrom && $dateTo) {
-            $result = Hook::exec('actionRoomTypeBookingDemandsDatesModifierBefore', array('date_from' => &$dateFrom, 'date_to' => &$dateTo), null, true);
             $dateFrom = date('Y-m-d H:i:s', strtotime($dateFrom));
             $dateTo = date('Y-m-d H:i:s', strtotime($dateTo));
-            Hook::exec('actionRoomTypeBookingDemandsDatesModifierAfter', array('date_from' => &$dateFrom, 'date_to' => &$dateTo, 'result' => $result));
             $sql .= ' AND hb.`date_from`=\''.pSQL($dateFrom).'\' AND hb.`date_to`= \''.pSQL($dateTo).'\'';
         }
 
