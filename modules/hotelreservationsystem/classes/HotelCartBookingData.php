@@ -1030,9 +1030,9 @@ class HotelCartBookingData extends ObjectModel
                                         }
                                     }
 
-                                    $preparationTime = HotelOrderRestrictDate::getPreparationTime($roomData['id_hotel']);
-                                    if ($preparationTime !== false) {
-                                        $minOrderDate = date('Y-m-d', strtotime('+'. ($preparationTime) .' days'));
+                                    $minBookingOffset = HotelOrderRestrictDate::getMinimumBookingOffset($roomData['id_hotel']);
+                                    if ($minBookingOffset !== false) {
+                                        $minOrderDate = date('Y-m-d', strtotime('+'. ($minBookingOffset) .' days'));
                                         if (strtotime($minOrderDate) > strtotime($roomData['date_from'])) {
                                             $objHotelBranchInformation = new HotelBranchInformation(
                                                 $roomData['id_hotel'],
