@@ -1713,7 +1713,8 @@ class HotelBookingDetail extends ObjectModel
                         unset($bookingData['rm_data'][$key]);
                         continue;
                     }
-                    if (count($value['data']['available'])) {
+
+                    if (count($value['data']['available']) || (isset($get_all_room_types) && $get_all_room_types)) {
                         $prod_price = Product::getPriceStatic($value['id_product'], self::useTax());
                         $productPriceWithoutReduction = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, self::useTax(), 0, 0, 0, 0, 1, 0, $bookingParams['occupancy']);
                         $cover_image_arr = Product::getCover($value['id_product']);

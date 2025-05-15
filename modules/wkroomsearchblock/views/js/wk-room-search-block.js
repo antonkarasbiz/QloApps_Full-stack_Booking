@@ -115,6 +115,8 @@ const BookingSearchManager = {
                                 }
                             }
                         });
+                    } else {
+                        $('#location_category_id').val('');
                     }
                 }
             },
