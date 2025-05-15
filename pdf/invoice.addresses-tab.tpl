@@ -31,7 +31,12 @@
 				{$delivery_address}
 			{/if}
 		</td> -->
-		<td width="33%"></td>
+		<td width="33%">
+			<span class="bold">{l s='Hotel Detail' pdf='true'}</span><br/><br/>
+			{if $hotel_address}
+				{$hotel_address}
+			{/if}
+		</td>
 		<td  width="33%"></td>
 		<td width="33%">
 			<span class="bold">{l s='Customer Detail' pdf='true'}</span><br/><br/>

@@ -195,16 +195,16 @@ class wkhotelfilterblock extends Module
 
                     $obj_rm_type = new HotelRoomType();
                     $room_types = $obj_rm_type->getIdProductByHotelId($id_hotel, 0, 1, 1);
+                    $occupancy = Tools::getValue('occupancy');
 
                     $prod_price = array();
                     if ($room_types) {
                         foreach ($room_types as $key => $value) {
-                            $prod_price[] = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, HotelBookingDetail::useTax());
+                            $prod_price[] = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, HotelBookingDetail::useTax(), 0, 0, 0, 0, 1, 1, $occupancy);
                         }
                     }
 
                     // Create URL of category
-                    $occupancy = Tools::getValue('occupancy');
                     $urlData = array (
                         'date_from' => $date_from,
                         'date_to' => $date_to,
