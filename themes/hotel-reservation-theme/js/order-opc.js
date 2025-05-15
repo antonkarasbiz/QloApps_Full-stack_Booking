@@ -187,17 +187,15 @@ $(document).ready(function()
 				setCustomerGuestDetailForm(guestDetail);
 			}
         } else if (!((keyCode < 65 || keyCode > 122) && (keyCode < 48 || keyCode > 57) && (keyCode != 8))) {
-			$('.customer_guest_detail_ul').remove();
 			clearTimeout(debounceTimeout); // Clear the existing timeout
 			debounceTimeout = setTimeout(() => {
 				let firstName = '';
 				let lastName = '';
 				let email = '';
-				let target = false
 				if ($(e.target).prop('id') == 'customer_guest_detail_firstname') {
-					firstName = $('#customer_guest_detail_firstname').val()
+					firstName = $('#customer_guest_detail_firstname').val();
 				} else if ($(e.target).prop('id') == 'customer_guest_detail_lastname') {
-					lastName = $('#customer_guest_detail_lastname').val()
+					lastName = $('#customer_guest_detail_lastname').val();
 				} else if ($(e.target).prop('id') == 'customer_guest_detail_email') {
 					email = $('#customer_guest_detail_email').val();
 				}
@@ -219,11 +217,12 @@ $(document).ready(function()
 							email : email,
 						},
 						success: function(data) {
+							$('.customer_guest_detail_ul').remove();
 							if (data.status) {
 								let listElem = $('<ul>').addClass('customer_guest_detail_ul');
-								$.each(data.guestDetails, function(index, guestDetail) {
-									let itemElem = $('<li>').addClass('customer_guest_detail_li').text(guestDetail.firstname + ' '+ guestDetail.lastname + ' ('+ guestDetail.email+')');
-									$(itemElem).attr('data-guest_detail', JSON.stringify(guestDetail));
+								$.each(data.guest_details, function(index, guest_detail) {
+									let itemElem = $('<li>').addClass('customer_guest_detail_li').text(guest_detail.firstname + ' '+ guest_detail.lastname + ' ('+ guest_detail.email+')');
+									$(itemElem).attr('data-guest_detail', JSON.stringify(guest_detail));
 									$(listElem).append(itemElem);
 								});
 								if ($(targetElem).prop('id') == 'customer_guest_detail_email') {
@@ -233,6 +232,8 @@ $(document).ready(function()
 							}
 						}
 					});
+				} else {
+					$('.customer_guest_detail_ul').remove();
 				}
 			}, 200);
 		}

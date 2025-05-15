@@ -141,11 +141,6 @@ class AdminCustomersControllerCore extends AdminController
                 'align' => 'text-right',
                 'badge_success' => true
             ),
-            'phone' => array(
-                'title' => $this->l('Phone'),
-                'optional' => true,
-                'visible_default' => false,
-            ),
             'active' => array(
                 'title' => $this->l('Enabled'),
                 'align' => 'text-center',
@@ -1438,27 +1433,30 @@ class AdminCustomersControllerCore extends AdminController
         // Check tab access is allowed to edit
         if ($this->tabAccess['edit'] == 1) {
             if (Validate::isLoadedObject($objCustomerGuestDetail = new CustomerGuestDetail((int) Tools::getValue('id_customer_guest_detail')))) {
-                $objCustomerGuestDetail->id_gender = Tools::getValue('id_gender');
-                $objCustomerGuestDetail->firstname = Tools::getValue('firstname');
-                $objCustomerGuestDetail->lastname = Tools::getValue('lastname');
-                $objCustomerGuestDetail->phone = Tools::getValue('phone');
-                if ($objCustomerGuestDetail->save()) {
-                    $gender = new Gender($objCustomerGuestDetail->id_gender, $this->context->language->id);
-                    $response['data']['gender'] = $gender->name;
-                    $response['data']['firstname'] = $objCustomerGuestDetail->firstname;
-                    $response['data']['lastname'] = $objCustomerGuestDetail->lastname ;
-                    $response['data']['email'] = $objCustomerGuestDetail->email;
-                    $response['data']['phone'] = $objCustomerGuestDetail->phone;
-                    $response['data']['id'] = $objCustomerGuestDetail->id;
-                    $response['msg'] = $this->l('Guest details are updated.');
-                } else {
-                    $response['errors'][] = $this->l('Unable to save guest details.');
+                $response['errors'] = $objCustomerGuestDetail->validateController();
+                if (!$response['errors']) {
+                    $objCustomerGuestDetail->id_gender = Tools::getValue('id_gender');
+                    $objCustomerGuestDetail->firstname = Tools::getValue('firstname');
+                    $objCustomerGuestDetail->lastname = Tools::getValue('lastname');
+                    $objCustomerGuestDetail->phone = Tools::getValue('phone');
+                    if ($objCustomerGuestDetail->save()) {
+                        $gender = new Gender($objCustomerGuestDetail->id_gender, $this->context->language->id);
+                        $response['data']['gender'] = $gender->name;
+                        $response['data']['firstname'] = $objCustomerGuestDetail->firstname;
+                        $response['data']['lastname'] = $objCustomerGuestDetail->lastname ;
+                        $response['data']['email'] = $objCustomerGuestDetail->email;
+                        $response['data']['phone'] = $objCustomerGuestDetail->phone;
+                        $response['data']['id'] = $objCustomerGuestDetail->id;
+                        $response['msg'] = $this->l('Guest details are updated.');
+                    } else {
+                        $response['errors'][] = Tools::displayError('Unable to save guest details.');
+                    }
                 }
             } else {
-                $response['errors'][] = $this->l('Guest details not found.');
+                $response['errors'][] = Tools::displayError('Guest details not found.');
             }
         } else {
-            $response['errors'][] = $this->l('You do not have permission to edit this.');
+            $response['errors'][] = Tools::displayError('You do not have permission to edit this.');
         }
 
         if ($response['errors']) {

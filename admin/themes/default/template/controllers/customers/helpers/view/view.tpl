@@ -688,8 +688,8 @@
 									<td>{$customer_guest['firstname']}</td>
 									<td>{$customer_guest['lastname']}</td>
 									<td>{$customer_guest['phone']}</td>
-									<td><a class="edit-customer-guest-detail" data-id_customer_guest_detail="{$customer_guest['id_customer_guest_detail']}"><i class="icon-pencil"></i></a></td>
-									<td><a class="delete-customer-guest-detail" data-id_customer_guest_detail="{$customer_guest['id_customer_guest_detail']}"><i class="icon-trash"></i></a></td>
+									<td><a href="#" class="edit-customer-guest-detail" data-id_customer_guest_detail="{$customer_guest['id_customer_guest_detail']}"><i class="icon-pencil"></i></a></td>
+									<td><a href="#" class="delete-customer-guest-detail" data-id_customer_guest_detail="{$customer_guest['id_customer_guest_detail']}"><i class="icon-trash"></i></a></td>
 								</tr>
 							{/foreach}
 						</tbody>

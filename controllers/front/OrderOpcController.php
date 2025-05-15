@@ -556,12 +556,12 @@ class OrderOpcControllerCore extends ParentOrderController
         $this->_assignPayment();
         // GUEST BOOKING
         if ($this->isLogged) {
-            if ($id_customer_guest_detail = CustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
+            if ($idCustomerGuestDetail = CustomerGuestDetail::getCustomerGuestIdByIdCart($this->context->cart->id)) {
                 $this->context->smarty->assign(
-                    'customer_guest_detail', CustomerGuestDetail::getCustomerGuestDetail($id_customer_guest_detail)
+                    'customer_guest_detail', CustomerGuestDetail::getCustomerGuestDetail($idCustomerGuestDetail)
                 );
             }
-            $this->context->smarty->assign('id_customer_guest_detail', $id_customer_guest_detail);
+            $this->context->smarty->assign('id_customer_guest_detail', $idCustomerGuestDetail);
         }
         Tools::safePostVars();
 
@@ -1085,10 +1085,10 @@ class OrderOpcControllerCore extends ParentOrderController
             $this->context->cart->id_customer,
             $firstname,
             $lastname,
-            $email,
+            $email
         )) {
             $response['status'] = true;
-            $response['guestDetails'] = $guestDetails;
+            $response['guest_details'] = $guestDetails;
         }
 
         return json_encode($response);
@@ -1107,10 +1107,10 @@ class OrderOpcControllerCore extends ParentOrderController
             $customerGuestDetailLastname = Tools::getValue('customer_guest_detail_lastname');
             $customerGuestDetailEmail = Tools::getValue('customer_guest_detail_email');
             $customerGuestDetailPhone = Tools::getValue('customer_guest_detail_phone');
-            if ($id_customer_guest_detail = CustomerGuestDetail::getIdCustomerGuest($customerGuestDetailEmail, $this->context->cart->id)) {
-                $objCustomerGuestDetail = new CustomerGuestDetail($id_customer_guest_detail);
-            } else if ($id_customer_guest_detail = CustomerGuestDetail::getIdCustomerGuest($customerGuestDetailEmail, $this->context->customer->id, null)) {
-                $objCustomerGuestDetail = new CustomerGuestDetail($id_customer_guest_detail);
+            if ($idCustomerGuestDetail = CustomerGuestDetail::getIdCustomerGuest($customerGuestDetailEmail, $this->context->cart->id)) {
+                $objCustomerGuestDetail = new CustomerGuestDetail($idCustomerGuestDetail);
+            } else if ($idCustomerGuestDetail = CustomerGuestDetail::getIdCustomerGuest($customerGuestDetailEmail, $this->context->customer->id, null)) {
+                $objCustomerGuestDetail = new CustomerGuestDetail($idCustomerGuestDetail);
             } else {
                 $objCustomerGuestDetail = new CustomerGuestDetail();
             }
@@ -1166,19 +1166,19 @@ class OrderOpcControllerCore extends ParentOrderController
                 $objCustomerGuestDetail->phone = $customerGuestDetailPhone;
                 $objCustomerGuestDetail->id_customer = $this->context->customer->id;
                 if ($objCustomerGuestDetail->save()) {
-                    if ($maxGuestAccountAllowed = Configuration::get('PS_CUSTOMER_GUEST_MAX_NUM')) {
+                    if ($maxGuestAccountAllowed = Configuration::get('PS_CUSTOMER_GUEST_MAX_LIMIT')) {
                         $objCustomerGuestDetail->deleteCustomerGuestByIdCustomer($this->context->cart->id_customer, $maxGuestAccountAllowed);
                     }
                     // To prevent duplications for the same cart.
-                    CustomerGuestDetail::deleteCartCustomerGuest($this->context->cart->id);
-                    CustomerGuestDetail::saveCartCustomerGuest($this->context->cart->id, $objCustomerGuestDetail->id);
+                    CustomerGuestDetail::deleteCustomerGuestInCart($this->context->cart->id);
+                    CustomerGuestDetail::saveCustomerGuestInCart($this->context->cart->id, $objCustomerGuestDetail->id);
                     Tools::redirect($this->context->link->getPageLink('order-opc', null, $this->context->language->id, array('proceed_to_payment' => 1)));
                 }
             }
 
             $this->context->smarty->assign('customerGuestDetailErrors', $customerGuestDetailErrors);
         } else {
-            CustomerGuestDetail::deleteCartCustomerGuest($this->context->cart->id);
+            CustomerGuestDetail::deleteCustomerGuestInCart($this->context->cart->id);
             Tools::redirect($this->context->link->getPageLink('order-opc', null, $this->context->language->id, array('proceed_to_payment' => 1)));
         }
 
