@@ -186,7 +186,6 @@ class RoomTypeServiceProduct extends ObjectModel
             true,
             $subCategory
         )) {
-            $objHotelRoomType = new HotelRoomType();
             $serviceProducts = Product::getProductsProperties($idLang, $serviceProducts);
             $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
             foreach($serviceProducts as &$serviceProduct) {

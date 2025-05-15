@@ -1688,8 +1688,6 @@ class HotelBookingDetail extends ObjectModel
 
         if (!$only_search_data) {
             if (!empty($bookingData)) {
-                $objRoomType = new HotelRoomType();
-
                 foreach ($bookingData['rm_data'] as $key => $value) {
                     $product_feature = Product::getFrontFeaturesStatic($this->context->language->id, $value['id_product']);
                     $prod_amen = array();
