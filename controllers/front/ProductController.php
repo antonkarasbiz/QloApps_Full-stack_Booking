@@ -334,15 +334,15 @@ class ProductControllerCore extends FrontController
                     $date_from = Tools::getValue('date_from');
                     $date_to = Tools::getValue('date_to');
 
-                    $preparationTime = (int) HotelOrderRestrictDate::getPreparationTime($hotel_id);
+                    $minBookingOffset = (int) HotelOrderRestrictDate::getMinimumBookingOffset($hotel_id);
                     if (!($date_from = Tools::getValue('date_from'))) {
                         $date_from = date('Y-m-d');
                     }
 
-                    if ($preparationTime
-                        && strtotime(date('Y-m-d', strtotime('+'. ($preparationTime) .' days'))) > strtotime($date_from)
+                    if ($minBookingOffset
+                        && strtotime(date('Y-m-d', strtotime('+'. ($minBookingOffset) .' days'))) > strtotime($date_from)
                     ) {
-                        $date_from = date('Y-m-d', strtotime('+ '.$preparationTime.' day'));
+                        $date_from = date('Y-m-d', strtotime('+ '.$minBookingOffset.' day'));
                     }
 
                     if (!($date_to = Tools::getValue('date_to'))) {
@@ -401,7 +401,7 @@ class ProductControllerCore extends FrontController
                             'room_type_info' => $room_info_by_product_id,
                             'isHotelRefundable' => $hotel_branch_obj->isRefundable(),
                             'max_order_date' => $max_order_date,
-                            'preparation_time' => $preparationTime,
+                            'min_booking_offset' => $minBookingOffset,
                             'warning_num' => Configuration::get('WK_ROOM_LEFT_WARNING_NUMBER'),
                             'ratting_img_path' => _MODULE_DIR_.'hotelreservationsystem/views/img/Slices/icons-sprite.png',
                             'product_controller_url' => $this->context->link->getPageLink('product'),
@@ -430,7 +430,7 @@ class ProductControllerCore extends FrontController
                         )
                     );
 
-                    $occupancy_value = array();
+                    $occupancy_value = Tools::getValue('occupancy', array());
                     if (Configuration::get('PS_FRONT_ROOM_UNIT_SELECTION_TYPE') == HotelBookingDetail::PS_ROOM_UNIT_SELECTION_TYPE_QUANTITY) {
                         $occupancy_value = 1;
                     } else {
@@ -461,10 +461,10 @@ class ProductControllerCore extends FrontController
                     // product price after imposing feature prices...
                     if ($useTax) {
                         $priceProduct = Product::getPriceStatic($this->product->id, true);
-                        $feature_price = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($this->product->id, $date_from, $date_to, true);
+                        $feature_price = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($this->product->id, $date_from, $date_to, true, 0, 0, 0, 0, 1, 1, $occupancy_value);
                     } else {
                         $priceProduct = Product::getPriceStatic($this->product->id, false);
-                        $feature_price = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($this->product->id, $date_from, $date_to, false);
+                        $feature_price = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($this->product->id, $date_from, $date_to, false, 0, 0, 0, 0, 1, 1, $occupancy_value);
                     }
                     $productPriceWithoutReduction = $this->product->getPriceWithoutReduct(!$useTax);
                     $feature_price_diff = (float)($productPriceWithoutReduction - $feature_price);
@@ -660,7 +660,7 @@ class ProductControllerCore extends FrontController
             $idProduct,
             $dateFrom,
             $dateTo,
-            0,
+            $occupancy,
             0,
             0,
             0,
@@ -671,7 +671,8 @@ class ProductControllerCore extends FrontController
         $roomTypeDateRangePrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
             $idProduct,
             $dateFrom,
-            $dateTo
+            $dateTo,
+            $occupancy
         );
 
         $featurePrice = 0;
@@ -680,7 +681,14 @@ class ProductControllerCore extends FrontController
                 $idProduct,
                 $dateFrom,
                 $dateTo,
-                true
+                true,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                $occupancy
             );
             $roomTypeDateRangePrice = $roomTypeDateRangePrice['total_price_tax_incl'];
             $totalPriceWithoutDiscount = $priceWithoutDiscount['total_price_tax_incl'];
@@ -690,14 +698,20 @@ class ProductControllerCore extends FrontController
                 $idProduct,
                 $dateFrom,
                 $dateTo,
-                false
+                false,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                $occupancy
             );
             $roomTypeDateRangePrice = $roomTypeDateRangePrice['total_price_tax_excl'];
             $totalPriceWithoutDiscount = $priceWithoutDiscount['total_price_tax_excl'];
         }
 
-        $totalPriceWithoutDiscount *= $quantity;
-        $totalRoomPrice = $roomTypeDateRangePrice * $quantity;
+        $totalRoomPrice = $roomTypeDateRangePrice;
         // calculate demand price now
         $demandsPricePerRoom = 0;
         $roomTypeDemands = $objHRTDemand->getRoomTypeDemands($idProduct);

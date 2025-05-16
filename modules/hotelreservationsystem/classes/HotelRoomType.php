@@ -250,12 +250,20 @@ class HotelRoomType extends ObjectModel
      */
     public static function getHotelIdAddressByIdProduct($id_product)
     {
-        return Db::getInstance()->getValue(
-            'SELECT `id_address` from `'._DB_PREFIX_.'address` a
-            INNER JOIN `'._DB_PREFIX_.'htl_room_type` hrt
-            ON (hrt.`id_hotel` = a.`id_hotel`)
-            WHERE hrt.`id_product` = '.(int)$id_product.' AND a.`deleted` = 0
-        ');
+        $cache_key = 'HotelRoomType::getHotelIdAddressByIdProduct'.(int)$id_product;
+        if (!Cache::isStored($cache_key)) {
+            $res = Db::getInstance()->getValue(
+                'SELECT `id_address` from `'._DB_PREFIX_.'address` a
+                INNER JOIN `'._DB_PREFIX_.'htl_room_type` hrt
+                ON (hrt.`id_hotel` = a.`id_hotel`)
+                WHERE hrt.`id_product` = '.(int)$id_product.' AND a.`deleted` = 0
+            ');
+            Cache::store($cache_key, $res);
+        } else {
+            $res = Cache::retrieve($cache_key);
+        }
+
+        return $res;
     }
 
     /**

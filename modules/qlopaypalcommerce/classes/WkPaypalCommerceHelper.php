@@ -351,10 +351,18 @@ class WkPaypalCommerceHelper
                     $idProduct
                 )) {
                     foreach ($roomTypeBookings as $cartRoomInfo) {
+                        $occupancy = array(
+                            array(
+                                'adults' => $cartRoomInfo['adults'],
+                                'children' => $cartRoomInfo['children'],
+                                'child_ages' => json_decode($cartRoomInfo['child_ages'])
+                            )
+                        );
                         $roomTotalPrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
                             $idProduct,
                             $cartRoomInfo['date_from'],
-                            $cartRoomInfo['date_to']
+                            $cartRoomInfo['date_to'],
+                            $occupancy
                         );
                         $roomTotalPriceTE = $roomTotalPrice['total_price_tax_excl'];
                         $roomTotalPriceTI = $roomTotalPrice['total_price_tax_incl'];
