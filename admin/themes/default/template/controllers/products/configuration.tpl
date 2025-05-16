@@ -63,6 +63,7 @@
 								</span>
 							</label>
 						</th>
+                        {hook h='displayHotelRoomListTableHeaderColumn'}
                         <th class="col-sm-1 center">
                             {l s='--'}
                         </th>
@@ -99,10 +100,11 @@
 									</a>
 									<input type="hidden" class="form-control disable_dates_json" name="{$var_name_room_info|cat:'[disable_dates_json]'}" {if $room_info['id_status'] == $rm_status['STATUS_TEMPORARY_INACTIVE']['id']}value="{$room_info['disable_dates_json']|escape:'html':'UTF-8'}"{/if}>
 								</td>
+                                {hook h='displayHotelRoomListTableRowColumn' index=$key id_room=$room_info['id']}
 								<td class="col-sm-1 center">
 									{if isset($room_info['id'])}
-                                        {if $room_info['booked_dates']}
-                                            <input type="hidden" class="booked-dates" name="{$var_name_room_info|cat:'[booked_dates]'}" value='{$room_info['booked_dates']|json_encode|escape:'html':'UTF-8'}'>
+                                        {if isset($room_info['booked_dates']) && $room_info['booked_dates']}
+                                            <input type="hidden" class="booked-dates" name="{$var_name_room_info|cat:'[booked_dates]'}" value='{$room_info['booked_dates']|escape:'html':'UTF-8'}'>
                                             <a href="#" class="view_htl_room btn btn-default" data-toggle="modal" data-target="#room-dates-modal" data-id-room="{$room_info['id']}"><i class="icon-info"></i></a>
                                         {/if}
 										<a href="#" class="rm_htl_room btn btn-default" data-id-htl-info="{$room_info['id']}"><i class="icon-trash"></i></a>
@@ -139,6 +141,7 @@
 									</a>
 									<input type="hidden" class="form-control disable_dates_json" name="{$var_name_room_info|cat:'[disable_dates_json]'}" value="">
 								</td>
+                                {hook h='displayHotelRoomListTableRowColumn' index=$k}
 								<td class="center col-sm-1">
 								    {if $k == 1}
 										<a href="#" class="remove-rooms-button btn btn-default"><i class="icon-trash"></i></a>
@@ -417,6 +420,7 @@
                     html += '</a>';
                     html += '<input type="hidden" class="form-control disable_dates_json" name="'+prefix+'[disable_dates_json]">';
                 html += '</td>';
+                html += '{hook h='displayHotelRoomListTableRowColumn'}';
                 html += '<td class="center col-sm-1">';
                     html += '<a href="#" class="remove-rooms-button btn btn-default"><i class="icon-trash"></i></a>';
                 html += '</td>';

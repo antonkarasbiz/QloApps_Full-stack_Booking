@@ -314,10 +314,17 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
         $service_product_data = array();
         $room_extra_demands = array();
         $room_additinal_services = array();
+        $formattedHotelAddress = '';
         if (Module::isInstalled('hotelreservationsystem')) {
             $obj_htl_bk_dtl = new HotelBookingDetail();
-            $obj_rm_type = new HotelRoomType();
             $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
+            $objHotelBranchInfo = new HotelBranchInformation((int) HotelBookingDetail::getIdHotelByIdOrder($order_obj->id), $this->context->language->id);
+            $invoiceAddressPatternRules['avoid'][] = 'lastname';
+            if ($idHotelAddress = $objHotelBranchInfo->getHotelIdAddress()) {
+                $objHotelAddress = new Address((int) $idHotelAddress);
+                $objHotelAddress->firstname = $objHotelBranchInfo->hotel_name;
+                $formattedHotelAddress = AddressFormat::generateAddress($objHotelAddress, $invoiceAddressPatternRules, '<br />', ' ');
+            }
 
             $customer = new Customer($this->order->id_customer);
             if (!empty($order_details)) {
@@ -591,6 +598,7 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
             'cart_rules' => $cart_rules,
             'delivery_address' => $formatted_delivery_address,
             'invoice_address' => $formatted_invoice_address,
+            'hotel_address' => $formattedHotelAddress,
             'addresses' => array('invoice' => $invoice_address, 'delivery' => $delivery_address),
             'tax_excluded_display' => $tax_excluded_display,
             'display_product_images' => $display_product_images,

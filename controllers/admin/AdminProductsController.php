@@ -201,7 +201,13 @@ class AdminProductsControllerCore extends AdminController
 				LEFT JOIN `'._DB_PREFIX_.'address` aa ON (aa.`id_hotel` = hb.`id`)
 				LEFT JOIN `'._DB_PREFIX_.'feature_product` fp ON (fp.`id_product` = a.`id_product`)
 				LEFT JOIN `'._DB_PREFIX_.'htl_room_type_demand` hrtd ON (hrtd.`id_product` = a.`id_product`)
-				LEFT JOIN `'._DB_PREFIX_.'htl_room_type_service_product` hrtsp ON ((hrtsp.`element_type` = '.(int) RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL.' AND hrtsp.`id_element` = hrt.`id_hotel`) OR (hrtsp.`element_type` = '.(int) RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE.' AND hrtsp.`id_element` = a.`id_product`))
+				LEFT JOIN (
+                    SELECT rsp.*, GROUP_CONCAT(pl.`name`) AS service_products
+                    FROM `'._DB_PREFIX_.'htl_room_type_service_product` rsp
+                    LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON (pl.`id_product` = rsp.`id_product`)
+                    WHERE pl.`id_lang`='.$this->context->language->id.'
+                    GROUP BY rsp.`id_element`)
+                AS hrtsp ON ((hrtsp.`element_type` = '.(int) RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL.' AND hrtsp.`id_element` = hrt.`id_hotel`) OR (hrtsp.`element_type` = '.(int) RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE.' AND hrtsp.`id_element` = a.`id_product`))
 				LEFT JOIN `'._DB_PREFIX_.'htl_advance_payment` hap ON (hap.`id_product` = a.`id_product`)';
 
         $this->_select .= ' a.`show_at_front`, (SELECT COUNT(hri.`id`) FROM `'._DB_PREFIX_.'htl_room_information` hri WHERE hri.`id_product` = a.`id_product`) as num_rooms, ';
@@ -213,7 +219,7 @@ class AdminProductsControllerCore extends AdminController
 
         if ($join_category) {
             $this->_join .= ' INNER JOIN `'._DB_PREFIX_.'category_product` cp ON (cp.`id_product` = a.`id_product` AND cp.`id_category` = '.(int)$this->_category->id.') ';
-            $this->_select .= ' , cp.`position`, ';
+            $this->_select .= ' , cp.`position` ';
         }
 
         // show the list of the product according to the booking or service products
@@ -277,6 +283,13 @@ class AdminProductsControllerCore extends AdminController
             'type' => 'range',
             'align' => 'center',
         );
+        $this->fields_list['max_guests'] = array(
+            'title' => $this->l('Maximum Occupancy'),
+            'filter_key' => 'hrt!max_guests',
+            'type' => 'range',
+            'align' => 'center',
+            'optional' => true,
+        );
         // use it for total rooms
         $this->fields_list['num_rooms'] = array(
             'title' => $this->l('Total Rooms'),
@@ -290,7 +303,7 @@ class AdminProductsControllerCore extends AdminController
             'validation' => 'isFloat',
             'align' => 'text-left',
             'filter_key' => 'a!price',
-            'callback' => 'displayBasePrice',
+            'callback' => 'displayPrice',
         );
         $this->fields_list['price_final'] = array(
             'title' => $this->l('Final price'),
@@ -298,7 +311,8 @@ class AdminProductsControllerCore extends AdminController
             'align' => 'text-left',
             'havingFilter' => true,
             'orderby' => false,
-            'search' => false
+            'search' => false,
+            'callback' => 'displayPrice',
         );
 
         $this->fields_list['active'] = array(
@@ -307,25 +321,18 @@ class AdminProductsControllerCore extends AdminController
             'filter_key' => $alias.'!active',
             'align' => 'text-center',
             'type' => 'select',
+            'callback' => 'formatStatusAsLabel',
             'list' => array(1 => $this->l('Yes'), 0 => $this->l('No')),
             'optional' => true,
             'visible_default' => true,
             'orderby' => false
         );
-
-        $this->fields_list['max_guests'] = array(
-            'title' => $this->l('Maximum Occupancy'),
-            'filter_key' => 'hrt!max_guests',
-            'type' => 'range',
-            'align' => 'center',
-            'optional' => true,
-        );
-
         $this->fields_list['show_at_front'] = array(
             'title' => $this->l('Show at front'),
             'align' => 'text-center',
             'type' => 'bool',
             'active' => 'show_at_front',
+            'callback' => 'formatStatusAsLabel',
             'optional' => true,
             'havingFilter' => true,
             'visible_default' => true,
@@ -335,7 +342,7 @@ class AdminProductsControllerCore extends AdminController
         if (Configuration::get('WK_ALLOW_ADVANCED_PAYMENT')) {
             $this->fields_list['advance_payment'] = array(
                 'title' => $this->l('Advance Payment'),
-                'callback' => 'getAdvancePaymentStatus',
+                'callback' => 'formatStatusAsLabel',
                 'badge_success' => true,
                 'badge_danger' => true,
                 'align' => 'text-center',
@@ -446,7 +453,7 @@ class AdminProductsControllerCore extends AdminController
         }
     }
 
-    public function getAdvancePaymentStatus($val, $row)
+    public function formatStatusAsLabel($val, $row)
     {
         if ($val) {
             $str_return = $this->l('Yes');
@@ -456,7 +463,6 @@ class AdminProductsControllerCore extends AdminController
 
         return $str_return;
     }
-
 
     private function buildCategoryOptions($category)
     {
@@ -470,7 +476,7 @@ class AdminProductsControllerCore extends AdminController
         }
     }
 
-    public static function displayBasePrice($basePrice, $tr)
+    public static function displayPrice($basePrice, $tr)
     {
         return Tools::displayPrice($basePrice, (int) Configuration::get('PS_CURRENCY_DEFAULT'));
     }
@@ -628,6 +634,48 @@ class AdminProductsControllerCore extends AdminController
         if ($orderByPriceFinal == 'price_final') {
             $orderBy = 'id_'.$this->table;
             $orderWay = 'ASC';
+        }
+        if ($this->action == 'export' && empty($this->_listsql)) {
+            $this->_select .= ' , trg.`name` AS `id_tax_rules_group`, `features`, hrtdl.`global_demands`';
+            $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'tax_rules_group` trg
+                ON trg.`id_tax_rules_group` = a.`id_tax_rules_group`
+                LEFT JOIN (SELECT GROUP_CONCAT(fpl.`name`) AS features, fp.`id_product`
+                    FROM `'._DB_PREFIX_.'feature_lang` fpl
+                    LEFT JOIN `'._DB_PREFIX_.'feature_product` fp
+                    ON (fp.`id_feature` = fpl.`id_feature`)
+                    WHERE fpl.`id_lang`='.(int) $this->context->language->id.'
+                    GROUP BY fp.`id_product`
+                ) AS fpl ON (a.`id_product` = fpl.`id_product`)';
+
+            $this->_join .= ' LEFT JOIN (SELECT hrtgd.`id_product`, `id_lang`, GROUP_CONCAT(`name`) AS `global_demands`
+                    FROM `'._DB_PREFIX_.'htl_room_type_global_demand_lang` hrtgdl
+                    LEFT JOIN `'._DB_PREFIX_.'htl_room_type_demand` hrtgd
+                    ON hrtgd.`id_global_demand` = hrtgdl.`id_global_demand`
+                    WHERE `id_lang`='.(int) $this->context->language->id.'
+                    GROUP BY hrtgd.`id_product`
+                ) AS hrtdl ON (hrtdl.`id_product` = a.`id_product`)';
+
+            $this->fields_list = array_merge($this->fields_list, array(
+                   'id_tax_rules_group' => array(
+                        'title' => $this->l('Id Tax Rules group'),
+                        'filter_key' => 'a!id_tax_rules_group',
+                    ),
+                    'features' => array(
+                        'title' => $this->l('Features'),
+                    ),
+                    'service_products' => array(
+                        'title' => $this->l('Services Products'),
+                    ),
+                    'global_demands' => array(
+                        'title' => $this->l('Additional Facilities'),
+                    )
+                )
+            );
+
+            unset($this->fields_list['id_category_default']);
+            unset($this->fields_list['id_global_demand']);
+            unset($this->fields_list['id_feature']);
+            unset($this->fields_list['id_service_product']);
         }
         parent::getList($id_lang, $orderBy, $orderWay, $start, $limit, $this->context->shop->id);
 
@@ -813,10 +861,24 @@ class AdminProductsControllerCore extends AdminController
             $id_hotel_new = Tools::getValue('id_hotel');
             $obj_hotel_room_type = new HotelRoomType();
             $room_type_info = $obj_hotel_room_type->getRoomTypeInfoByIdProduct($id_product_old);
+            $limit = (int)Configuration::get('PS_SHORT_DESC_LIMIT');
+            if ($limit <= 0) {
+                $limit = Configuration::PS_SHORT_DESC_LIMIT;
+            }
+            $className = 'Product';
             if ($room_type_info && $room_type_info['id_hotel'] == $id_hotel_new) {
                 foreach (Language::getLanguages(true) as $language) {
                     $product->name[$language['id_lang']] = $product->name[$language['id_lang']].
                     ' - '.$this->l('Duplicate');
+                    if (Tools::strlen(strip_tags($product->description_short[$language['id_lang']])) > $limit) {
+                        $this->errors[] = sprintf(
+                            Tools::displayError('This %1$s field in %2$s is too long: %3$d chars max (current count %4$d).'),
+                            call_user_func(array($className, 'displayFieldName'), 'description_short'),
+                            $language['name'],
+                            $limit,
+                            Tools::strlen(strip_tags($product->description_short[$language['id_lang']]))
+                        );
+                    }
                 }
             }
 
@@ -828,66 +890,69 @@ class AdminProductsControllerCore extends AdminController
             foreach (Language::getLanguages(true) as $language) {
                 $product->link_rewrite[$language['id_lang']] = Tools::str2url($product->name[$language['id_lang']]);
             }
-            if ($product->add()
-                // && Category::duplicateProductCategories($id_product_old, $product->id)
-                && Product::duplicateSuppliers($id_product_old, $product->id)
-                && ($combination_images = Product::duplicateAttributes($id_product_old, $product->id)) !== false
-                && GroupReduction::duplicateReduction($id_product_old, $product->id)
-                && Product::duplicateAccessories($id_product_old, $product->id)
-                && Product::duplicateFeatures($id_product_old, $product->id)
-                && Pack::duplicate($id_product_old, $product->id)
-                && Product::duplicateCustomizationFields($id_product_old, $product->id)
-                && Product::duplicateTags($id_product_old, $product->id)
-                && Product::duplicateDownload($id_product_old, $product->id)
-            ) {
-                $obj_hotel_room_type = new HotelRoomType();
-                $room_type_info = $obj_hotel_room_type->getRoomTypeInfoByIdProduct($id_product_old);
-                $id_room_type_old = $room_type_info['id'];
-                if (!$id_hotel_new) {
-                    $id_hotel_new = $room_type_info['id_hotel'];
-                }
 
-                if ($product->hasAttributes()) {
-                    Product::updateDefaultAttribute($product->id);
-                } else {
-                    Product::duplicateSpecificPrices($id_product_old, $product->id);
-                }
+            if (!$this->errors) {
+                if ($product->add()
+                    // && Category::duplicateProductCategories($id_product_old, $product->id)
+                    && Product::duplicateSuppliers($id_product_old, $product->id)
+                    && ($combination_images = Product::duplicateAttributes($id_product_old, $product->id)) !== false
+                    && GroupReduction::duplicateReduction($id_product_old, $product->id)
+                    && Product::duplicateAccessories($id_product_old, $product->id)
+                    && Product::duplicateFeatures($id_product_old, $product->id)
+                    && Pack::duplicate($id_product_old, $product->id)
+                    && Product::duplicateCustomizationFields($id_product_old, $product->id)
+                    && Product::duplicateTags($id_product_old, $product->id)
+                    && Product::duplicateDownload($id_product_old, $product->id)
+                ) {
+                    $obj_hotel_room_type = new HotelRoomType();
+                    $room_type_info = $obj_hotel_room_type->getRoomTypeInfoByIdProduct($id_product_old);
+                    $id_room_type_old = $room_type_info['id'];
+                    if (!$id_hotel_new) {
+                        $id_hotel_new = $room_type_info['id_hotel'];
+                    }
 
-                $id_room_type_new = HotelRoomType::duplicateRoomType(
-                    $id_product_old,
-                    $product->id,
-                    $id_hotel_new,
-                    true
-                );
-                if ($id_room_type_new) {
-                    if (!HotelRoomType::duplicateRooms(
+                    if ($product->hasAttributes()) {
+                        Product::updateDefaultAttribute($product->id);
+                    } else {
+                        Product::duplicateSpecificPrices($id_product_old, $product->id);
+                    }
+
+                    $id_room_type_new = HotelRoomType::duplicateRoomType(
                         $id_product_old,
-                        $id_room_type_new,
                         $product->id,
-                        $id_hotel_new
-                    )) {
-                        $this->errors[] = Tools::displayError('An error occurred while duplicating rooms.');
+                        $id_hotel_new,
+                        true
+                    );
+                    if ($id_room_type_new) {
+                        if (!HotelRoomType::duplicateRooms(
+                            $id_product_old,
+                            $id_room_type_new,
+                            $product->id,
+                            $id_hotel_new
+                        )) {
+                            $this->errors[] = Tools::displayError('An error occurred while duplicating rooms.');
+                        }
+                        if (!HotelRoomTypeDemand::duplicateRoomTypeDemands($id_product_old, $product->id)) {
+                            $this->errors[] = Tools::displayError(
+                                'An error occurred while duplicating additional facilities.'
+                            );
+                        }
+                    } else {
+                        $this->errors[] = Tools::displayError('An error occurred while duplicating room type.');
                     }
-                    if (!HotelRoomTypeDemand::duplicateRoomTypeDemands($id_product_old, $product->id)) {
-                        $this->errors[] = Tools::displayError(
-                            'An error occurred while duplicating additional facilities.'
-                        );
-                    }
-                } else {
-                    $this->errors[] = Tools::displayError('An error occurred while duplicating room type.');
-                }
 
-                if (!Tools::getValue('noimage') && !Image::duplicateProductImages($id_product_old, $product->id, $combination_images)) {
-                    $this->errors[] = Tools::displayError('An error occurred while copying images.');
-                } else {
-                    Hook::exec('actionProductAdd', array('id_product' => (int)$product->id, 'product' => $product));
-                    if (in_array($product->visibility, array('both', 'search')) && Configuration::get('PS_SEARCH_INDEXATION')) {
-                        Search::indexation(false, $product->id);
+                    if (!Tools::getValue('noimage') && !Image::duplicateProductImages($id_product_old, $product->id, $combination_images)) {
+                        $this->errors[] = Tools::displayError('An error occurred while copying images.');
+                    } else {
+                        Hook::exec('actionProductAdd', array('id_product' => (int)$product->id, 'product' => $product));
+                        if (in_array($product->visibility, array('both', 'search')) && Configuration::get('PS_SEARCH_INDEXATION')) {
+                            Search::indexation(false, $product->id);
+                        }
+                        $this->redirect_after = self::$currentIndex.(Tools::getIsset('id_category') ? '&id_category='.(int)Tools::getValue('id_category') : '').'&conf=19&token='.$this->token;
                     }
-                    $this->redirect_after = self::$currentIndex.(Tools::getIsset('id_category') ? '&id_category='.(int)Tools::getValue('id_category') : '').'&conf=19&token='.$this->token;
+                } else {
+                    $this->errors[] = Tools::displayError('An error occurred while creating an object.');
                 }
-            } else {
-                $this->errors[] = Tools::displayError('An error occurred while creating an object.');
             }
         }
     }
@@ -1503,8 +1568,7 @@ class AdminProductsControllerCore extends AdminController
                 'ajaxfileupload',
                 'date',
                 'tagify',
-                'select2',
-                'validate'
+                'select2'
             ));
 
             $this->addJS(array(
@@ -2172,15 +2236,15 @@ class AdminProductsControllerCore extends AdminController
         }
 
         // Check description short size without html
-        $limit = (int)Configuration::get('PS_PRODUCT_SHORT_DESC_LIMIT');
+        $limit = (int)Configuration::get('PS_SHORT_DESC_LIMIT');
         if ($limit <= 0) {
-            $limit = 400;
+            $limit = Configuration::PS_SHORT_DESC_LIMIT;
         }
         foreach ($languages as $language) {
             if ($this->isProductFieldUpdated('description_short', $language['id_lang']) && ($value = Tools::getValue('description_short_'.$language['id_lang']))) {
                 if (Tools::strlen(strip_tags($value)) > $limit) {
                     $this->errors[] = sprintf(
-                        Tools::displayError('This %1$s field (%2$s) is too long: %3$d chars max (current count %4$d).'),
+                        Tools::displayError('This %1$s field in %2$s is too long: %3$d chars max (current count %4$d).'),
                         call_user_func(array($className, 'displayFieldName'), 'description_short'),
                         $language['name'],
                         $limit,
@@ -2966,7 +3030,7 @@ class AdminProductsControllerCore extends AdminController
                                     $bookedDate['date_from_formatted'] = Tools::displayDate($bookedDate['date_from']);
                                     $bookedDate['date_to_formatted'] = Tools::displayDate($bookedDate['date_to']);
                                 }
-                                $room['booked_dates'] = $bookedDates;
+                                $room['booked_dates'] = json_encode($bookedDates);
 
                                 if ($room['id_status'] == HotelRoomInformation::STATUS_TEMPORARY_INACTIVE) {
                                     $disableDates = $objRoomDisableDates->getRoomDisableDates($room['id']);
@@ -4371,7 +4435,7 @@ class AdminProductsControllerCore extends AdminController
             'token' => $this->token,
             'currency' => $currency,
             'link' => $this->context->link,
-            'PS_PRODUCT_SHORT_DESC_LIMIT' => Configuration::get('PS_PRODUCT_SHORT_DESC_LIMIT') ? Configuration::get('PS_PRODUCT_SHORT_DESC_LIMIT') : 400,
+            'PS_SHORT_DESC_LIMIT' => Configuration::get('PS_SHORT_DESC_LIMIT') ? Configuration::get('PS_SHORT_DESC_LIMIT') : Configuration::PS_SHORT_DESC_LIMIT,
             'category_position' => Tools::getValue('category_position', $product->getPositionInCategory()),
         ));
         $data->assign($this->tpl_form_vars);

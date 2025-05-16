@@ -25,8 +25,8 @@
                 {if isset($location_enabled) && $location_enabled}
                     <div class="form-group grid-item area-4" style="grid-column: span 4;">
                         <div class="dropdown">
-                            <input type="text" class="form-control header-rmsearch-input input-location" id="hotel_location" name="hotel_location" autocomplete="off" placeholder="{l s='Hotel Location' mod='wkroomsearchblock'}" {if isset($search_data)}value="{$search_data['location']|escape:'htmlall':'UTF-8'}"{/if}>
-                            <input hidden="hidden" name="location_category_id" id="location_category_id" {if isset($search_data)}value="{$search_data['location_category_id']|escape:'htmlall':'UTF-8'}"{/if}>
+                            <input type="text" class="form-control header-rmsearch-input input-location" id="hotel_location" name="hotel_location" autocomplete="off" placeholder="{l s='Hotel Location' mod='wkroomsearchblock'}" {if isset($search_data['location'])}value="{$search_data['location']|escape:'htmlall':'UTF-8'}"{/if}>
+                            <input hidden="hidden" name="location_category_id" id="location_category_id" {if isset($search_data['location_category_id'])}value="{$search_data['location_category_id']|escape:'htmlall':'UTF-8'}"{/if}>
                             <ul class="location_search_results_ul dropdown-menu"></ul>
                         </div>
                     </div>
@@ -35,7 +35,7 @@
             {block name='search_form_hotel'}
                 {if count($hotels_info) <= 1 && !$show_hotel_name}
                     <input type="hidden" id="max_order_date" name="max_order_date" value="{if isset($hotels_info[0]['max_order_date'])}{$hotels_info[0]['max_order_date']|escape:'htmlall':'UTF-8'}{/if}">
-                    <input type="hidden" id="preparation_time" name="preparation_time" value="{if isset($hotels_info[0]['preparation_time'])}{$hotels_info[0]['preparation_time']|escape:'htmlall':'UTF-8'}{/if}">
+                    <input type="hidden" id="min_booking_offset" name="min_booking_offset" value="{if isset($hotels_info[0]['min_booking_offset'])}{$hotels_info[0]['min_booking_offset']|escape:'htmlall':'UTF-8'}{/if}">
                     <input type="hidden" id="hotel_cat_id" name="hotel_cat_id" value="{$hotels_info[0]['id_category']}">
                     <input type="hidden" id="id_hotel" name="id_hotel" value="{$hotels_info[0]['id']|escape:'htmlall':'UTF-8'}">
                     <input type="hidden" id="htl_name" class="form-control header-rmsearch-input" value="{$hotels_info[0]['hotel_name']}" readonly>
@@ -44,13 +44,13 @@
                         <input type="hidden" id="hotel_cat_id" name="hotel_cat_id" {if isset($search_data)}value="{$search_data['htl_dtl']['id_category']|escape:'htmlall':'UTF-8'}"{/if}>
                         <input type="hidden" id="id_hotel" name="id_hotel" {if isset($search_data)}value="{$search_data['htl_dtl']['id']|escape:'htmlall':'UTF-8'}"{/if}>
                         <input type="hidden" id="max_order_date" name="max_order_date" value="{if isset($max_order_date)}{$max_order_date|escape:'htmlall':'UTF-8'}{/if}">
-                        <input type="hidden" id="preparation_time" name="preparation_time" value="{if isset($preparation_time)}{$preparation_time|escape:'htmlall':'UTF-8'}{/if}">
+                        <input type="hidden" id="min_booking_offset" name="min_booking_offset" value="{if isset($min_booking_offset)}{$min_booking_offset|escape:'htmlall':'UTF-8'}{/if}">
 
                         <div class="hotel-selector-wrap {if isset($language_is_rtl) && $language_is_rtl}rtl{/if}">
                             <select name="id_hotel" class="chosen header-rmsearch-input" data-placeholder="{l s='Select Hotel' mod='wkroomsearchblock'}" id="id_hotel_button">
                                 <option value=""></option>
                                 {foreach $hotels_info as $name_val}
-                                    <option class="search_result_li" value="{$name_val['id']|escape:'htmlall':'UTF-8'}" data-id-hotel="{$name_val['id']|escape:'htmlall':'UTF-8'}" data-hotel-cat-id="{$name_val['id_category']|escape:'htmlall':'UTF-8'}" data-max_order_date="{$name_val['max_order_date']}" data-preparation_time="{$name_val['preparation_time']|escape:'htmlall':'UTF-8'}" {if isset($search_data) && $name_val['id'] == $search_data['htl_dtl']['id']}selected{/if}>{$name_val['hotel_name']|escape:'htmlall':'UTF-8'}</option>
+                                    <option class="search_result_li" value="{$name_val['id']|escape:'htmlall':'UTF-8'}" data-id-hotel="{$name_val['id']|escape:'htmlall':'UTF-8'}" data-hotel-cat-id="{$name_val['id_category']|escape:'htmlall':'UTF-8'}" data-max_order_date="{$name_val['max_order_date']}" data-min_booking_offset="{$name_val['min_booking_offset']|escape:'htmlall':'UTF-8'}" {if isset($search_data) && $name_val['id'] == $search_data['htl_dtl']['id']}selected{/if}>{$name_val['hotel_name']|escape:'htmlall':'UTF-8'}</option>
                                 {/foreach}
                             </select>
                         </div>
@@ -62,18 +62,18 @@
                 {if isset($multiple_dates_input) && $multiple_dates_input}
                     <div class="grid-item area-5 multi-date" id="daterange_value" style="grid-column: span 5;">
                         <div class="form-group">
-                            <input type="hidden" id="check_in_time" name="check_in_time" {if isset($search_data)}value="{$search_data['date_from']|escape:'htmlall':'UTF-8'}"{/if}>
+                            <input type="hidden" id="check_in_time" name="check_in_time" {if isset($search_data['date_from'])}value="{$search_data['date_from']|escape:'htmlall':'UTF-8'}"{/if}>
                             <div class="form-control header-rmsearch-input input-date" autocomplete="off" id="daterange_value_from" placeholder="{l s='Check-in' mod='wkroomsearchblock'}"><span>{l s='Check-in' mod='wkroomsearchblock'}</span></div>
                         </div>
                         <div class="form-group">
-                            <input type="hidden" id="check_out_time" name="check_out_time" {if isset($search_data)}value="{$search_data['date_to']|escape:'htmlall':'UTF-8'}"{/if}>
+                            <input type="hidden" id="check_out_time" name="check_out_time" {if isset($search_data['date_to'])}value="{$search_data['date_to']|escape:'htmlall':'UTF-8'}"{/if}>
                             <div class="form-control header-rmsearch-input input-date" autocomplete="off" id="daterange_value_to" placeholder="{l s='Check-out' mod='wkroomsearchblock'}"><span>{l s='Check-out' mod='wkroomsearchblock'}</span></div>
                         </div>
                     </div>
                 {else}
                     <div class="form-group grid-item area-5" style="grid-column: span 5;">
-                        <input type="hidden" id="check_in_time" name="check_in_time" {if isset($search_data)}value="{$search_data['date_from']|escape:'htmlall':'UTF-8'}"{/if}>
-                        <input type="hidden" id="check_out_time" name="check_out_time" {if isset($search_data)}value="{$search_data['date_to']|escape:'htmlall':'UTF-8'}"{/if}>
+                        <input type="hidden" id="check_in_time" name="check_in_time" {if isset($search_data['date_from'])}value="{$search_data['date_from']|escape:'htmlall':'UTF-8'}"{/if}>
+                        <input type="hidden" id="check_out_time" name="check_out_time" {if isset($search_data['date_to'])}value="{$search_data['date_to']|escape:'htmlall':'UTF-8'}"{/if}>
                         <div class="form-control header-rmsearch-input input-date" id="daterange_value"  autocomplete="off" placeholder="{l s='Check-in - Check-out' mod='wkroomsearchblock'}" tabindex="-1"><span>{l s='Check-in' mod='wkroomsearchblock'} &nbsp;<i class="icon icon-minus"></i>&nbsp; {l s='Check-out' mod='wkroomsearchblock'}</span></div>
                     </div>
                 {/if}
@@ -85,7 +85,7 @@
                         <div class="dropdown">
                             <button class="form-control input-occupancy header-rmsearch-input {if isset($error) && $error == 1}error_border{/if}" type="button" data-toggle="dropdown" id="guest_occupancy">
                                 <span class="pull-left">{if (isset($search_data['occupancy_adults']) && $search_data['occupancy_adults'])}{$search_data['occupancy_adults']} {if $search_data['occupancy_adults'] > 1}{l s='Adults' mod='wkroomsearchblock'}{else}{l s='Adult' mod='wkroomsearchblock'}{/if}, {if isset($search_data['occupancy_children']) && $search_data['occupancy_children']}{$search_data['occupancy_children']} {if $search_data['occupancy_children'] > 1}
-                                {l s='Children' mod='wkroomsearchblock'}{else}{l s='Child' mod='wkroomsearchblock'}{/if}, {/if}{$search_data['occupancies']|count} {if $search_data['occupancies']|count > 1}{l s='Rooms' mod='wkroomsearchblock'}{else}{l s='Room'}{/if}{else}{l s='1 Adult, 1 Room' mod='wkroomsearchblock'}{/if}</span>
+                                {l s='Children' mod='wkroomsearchblock'}{else}{l s='Child' mod='wkroomsearchblock'}{/if}, {/if}{$search_data['occupancies']|count} {if $search_data['occupancies']|count > 1}{l s='Rooms' mod='wkroomsearchblock'}{else}{l s='Room' mod='wkroomsearchblock'}{/if}{else}{l s='1 Adult, 1 Room' mod='wkroomsearchblock'}{/if}</span>
                             </button>
                             <div id="search_occupancy_wrapper" class="dropdown-menu">
                                 <div id="occupancy_inner_wrapper">

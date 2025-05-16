@@ -62,6 +62,7 @@ class HotelBookingDetail extends ObjectModel
     public $adults;
     public $children;
     public $child_ages;
+    public $planned_check_out;
 
     public $date_add;
     public $date_upd;
@@ -124,6 +125,7 @@ class HotelBookingDetail extends ObjectModel
             'email' => array('type' => self::TYPE_STRING, 'validate' => 'isEmail', 'size' => 255, 'required' => true),
             'check_in_time' => array('type' => self::TYPE_STRING, 'required' => true),
             'check_out_time' => array('type' => self::TYPE_STRING, 'required' => true),
+            'planned_check_out' => array('type' => self::TYPE_STRING, 'required' => true),
             'adults' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
             'children' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'child_ages' => array('type' => self::TYPE_STRING),
@@ -1419,13 +1421,20 @@ class HotelBookingDetail extends ObjectModel
     // This function algo is same as available rooms algo and it not similar to booked rooms algo.
     public function chechRoomBooked($id_room, $date_from, $date_to)
     {
-        $sql = 'SELECT `id`, `id_product`, `id_order`, `id_cart`, `id_room`, `id_hotel`, `id_customer`
+        $sql = 'SELECT `id`, `id_product`, `id_order`, `id_cart`, `id_room`, `id_hotel`, `id_customer`,
+        `check_out`, `check_in`, `id_status`
         FROM `'._DB_PREFIX_.'htl_booking_detail` WHERE `id_room` = '.(int)$id_room.
         ' AND `is_back_order` = 0 AND `is_refunded` = 0 AND ((date_from <= \''.pSQL($date_from).'\' AND date_to > \''.
         pSQL($date_from).'\' AND date_to <= \''.pSQL($date_to).'\') OR (date_from > \''.pSQL($date_from).
         '\' AND date_to < \''.pSQL($date_to).'\') OR (date_from >= \''.pSQL($date_from).'\' AND date_from < \''.
         pSQL($date_to).'\' AND date_to >= \''.pSQL($date_to).'\') OR (date_from < \''.pSQL($date_from).
         '\' AND date_to > \''.pSQL($date_to).'\'))';
+
+        if ($this->id) {
+            $sql .= ' AND `id` !='.(int) $this->id;
+        }
+
+        $sql .= ' ORDER BY `date_add` DESC';
 
         return Db::getInstance()->getRow($sql);
     }
@@ -1679,8 +1688,6 @@ class HotelBookingDetail extends ObjectModel
 
         if (!$only_search_data) {
             if (!empty($bookingData)) {
-                $objRoomType = new HotelRoomType();
-
                 foreach ($bookingData['rm_data'] as $key => $value) {
                     $product_feature = Product::getFrontFeaturesStatic($this->context->language->id, $value['id_product']);
                     $prod_amen = array();
@@ -1699,14 +1706,15 @@ class HotelBookingDetail extends ObjectModel
                             continue;
                         }
                     }
-                    $productFeaturePrice = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, self::useTax());
+                    $productFeaturePrice = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, self::useTax(), 0, 0, 0, 0, 1, 1, $bookingParams['occupancy']);
                     if (!empty($price) && ($price['from'] > $productFeaturePrice || $price['to'] < $productFeaturePrice)) {
                         unset($bookingData['rm_data'][$key]);
                         continue;
                     }
-                    if (count($value['data']['available'])) {
+
+                    if (count($value['data']['available']) || (isset($get_all_room_types) && $get_all_room_types)) {
                         $prod_price = Product::getPriceStatic($value['id_product'], self::useTax());
-                        $productPriceWithoutReduction = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, self::useTax(), 0, 0, 0, 0, 1, 0);
+                        $productPriceWithoutReduction = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay($value['id_product'], $date_from, $date_to, self::useTax(), 0, 0, 0, 0, 1, 0, $bookingParams['occupancy']);
                         $cover_image_arr = Product::getCover($value['id_product']);
                         if (!empty($cover_image_arr)) {
                             $cover_img = $this->context->link->getImageLink($value['link_rewrite'], $value['id_product'].'-'.$cover_image_arr['id_image'], 'home_default');
@@ -2062,11 +2070,19 @@ class HotelBookingDetail extends ObjectModel
                         $objBookingDetail->children = $objCartBookingData->children;
                         $objBookingDetail->child_ages = $objCartBookingData->child_ages;
 
+                        $occupancy = array(
+                            array(
+                                'adults' => $objCartBookingData->adults,
+                                'children' => $objCartBookingData->children,
+                                'child_ages' => json_decode($objCartBookingData->child_ages)
+                            )
+                        );
+
                         $totalRoomTypePrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
                             $idNewRoomType,
                             $objCartBookingData->date_from,
                             $objCartBookingData->date_to,
-                            0,
+                            $occupancy,
                             Group::getCurrent()->id,
                             $this->context->cart->id,
                             $this->context->cookie->id_guest,
@@ -2136,7 +2152,7 @@ class HotelBookingDetail extends ObjectModel
                 }
 
                 // delete cart feature prices after room addition success
-                HotelRoomTypeFeaturePricing::deleteByIdCart($this->context->cart->id);
+                HotelRoomTypeFeaturePricing::deleteFeaturePrices($this->context->cart->id);
 
                 // ===============================================================
                 // END: Add Process of the old booking
@@ -2517,10 +2533,13 @@ class HotelBookingDetail extends ObjectModel
         $new_date_from,
         $new_date_to
     ) {
-        $sql = 'SELECT * FROM `'._DB_PREFIX_.'htl_booking_detail` WHERE `id_room`='.(int)$id_room.
-        ' AND `date_from` < \''.pSQL($new_date_to).'\' AND `date_to` > \''.pSQL($new_date_from).
-        '\' AND `date_from` != \''.pSQL($old_date_from).'\' AND `date_to` != \''.pSQL($old_date_to).
-        '\' AND `is_refunded`=0 AND `is_back_order`=0';
+        $sql = 'SELECT * FROM `'._DB_PREFIX_.'htl_booking_detail` WHERE `id_room`='.(int)$id_room.'
+        AND `date_from` < \''.pSQL($new_date_to).'\' AND `date_from` != \''.pSQL($old_date_from).'\'
+        AND IF(`id_status` !='.HotelBookingDetail::STATUS_CHECKED_OUT.',
+            `date_to` != \''.pSQL($old_date_to).'\' AND `date_to` > \''.pSQL($new_date_from).'\',
+            `check_out` != \''.pSQL($old_date_to).'\' AND `check_out` > \''.pSQL($new_date_from).'\'
+        )
+        AND `is_refunded`=0 AND `is_back_order`=0';
 
         return Db::getInstance()->executeS($sql);
     }
@@ -3664,5 +3683,19 @@ class HotelBookingDetail extends ObjectModel
         }
 
         return $result;
+    }
+
+    public function add($auto_date = true, $null_values = false)
+    {
+        if (!$this->planned_check_out) {
+            $objHotelBranchInfo  = new HotelBranchInformation((int) $this->id_hotel);
+            $dateTo = new DateTime($this->date_to);
+            $timeParts = explode(':', $objHotelBranchInfo->check_out);
+            $dateTo->setTime($timeParts[0], $timeParts[1]);
+
+            $this->planned_check_out = $dateTo->format('Y-m-d H:i:s');
+        }
+
+        return parent::add($auto_date, $null_values);
     }
 }

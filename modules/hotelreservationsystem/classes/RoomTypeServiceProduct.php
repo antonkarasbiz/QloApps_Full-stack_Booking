@@ -160,6 +160,8 @@ class RoomTypeServiceProduct extends ObjectModel
                     );
                 }
 
+                Hook::exec('actionAutoAddServicesModifier', array('services' => &$services, 'dateFrom' => $dateFrom, 'dateTo' => $dateTo));
+
                 return $services;
             }
         }
@@ -184,7 +186,6 @@ class RoomTypeServiceProduct extends ObjectModel
             true,
             $subCategory
         )) {
-            $objHotelRoomType = new HotelRoomType();
             $serviceProducts = Product::getProductsProperties($idLang, $serviceProducts);
             $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
             foreach($serviceProducts as &$serviceProduct) {
