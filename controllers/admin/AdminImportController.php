@@ -148,8 +148,8 @@ class AdminImportControllerCore extends AdminController
                     'policies' => array('label' => $this->l('Hotel Policies')),
                     'active_refund' => array('label' => $this->l('Allow Refund (0 = No, 1 = Yes)')),
                     'refund_ids' => array('label' => $this->l('Refund IDs (x,y,z...)')),
-                    'max_order_date' => array('label' => $this->l('Max Order Date')),
-                    'preparation_time' => array('label' => $this->l('Prepration Time')),
+                    'max_checkout_offset' => array('label' => $this->l('Maximum checkout offset')),
+                    'min_booking_offset' => array('label' => $this->l('Minimum booking offset')),
                     'image' => array('label' => $this->l('Image URLs (x,y,z...)')),
                     'delete_existing_images' => array(
                         'label' => $this->l('Delete existing images (0 = No, 1 = Yes)')
@@ -1410,19 +1410,23 @@ class AdminImportControllerCore extends AdminController
                         }
 
                         $objHotelOrderRestrictDate->id_hotel = $objHotelBranch->id;
-                        $objHotelOrderRestrictDate->use_global_max_order_date = true;
-                        if (isset($info['max_order_date'])
-                            && strtotime('now') < strtotime($info['max_order_date'])
+                        $objHotelOrderRestrictDate->use_global_max_checkout_offset = true;
+                        $objHotelOrderRestrictDate->use_global_min_booking_offset = true;
+
+                        if (isset($info['max_checkout_offset'])
+                            && (Configuration::get('PS_MIN_BOOKING_OFFSET') < $info['max_checkout_offset']
+                            || isset($info['min_booking_offset']) && $info['min_booking_offset'] < $info['max_checkout_offset'])
                         ) {
-                            $objHotelOrderRestrictDate->use_global_max_order_date = false;
-                            $date = date('Y-m-d', strtotime($info['max_order_date']));
-                            $objHotelOrderRestrictDate->max_order_date = $date;
+                            $objHotelOrderRestrictDate->use_global_max_checkout_offset = false;
+                            $objHotelOrderRestrictDate->max_checkout_offset = $info['max_checkout_offset'];
                         }
 
-                        $objHotelOrderRestrictDate->use_global_preparation_time = true;
-                        if (isset($info['preparation_time']) && $info['preparation_time']) {
-                            $objHotelOrderRestrictDate->use_global_preparation_time = false;
-                            $objHotelOrderRestrictDate->preparation_time = $info['preparation_time'];
+                        if (isset($info['min_booking_offset'])
+                            && (Configuration::get('PS_MAX_CHECKOUT_OFFSET') > $info['min_booking_offset']
+                            || isset($info['max_checkout_offset']) && $info['max_checkout_offset'] > $info['min_booking_offset'])
+                        ) {
+                            $objHotelOrderRestrictDate->use_global_min_booking_offset = false;
+                            $objHotelOrderRestrictDate->min_booking_offset = $info['min_booking_offset'];
                         }
 
                         $objHotelOrderRestrictDate->save();
