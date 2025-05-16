@@ -48,11 +48,6 @@
         {/if}
     {if !isset($ajaxCustomerLogin)}
         </div>
-        {if isset($WK_DISPLAY_OUR_HOTEL_TAB_IN_HEADER) && $WK_DISPLAY_OUR_HOTEL_TAB_IN_HEADER}
-            <div class="header-top-link our_hotel_tab hidden-xs">
-                <a href="{$link->getPageLink('properties')}">{l s='Our Hotels'}</a>
-            </div>
-        {/if}
     {/if}
 {/block}
 <!-- /Block user information module NAV -->

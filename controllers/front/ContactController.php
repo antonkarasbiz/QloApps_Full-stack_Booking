@@ -286,7 +286,7 @@ class ContactControllerCore extends FrontController
         $shopAddress = '';
         $shopAddress_obj = $objShop->getAddress();
         if (isset($shopAddress_obj) && $shopAddress_obj instanceof Address) {
-            $shopAddress = AddressFormat::generateAddress($shopAddress_obj, array(), ' - ', ' ');
+            $shopAddress = AddressFormat::generateAddress($shopAddress_obj, array(), ', ', ' ');
         }
 
         $gblHtlAddress = $shopAddress;
@@ -317,12 +317,12 @@ class ContactControllerCore extends FrontController
 
 	    $contactKey = md5(uniqid(microtime(), true));
         $this->context->cookie->__set('contactFormKey', $contactKey);
-        $displayHotelMap = Configuration::get('WK_CONTACT_DISPLAY_HOTEL_MAP');
+        $displayHotelMap = Configuration::get('WK_DISPLAY_CONTACT_PAGE_GOOLGE_MAP');
         $this->context->smarty->assign(
             array(
                 'hotelsInfo' => $hotelsInfo,
                 'viewOnMap' => Configuration::get('WK_GOOGLE_ACTIVE_MAP'),
-                'displayHotels' => Configuration::get('WK_CONTACT_DISPLAY_HOTEL_LIST'),
+                'displayHotels' => Configuration::get('WK_DISPLAY_CONTACT_PAGE_HOTEL_LIST'),
                 'gblHtlPhone' => $gblHtlPhone,
                 'gblHtlEmail' => $gblHtlEmail,
                 'displayHotelMap' => $displayHotelMap,

@@ -21,7 +21,6 @@
 */
 
 $(document).ready(function() {
-
     //By Webkul JS for Map locations of the hotels on google Map
     if (typeof hotelLocationArray != 'undefined'
         && $('#map').length
@@ -30,6 +29,12 @@ $(document).ready(function() {
     ) {
         initMap();
     }
+
+    $(document).on('click', 'ul.pagination li a',  function(e){
+        e.preventDefault();
+        $('#pagination').val($(this).data('pagination'));
+        $('form#our-properties-list').submit();
+    });
 });
 
 function initMap() {

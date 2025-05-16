@@ -25,8 +25,8 @@
 	{if isset($hotelsInfo) && $hotelsInfo}
 		{block name='our_properties_list_title'}
 			<div class="title-container">
-				<h1 class="text-center">{l s='Our Hotels'}</h1>
-				<div class="text-center">
+				<h1 class="text-center our-properties-header">{l s='Our Properties'}</h1>
+				<div class="text-center our-properties-desc">
 					<p>{$WK_HTL_SHORT_DESC|escape:'html':'UTF-8'}</p>
 				</div>
 			</div>
@@ -38,7 +38,7 @@
 
 		{block name='our_properties_location'}
 			{if isset($hotelLocationArray) && $hotelLocationArray && isset($displayHotelMap) && $displayHotelMap}
-				<div class="margin-top-20 margin-bottom-20">
+				<div class="margin-top-20 margin-btm-20">
 					<div class="col-xs-12 col-sm-12" id="googleMapWrapper">
 						<div id="map"></div>
 					</div>
@@ -55,11 +55,11 @@
 			{hook h='displayPropertiesListBefore'}
 		{/block}
 
-		<div class="htl-contact-page">
+		<div class="properties-page">
 			{block name='our_properties_list'}
 				<div class="row hotels-container">
 					{foreach $hotelsInfo as $hotel}
-						<div class="{if $hotelsInfo|count != 1}col-md-6{else}col-md-6 col-md-offset-3{/if} margin-bottom-30">
+						<div class="{if $hotelsInfo|count != 1}col-md-6 col-xs-12{else}col-md-6 col-md-offset-3{/if} margin-btm-30">
 							<div class="hotel-address-container">
 								<div class="col-xs-5">
 									<img class="htl-img" style="width:100%" src="{$hotel['image_url']}">
@@ -74,9 +74,9 @@
 										<span class="htl-address-icon htl-email-icon"></span>{$hotel['email']}
 									</p>
 									<div class="hotel-branch-info-actions">
-										<a href="{$hotel['view_rooms_link']}" target="_blank" class="btn btn-primary view_rooms_btn col-xs-6">{l s='View Rooms'}</a>
+										<a href="{$hotel['view_rooms_link']}" target="_blank" class="btn btn-primary view_rooms_btn col-sm-6 col-xs-12">{l s='View Rooms'}</a>
 										{if ($hotel['latitude'] != 0 || $hotel['longitude'] != 0) && $viewOnMap}
-											<a class="btn htl-map-direction-btn col-xs-6" href="http://maps.google.com/maps?daddr=({$hotel['latitude']},{$hotel['longitude']})" target="_blank">{l s='View on map'}</a>
+											<a class="btn htl-map-direction-btn col-sm-6 col-xs-12" href="http://maps.google.com/maps?daddr=({$hotel['latitude']},{$hotel['longitude']})" target="_blank">{l s='View on map'}</a>
 										{/if}
 									</div>
 								</div>
@@ -91,7 +91,7 @@
 			{/block}
 
 			{if (isset($pageLimit)) && $pageLimit > 1}
-				<form id="our-hotel-list" method="post" action="{$currentPageUrl}">
+				<form id="our-properties-list" method="post" action="{$currentPageUrl}">
 					<input type="hidden" value="" name="pagination" id="pagination"/>
 				</form>
 				<div class="row pagination-container">

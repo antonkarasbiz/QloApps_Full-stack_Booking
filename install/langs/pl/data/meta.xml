@@ -120,11 +120,11 @@
     <keywords/>
     <url_rewrite>sledzenie-zamowienia</url_rewrite>
   </meta>
-  <meta id='properties' id_shop='1'>
+  <meta id='our-properties' id_shop='1'>
     <title>Nasze nieruchomości</title>
     <description/>
     <keywords/>
-    <url_rewrite>properties</url_rewrite>
+    <url_rewrite>our-properties</url_rewrite>
   </meta>
   <meta id="order-slip" id_shop="1">
     <title>Pokwitowania</title>

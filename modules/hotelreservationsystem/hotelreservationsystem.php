@@ -695,7 +695,7 @@ class HotelReservationSystem extends Module
             'WK_HOTEL_NAME_ENABLE',
             'WK_CUSTOMER_SUPPORT_PHONE_NUMBER',
             'WK_CUSTOMER_SUPPORT_EMAIL',
-            'WK_CONTACT_DISPLAY_HOTEL_LIST'
+            'WK_DISPLAY_CONTACT_PAGE_HOTEL_LIST'
         );
         foreach ($configKeys as $key) {
             if (!Configuration::deleteByName($key)) {

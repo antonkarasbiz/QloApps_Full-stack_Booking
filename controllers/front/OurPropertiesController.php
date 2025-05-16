@@ -21,9 +21,9 @@
 * @license https://opensource.org/license/osl-3-0-php Open Software License version 3.0
 */
 
-class PropertiesControllerCore extends FrontController
+class OurPropertiesControllerCore extends FrontController
 {
-    public $php_self = 'properties';
+    public $php_self = 'our-properties';
 
     /**
      * Assign template vars related to page content
@@ -38,29 +38,28 @@ class PropertiesControllerCore extends FrontController
         $hotelsInfo = array();
         $hotelLocationArray = 0;
         $pageLimit = 0;
-        $displayHotelMap = Configuration::get('WK_PROPERTIES_DISPLAY_HOTEL_MAP');
+        $displayHotelMap = Configuration::get('WK_DISPLAY_PROPERTIES_PAGE_GOOGLE_MAP');
         if (Module::isInstalled('hotelreservationsystem') && Module::isEnabled('hotelreservationsystem')) {
             $objModule = Module::getInstanceByName('hotelreservationsystem');
             $objHotelInfo = new HotelBranchInformation();
             if ($hotelsInfo = $objHotelInfo->hotelBranchesInfo(false, 1, 1)) {
-                foreach ($hotelsInfo as &$hotel) {
+                $hotelIconDefault = $this->context->link->getMediaLink($objModule->getPathUri().'views/img/Slices/hotel-default-icon.png');
+                foreach ($hotelsInfo as $hotelKey => $hotel) {
                     if (isset($hotel['id_cover_img'])
                         && $hotel['id_cover_img']
-                        && Validate::isLoadedObject(
-                            $objHotelImage = new HotelImage($hotel['id_cover_img'])
-                        )
+                        && Validate::isLoadedObject($objHotelImage = new HotelImage($hotel['id_cover_img']))
                     ) {
                         $htlImgLink = $this->context->link->getMediaLink($objHotelImage->getImageLink($hotel['id_cover_img'], ImageType::getFormatedName('medium')));
                         if ((bool)Tools::file_get_contents($htlImgLink)) {
-                            $hotel['image_url'] = $htlImgLink;
+                            $hotelsInfo[$hotelKey]['image_url'] = $htlImgLink;
                         } else {
-                            $hotel['image_url'] = $this->context->link->getMediaLink($objModule->getPathUri().'views/img/Slices/hotel-default-icon.png');
+                            $hotelsInfo[$hotelKey]['image_url'] = $hotelIconDefault;
                         }
                     } else {
-                        $hotel['image_url'] = $this->context->link->getMediaLink($objModule->getPathUri().'views/img/Slices/hotel-default-icon.png');
+                        $hotelsInfo[$hotelKey]['image_url'] = $hotelIconDefault;
                     }
 
-                    $hotel['view_rooms_link'] = $this->context->link->getCategoryLink(
+                    $hotelsInfo[$hotelKey]['view_rooms_link'] = $this->context->link->getCategoryLink(
                         new Category($hotel['id_category'], $this->context->language->id),
                         null,
                         $this->context->language->id
@@ -69,10 +68,9 @@ class PropertiesControllerCore extends FrontController
 
                 // To store max number pages.
                 $pageLimit = ceil(count($hotelsInfo)/10);
-
-                if (!($page = Tools::getValue('pagination'))) {
-                    $page = 1;
-                } else if (!$pageLimit || ($page > $pageLimit)) {
+                if (!($page = Tools::getValue('pagination'))
+                    || (!$pageLimit || ($page > $pageLimit))
+                ) {
                     $page = 1;
                 }
 
@@ -133,18 +131,18 @@ class PropertiesControllerCore extends FrontController
                 'viewOnMap' => Configuration::get('WK_GOOGLE_ACTIVE_MAP'),
                 'displayHotelMap' => $displayHotelMap,
                 'WK_HTL_SHORT_DESC' => Configuration::get('WK_HTL_SHORT_DESC', $this->context->language->id),
-                'currentIndex' => $this->context->link->getPageLink('properties')
+                'currentIndex' => $this->context->link->getPageLink('our-properties')
             )
         );
 
-        $this->setTemplate(_PS_THEME_DIR_.'properties.tpl');
+        $this->setTemplate(_PS_THEME_DIR_.'our-properties.tpl');
     }
 
     public function setMedia()
     {
         parent::setMedia();
-        $this->addJS(_THEME_JS_DIR_.'properties.js');
-        $this->addCSS(_THEME_CSS_DIR_.'properties.css');
+        $this->addJS(_THEME_JS_DIR_.'our-properties.js');
+        $this->addCSS(_THEME_CSS_DIR_.'our-properties.css');
         // GOOGLE MAP
         if (($PS_API_KEY = Configuration::get('PS_API_KEY')) && Configuration::get('WK_GOOGLE_ACTIVE_MAP')) {
             Media::addJsDef(
@@ -152,6 +150,7 @@ class PropertiesControllerCore extends FrontController
                     'PS_STORES_ICON' => $this->context->link->getMediaLink(_PS_IMG_.Configuration::get('PS_STORES_ICON')),
                 )
             );
+
             $this->addJS(
                 'https://maps.googleapis.com/maps/api/js?key='.$PS_API_KEY.
                 '&libraries=places&language='.$this->context->language->iso_code.'&region='.$this->context->country->iso_code

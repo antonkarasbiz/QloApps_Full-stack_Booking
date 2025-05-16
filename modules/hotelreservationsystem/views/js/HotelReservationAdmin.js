@@ -835,12 +835,12 @@ function toggleGoogleMapsFields()
 {
     if ($('#WK_GOOGLE_ACTIVE_MAP_on').attr('checked') == 'checked') {
         $('#conf_id_WK_MAP_HOTEL_ACTIVE_ONLY').parent().show();
-        $('#conf_id_WK_CONTACT_DISPLAY_HOTEL_MAP').parent().show();
-        $('#conf_id_WK_PROPERTIES_DISPLAY_HOTEL_MAP').parent().show();
+        $('#conf_id_WK_DISPLAY_CONTACT_PAGE_GOOLGE_MAP').parent().show();
+        $('#conf_id_WK_DISPLAY_PROPERTIES_PAGE_GOOGLE_MAP').parent().show();
     } else {
         $('#conf_id_WK_MAP_HOTEL_ACTIVE_ONLY').parent().hide();
-        $('#conf_id_WK_CONTACT_DISPLAY_HOTEL_MAP').parent().hide();
-        $('#conf_id_WK_PROPERTIES_DISPLAY_HOTEL_MAP').parent().hide();
+        $('#conf_id_WK_DISPLAY_CONTACT_PAGE_GOOLGE_MAP').parent().hide();
+        $('#conf_id_WK_DISPLAY_PROPERTIES_PAGE_GOOGLE_MAP').parent().hide();
     }
 }
 

@@ -148,8 +148,8 @@
 			<page>products-comparison</page>
 			<configurable>1</configurable>
 		</meta>
-		<meta id="properties">
-			<page>properties</page>
+		<meta id="our-properties">
+			<page>our-properties</page>
 			<configurable>1</configurable>
 		</meta>
 	</entities>

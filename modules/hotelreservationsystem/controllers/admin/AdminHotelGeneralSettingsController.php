@@ -40,6 +40,17 @@ class AdminHotelGeneralSettingsController extends ModuleAdminController
         }
         $hotelNameDisable = (count($hotelsInfo) > 1 ? true : false);
         $locationDisable = ((count($hotelsInfo) < 2) && !Configuration::get('WK_HOTEL_NAME_ENABLE')) ? true : false;
+
+        $countryList = array();
+        $countryList[] = array('id' => '0', 'name' => $this->l('Choose your country'));
+        foreach (Country::getCountries($this->context->language->id) as $country) {
+            $countryList[] = array('id' => $country['id_country'], 'name' => $country['name']);
+        }
+        $stateList = array();
+        $stateList[] = array('id' => '0', 'name' => $this->l('Choose your state (if applicable)'));
+        foreach (State::getStates($this->context->language->id) as $state) {
+            $stateList[] = array('id' => $state['id_state'], 'name' => $state['name']);
+        }
         $this->fields_options = array(
             'hotelsearchpanel' => array(
                 'icon' => 'icon-search',
@@ -147,23 +158,6 @@ class AdminHotelGeneralSettingsController extends ModuleAdminController
                         'identifier' => 'id',
                         'list' => $hotelsInfo,
                     ),
-                    'WK_DISPLAY_OUR_HOTEL_TAB_IN_HEADER' => array(
-                        'title' => $this->l('Display "Our Hotels" tab in menu'),
-                        'cast' => 'intval',
-                        'type' => 'bool',
-                        'default' => '0',
-                        'values' => array(
-                            array(
-                                'id' => 'active_on',
-                                'value' => 1,
-                            ),
-                            array(
-                                'id' => 'active_off',
-                                'value' => 0,
-                            ),
-                        ),
-                        'hint' => $this->l('Display "Our Hotels" tab in menu in top in the front office'),
-                    ),
                     'WK_HTL_ESTABLISHMENT_YEAR' => array(
                         'title' => $this->l('Website Launch Year'),
                         'hint' => $this->l('The year when your hotel site was launched.'),
@@ -177,6 +171,40 @@ class AdminHotelGeneralSettingsController extends ModuleAdminController
                         'hint' => $this->l('This image appears as header background image on home page.'),
                         'name' => 'WK_HOTEL_HEADER_IMAGE',
                         'url' => _PS_IMG_,
+                    ),
+                     'WK_DISPLAY_PROPERTIES_LINK_IN_HEADER' => array(
+                        'title' => $this->l('Display Our Properties link in Header'),
+                        'cast' => 'intval',
+                        'type' => 'bool',
+                        'default' => '0',
+                        'values' => array(
+                            array(
+                                'id' => 'active_on',
+                                'value' => 1,
+                            ),
+                            array(
+                                'id' => 'active_off',
+                                'value' => 0,
+                            ),
+                        ),
+                        'hint' => $this->l('Display Our Properties link in header in the front office'),
+                    ),
+                    'WK_DISPLAY_CONTACT_PAGE_HOTEL_LIST' => array(
+                        'title' => $this->l('Display Contact Page Hotel List'),
+                        'cast' => 'intval',
+                        'type' => 'bool',
+                        'default' => '0',
+                        'values' => array(
+                            array(
+                                'id' => 'active_on',
+                                'value' => 1,
+                            ),
+                            array(
+                                'id' => 'active_off',
+                                'value' => 0,
+                            ),
+                        ),
+                        'hint' => $this->l('Enable to display hotels list on the contact us page.'),
                     ),
                 ),
                 'submit' => array('title' => $this->l('Save')),
@@ -197,23 +225,6 @@ class AdminHotelGeneralSettingsController extends ModuleAdminController
                         'hint' => $this->l('The email used for customer service. It will be shown on navigation bar.'),
                         'class' => 'fixed-width-xxl',
                     ),
-                    'WK_CONTACT_DISPLAY_HOTEL_LIST' => array(
-                        'title' => $this->l('Display Hotels On Contact Page'),
-                        'cast' => 'intval',
-                        'type' => 'bool',
-                        'default' => '0',
-                        'values' => array(
-                            array(
-                                'id' => 'active_on',
-                                'value' => 1,
-                            ),
-                            array(
-                                'id' => 'active_off',
-                                'value' => 0,
-                            ),
-                        ),
-                        'hint' => $this->l('Enable to display hotels list on the contact us page.'),
-                    ),
                 ),
                 'submit' => array(
                     'title' => $this->l('Save'),
@@ -222,7 +233,83 @@ class AdminHotelGeneralSettingsController extends ModuleAdminController
             'websitedetail' => array(
                 'title' => $this->l('Website Contact Details'),
                 'icon' => 'icon-user',
-                'fields' => $this->_getDefaultFieldsContent(),
+                'fields' => array(
+                    'PS_SHOP_NAME' => array(
+                        'title' => $this->l('Website name'),
+                        'hint' => $this->l('Displayed in emails and page titles.'),
+                        'validation' => 'isGenericName',
+                        'required' => true,
+                        'type' => 'text',
+                        'no_escape' => true,
+                    ),
+                    'PS_SHOP_EMAIL' => array(
+                        'title' => $this->l('Website email'),
+                        'hint' => $this->l('Displayed in emails sent to customers and on Contact Us page.'),
+                        'validation' => 'isEmail',
+                        'required' => true,
+                        'type' => 'text'
+                    ),
+                    'PS_SHOP_PHONE' => array(
+                        'title' => $this->l('Phone'),
+                        'validation' => 'isGenericName',
+                        'required' => true,
+                        'type' => 'text',
+                        'hint' => $this->l('The phone number of the main branch.'),
+                    ),
+                    'PS_SHOP_ADDR1' => array(
+                        'title' => $this->l('Address line 1'),
+                        'validation' => 'isAddress',
+                        'type' => 'text',
+                        'hint' => $this->l('The address of the main branch.'),
+                        'isCleanHtml' => true,
+                        'required' => true,
+                    ),
+                    'PS_SHOP_ADDR2' => array(
+                        'title' => $this->l('Address line 2'),
+                        'validation' => 'isAddress',
+                        'type' => 'text'
+                    ),
+                    'PS_SHOP_CODE' => array(
+                        'title' => $this->l('Zip/postal code'),
+                        'validation' => 'isGenericName',
+                        'type' => 'text'
+                    ),
+                    'PS_SHOP_CITY' => array(
+                        'title' => $this->l('City'),
+                        'validation' => 'isGenericName',
+                        'type' => 'text'
+                    ),
+                    'PS_SHOP_COUNTRY_ID' => array(
+                        'title' => $this->l('Country'),
+                        'validation' => 'isInt',
+                        'type' => 'select',
+                        'list' => $countryList,
+                        'identifier' => 'id',
+                        'cast' => 'intval',
+                        'defaultValue' => (int)$this->context->country->id
+                    ),
+                    'PS_SHOP_STATE_ID' => array(
+                        'title' => $this->l('State'),
+                        'validation' => 'isInt',
+                        'type' => 'select',
+                        'list' => $stateList,
+                        'identifier' => 'id',
+                        'cast' => 'intval'
+                    ),
+                    'PS_SHOP_DETAILS' => array(
+                        'title' => $this->l('Registration number'),
+                        'hint' => $this->l('Website registration information (e.g. SIRET or RCS).'),
+                        'validation' => 'isGenericName',
+                        'type' => 'textarea',
+                        'cols' => 30,
+                        'rows' => 5
+                    ),
+                    'PS_SHOP_FAX' => array(
+                        'title' => $this->l('Fax'),
+                        'validation' => 'isGenericName',
+                        'type' => 'text'
+                    ),
+                ),
                 'submit' => array(
                     'title' => $this->l('Save'),
                 ),
@@ -344,8 +431,8 @@ class AdminHotelGeneralSettingsController extends ModuleAdminController
                         ),
                         'hint' => $this->l('If yes, only active hotels will be displayed on map.'),
                     ),
-                    'WK_PROPERTIES_DISPLAY_HOTEL_MAP' => array(
-                        'title' => $this->l('Display Hotels Map On Properties Page'),
+                    'WK_DISPLAY_PROPERTIES_PAGE_GOOGLE_MAP' => array(
+                        'title' => $this->l('Display Our Properties page Google map'),
                         'cast' => 'intval',
                         'type' => 'bool',
                         'default' => '0',
@@ -359,10 +446,10 @@ class AdminHotelGeneralSettingsController extends ModuleAdminController
                                 'value' => 0,
                             ),
                         ),
-                        'hint' => $this->l('Enable to display map with hotels locations on the properties page.'),
+                        'hint' => $this->l('Enable to display map with hotels locations on the our properties page.'),
                     ),
-                    'WK_CONTACT_DISPLAY_HOTEL_MAP' => array(
-                        'title' => $this->l('Display Hotels Map On Contact Page'),
+                    'WK_DISPLAY_CONTACT_PAGE_GOOLGE_MAP' => array(
+                        'title' => $this->l('Display Contact Us page Google map'),
                         'cast' => 'intval',
                         'type' => 'bool',
                         'default' => '0',
@@ -385,101 +472,6 @@ class AdminHotelGeneralSettingsController extends ModuleAdminController
             ),
         );
 
-    }
-
-    protected function _getDefaultFieldsContent()
-    {
-        $this->context = Context::getContext();
-        $countryList = array();
-        $countryList[] = array('id' => '0', 'name' => $this->l('Choose your country'));
-        foreach (Country::getCountries($this->context->language->id) as $country) {
-            $countryList[] = array('id' => $country['id_country'], 'name' => $country['name']);
-        }
-        $stateList = array();
-        $stateList[] = array('id' => '0', 'name' => $this->l('Choose your state (if applicable)'));
-        foreach (State::getStates($this->context->language->id) as $state) {
-            $stateList[] = array('id' => $state['id_state'], 'name' => $state['name']);
-        }
-
-        $formFields = array(
-            'PS_SHOP_NAME' => array(
-                'title' => $this->l('Website name'),
-                'hint' => $this->l('Displayed in emails and page titles.'),
-                'validation' => 'isGenericName',
-                'required' => true,
-                'type' => 'text',
-                'no_escape' => true,
-            ),
-            'PS_SHOP_EMAIL' => array(
-                'title' => $this->l('Website email'),
-                'hint' => $this->l('Displayed in emails sent to customers and on Contact Us page.'),
-                'validation' => 'isEmail',
-                'required' => true,
-                'type' => 'text'
-            ),
-            'PS_SHOP_PHONE' => array(
-                'title' => $this->l('Phone'),
-                'validation' => 'isGenericName',
-                'required' => true,
-                'type' => 'text',
-                'hint' => $this->l('The phone number of the main branch.'),
-            ),
-            'PS_SHOP_ADDR1' => array(
-                'title' => $this->l('Address line 1'),
-                'validation' => 'isAddress',
-                'type' => 'text',
-                'hint' => $this->l('The address of the main branch.'),
-                'isCleanHtml' => true,
-                'required' => true,
-            ),
-            'PS_SHOP_ADDR2' => array(
-                'title' => $this->l('Address line 2'),
-                'validation' => 'isAddress',
-                'type' => 'text'
-            ),
-            'PS_SHOP_CODE' => array(
-                'title' => $this->l('Zip/postal code'),
-                'validation' => 'isGenericName',
-                'type' => 'text'
-            ),
-            'PS_SHOP_CITY' => array(
-                'title' => $this->l('City'),
-                'validation' => 'isGenericName',
-                'type' => 'text'
-            ),
-            'PS_SHOP_COUNTRY_ID' => array(
-                'title' => $this->l('Country'),
-                'validation' => 'isInt',
-                'type' => 'select',
-                'list' => $countryList,
-                'identifier' => 'id',
-                'cast' => 'intval',
-                'defaultValue' => (int)$this->context->country->id
-            ),
-            'PS_SHOP_STATE_ID' => array(
-                'title' => $this->l('State'),
-                'validation' => 'isInt',
-                'type' => 'select',
-                'list' => $stateList,
-                'identifier' => 'id',
-                'cast' => 'intval'
-            ),
-            'PS_SHOP_DETAILS' => array(
-                'title' => $this->l('Registration number'),
-                'hint' => $this->l('Website registration information (e.g. SIRET or RCS).'),
-                'validation' => 'isGenericName',
-                'type' => 'textarea',
-                'cols' => 30,
-                'rows' => 5
-            ),
-            'PS_SHOP_FAX' => array(
-                'title' => $this->l('Fax'),
-                'validation' => 'isGenericName',
-                'type' => 'text'
-            ),
-        );
-
-        return $formFields;
     }
 
     public function beforeUpdateOptions()

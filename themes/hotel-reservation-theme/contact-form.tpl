@@ -201,7 +201,7 @@
 		{/block}
 		{block name='contact_form_hotel_locations'}
 			{if isset($displayHotelMap) && $displayHotelMap && isset($hotelLocationArray)}
-				<div class="row {if !(isset($displayHotels) && $displayHotels && isset($hotelsInfo) && $hotelsInfo)} margin-top-30{/if}">
+				<div class="row {if !(isset($displayHotels) && $displayHotels && isset($hotelsInfo) && $hotelsInfo)} margin-top-20{/if}">
 					<div class="col-xs-12 col-sm-12" id="googleMapWrapper">
 						<div id="map"></div>
 					</div>
