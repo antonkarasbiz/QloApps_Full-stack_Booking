@@ -302,6 +302,31 @@ class AdminCartsControllerCore extends AdminController
             $product['image'] = (isset($image['id_image']) ? ImageManager::thumbnail(_PS_IMG_DIR_.'p/'.$image_product->getExistingImgPath().'.jpg', 'product_mini_'.(int)$product['id_product'].(isset($product['id_product_attribute']) ? '_'.(int)$product['id_product_attribute'] : '').'.jpg', 45, 'jpg') : '--');
         }
 
+        // by webkul to show rooms available in the cart
+        $cartHtlData = array();
+        $objHotelCartBookingData = new HotelCartBookingData();
+        $objHotelRoomType = new HotelRoomType();
+        if ($cartHtlData = $objHotelCartBookingData->getCartFormatedBookinInfoByIdCart((int) $cart->id)) {
+            foreach ($cartHtlData as $key => $value) {
+                $cartHtlData[$key]['room_type_info'] = $objHotelRoomType->getRoomTypeInfoByIdProduct($value['id_product']);
+                if (isset($value['selected_services']) && $value['selected_services']) {
+                    foreach ($value['selected_services'] as $service) {
+                        if ($service['id_cart'] != $value['id_cart']) {
+                            if ($tax_calculation_method == PS_TAX_EXC) {
+                                $total_price += ($service['quantity'] * $service['total_price_tax_excl']);
+                                $total_products += ($service['quantity'] * $service['total_price_tax_excl']);
+                            } else {
+                                $total_price += ($service['quantity'] * $service['total_price_tax_incl']);
+                                $total_products += ($service['quantity'] * $service['total_price_tax_incl']);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            $cartHtlData = array();
+        }
+
         $helper = new HelperKpi();
         $helper->id = 'box-kpi-cart';
         $helper->icon = 'icon-shopping-cart';
@@ -310,17 +335,6 @@ class AdminCartsControllerCore extends AdminController
         $helper->subtitle = sprintf($this->l('Cart #%06d', null, null, false), $cart->id);
         $helper->value = Tools::displayPrice($total_price, $currency);
         $kpi = $helper->generate();
-        // by webkul to show rooms available in the cart
-        $cartHtlData = array();
-        $objHotelCartBookingData = new HotelCartBookingData();
-        $objHotelRoomType = new HotelRoomType();
-        if ($cartHtlData = $objHotelCartBookingData->getCartFormatedBookinInfoByIdCart((int) $cart->id)) {
-            foreach ($cartHtlData as $key => $value) {
-                $cartHtlData[$key]['room_type_info'] = $objHotelRoomType->getRoomTypeInfoByIdProduct($value['id_product']);
-            }
-        } else {
-            $cartHtlData = array();
-        }
         //end
         $this->tpl_view_vars = array(
             'cart_htl_data' => $cartHtlData,//by webkul hotel rooms in order data
@@ -952,7 +966,7 @@ class AdminCartsControllerCore extends AdminController
         $this->context->cart = new Cart($id_cart);
 
         $date_from = date('Y-m-d H:i:s', strtotime($date_from));
-        $date_to = date('Y-m-d H:i:s', strtotime($date_to));
+        $date_to = date('Y-m-d H:i:s', strtotime($date_to) - _TIME_1_DAY_);
 
         if ($this->context->cart->id_currency != (int)Configuration::get('PS_CURRENCY_DEFAULT')) {
             $currency = Currency::getCurrencyInstance($this->context->cart->id_currency);
@@ -960,7 +974,7 @@ class AdminCartsControllerCore extends AdminController
         }
 
         if ($this->tabAccess['edit'] === '1') {
-            HotelRoomTypeFeaturePricing::deleteByIdCart($id_cart, $id_product, $id_room, $date_from, $date_to);
+            HotelRoomTypeFeaturePricing::deleteFeaturePrices($id_cart, $id_product, $id_room, $date_from, $date_to);
             $feature_price_name = array();
             foreach (Language::getIDs(true) as $id_lang) {
                 $feature_price_name[$id_lang] = 'Auto-generated';
