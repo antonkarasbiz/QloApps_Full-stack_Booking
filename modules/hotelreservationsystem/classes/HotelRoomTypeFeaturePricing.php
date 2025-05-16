@@ -832,8 +832,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
 
         $totalDurationPriceTI = $totalDurationPrice['total_price_tax_incl'];
         $totalDurationPriceTE = $totalDurationPrice['total_price_tax_excl'];
-        $objHotelBookingDetail = new HotelBookingDetail();
-        $numDaysInDuration = $objHotelBookingDetail->getNumberOfDays($dateFrom, $dateTo);
+        $numDaysInDuration = HotelHelper::getNumberOfDays($dateFrom, $dateTo);
         if ($use_tax) {
             $pricePerDay = $totalDurationPriceTI/$numDaysInDuration;
         } else {
