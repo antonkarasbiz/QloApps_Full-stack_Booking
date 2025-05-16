@@ -71,7 +71,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{if isset($smarty.post.rooms_info) && is_array($smarty.post.rooms_info) && count($smarty.post.rooms_info)}
+					{if isset($smarty.post.rooms_info) && is_array($smarty.post.rooms_info) && count($smarty.post.rooms_info) && !isset($bulk_delete_rooms)}
 						{assign var="rooms_info" value=$smarty.post.rooms_info}
 					{elseif isset($htl_room_info) && is_array($htl_room_info) && count($htl_room_info)}
 						{assign var="rooms_info" value=$htl_room_info}
@@ -81,7 +81,7 @@
 							{assign var="var_name_room_info" value="rooms_info[`$key`]"}
 							<tr class="room_data_values" data-row-index="{$key}">
                                 <td class="center">
-                                    <input type="checkbox" {if isset($room_info['id'])}value="{$room_info['id']}"{else}disabled{/if} name="bulk_update_room[]">
+                                    <input type="checkbox" {if isset($room_info['id'])}value="{$room_info['id']}"{else}disabled{/if} name="selected_room_ids[]">
 								</td>
 								<td class="col-sm-1 center">
 									<input class="form-control" type="text" value="{$room_info['room_num']}" name="{$var_name_room_info|cat:'[room_num]'}">
@@ -104,7 +104,12 @@
 									</a>
 									<input type="hidden" class="form-control disable_dates_json" name="{$var_name_room_info|cat:'[disable_dates_json]'}" {if $room_info['id_status'] == $rm_status['STATUS_TEMPORARY_INACTIVE']['id']}value="{$room_info['disable_dates_json']|escape:'html':'UTF-8'}"{/if}>
 								</td>
-                                {hook h='displayHotelRoomListTableRowColumn' index=$key id_room=$room_info['id']}
+                                {* Since the data can also be used from post incase of errors, which will cause issues with the id index *}
+                                {if isset($room_info['id'])}
+                                    {hook h='displayHotelRoomListTableRowColumn' index=$key id_room=$room_info['id']}
+                                {else}
+                                    {hook h='displayHotelRoomListTableRowColumn' index=$key}
+                                {/if}
 								<td class="col-sm-1 center">
 									{if isset($room_info['id'])}
                                         {if isset($room_info['booked_dates']) && json_decode($room_info['booked_dates'])}
@@ -124,7 +129,7 @@
 							{assign var="var_name_room_info" value="rooms_info[`$k`]"}
 							<tr class="room_data_values" data-row-index="{$k}">
                                 <td class="center">
-                                    <input type="checkbox" value="" disabled name="bulk_update_room[]">
+                                    <input type="checkbox" value="" disabled name="selected_room_ids[]">
                                 </td>
 								<td class="col-sm-1 center">
 									<input class="form-control" type="text" name="{$var_name_room_info|cat:'[room_num]'}">
@@ -193,7 +198,7 @@
                             <li class="divider"></li>
                             <li>
                                 <a id="bulk-create-rooms-button" class="bulkCreateRoomModal" data-toggle="modal" data-target="#bulkCreateRoomModal" type="button" data-size="s" data-style="expand-right">
-                                    <i class="icon-plus"></i>&nbsp;{l s='Create Multiple'}
+                                    <i class="icon-plus"></i>&nbsp;{l s='Create Rooms'}
                                 </a>
                             </li>
                         </ul>
@@ -615,7 +620,7 @@
             var prefix = 'rooms_info['+lengthRooms+']';
             html = '<tr class="room_data_values" data-row-index="'+lengthRooms+'">';
                 html += '<td class="center">';
-                    html += '<input type="checkbox" disabled name="bulk_update_room[]">';
+                    html += '<input type="checkbox" disabled name="selected_room_ids[]">';
                 html += '</td>';
                 html += '<td class="col-sm-1 center">';
                     html += '<input class="form-control" type="text" name="'+prefix+'[room_num]">';
@@ -938,7 +943,7 @@
             DisableDatesObj.allowCalendarActions();
         });
 
-        $('[name="bulk_update_room[]"]').on('change', function(){
+        $('[name="selected_room_ids[]"]').on('change', function(){
             BulkUpdateRoomModal.toggleBulkUpdateButton();
         });
 
@@ -948,7 +953,7 @@
 
         $('#select-all-rooms').on('click', function(e) {
             e.preventDefault();
-            $('[type="checkbox"][name="bulk_update_room[]"]').each(function(){
+            $('[type="checkbox"][name="selected_room_ids[]"]').each(function(){
                 if (!$(this).prop('disabled')) {
                     $(this).prop('checked', true);
                 }
@@ -958,7 +963,7 @@
 
         $('#unselect-all-rooms').on('click', function(e) {
             e.preventDefault();
-            $('[type="checkbox"][name="bulk_update_room[]"]').each(function(){
+            $('[type="checkbox"][name="selected_room_ids[]"]').each(function(){
                 $(this).prop('checked', false);
             });
 
@@ -1099,7 +1104,7 @@
             },
             getSelectedRooms: function(){
                 let selectedRooms = [];
-                $('[type="checkbox"][name="bulk_update_room[]"]').each(function(){
+                $('[type="checkbox"][name="selected_room_ids[]"]').each(function(){
                     if ($(this).prop('checked')) {
                         selectedRooms.push($(this).val());
                     }

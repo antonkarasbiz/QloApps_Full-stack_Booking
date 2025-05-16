@@ -3542,7 +3542,7 @@ class AdminProductsControllerCore extends AdminController
     public function processBulkDeleteRooms()
     {
         if ($this->tabAccess['edit'] == 1) {
-            if ($idRooms = Tools::getValue('bulk_update_room')) {
+            if ($idRooms = Tools::getValue('selected_room_ids')) {
                 foreach ($idRooms as $idRoom) {
                     $objRoomInfo = new HotelRoomInformation((int)$idRoom);
                     if ($objRoomInfo->getFutureBookings($idRoom)) {
@@ -3560,6 +3560,8 @@ class AdminProductsControllerCore extends AdminController
 
         if (empty($this->errors)) {
             $this->redirect_after = self::$currentIndex.'&id_product='.$this->id_object.'&update'.$this->table.'&conf=2&key_tab=Configuration&token='.$this->token;
+        } else {
+            $this->context->smarty->assign('bulk_delete_rooms', true);
         }
     }
 
@@ -3591,10 +3593,10 @@ class AdminProductsControllerCore extends AdminController
                             }
                             $objHotelRoomInfo->id_product = $id_product;
                             $objHotelRoomInfo->id_hotel = $id_hotel;
-                            $objHotelRoomInfo->room_num = $roomInfo['room_num'];
+                            $objHotelRoomInfo->room_num = trim($roomInfo['room_num']);
                             $objHotelRoomInfo->id_status = $roomInfo['id_status'];
-                            $objHotelRoomInfo->floor = $roomInfo['floor'];
-                            $objHotelRoomInfo->comment = $roomInfo['comment'];
+                            $objHotelRoomInfo->floor = trim($roomInfo['floor']);
+                            $objHotelRoomInfo->comment = trim($roomInfo['comment']);
                             if ($objHotelRoomInfo->save()
                                 && $objHotelRoomInfo->id_status != HotelRoomInformation::STATUS_TEMPORARY_INACTIVE
                             ) {
@@ -3616,7 +3618,7 @@ class AdminProductsControllerCore extends AdminController
         $roomsInfo = Tools::getValue('rooms_info');
         if (is_array($roomsInfo) && count($roomsInfo)) {
             foreach ($roomsInfo as $key => $roomInfo) {
-                if (!$roomInfo['room_num']) {
+                if (!trim($roomInfo['room_num'])) {
                     unset($_POST['rooms_info'][$key]);
                 }
             }
@@ -5416,7 +5418,7 @@ class AdminProductsControllerCore extends AdminController
         $this->ajaxDie(json_encode($response));
     }
 
-    public function ajaxProcessbulkCreateRooms()
+    public function ajaxProcessBulkCreateRooms()
     {
         $response = array('status' => false);
         if ($this->tabAccess['edit'] === '1') {
@@ -5497,7 +5499,7 @@ class AdminProductsControllerCore extends AdminController
                         $objHotelRoomInfo->id_product = $objProduct->id;
                         $objHotelRoomInfo->id_hotel = $idHotel;
                         $objHotelRoomInfo->id_status = $roomsInfo['id_status'];
-                        $objHotelRoomInfo->room_num = $roomNum;
+                        $objHotelRoomInfo->room_num = trim($roomNum);
 
                         if (isset($roomsInfo['floor']) && $roomsInfo['floor'] != '') {
                             $objHotelRoomInfo->floor = $roomsInfo['floor'];
