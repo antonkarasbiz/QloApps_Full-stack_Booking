@@ -89,17 +89,8 @@ class IdentityControllerCore extends FrontController
                 }
             }
 
-            $className = 'CustomerGuestDetail';
-            $rules = call_user_func(array($className, 'getValidationRules'), $className);
-            if ($phone && !Validate::isPhoneNumber($phone)) {
-                $this->errors[] = Tools::displayError('Invaid phone number.');
-            } elseif ($phone && Tools::strlen($phone) > $rules['size']['phone']) {
-                $this->errors[] = sprintf(Tools::displayError('Phone number is too long. (%s chars max).'), $rules['size']['phone']);;
-            } else {
-                $this->customer->phone = $phone;
-            }
-
             if (!count($this->errors)) {
+                $this->customer->phone = $phone;
                 $this->customer->id_default_group = (int)$prev_id_default_group;
                 $this->customer->firstname = Tools::ucwords($this->customer->firstname);
 

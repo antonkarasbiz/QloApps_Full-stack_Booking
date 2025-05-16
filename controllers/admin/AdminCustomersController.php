@@ -1224,14 +1224,6 @@ class AdminCustomersControllerCore extends AdminController
                 $this->errors[] = Tools::displayError('Phone number is required.');
             }
         }
-        $className = 'CustomerGuestDetail';
-        $rules = call_user_func(array($className, 'getValidationRules'), $className);
-        if ($phone && !Validate::isPhoneNumber($phone)) {
-            $this->errors[] = Tools::displayError('Invaid phone number.');
-        } elseif ($phone && Tools::strlen($phone) > $rules['size']['phone']) {
-            $this->errors[] = sprintf(Tools::displayError('Phone number is too long. (%s chars max).'), $rules['size']['phone']);
-        }
-
 
         $customer = new Customer();
         $this->errors = array_merge($this->errors, $customer->validateFieldsRequiredDatabase());
@@ -1478,6 +1470,18 @@ class AdminCustomersControllerCore extends AdminController
         if ($this->tabAccess['edit'] == 1) {
             if (Validate::isLoadedObject($objCustomerGuestDetail = new CustomerGuestDetail((int) Tools::getValue('id_customer_guest_detail')))) {
                 $response['errors'] = $objCustomerGuestDetail->validateController();
+                if (!Tools::getValue('lastname')) {
+                    $response['errors']['lastname'] = Tools::displayError('lastname is required');
+                }
+                if (!Tools::getValue('firstname')) {
+                    $response['errors']['firstname'] = Tools::displayError('firstname is required');
+                }
+                if (!Tools::getValue('email')) {
+                    $response['errors']['email'] = Tools::displayError('email is required');
+                }
+                if (!Tools::getValue('phone')) {
+                    $response['errors']['phone'] = Tools::displayError('phone is required');
+                }
                 if (!$response['errors']) {
                     $objCustomerGuestDetail->id_gender = Tools::getValue('id_gender');
                     $objCustomerGuestDetail->firstname = Tools::getValue('firstname');

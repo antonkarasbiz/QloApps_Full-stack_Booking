@@ -120,16 +120,7 @@ class OrderOpcControllerCore extends ParentOrderController
                                 $this->errors[] = Tools::displayError('Phone number is a required field.', false);
                             }
 
-                            $className = 'CustomerGuestDetail';
-                            $rules = call_user_func(array($className, 'getValidationRules'), $className);
-                            if (!Validate::isPhoneNumber($phone)) {
-                                $this->errors[] = Tools::displayError('Please enter a valid Mobile phone number.', false);
-                            } elseif (Tools::strlen($phone) > $rules['size']['phone']) {
-                                $this->errors[] = sprintf(Tools::displayError('Mobile phone number is too long. (%s chars max).'), $rules['size']['phone']);
-                            } else {
-                                $this->context->customer->phone = $phone;
-                            }
-
+                            $this->context->customer->phone = $phone;
                             $_POST['lastname'] = $_POST['customer_lastname'];
                             $_POST['firstname'] = $_POST['customer_firstname'];
                             $this->errors = array_merge($this->errors, $this->context->customer->validateController());

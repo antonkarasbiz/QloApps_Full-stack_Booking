@@ -422,16 +422,8 @@ class AuthControllerCore extends FrontController
                 $addresses_types[] = 'address_invoice';
             }
 
-            $className = 'CustomerGuestDetail';
-            $rules = call_user_func(array($className, 'getValidationRules'), $className);
             if (Configuration::get('PS_ONE_PHONE_AT_LEAST') && !Tools::getValue('phone')) {
                 $this->errors[] = Tools::displayError('Phone number is required.');
-            } else {
-                if (Tools::getValue('phone') && !Validate::isPhoneNumber(Tools::getValue('phone'))) {
-                    $this->errors[] = Tools::displayError('Invald phone number.');
-                } elseif (Tools::getValue('phone') && Tools::strlen(Tools::getValue('phone')) > $rules['size']['phone']) {
-                    $this->errors[] = sprintf(Tools::displayError('Phone number is too long. (%s chars max).'), $rules['size']['phone']);
-                }
             }
 
             if (!Tools::getValue('is_new_customer', 1)) {
