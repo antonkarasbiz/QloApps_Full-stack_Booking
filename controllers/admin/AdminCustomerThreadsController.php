@@ -172,6 +172,13 @@ class AdminCustomerThreadsControllerCore extends AdminController
                 'type' => 'datetime',
                 'optional' => true,
             ),
+            'id_order' => array(
+                'title' => $this->l('ID Order'),
+                'filter_key' => 'a!id_order',
+                'optional' => true,
+                'visible_default' => false,
+                'displayed' => false,
+            ),
         );
 
         $this->bulk_actions = array(
