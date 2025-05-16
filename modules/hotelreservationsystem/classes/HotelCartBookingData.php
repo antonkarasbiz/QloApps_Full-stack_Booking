@@ -346,7 +346,8 @@ class HotelCartBookingData extends ObjectModel
         $idRoom = 0,
         $dateFrom = 0,
         $dateTo = 0,
-        $updPsCart = 1
+        $updPsCart = 1,
+        $idOrder = 0
     ) {
         $where = '1';
         if ($idCart) {
@@ -364,8 +365,8 @@ class HotelCartBookingData extends ObjectModel
         if ($dateTo) {
             $where .= ' AND `date_to`=\''.pSQL($dateTo).'\'';
         }
-        // we have to delete only rows which order is not created
-        $where .= ' AND `id_order`= 0';
+
+        $where .= ' AND `id_order`='.(int) $idOrder;
         // If rooms is deleting from cart the we need to delete the ps_cart quantity of the product from table
         // if product will delete the prestashop will handle
         $numRooms = 0;
@@ -1029,9 +1030,9 @@ class HotelCartBookingData extends ObjectModel
                                         }
                                     }
 
-                                    $preparationTime = HotelOrderRestrictDate::getPreparationTime($roomData['id_hotel']);
-                                    if ($preparationTime !== false) {
-                                        $minOrderDate = date('Y-m-d', strtotime('+'. ($preparationTime) .' days'));
+                                    $minBookingOffset = HotelOrderRestrictDate::getMinimumBookingOffset($roomData['id_hotel']);
+                                    if ($minBookingOffset !== false) {
+                                        $minOrderDate = date('Y-m-d', strtotime('+'. ($minBookingOffset) .' days'));
                                         if (strtotime($minOrderDate) > strtotime($roomData['date_from'])) {
                                             $objHotelBranchInformation = new HotelBranchInformation(
                                                 $roomData['id_hotel'],
@@ -1078,6 +1079,8 @@ class HotelCartBookingData extends ObjectModel
             }
         }
 
+        Hook::exec('actionCartBookingsErrorsModifier', array('errors' => &$errors));
+
         return $errors;
     }
 
@@ -1112,7 +1115,13 @@ class HotelCartBookingData extends ObjectModel
                 $cart_detail_data[$key]['date_to'] = $value['date_to'];
 
                 $cart_detail_data[$key]['child_ages'] = json_decode($value['child_ages']);
-
+                $occupancy = array(
+                    array(
+                        'adults' => $value['adults'],
+                        'children' => $value['children'],
+                        'child_ages' => json_decode($value['child_ages'])
+                    )
+                );
                 $unit_price = Product::getPriceStatic($value['id_product'], true);
                 $unit_price_tax_excl = Product::getPriceStatic($value['id_product'], false);
                 $productPriceWithoutReduction = $productObj->getPriceWithoutReduct(false);
@@ -1125,7 +1134,9 @@ class HotelCartBookingData extends ObjectModel
                     $id_cart,
                     $value['id_guest'],
                     $value['id_room'],
-                    0
+                    0,
+                    1,
+                    $occupancy
                 );
                 $feature_price_tax_excl = HotelRoomTypeFeaturePricing::getRoomTypeFeaturePricesPerDay(
                     $value['id_product'],
@@ -1136,7 +1147,9 @@ class HotelCartBookingData extends ObjectModel
                     $id_cart,
                     $value['id_guest'],
                     $value['id_room'],
-                    0
+                    0,
+                    1,
+                    $occupancy
                 );
                 $feature_price_diff = (float)($productPriceWithoutReduction - $feature_price);
                 $cart_detail_data[$key]['product_price'] = $unit_price;
@@ -1238,7 +1251,7 @@ class HotelCartBookingData extends ObjectModel
                     $value['id_product'],
                     $value['date_from'],
                     $value['date_to'],
-                    0,
+                    $occupancy,
                     0,
                     $id_cart,
                     $value['id_guest'],
@@ -1331,13 +1344,23 @@ class HotelCartBookingData extends ObjectModel
      */
     public function getCartInfoIdCartIdProduct($id_cart, $id_product, $date_from = false, $date_to = false)
     {
-        $sql = 'SELECT *
-            FROM `'._DB_PREFIX_.'htl_cart_booking_data`
-            WHERE `id_cart`='.(int) $id_cart.' AND `id_product`='.(int) $id_product;
-        if ($date_from && $date_to) {
-            $sql .= ' AND `date_from` = \''.pSQL($date_from).'\' AND `date_to` = \''.pSQL($date_to).'\'';
+        $cache_key = 'HotelCartBookingData::getCartInfoIdCartIdProduct_'.(int)$id_cart.'_'.(int)$id_product.'_'.($date_from ? strtotime($date_from) : 'null').'_'.($date_to ? strtotime($date_to) : 'null');
+        if (!Cache::isStored($cache_key)) {
+            $sql = 'SELECT *
+                FROM `'._DB_PREFIX_.'htl_cart_booking_data`
+                WHERE `id_cart`='.(int) $id_cart.' AND `id_product`='.(int) $id_product;
+            if ($date_from && $date_to) {
+                $sql .= ' AND `date_from` = \''.pSQL($date_from).'\' AND `date_to` = \''.pSQL($date_to).'\'';
+            }
+
+            $res = Db::getInstance()->executeS($sql);
+
+            Cache::store($cache_key, $res);
+        } else {
+            $res = Cache::retrieve($cache_key);
         }
-        return Db::getInstance()->executeS($sql);
+
+        return $res;
     }
 
     /**
@@ -1556,7 +1579,13 @@ class HotelCartBookingData extends ObjectModel
                                     1
                                 );
                                 $totalAdditionalServicePrice = $demandPrice + $serviceProductPrice;
-
+                                $occupancy = array(
+                                    array(
+                                        'adults' => $data_v['adults'],
+                                        'children' => $data_v['children'],
+                                        'child_ages' => json_decode($data_v['child_ages'])
+                                    )
+                                );
                                 if (isset($cartHotelData[$prodKey]['date_diff'][$dateJoin])) {
                                     $numDays = $objBookingDetail->getNumberOfDays($data_v['date_from'], $data_v['date_to']);
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['demand_price'] += $totalAdditionalServicePrice;
@@ -1572,7 +1601,7 @@ class HotelCartBookingData extends ObjectModel
                                         $product['id_product'],
                                         $data_v['date_from'],
                                         $data_v['date_to'],
-                                        0,
+                                        $occupancy,
                                         0,
                                         $context->cart->id,
                                         $context->cart->id_guest,
@@ -1582,7 +1611,7 @@ class HotelCartBookingData extends ObjectModel
                                         $product['id_product'],
                                         $data_v['date_from'],
                                         $data_v['date_to'],
-                                        0,
+                                        $occupancy,
                                         0,
                                         $context->cart->id,
                                         $context->cart->id_guest,
@@ -1593,7 +1622,7 @@ class HotelCartBookingData extends ObjectModel
                                         $product['id_product'],
                                         $data_v['date_from'],
                                         $data_v['date_to'],
-                                        0,
+                                        $occupancy,
                                         0,
                                         $context->cart->id,
                                         $context->cart->id_guest,
@@ -1634,7 +1663,7 @@ class HotelCartBookingData extends ObjectModel
                                         $product['id_product'],
                                         $data_v['date_from'],
                                         $data_v['date_to'],
-                                        0,
+                                        $occupancy,
                                         0,
                                         $context->cart->id,
                                         $context->cart->id_guest,
@@ -1644,7 +1673,7 @@ class HotelCartBookingData extends ObjectModel
                                         $product['id_product'],
                                         $data_v['date_from'],
                                         $data_v['date_to'],
-                                        0,
+                                        $occupancy,
                                         0,
                                         $context->cart->id,
                                         $context->cart->id_guest,
@@ -1655,7 +1684,7 @@ class HotelCartBookingData extends ObjectModel
                                         $product['id_product'],
                                         $data_v['date_from'],
                                         $data_v['date_to'],
-                                        0,
+                                        $occupancy,
                                         0,
                                         $context->cart->id,
                                         $context->cart->id_guest,

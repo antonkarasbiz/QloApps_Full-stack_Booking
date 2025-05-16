@@ -426,12 +426,6 @@ p.room_cat_data
 }
 
 /*AdminHotelConfigurationSetting controller*/
-
-#max_global_book_date
-{
-    width: 30%;
-}
-
 .htl_all_setting .btn.btn-default {
     margin: 20px!important;
 }

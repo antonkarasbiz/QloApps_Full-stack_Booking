@@ -65,15 +65,6 @@ class HotelReservationSystem extends Module
 
     public function hookDisplayHeader()
     {
-        // check max global order_restriction date is set
-        if (!Configuration::get('MAX_GLOBAL_BOOKING_DATE')
-            || (strtotime(date('Y-m-d')) > strtotime(Configuration::get('MAX_GLOBAL_BOOKING_DATE')))
-        ) {
-            Configuration::updateValue(
-                'MAX_GLOBAL_BOOKING_DATE',
-                date('Y-m-d', strtotime(date('Y-m-d', time()).' + 1 year'))
-            );
-        }
         if (!Configuration::get('PS_CATALOG_MODE')) {
             /*To remove room from cart before todays date*/
             if (isset($this->context->cart->id) && $this->context->cart->id) {
