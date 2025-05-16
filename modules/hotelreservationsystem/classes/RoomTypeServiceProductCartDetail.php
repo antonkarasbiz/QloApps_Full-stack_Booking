@@ -54,6 +54,19 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
         $idCart,
         $idHtlCartData
     ) {
+        $isAvailable = true;
+        Hook::exec('actionCheckServiceAvailability', array(
+            'id_product' => $idProduct,
+            'quantity' => $quantity,
+            'id_cart' => $idCart,
+            'htl_cart_booking_id' => $idHtlCartData,
+            'is_service_available' => &$isAvailable,
+        ));
+
+        if (!$isAvailable) {
+            return false;
+        }
+
         if ($id_room_type_service_product_cart_detail = $this->alreadyExists($idProduct, $idCart, $idHtlCartData)) {
             $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail($id_room_type_service_product_cart_detail);
         } else {
@@ -268,10 +281,9 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
         if ($getTotalPrice) {
             $totalPrice = 0;
         }
-        $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
-        $objHotelRoomType = new HotelRoomType();
-        $selectedServiceProducts = array();
 
+        $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
+        $selectedServiceProducts = array();
         if ($serviceProducts = Db::getInstance()->executeS($sql)) {
             foreach ($serviceProducts as $product) {
                 $qty = $product['quantity'] ? (int)$product['quantity'] : 1;

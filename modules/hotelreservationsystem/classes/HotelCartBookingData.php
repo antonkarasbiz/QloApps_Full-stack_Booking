@@ -1030,9 +1030,9 @@ class HotelCartBookingData extends ObjectModel
                                         }
                                     }
 
-                                    $preparationTime = HotelOrderRestrictDate::getPreparationTime($roomData['id_hotel']);
-                                    if ($preparationTime !== false) {
-                                        $minOrderDate = date('Y-m-d', strtotime('+'. ($preparationTime) .' days'));
+                                    $minBookingOffset = HotelOrderRestrictDate::getMinimumBookingOffset($roomData['id_hotel']);
+                                    if ($minBookingOffset !== false) {
+                                        $minOrderDate = date('Y-m-d', strtotime('+'. ($minBookingOffset) .' days'));
                                         if (strtotime($minOrderDate) > strtotime($roomData['date_from'])) {
                                             $objHotelBranchInformation = new HotelBranchInformation(
                                                 $roomData['id_hotel'],
@@ -1078,6 +1078,8 @@ class HotelCartBookingData extends ObjectModel
                 }
             }
         }
+
+        Hook::exec('actionCartBookingsErrorsModifier', array('errors' => &$errors));
 
         return $errors;
     }
@@ -1342,13 +1344,23 @@ class HotelCartBookingData extends ObjectModel
      */
     public function getCartInfoIdCartIdProduct($id_cart, $id_product, $date_from = false, $date_to = false)
     {
-        $sql = 'SELECT *
-            FROM `'._DB_PREFIX_.'htl_cart_booking_data`
-            WHERE `id_cart`='.(int) $id_cart.' AND `id_product`='.(int) $id_product;
-        if ($date_from && $date_to) {
-            $sql .= ' AND `date_from` = \''.pSQL($date_from).'\' AND `date_to` = \''.pSQL($date_to).'\'';
+        $cache_key = 'HotelCartBookingData::getCartInfoIdCartIdProduct_'.(int)$id_cart.'_'.(int)$id_product.'_'.($date_from ? strtotime($date_from) : 'null').'_'.($date_to ? strtotime($date_to) : 'null');
+        if (!Cache::isStored($cache_key)) {
+            $sql = 'SELECT *
+                FROM `'._DB_PREFIX_.'htl_cart_booking_data`
+                WHERE `id_cart`='.(int) $id_cart.' AND `id_product`='.(int) $id_product;
+            if ($date_from && $date_to) {
+                $sql .= ' AND `date_from` = \''.pSQL($date_from).'\' AND `date_to` = \''.pSQL($date_to).'\'';
+            }
+
+            $res = Db::getInstance()->executeS($sql);
+
+            Cache::store($cache_key, $res);
+        } else {
+            $res = Cache::retrieve($cache_key);
         }
-        return Db::getInstance()->executeS($sql);
+
+        return $res;
     }
 
     /**
