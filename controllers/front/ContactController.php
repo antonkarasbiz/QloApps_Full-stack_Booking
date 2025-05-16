@@ -60,7 +60,7 @@ class ContactControllerCore extends FrontController
             } elseif (!Validate::isCleanHtml($message)) {
                 $this->errors[] = Tools::displayError('Invalid message');
             } elseif (!$id_customer_thread && !$subject) {
-                $this->errors[] = Tools::displayError('The subject cannot be blank.');
+                $this->errors[] = Tools::displayError('The title cannot be blank.');
             } elseif (!$id_customer_thread && !Validate::isCleanHtml($subject)) {
                 $this->errors[] = Tools::displayError('Invalid subject$subject');
             } else if (!$id_customer_thread && $nameRequired && !trim($userName)) {
@@ -72,7 +72,7 @@ class ContactControllerCore extends FrontController
             } else if (!$id_customer_thread && trim($phone) && !Validate::isPhoneNumber($phone)) {
                 $this->errors[] = Tools::displayError('Invalid Phone number.');
             } elseif (!Validate::isLoadedObject($contact = new Contact($id_contact, $this->context->language->id))) {
-                $this->errors[] = Tools::displayError('Please select a subject from the list provided.');
+                $this->errors[] = Tools::displayError('Please choose who to send the message to.');
             } elseif (!empty($file_attachment['name']) && $file_attachment['error'] != 0) {
                 $this->errors[] = Tools::displayError('An error occurred during the file-upload process.');
             } elseif (!empty($file_attachment['name']) && !in_array(Tools::strtolower(substr($file_attachment['name'], -4)), $extension) && !in_array(Tools::strtolower(substr($file_attachment['name'], -5)), $extension)) {
@@ -160,7 +160,7 @@ class ContactControllerCore extends FrontController
                     if (!count($this->errors)) {
                         $var_list = array(
                             '{order_name}' => '-',
-                            '{attached_file}' => ' ',
+                            '{attached_file}' => '-',
                             '{message}' => Tools::nl2br(stripslashes($message)),
                             '{email}' =>  $from,
                             '{product_name}' => '',
@@ -168,7 +168,7 @@ class ContactControllerCore extends FrontController
                         );
 
                         if (isset($file_attachment['name'])) {
-                            $var_list['{attached_file}'] = '<span style="color:#333"><strong>'.$this->l('Attached file').':</strong></span>'.$file_attachment['name'];
+                            $var_list['{attached_file}'] = $file_attachment['name'];
                         }
 
                         $id_product = (int)Tools::getValue('id_product');

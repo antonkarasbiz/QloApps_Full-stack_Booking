@@ -424,7 +424,15 @@ class AdminStatsControllerCore extends AdminStatsTabController
 
     public static function getPendingMessages()
     {
-        return CustomerThread::getTotalCustomerThreads('status LIKE "%pending%" OR status = "open"'.Shop::addSqlRestriction());
+        $pendingStatuses = array(
+            CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN,
+            CustomerThread::QLO_CUSTOMER_THREAD_STATUS_PENDING2,
+            CustomerThread::QLO_CUSTOMER_THREAD_STATUS_PENDING1
+        );
+
+        return CustomerThread::getTotalCustomerThreads(
+            '`status` IN ('.implode(',', $pendingStatuses).')'.Shop::addSqlRestriction()
+        );
     }
 
     public static function getAverageMessageResponseTime($date_from, $date_to, $return_seconds = false)
@@ -455,13 +463,24 @@ class AdminStatsControllerCore extends AdminStatsTabController
 
     public static function getMessagesPerThread($date_from, $date_to)
     {
+        $accessWhere = '';
+        $employee = Context::getContext()->employee;
+        if (!$employee->isSuperAdmin()) {
+            $idProfile = $employee->id_profile;
+            if ($acsHtls = HotelBranchInformation::getProfileAccessedHotels($idProfile, 1, 1)) {
+                $accessWhere = ' AND ct.`id_order` IN (SELECT `id_order` FROM `'._DB_PREFIX_.'htl_booking_detail` hbd WHERE `id_hotel` IN ('.implode(',', $acsHtls).'))';
+            } else {
+                $accessWhere = ' AND ct.`id_order` = 0 ';
+            }
+        }
+
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS('
 		SELECT COUNT(*) as messages
 		FROM `'._DB_PREFIX_.'customer_thread` ct
 		LEFT JOIN `'._DB_PREFIX_.'customer_message` cm ON (ct.id_customer_thread = cm.id_customer_thread)
 		WHERE ct.`date_add` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59"
-		'.Shop::addSqlRestriction().'
-		AND status = "closed"
+		'.Shop::addSqlRestriction().$accessWhere.'
+		AND status = '.CustomerThread::QLO_CUSTOMER_THREAD_STATUS_CLOSED.'
 		GROUP BY ct.id_customer_thread');
         $threads = $messages = 0;
         foreach ($result as $row) {

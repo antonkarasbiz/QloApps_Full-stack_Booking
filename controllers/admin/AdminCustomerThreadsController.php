@@ -107,7 +107,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
                 'visible_default' => true,
             ),
             'contact' => array(
-                'title' => $this->l('Type'),
+                'title' => $this->l('Contact'),
                 'type' => 'select',
                 'list' => $contact_array,
                 'filter_key' => 'cl!id_contact',
@@ -143,6 +143,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
                 'filter_key' => 'employee',
                 'tmpTableFilter' => true,
                 'optional' => true,
+                'hint' => $this->l('The first employee to reply becomes responsible. They can then forward the message to another employee if needed.')
             ),
             'last_employee' => array(
                 'title' => $this->l('Last Reply by'),
@@ -397,17 +398,17 @@ class AdminCustomerThreadsControllerCore extends AdminController
             array(
                 'title' => $this->l('Threads pending'),
                 'val' => $pending = CustomerThread::getTotalCustomerThreads(
-                    'status='.(int) CustomerThread::QLO_CUSTOMER_THREAD_STATUS_PENDING1.'
-                    OR status='.(int) CustomerThread::QLO_CUSTOMER_THREAD_STATUS_PENDING2
+                    'status='.CustomerThread::QLO_CUSTOMER_THREAD_STATUS_PENDING1.'
+                    OR status='.CustomerThread::QLO_CUSTOMER_THREAD_STATUS_PENDING2
                 ),
             ),
             array(
                 'title' => $this->l('Total number of customer messages'),
-                'val' => CustomerMessage::getTotalCustomerMessages('ct.`id_employee` = 0'),
+                'val' => CustomerMessage::getTotalCustomerMessages('cm.`id_employee` = 0'),
             ),
             array(
                 'title' => $this->l('Total number of employee messages'),
-                'val' => CustomerMessage::getTotalCustomerMessages('ct.`id_employee` != 0'),
+                'val' => CustomerMessage::getTotalCustomerMessages('cm.`id_employee` != 0'),
             ),
             array(
                 'title' => $this->l('Unread threads'),
@@ -625,7 +626,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
                             $this->context->link->getPageLink('contact', true, (int)$ct->id_lang, null, false, $ct->id_shop),
                             'token='.$ct->token
                         );
-                        $headingText = $this->l('Hi');
+                        $headingText = $this->l('Hi') .' '.$ct->user_name;
                         $idShop = $ct->id_shop;
                         $params = array(
                             '{reply}' => Tools::nl2br(Tools::getValue('reply_message')),
@@ -633,7 +634,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
                             '{headingtext}' => $headingText,
                         );
                         if (!empty(trim($ct->subject))) {
-                            $params['{subject}'] = $this->l('Title : ').$ct->subject;
+                            $params['{subject}'] = $ct->subject;
                         }
 
                         $idLang = $ct->id_lang;

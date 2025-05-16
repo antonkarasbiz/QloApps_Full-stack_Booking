@@ -210,7 +210,8 @@ class CustomerThreadCore extends ObjectModel
 			SELECT cl.*, COUNT(*) as total, (
 				SELECT id_customer_thread
 				FROM '._DB_PREFIX_.'customer_thread ct2
-				WHERE status = "open" AND ct.id_contact = ct2.id_contact
+				WHERE status = '.CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN.'
+                AND ct.id_contact = ct2.id_contact
 				'.Shop::addSqlRestriction().'
 				ORDER BY date_upd ASC
 				LIMIT 1
@@ -218,7 +219,7 @@ class CustomerThreadCore extends ObjectModel
 			FROM '._DB_PREFIX_.'customer_thread ct
 			LEFT JOIN '._DB_PREFIX_.'contact_lang cl
 				ON (cl.id_contact = ct.id_contact AND cl.id_lang = '.(int)Context::getContext()->language->id.')
-			WHERE ct.status = "open"
+			WHERE ct.status = '.CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN.'
 				AND ct.id_contact IS NOT NULL
 				AND cl.id_contact IS NOT NULL
 				'.Shop::addSqlRestriction().'
@@ -228,19 +229,19 @@ class CustomerThreadCore extends ObjectModel
 
     public static function getTotalCustomerThreads($where = null)
     {
+        $sql = 'SELECT COUNT(*) FROM '._DB_PREFIX_.'customer_thread ';
         if (is_null($where)) {
-            return (int)Db::getInstance()->getValue('
-				SELECT COUNT(*)
-				FROM '._DB_PREFIX_.'customer_thread
-				WHERE 1 '.Shop::addSqlRestriction()
-            );
-        } else {
-            return (int)Db::getInstance()->getValue('
-				SELECT COUNT(*)
-				FROM '._DB_PREFIX_.'customer_thread
-				WHERE '.$where.Shop::addSqlRestriction()
+            $where = ' 1 ';
+        }
+
+        $employee = Context::getContext()->employee;
+        if (!$employee->isSuperAdmin()) {
+            $where .= (($acsHtls = HotelBranchInformation::getProfileAccessedHotels($employee->id_profile, 1, 1)) ?
+                ' AND `id_order` IN (SELECT `id_order` FROM `'._DB_PREFIX_.'htl_booking_detail` hbd WHERE `id_hotel` IN ('.implode(',', $acsHtls).')) ' :
+                ' AND `id_order` = 0 '
             );
         }
+        return (int)Db::getInstance()->getValue($sql.' WHERE '.$where.Shop::addSqlRestriction());
     }
 
     public static function getMessageCustomerThreads($id_customer_thread)

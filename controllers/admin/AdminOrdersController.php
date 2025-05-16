@@ -2490,13 +2490,15 @@ class AdminOrdersControllerCore extends AdminController
             $helper->value = $objOrder->source;
             $this->kpis[] = $helper;
 
+            $objCustomerThread = new CustomerThread();
+            $idCustomerThread = $objCustomerThread->getIdCustomerThreadByIdOrder($objOrder->id);
             $helper = new HelperKpi();
             $helper->id = 'box-messages';
             $helper->icon = 'icon-comments';
             $helper->color = 'color2';
             $helper->title = $this->l('Messages');
             $helper->tooltip = $this->l('Messages is the number of customer messages for this order.');
-            $helper->href = $this->context->link->getAdminLink('AdminCustomerThreads').'&id_order='.$objOrder->id;
+            $helper->href = $this->context->link->getAdminLink('AdminCustomerThreads').((int) $idCustomerThread ? '&viewcustomer_thread&id_customer_thread='.(int) $idCustomerThread : '');
             $helper->value = count(CustomerThread::getCustomerMessages($objOrder->id_customer, null, $objOrder->id, CustomerMessage::QLO_CUSTOMER_MESSAGE_BY_CUSTOMER));
             $this->kpis[] = $helper;
 
