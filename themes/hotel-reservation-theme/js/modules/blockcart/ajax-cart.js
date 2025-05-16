@@ -146,8 +146,9 @@ var ajaxCart = {
             // var minimalQuantity = $("#quantity_wanted_" + idProduct).val();
             // if (!minimalQuantity)
             //     minimalQuantity = 1;
-            if ($(this).prop('disabled') != 'disabled' && occupancy)
+            if ($(this).prop('disabled') != 'disabled' && occupancy) {
                 ajaxCart.add(idProduct, idProductAttribute, false, this, occupancy, null, dateFrom, dateTo);
+            }
         });
         //for product page 'add' button...
         if ($('.cart_block').length) {
