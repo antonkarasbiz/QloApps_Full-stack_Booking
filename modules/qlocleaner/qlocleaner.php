@@ -716,6 +716,10 @@ class QloCleaner extends Module
                 array('htl_room_type_service_product', 'id_element', 'product', 'id_product'),
                 array('htl_room_type_service_product_price', 'id_product', 'product', 'id_product'),
                 array('htl_room_type_service_product_price', 'id_element', 'product', 'id_product'),
+                array('htl_bed_type_lang', 'id_lang', 'lang', 'id_lang'),
+                array('htl_room_type_bed_type', 'id_product', 'product', 'id_product'),
+                array('htl_room_type_bed_type', 'id_bed_type', 'htl_bed_type', 'id_bed_type'),
+
             )
         );
     }
@@ -815,6 +819,9 @@ class QloCleaner extends Module
                 'htl_room_type_global_demand',
                 'htl_room_type_service_product',
                 'htl_room_type_service_product_price',
+                'htl_bed_type',
+                'htl_bed_type_lang',
+                'htl_room_type_bed_type',
             )
         );
     }

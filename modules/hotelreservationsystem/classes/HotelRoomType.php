@@ -28,7 +28,6 @@ class HotelRoomType extends ObjectModel
     public $max_adults;
 	public $max_children;
     public $max_guests;
-    public $id_bed_types;
     public $min_los;
     public $max_los;
     public $date_add;
@@ -49,7 +48,6 @@ class HotelRoomType extends ObjectModel
             'max_los' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'default' => 0),
             'date_add' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
             'date_upd' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
-            'id_bed_types' => array('type' => self::TYPE_STRING),
         ),
     );
 

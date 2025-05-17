@@ -2064,13 +2064,8 @@ class AdminProductsControllerCore extends AdminController
                 }
 
                 if ($object->update()) {
-                    $objRoomType = new HotelRoomType();
-                    if ($roomTypeInfo = $objRoomType->getRoomTypeInfoByIdProduct($object->id)) {
-                        $objRoomType = new HotelRoomType($roomTypeInfo['id']);
-                        $idBedTypes = Tools::getValue('id_bed_types', array());
-                        $objRoomType->id_bed_types = json_encode($idBedTypes);
-                        $objRoomType->save();
-                    }
+                    $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
+                    $objHotelRoomTypeBedType->updateRoomTypeBedTypes(Tools::getValue('id_bed_types'), $object->id);
 
                     // update position in category
                     $object->setPositionInCategory(Tools::getValue('category_position'));
@@ -4459,8 +4454,8 @@ class AdminProductsControllerCore extends AdminController
             $data->assign('htl_full_info', $hotelFullInfo);
         }
 
-        $objRoomTypeBedType = new HotelRoomTypeBedType();
-        if ($bedTypes = $objRoomTypeBedType->getAllBedTypes($this->context->language->id)) {
+        $objHotelBedType = new HotelBedType();
+        if ($bedTypes = $objHotelBedType->getAllBedTypes($this->context->language->id)) {
             $dimensionUnit = Configuration::get('PS_DIMENSION_UNIT');
             foreach ($bedTypes as $bedTypeKey => $bedType) {
                 $bedTypes[$bedTypeKey]['area'] = Tools::ps_round($bedType['width'], 2).' '.$dimensionUnit.' * '.Tools::ps_round($bedType['length'], 2).' '.$dimensionUnit;
@@ -4468,9 +4463,10 @@ class AdminProductsControllerCore extends AdminController
         }
 
         $data->assign('bed_types_info', $bedTypes);
-        $objRoomType = new HotelRoomType();
-        if ($roomTypeInfo = $objRoomType->getRoomTypeInfoByIdProduct($product->id)) {
-            $data->assign('selected_bed_types', json_decode($roomTypeInfo['id_bed_types'], true));
+        $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
+        if ($selectedBedTypes = $objHotelRoomTypeBedType->getRoomTypeBedTypes($product->id)) {
+            $selectedBedTypes = array_column($selectedBedTypes, 'id_bed_type');
+            $data->assign('selected_bed_types', $selectedBedTypes);
         }
 
         $this->tpl_form_vars['product'] = $product;

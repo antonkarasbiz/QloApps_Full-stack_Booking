@@ -20,33 +20,74 @@
 
 class HotelRoomTypeBedType extends ObjectModel
 {
-    public $length;
-    public $width;
-    public $name;
+    public $id_product;
+    public $id_bed_type;
 
     public static $definition =array(
         'table' => 'htl_room_type_bed_type',
-        'primary' => 'id_bed_type',
-        'multilang' => true,
+        'primary' => 'id_room_type_bed_type',
         'fields' => array(
-            'length' => array('type' => self::TYPE_FLOAT, 'validate' => 'isUnsignedFloat'),
-            'width' => array('type' => self::TYPE_FLOAT, 'validate' => 'isUnsignedFloat'),
-
-            'name' => array('type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isCatalogName', 'required' => true, 'size' => 128),
+            'id_bed_type' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_product' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
         ),
     );
 
-    public function getAllBedTypes($idLang)
+    public function getRoomTypeBedTypes($idProduct)
     {
-        if (!$idLang) {
-            $idLang = Context::getContext()->language->id;
-        }
-
-        $sql = 'SELECT hrtbt.*, hrtbtl.`name` FROM `'._DB_PREFIX_.$this->table.'` hrtbt
-            LEFT JOIN `'._DB_PREFIX_.$this->table.'_lang` hrtbtl ON hrtbt.`id_bed_type` = hrtbtl.`id_bed_type`
-            WHERE 1 AND hrtbtl.`id_lang` ='.(int) $idLang;
+        $sql = 'SELECT * FROM `'._DB_PREFIX_.$this->table.'`
+            WHERE `id_product` ='.(int) $idProduct;
 
         return Db::getInstance()->executeS($sql);
+    }
+
+    public function updateRoomTypeBedTypes($idBedTypes, $idProduct)
+    {
+        $res = true;
+        if ($roomTypeBedTypes = $this->getRoomTypeBedTypes($idProduct)) {
+            $roomTypeBedTypes = array_column($roomTypeBedTypes, 'id_room_type_bed_type', 'id_bed_type');
+        }
+
+        if ($idBedTypes) {
+            foreach ($idBedTypes as $idBedType) {
+                // If room type bed type mapping already exits no need to update it.
+                if (isset($roomTypeBedTypes[$idBedType])) {
+                    unset($roomTypeBedTypes[$idBedType]);
+                } else {
+                    $objHotelRoomTypeBedType = new self();
+                    $objHotelRoomTypeBedType->id_product = $idProduct;
+                    $objHotelRoomTypeBedType->id_bed_type = $idBedType;
+                    $res &=$objHotelRoomTypeBedType->save();
+                }
+            }
+        }
+
+        // Removing the non selected bed types.
+        if ($roomTypeBedTypes) {
+            $res &= $this->deleteRoomTypeBedTypes($roomTypeBedTypes);
+        }
+
+        return $res;
+    }
+
+    public function deleteRoomTypeBedTypesById($roomTypeBedTypes)
+    {
+        $res = true;
+        if ($roomTypeBedTypes) {
+            foreach ($roomTypeBedTypes as $roomTypeBedType) {
+                $objHotelRoomTypeBedType = new self($roomTypeBedType);
+                $res &= $objHotelRoomTypeBedType->delete();
+            }
+        }
+
+        return $res;
+    }
+
+    public function deleteRoomTypeBedTypes($idBedType = false, $idProduct = false)
+    {
+        return Db::getInstance()->delete(
+            $this->table,
+            ' WHERE 1 '.($idBedType ? ' AND `id_bed_type`='.(int) $idBedType : '').($idProduct ? ' AND `id_product`='.(int) $idProduct : '')
+        );
     }
 
 }

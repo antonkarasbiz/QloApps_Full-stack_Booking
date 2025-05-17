@@ -26,8 +26,8 @@ class AdminHotelBedTypesController extends ModuleAdminController
     public function __construct()
     {
         $this->bootstrap = true;
-        $this->table = 'htl_room_type_bed_type';
-        $this->className = 'HotelRoomTypeBedType';
+        $this->table = 'htl_bed_type';
+        $this->className = 'HotelBedType';
         $this->identifier = 'id_bed_type';
         $this->context = Context::getContext();
         $this->lang = true;
