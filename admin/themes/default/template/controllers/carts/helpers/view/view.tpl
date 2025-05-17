@@ -195,30 +195,31 @@
 															{if isset($room['selected_services']) && $room['selected_services']}
 																{foreach $room['selected_services'] as $service}
 																	<div class="row room_demand_block">
-																			<div class="col-xs-5">
-																				<div class="row">
-																					<div class="col-xs-10">
-																						<p>{$service['name']|escape:'html':'UTF-8'}</p>
-																						{if $service.allow_multiple_quantity}
-																							<div class="qty_container">
-																							{l s='Quantity:'} {$service.quantity}
-																							</div>
-																						{/if}
-																					</div>
+																		<div class="col-xs-5">
+																			<div class="row">
+																				<div class="col-xs-10">
+																					<div>{$service['name']|escape:'html':'UTF-8'}</div>
+																					{if $service.allow_multiple_quantity}
+																						<div class="qty_container">
+																						{l s='Quantity:'} {$service.quantity}
+																						</div>
+																					{/if}
 																				</div>
 																			</div>
-																			<div class="col-xs-3">
-																				{if $service['auto_add_to_cart'] && $service['price_addition_type'] == Product::PRICE_ADDITION_TYPE_INDEPENDENT}
-																					<span class="badge badge-info label">{l s='Convenience fee'}</span>
-																				{/if}
-																				{if $service['auto_add_to_cart'] && $service['price_addition_type'] == Product::PRICE_ADDITION_TYPE_WITH_ROOM}
-																					<span class="badge badge-info label">{l s='Auto added'}</span>
-																				{/if}
-																			</div>
-																			<div class="col-xs-4">
-																				<span class="pull-right">{convertPrice price=$service.total_price}</span>
-																			</div>
 																		</div>
+																		<div class="col-xs-3">
+																			{if $service['auto_add_to_cart'] && $service['price_addition_type'] == Product::PRICE_ADDITION_TYPE_INDEPENDENT}
+																				<span class="badge badge-info label">{l s='Convenience fee'}</span>
+																			{/if}
+																			{if $service['auto_add_to_cart'] && $service['price_addition_type'] == Product::PRICE_ADDITION_TYPE_WITH_ROOM}
+																				<span class="badge badge-info label">{l s='Auto added'}</span>
+																			{/if}
+																		</div>
+																		<div class="col-xs-4">
+																			<span class="pull-right">{convertPrice price=$service.total_price}</span>
+																		</div>
+																	</div>
+																	<p></p>
 																{/foreach}
 															{/if}
 														</div>

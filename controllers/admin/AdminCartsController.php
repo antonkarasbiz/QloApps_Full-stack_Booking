@@ -1148,11 +1148,6 @@ class AdminCartsControllerCore extends AdminController
                 $objRoomTypeServPrice = new RoomTypeServiceProductPrice();
                 foreach ($serviceProducts as $key => $servProduct) {
                     $serviceProducts[$key]['price_tax_exc'] = $objRoomTypeServPrice->getServicePrice($servProduct['id_product'], 0, 1, null, null, false, $idCart);
-                    if ($additionalServices
-                        && (in_array($servProduct['id_product'], array_column($additionalServices['additional_services'], 'id_product')))
-                    ) {
-                        unset($serviceProducts[$key]);
-                    }
                 }
             }
 
@@ -1190,7 +1185,7 @@ class AdminCartsControllerCore extends AdminController
             );
         } else {
             $response['hasError'] = true;
-            $response['errors'][] = $this->l('Some error occurred. please try again.');
+            $response['errors'][] = Tools::displayError('Some error occurred. please try again.');
         }
 
         $this->ajaxDie(json_encode($response));
@@ -1218,15 +1213,15 @@ class AdminCartsControllerCore extends AdminController
 
     public function ajaxProcessUpdateServiceProduct()
     {
-        if ($this->tabAccess['edit'] === '1') {  
+        if ($this->tabAccess['edit'] === '1') {
             $operator = Tools::getValue('operator', 'up');
             $idServiceProduct = Tools::getValue('id_product');
             $idCartBooking = Tools::getValue('id_cart_booking');
             $qty = Tools::getValue('qty');
-    
+
             if (Validate::isLoadedObject($objHotelCartBookingData = new HotelCartBookingData($idCartBooking))) {
                 $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-    
+
                 if ($operator == 'up') {
                     $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
                     if ($objRoomTypeServiceProduct->isRoomTypeLinkedWithProduct($objHotelCartBookingData->id_product, $idServiceProduct)) {
@@ -1248,7 +1243,7 @@ class AdminCartsControllerCore extends AdminController
                         $this->errors[] = Tools::displayError('This Service is not available with selected room.');
                     }
                 }
-    
+
                 if (empty($this->errors)) {
                     if ($objRoomTypeServiceProductCartDetail->updateCartServiceProduct(
                         $idCartBooking,
@@ -1263,7 +1258,7 @@ class AdminCartsControllerCore extends AdminController
                     } else {
                         $this->errors[] = Tools::displayError('Unable to update services. Please try reloading the page.');
                     }
-    
+
                 }
             } else {
                 $this->errors[] = Tools::displayError('Room not found. Please try reloading the page.');
@@ -1369,28 +1364,28 @@ class AdminCartsControllerCore extends AdminController
                         $priceAdditionType = 0;
                         if (empty($productQty)) {
                             $response['hasError'] = true;
-                            $response['errors'][] = $this->l('Service quantity is required');
+                            $response['errors'][] = Tools::displayError('Service quantity is required');
                         } elseif (!Validate::isUnsignedInt($productQty)) {
                             $response['hasError'] = true;
-                            $response['errors'][] = $this->l('Invalid service quantity');
+                            $response['errors'][] = Tools::displayError('Invalid service quantity');
                         }
                     }
 
                     // Validate service data provided
                     if (empty($name)) {
                         $response['hasError'] = true;
-                        $response['errors'][] = $this->l('Service name is required');
+                        $response['errors'][] = Tools::displayError('Service name is required');
                     } elseif (!Validate::isCatalogName($name)) {
                         $response['hasError'] = true;
-                        $response['errors'][] = $this->l('Invalid service name');
+                        $response['errors'][] = Tools::displayError('Invalid service name');
                     }
 
                     if (empty($price)) {
                         $response['hasError'] = true;
-                        $response['errors'][] = $this->l('Service price is required');
+                        $response['errors'][] = Tools::displayError('Service price is required');
                     } elseif (!Validate::isPrice($price)) {
                         $response['hasError'] = true;
-                        $response['errors'][] = $this->l('Invalid service price');
+                        $response['errors'][] = Tools::displayError('Invalid service price');
                     }
 
                     // if no validation errors then add service
@@ -1457,28 +1452,28 @@ class AdminCartsControllerCore extends AdminController
                                     $response['service_panel'] = $this->getBookingServicesTabContent($objHtlCartBooking->id);
                                 } else {
                                     $response['hasError'] = true;
-                                    $response['errors'][] = $this->l('Some error occurred while adding service to the room');
+                                    $response['errors'][] = Tools::displayError('Some error occurred while adding service to the room');
                                 }
                             } else {
                                 $response['hasError'] = true;
-                                $response['errors'][] = $this->l('Unable to add service to the room');
+                                $response['errors'][] = Tools::displayError('Unable to add service to the room');
                             }
                         } else {
                             $response['hasError'] = true;
-                            $response['errors'][] = $this->l('Unable to add service to the room');
+                            $response['errors'][] = Tools::displayError('Unable to add service to the room');
                         }
                     }
                 } else {
                     $response['hasError'] = true;
-                    $response['errors'][] = $this->l('Room not found');
+                    $response['errors'][] = Tools::displayError('Room not found');
                 }
             } else {
                 $response['hasError'] = true;
-                $response['errors'][] = $this->l('Adding a new custom service is not allowed.');
+                $response['errors'][] = Tools::displayError('Adding a new custom service is not allowed.');
             }
         } else {
             $response['hasError'] = true;
-            $response['errors'][] = $this->l('You do not have permission to edit this order.');
+            $response['errors'][] = Tools::displayError('You do not have permission to edit this order.');
         }
 
         $this->ajaxDie(json_encode($response));
@@ -1562,14 +1557,14 @@ class AdminCartsControllerCore extends AdminController
                             if ($objProduct->allow_multiple_quantity) {
                                 if (!isset($serviceQuantities[$idServiceProduct])) {
                                     $response['hasError'] = true;
-                                    $response['errors'] = $this->l('Quantity not provided for service').': '.$objProduct->name;
+                                    $response['errors'][] = Tools::displayError('Quantity not provided for service').': '.$objProduct->name;
                                 } else if (!Validate::isUnsignedInt($serviceQuantities[$idServiceProduct])) {
                                     $response['hasError'] = true;
-                                    $response['errors'] = $this->l('Invalid quantity provided for service').': '.$objProduct->name;
+                                    $response['errors'][] = Tools::displayError('Invalid quantity provided for service').': '.$objProduct->name;
                                 }
                             } elseif ($serviceQuantities[$idServiceProduct] > 1) {
                                 $response['hasError'] = true;
-                                $response['errors'] = $this->l('Can not order multiple quanitity for service').': '.$objProduct->name;
+                                $response['errors'][] = Tools::displayError('Can not order multiple quanitity for service').': '.$objProduct->name;
                             }
 
                             if (!$objProduct->allow_multiple_quantity) {
@@ -1580,12 +1575,10 @@ class AdminCartsControllerCore extends AdminController
                                 || !ValidateCore::isPrice($serviceUnitPrices[$idServiceProduct])
                             ) {
                                 $response['hasError'] = true;
-                                $response['errors'] = $this->l('Invalid unit price for service').': '.$objProduct->name;
+                                $response['errors'][] = Tools::displayError('Invalid unit price for service').': '.$objProduct->name;
                             }
-
                         } else {
-                            die($idServiceProduct);
-                            $response['errors'] = $this->l('Some services not found. please try after refreshing the page');
+                            $response['errors'][] = Tools::displayError('Some services not found. please try after refreshing the page');
                         }
                     }
 
@@ -1609,7 +1602,7 @@ class AdminCartsControllerCore extends AdminController
                             )) {
                                 $originalPrice = Product::getPriceStatic($idServiceProduct, false);
                                 // if price is different than the original service price then update the price
-                                if ($operator == 'up' && $originalPrice != $price) {
+                                if ($operator == 'up' && $originalPrice != $unitPrice) {
                                     if ($specificPriceInfo = SpecificPrice::getSpecificPrice(
                                         (int)$idServiceProduct,
                                         0,
@@ -1649,20 +1642,20 @@ class AdminCartsControllerCore extends AdminController
 
                         if (!$result) {
                             $response['hasError'] = true;
-                            $response['errors'] = $this->l('Error while updating services, please try again after refresing the page');
+                            $response['errors'][] = Tools::displayError('Error while updating services, please try again after refresing the page');
                         }
                     }
                 } else {
                     $response['hasError'] = true;
-                    $response['errors'] = $this->l('No service found');
+                    $response['errors'][] = Tools::displayError('No service found');
                 }
             } else {
                 $response['hasError'] = true;
-                $response['errors'] = $this->l('Room info not found');
+                $response['errors'][] = Tools::displayError('Room info not found');
             }
         } else {
             $response['hasError'] = true;
-            $response['errors'] = $this->l('You do not have permission to edit this order.');
+            $response['errors'][] = Tools::displayError('You do not have permission to edit this order.');
         }
 
         $this->ajaxDie(json_encode($response));
