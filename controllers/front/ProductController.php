@@ -387,9 +387,6 @@ class ProductControllerCore extends FrontController
 
                     $objHotelBedType = new HotelBedType();
                     if ($bedTypes = $objHotelBedType->getAllBedTypes($this->context->language->id)) {
-                        foreach ($bedTypes as $bedTypeKey => $bedType) {
-                            $bedTypes[$bedTypeKey]['area'] = Tools::ps_round($bedType['width'], 2).' * '.Tools::ps_round($bedType['length'], 2);
-                        }
                         $bedTypes = array_column($bedTypes, null, 'id_bed_type');
                     }
 
