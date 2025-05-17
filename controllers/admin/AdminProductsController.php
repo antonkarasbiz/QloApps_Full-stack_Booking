@@ -4489,13 +4489,7 @@ class AdminProductsControllerCore extends AdminController
         }
 
         $objHotelBedType = new HotelBedType();
-        if ($bedTypes = $objHotelBedType->getAllBedTypes($this->context->language->id)) {
-            $dimensionUnit = Configuration::get('PS_DIMENSION_UNIT');
-            foreach ($bedTypes as $bedTypeKey => $bedType) {
-                $bedTypes[$bedTypeKey]['area'] = Tools::ps_round($bedType['width'], 2).' '.$dimensionUnit.' * '.Tools::ps_round($bedType['length'], 2).' '.$dimensionUnit;
-            }
-        }
-
+        $bedTypes = $objHotelBedType->getAllBedTypes($this->context->language->id);
         $data->assign('bed_types_info', $bedTypes);
         $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
         if ($selectedBedTypes = $objHotelRoomTypeBedType->getRoomTypeBedTypes($product->id)) {
