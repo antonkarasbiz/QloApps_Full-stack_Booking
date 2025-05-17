@@ -291,18 +291,23 @@ class ParentOrderControllerCore extends FrontController
 
     protected function _assignCheckoutVars()
     {
-        if ($orderRestrictErr = HotelCartBookingData::validateCartBookings()) {
-            $this->errors = array_merge($this->errors, $orderRestrictErr);
-        }
         $show_option_allow_separate_package = (!$this->context->cart->isAllProductsInStock(true) && Configuration::get('PS_SHIP_WHEN_AVAILABLE'));
         $advanced_payment_api = (bool)Configuration::get('PS_ADVANCED_PAYMENT_API');
-
         $this->context->smarty->assign(array(
             'THEME_DIR' => _THEME_DIR_,
             'PS_ROOM_PRICE_AUTO_ADD_BREAKDOWN' => Configuration::get('PS_ROOM_PRICE_AUTO_ADD_BREAKDOWN'),
-            'orderRestrictErr' => count($orderRestrictErr) ? 1 : 0,
             'show_option_allow_separate_package' => $show_option_allow_separate_package,
             'advanced_payment_api' => $advanced_payment_api
+        ));
+    }
+
+    protected function _assignCheckoutValidationVars()
+    {
+        if ($orderRestrictErr = HotelCartBookingData::validateCartBookings()) {
+            $this->errors = array_merge($this->errors, $orderRestrictErr);
+        }
+        $this->context->smarty->assign(array(
+            'orderRestrictErr' => count($orderRestrictErr) ? 1 : 0,
         ));
     }
 

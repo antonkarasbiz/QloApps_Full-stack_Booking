@@ -38,6 +38,16 @@
                     <input type="number" class="form-control" name="edit_product[product_quantity]" id="edit_product_product_quantity" value="{$ServiceProductOrderDetail->quantity}" min="1"/>
                 </div>
             </div>
+
+            <div class="product_invoice" style="display: none;">
+                <select name="product_invoice" class="edit_product_invoice">
+                    {foreach from=$invoices_collection item=invoice}
+                        <option value="{$invoice->id}" {if $invoice->id == $data.id_order_invoice}selected="selected"{/if}>
+                            #{Configuration::get('PS_INVOICE_PREFIX', $current_id_lang, null, $order->id_shop)}{'%06d'|sprintf:$invoice->number}
+                        </option>
+                    {/foreach}
+                </select>
+            </div>
         </div>
         <button type="button" class="btn btn-default" id="submitAddProduct" disabled="disabled" style="display:none;"></button>
     </div>

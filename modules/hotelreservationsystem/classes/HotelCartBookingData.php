@@ -957,21 +957,87 @@ class HotelCartBookingData extends ObjectModel
             $errors[] = $objModule->l('No booking found in the cart.', 'HotelOrderRestrictDate');
         }
 
-        // validate service products if not active, deleted or not associated to a specific room type then remove from cart
+        // validate service products if not active, deleted or not associated to a specific room type/hotels then remove from cart
         $objServiceProductCartDetail = new ServiceProductCartDetail();
         $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
-        if ($serviceProducts = $objServiceProductCartDetail->getAllServiceProduct($context->cart->id)) {
+        if ($serviceProducts = $objServiceProductCartDetail->getServiceProductsInCart($context->cart->id)) {
             foreach ($serviceProducts as $service) {
+                $toRemoveService = 0;
                 if (!Validate::isLoadedObject($product = new Product($service['id_product']))) {
-                    $objServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($service['htl_cart_booking_id'], $service['id_product']);
+                    $toRemoveService = 1;
                 } else {
                     if (!$product->active) {
-                        $objServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($service['htl_cart_booking_id'], $service['id_product']);
+                        $toRemoveService = 1;
                     } else {
-                        if (!$objRoomTypeServiceProduct->isRoomTypeLinkedWithProduct($service['id_product_room_type'], $service['id_product'])) {
-                            $objServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($service['htl_cart_booking_id'], $service['id_product']);
+                        if ($product->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
+                            // service with room type must have association with valid hotel cart booking
+                            if (Validate::isLoadedObject($objHotelCartBooking = new HotelCartBookingData($service['id_hotel_cart_booking']))) {
+                                // check if added room type is associated with valid service product
+                                $serviceAssociations = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType(
+                                    $service['id_product'],
+                                    RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE,
+                                    $objHotelCartBooking->id_product
+                                );
+                                if (!isset($serviceAssociations['room_type'])
+                                    || !in_array($objHotelCartBooking->id_product, $serviceAssociations['room_type'])
+                                ) {
+                                    $toRemoveService = 1;
+                                }
+                            } else {
+                                $toRemoveService = 1;
+                            }
+                        } else {
+                            if (ServiceProductOption::productHasOptions($service['id_product'])) {
+                                if (!Validate::isLoadedObject(new ServiceProductOption($service['id_product_option']))) {
+                                    $toRemoveService = 1;
+                                }
+                            } elseif ($service['id_product_option']) {
+                                $toRemoveService = 1;
+                            }
+
+                            if (!$toRemoveService) {
+                                if ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE) {
+                                    // service with hotel must have association with valid hotel
+                                    if (Validate::isLoadedObject($objHotelBranch = new HotelBranchInformation($service['id_hotel']))) {
+                                        $serviceAssociations = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType(
+                                            $service['id_product'],
+                                            RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL,
+                                            $service['id_hotel']
+                                        );
+                                        if (!isset($serviceAssociations['hotel'])
+                                            || !in_array($service['id_hotel'], $serviceAssociations['hotel'])
+                                        ) {
+                                            $toRemoveService = 1;
+                                        }
+                                    } else {
+                                        $toRemoveService = 1;
+                                    }
+                                } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE) {
+                                    // Standalone product must not have any association with hotel or hotel cart booking
+                                    if ($service['id_hotel'] || $service['id_hotel_cart_booking']) {
+                                        $toRemoveService = 1;
+                                    }
+                                } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE) {
+                                    // service with hotel or room type must have association with hotel or hotel cart booking
+                                    if (!$service['id_hotel'] && !$service['id_hotel_cart_booking']) {
+                                        $toRemoveService = 1;
+                                    }
+                                }
+                            }
                         }
                     }
+                }
+
+                if ($toRemoveService) {
+                    $objServiceProductCartDetail->removeCartServiceProduct(
+                        $context->cart->id,
+                        null,
+                        false,
+                        null,
+                        null,
+                        null,
+                        $service['id_service_product_cart_detail']
+                    );
                 }
             }
         }

@@ -1129,6 +1129,7 @@ class AdminOrdersControllerCore extends AdminController
                 array(
                     'order' => $objOrder,
                     'currency' => new Currency($objOrder->id_currency),
+                    'invoices_collection' => $objOrder->getInvoicesCollection(),
                 )
             );
             $modal = array(
@@ -1188,6 +1189,7 @@ class AdminOrdersControllerCore extends AdminController
                 $smartyVars['orderCurrency'] = $objOrder->id_currency;
                 $smartyVars['currencySign'] = $objCurrency->sign;
                 $smartyVars['link'] = $this->context->link;
+                $smartyVars['invoices_collection'] = $objOrder->getInvoicesCollection();
 
                 // set context currency So that we can get prices in the order currency
                 $this->context->currency = $objCurrency;
@@ -3804,7 +3806,8 @@ class AdminOrdersControllerCore extends AdminController
                     (int)$this->context->language->id,
                     pSQL(Tools::getValue('product_search')),
                     0,
-                    Product::SELLING_PREFERENCE_HOTEL_STANDALONE
+                    null,
+                    $idHotel
                 )) {
                     $objServiceProductOption = new ServiceProductOption();
                     foreach ($products as $key => &$product) {
@@ -5066,16 +5069,24 @@ class AdminOrdersControllerCore extends AdminController
             $response['error'] = Tools::displayError('The order object cannot be loaded.');
         } elseif (!Validate::isUnsignedInt($productInformations['product_quantity'])) {
             $response['status'] = false;
-            $response['error'] = Tools::displayError('Please Enter a valid Quantity.');
+            $response['error'] = Tools::displayError('Please enter a valid quantity.');
         } elseif (!Validate::isPrice($productInformations['product_price_tax_incl'])) {
             $response['status'] = false;
             $response['error'] = Tools::displayError('Please enter a valid tax included price.');
         } elseif (!Validate::isPrice($productInformations['product_price_tax_excl'])) {
             $response['status'] = false;
             $response['error'] = Tools::displayError('Please enter a valid tax excluded price.');
+        } elseif (!Validate::isPrice(($productInformations['product_quantity'] * $productInformations['product_price_tax_incl']))) {
+            $response['status'] = false;
+            $response['error'] = Tools::displayError('The product can not be added with entered price and quantities.');
         } elseif (!Validate::isLoadedObject($objProduct = new Product($idProduct, false, $objOrder->id_lang))) {
             $response['status'] = false;
             $response['error'] = Tools::displayError('The product object cannot be loaded.');
+        }  elseif ($objProduct->booking_product
+            || $objProduct->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE
+        ) {
+            $response['status'] = false;
+            $response['error'] = Tools::displayError('Invalid product. Please try adding any other product.');
         } elseif ($objProduct->selling_preference_type != Product::SELLING_PREFERENCE_STANDALONE
             && (!$addressTax->id_hotel
             || !Validate::isLoadedObject($objHotel = new HotelBranchInformation($addressTax->id_hotel)))
@@ -5169,7 +5180,7 @@ class AdminOrdersControllerCore extends AdminController
             }
 
             if ($response['status']) {
-                // If product is standalone the we have to create a new order for this product
+                // If product is standalone and current order is for a hotel then we have to create a new order for this product
                 $response['new_id_order'] = 0;
                 if ($objProduct->selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE && $addressTax->id_hotel) {
                     $objPaymentModule = new BoOrder();
@@ -5202,7 +5213,7 @@ class AdminOrdersControllerCore extends AdminController
                         $response['error'] = Tools::displayError('Some error occurred while processing the order.');
                     }
                 } else {
-                    // If product is Hotel standalone then we will ad in the same orders
+                    // If product is Hotel standalone then we will add in the same orders
 
                     // If order is valid, we can create a new invoice or edit an existing invoice
                     if ($objOrder->hasInvoice()) {
@@ -5240,8 +5251,8 @@ class AdminOrdersControllerCore extends AdminController
                             $objOrderInvoice->add();
                         } else {
                             // Update current invoice
-                            $objOrderInvoice->total_paid_tax_excl += (float)$objCart->getOrderTotal(false, $total_method);
-                            $objOrderInvoice->total_paid_tax_incl += (float)$objCart->getOrderTotal($useTaxes, $total_method);
+                            $objOrderInvoice->total_paid_tax_excl += (float)$objCart->getOrderTotal(false, $totalMethod);
+                            $objOrderInvoice->total_paid_tax_incl += (float)$objCart->getOrderTotal($useTaxes, $totalMethod);
                             $objOrderInvoice->total_products += (float)$objCart->getOrderTotal(false, Cart::ONLY_PRODUCTS);
                             $objOrderInvoice->total_products_wt += (float)$objCart->getOrderTotal($useTaxes, Cart::ONLY_PRODUCTS);
                             $objOrderInvoice->update();
@@ -5827,6 +5838,15 @@ class AdminOrdersControllerCore extends AdminController
         )) {
             $response['status'] = false;
             $response['error'] = Tools::displayError('Product information not found.');
+        } elseif (!Validate::isUnsignedInt($editProductInfo['product_quantity'])) {
+            $response['status'] = false;
+            $response['error'] = Tools::displayError('Please enter a valid quantity.');
+        } elseif (!Validate::isPrice($editProductInfo['product_price_tax_excl'])) {
+            $response['status'] = false;
+            $response['error'] = Tools::displayError('Please enter a valid tax excluded price.');
+        } elseif (!Validate::isPrice(($editProductInfo['product_quantity'] * $editProductInfo['product_price_tax_excl']))) {
+            $response['status'] = false;
+            $response['error'] = Tools::displayError('The product can not be added with entered price and quantities.');
         }
 
         if ($response['status']) {

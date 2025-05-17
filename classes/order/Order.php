@@ -2654,16 +2654,16 @@ class OrderCore extends ObjectModel
         // check rooms in booking
         $objHotelBooking = new HotelBookingdetail();
         if ($orderBookings = $objHotelBooking->getOrderCurrentDataByOrderId($this->id)) {
-            $res = $res && $this->checkList($orderBookings, $action, $includeCheckIn);
+            $res &= $this->checkList($orderBookings, $action, $includeCheckIn);
         }
         // check hotel linked products
         $objServiceProductOrderDetail = new ServiceProductOrderDetail();
         if ($hotelProducts = $objServiceProductOrderDetail->getServiceProductsInOrder($this->id, 0, 0, Product::SELLING_PREFERENCE_HOTEL_STANDALONE)) {
-            $res = $res && $this->checkList($hotelProducts, $action, false);
+            $res &= $this->checkList($hotelProducts, $action, false);
         }
 
         if ($standaloneProducts = $objServiceProductOrderDetail->getServiceProductsInOrder($this->id, 0, 0, Product::SELLING_PREFERENCE_STANDALONE)) {
-            $res = $res && $this->checkList($standaloneProducts, $action, false);
+            $res &= $this->checkList($standaloneProducts, $action, false);
         }
 
         return $res;

@@ -231,6 +231,11 @@
 																					{$product.product_name|escape:'html':'UTF-8'}{if isset($product.option_name) && $product.option_name} : {$product.option_name|escape:'html':'UTF-8'}{/if}
 																				</a>
 																			</p>
+                                                                            {if isset($product['hotel_location'])}
+                                                                                <p class="hotel-location">
+                                                                                    <i class="icon-map-marker"></i> &nbsp;{$product['hotel_location']}
+                                                                                </p>
+                                                                            {/if}
 																		</div>
 																		<div class="col-xs-12">
 																			<div class="description-list">

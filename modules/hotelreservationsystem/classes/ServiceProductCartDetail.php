@@ -42,15 +42,19 @@ class ServiceProductCartDetail extends ObjectModel
 
     public function alreadyExists(
         $idCart,
-        $idProduct,
+        $idProduct = false,
         $idHtlCartData = false,
         $idHotel = false,
-        $idProductOption = false
+        $idProductOption = false,
+        $idServiceProductCartDetail = false
     ) {
 
         $sql = 'SELECT `id_service_product_cart_detail` FROM `'._DB_PREFIX_.'service_product_cart_detail`
-            WHERE `id_product` = '.(int)$idProduct.' AND `id_cart` = '.(int)$idCart;
+            WHERE `id_cart` = '.(int)$idCart;
 
+        if ($idProduct) {
+            $sql .= ' AND `id_product` = '.(int)$idProduct;
+        }
         if ($idHotel) {
             $sql .= ' AND `id_hotel` = '.(int)$idHotel;
         }
@@ -59,6 +63,9 @@ class ServiceProductCartDetail extends ObjectModel
         }
         if ($idProductOption) {
             $sql .= ' AND `id_product_option` = '.(int)$idProductOption;
+        }
+        if ($idServiceProductCartDetail) {
+            $sql .= ' AND `id_service_product_cart_detail` = '.(int)$idServiceProductCartDetail;
         }
 
         return Db::getInstance()->getValue($sql);
@@ -146,7 +153,8 @@ class ServiceProductCartDetail extends ObjectModel
         $priceAdditionType = null,
         $groupByProductId = 0,
         $detailedInfo = 0,
-        $idLang = 0
+        $idLang = 0,
+        $idServiceProductCartDetail = 0
     ) {
         if ($useTax === null) {
             $useTax = Product::$_taxCalculationMethod == PS_TAX_EXC ? false : true;
@@ -158,16 +166,15 @@ class ServiceProductCartDetail extends ObjectModel
             $language = new Language($idLang);
         }
 
-        $sql = 'SELECT spc.*, p.`selling_preference_type`, p.`price_calculation_method`';
+        $sql = 'SELECT spc.*, p.`selling_preference_type`, p.`price_calculation_method`, hcbd.`id_product` as `id_product_room_type`';
         if (!$getTotalPrice) {
             $sql .= ', hbil.`hotel_name` ';
         }
         $sql .= ' FROM `'._DB_PREFIX_.'service_product_cart_detail` spc';
         $sql .= ' LEFT JOIN `'._DB_PREFIX_.'product` p ON (p.`id_product` = spc.`id_product`)';
 
-        if (!is_null($idProductRoomType)) {
-            $sql .= ' LEFT JOIN `'._DB_PREFIX_.'htl_cart_booking_data` hcbd ON (hcbd.`id` = spc.`htl_cart_booking_id`)';
-        }
+        $sql .= ' LEFT JOIN `'._DB_PREFIX_.'htl_cart_booking_data` hcbd ON (hcbd.`id` = spc.`htl_cart_booking_id`)';
+
         if (!$getTotalPrice) {
             $sql .= ' LEFT JOIN `'._DB_PREFIX_.'htl_branch_info_lang` hbil ON (hbil.`id` = spc.`id_hotel` AND hbil.`id_lang` = '. $language->id.')';
         }
@@ -201,6 +208,10 @@ class ServiceProductCartDetail extends ObjectModel
             $sql .= ' AND spc.`id_product_option`='.(int) $idProductOption;
         }
 
+        if ($idServiceProductCartDetail) {
+            $sql .= ' AND spc.`id_service_product_cart_detail`='.(int) $idServiceProductCartDetail;
+        }
+
         if ($getTotalPrice) {
             $totalPrice = 0;
         }
@@ -217,7 +228,7 @@ class ServiceProductCartDetail extends ObjectModel
                             $objProduct->id,
                             $product['id_product_option'],
                             $product['id_hotel'],
-                            false,
+                            $product['id_product_room_type'],
                             $useTax,
                             $qty,
                             null,
@@ -230,7 +241,7 @@ class ServiceProductCartDetail extends ObjectModel
                             $objProduct->id,
                             $product['id_product_option'],
                             $product['id_hotel'],
-                            false,
+                            $product['id_product_room_type'],
                             true,
                             1,
                             null,
@@ -241,7 +252,7 @@ class ServiceProductCartDetail extends ObjectModel
                             $objProduct->id,
                             $product['id_product_option'],
                             $product['id_hotel'],
-                            false,
+                            $product['id_product_room_type'],
                             false,
                             1,
                             null,
@@ -413,19 +424,34 @@ class ServiceProductCartDetail extends ObjectModel
 
     public function removeCartServiceProduct(
         $idCart,
-        $idProduct,
+        $idProduct = null,
         $quantity = false,
-        $idHotel = false,
-        $idHtlCartData = false,
-        $idProductOption = null
+        $idHotel = null,
+        $idHtlCartData = null,
+        $idProductOption = null,
+        $idServiceProductCartDetail = 0
     ) {
-        $updateQunatity = false;
-        $res = true;
-
-        if ($idHtlCartData) {
-            $id_service_product_cart_detail = $this->alreadyExists($idCart, $idProduct, $idHtlCartData);
-            if ($id_service_product_cart_detail) {
-                $objServiceProductCartDetail = new ServiceProductCartDetail($id_service_product_cart_detail);
+        if ($serviceProducts = $this->getServiceProductsInCart(
+            $idCart,
+            [],
+            $idHotel,
+            $idHtlCartData,
+            null,
+            $idProduct,
+            $idProductOption,
+            null,
+            0,
+            null,
+            null,
+            0,
+            0,
+            0,
+            $idServiceProductCartDetail
+        )) {
+            $updateQunatity = false;
+            $res = true;
+            foreach ($serviceProducts as $product) {
+                $objServiceProductCartDetail = new ServiceProductCartDetail($product['id_service_product_cart_detail']);
                 if ($quantity) {
                     $removedQuantity = $quantity;
                     $objServiceProductCartDetail->quantity -= $quantity;
@@ -446,100 +472,34 @@ class ServiceProductCartDetail extends ObjectModel
                         $controllerType = 'front';
                     }
                     if ($controllerType == 'admin' || $controllerType == 'moduleadmin') {
-                        if ($cartQty = Cart::getProductQtyInCart($idCart, $idProduct)) {
+                        if ($cartQty = Cart::getProductQtyInCart($idCart, $product['id_product '])) {
                             if ($removedQuantity < $cartQty) {
-                                $res = $res && Db::getInstance()->update(
+                                $res &= Db::getInstance()->update(
                                     'cart_product',
                                     array('quantity' => (int)($cartQty - $removedQuantity)),
-                                    '`id_product` = '.(int)$idProduct.' AND `id_cart` = '.(int)$idCart
+                                    '`id_product` = '.(int)$product['id_product'].' AND `id_cart` = '.(int)$idCart
                                 );
                             } else {
                                 //if room type has no qty remaining in cart then delete row
-                                $res = $res && Db::getInstance()->delete(
+                                $res &= Db::getInstance()->delete(
                                     'cart_product',
-                                    '`id_product` = '.(int)$idProduct.' AND `id_cart` = '.(int)$idCart
+                                    '`id_product` = '.(int)$product['id_product'].' AND `id_cart` = '.(int)$idCart
                                 );
                             }
                         }
                     } else {
-                        $res = $res && $objCart->updateQty((int)$removedQuantity, $idProduct, null, false, 'down');
+                        $res &= $objCart->updateQty((int)$removedQuantity, $product['id_product'], null, false, 'down');
                     }
                 }
-                return $res;
-            } else {
-                return true;
+                if ($quantity) {
+                    break;
+                }
             }
-        } else {
-            if ($products = $this->getServiceProductsInCart(
-                $idCart,
-                [],
-                $idHotel,
-                $idHtlCartData,
-                null,
-                $idProduct,
-                $idProductOption
-            )) {
-                foreach ($products as $product) {
-                    $objServiceProductCartDetail = new ServiceProductCartDetail($product['id_service_product_cart_detail']);
-                    if ($quantity) {
-                        $removedQuantity = $quantity;
-                        $objServiceProductCartDetail->quantity -= $quantity;
-                        if ($objServiceProductCartDetail->quantity) {
-                            $updateQunatity = $objServiceProductCartDetail->save();
-                        } else {
-                            $updateQunatity = $objServiceProductCartDetail->delete();
-                        }
-                    } else {
-                        $removedQuantity = $objServiceProductCartDetail->quantity;
-                        $updateQunatity = $objServiceProductCartDetail->delete();
-                    }
-                    if ($updateQunatity) {
-                        $objCart = new Cart($idCart);
-                        if (isset(Context::getContext()->controller->controller_type)) {
-                            $controllerType = Context::getContext()->controller->controller_type;
-                        } else {
-                            $controllerType = 'front';
-                        }
-                        if ($controllerType == 'admin' || $controllerType == 'moduleadmin') {
-                            if ($cartQty = Cart::getProductQtyInCart($idCart, $idProduct)) {
-                                if ($removedQuantity < $cartQty) {
-                                    $res = $res && Db::getInstance()->update(
-                                        'cart_product',
-                                        array('quantity' => (int)($cartQty - $removedQuantity)),
-                                        '`id_product` = '.(int)$idProduct.' AND `id_cart` = '.(int)$idCart
-                                    );
-                                } else {
-                                    //if room type has no qty remaining in cart then delete row
-                                    $res = $res && Db::getInstance()->delete(
-                                        'cart_product',
-                                        '`id_product` = '.(int)$idProduct.' AND `id_cart` = '.(int)$idCart
-                                    );
-                                }
-                            }
-                        } else {
-                            $res = $res && $objCart->updateQty((int)$removedQuantity, $idProduct, null, false, 'down');
-                        }
-                    }
-                    if ($quantity) {
-                        break;
-                    }
-                }
-                return $res;
 
-            } else {
-                return true;
-            }
+            return $res;
         }
-    }
 
-    public function getAllServiceProduct($idCart)
-    {
-        return Db::getInstance()->executeS(
-            'SELECT spcd.*,  cbd.`id_product` as `id_product_room_type`, cbd.`id_room`, cbd.`id_hotel`, cbd.`date_from`, cbd.`date_to` FROM `' . _DB_PREFIX_ . 'service_product_cart_detail` spcd
-            INNER JOIN `'._DB_PREFIX_.'htl_cart_booking_data` cbd
-            ON(spcd.`htl_cart_booking_id` = cbd.`id`)
-            WHERE spcd.`id_cart` = ' . (int)$idCart
-        );
+        return true;
     }
 
     public static function validateServiceProductsInCart()

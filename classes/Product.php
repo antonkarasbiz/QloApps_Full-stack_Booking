@@ -4110,51 +4110,50 @@ class ProductCore extends ObjectModel
         if (!$context) {
             $context = Context::getContext();
         }
+        $sql = 'SELECT p.`id_product`, pl.`name`, p.`ean13`, p.`upc`, p.`active`, p.`reference`, m.`name` AS manufacturer_name, stock.`quantity`, product_shop.advanced_stock_management, p.`customizable`, p.`booking_product`, p.`allow_multiple_quantity`
+        FROM `'._DB_PREFIX_.'product` p
+        LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON (p.`id_product` = pl.`id_product` AND pl.`id_lang` = '.(int)$id_lang.')
+        LEFT JOIN `'._DB_PREFIX_.'manufacturer` m ON (p.`id_manufacturer` = m.`id_manufacturer`)';
+        $sql .= Product::sqlStock('p', 0);
+        $sql .= Shop::addSqlAssociation('product', 'p');
 
-        $sql = new DbQuery();
-        $sql->select('p.`id_product`, pl.`name`, p.`ean13`, p.`upc`, p.`active`, p.`reference`, m.`name` AS manufacturer_name, stock.`quantity`, product_shop.advanced_stock_management, p.`customizable`, p.`booking_product`');
-        $sql->from('product', 'p');
-        $sql->join(Shop::addSqlAssociation('product', 'p'));
-        $sql->leftJoin('product_lang', 'pl', '
-			p.`id_product` = pl.`id_product`
-			AND pl.`id_lang` = '.(int)$id_lang.Shop::addSqlRestrictionOnLang('pl')
-        );
-        $sql->leftJoin('manufacturer', 'm', 'm.`id_manufacturer` = p.`id_manufacturer`');
-        if ($booking_product) {
-            if ($id_hotel) {
-                $sql->innerJoin(
-                    'htl_room_type',
-                    'hrt',
-                    'p.`id_product` = hrt.`id_product` AND hrt.`id_hotel` = '.(int)$id_hotel
-                );
-            }
-        } else {
-            if (Product::SELLING_PREFERENCE_HOTEL_STANDALONE == $selling_preference_type && $id_hotel) {
-                $sql->innerJoin(
-                    'htl_room_type_service_product',
-                    'hrtsp',
-                    'p.`id_product` = hrtsp.`id_product` AND hrtsp.`id_element` = '.(int)$id_hotel.' AND hrtsp.`element_type` = '.(int)RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL
-                );
+        if ($id_hotel) {
+            if (!is_null($booking_product)) {
+                if ($booking_product) {
+                    $sql .= ' INNER JOIN `'._DB_PREFIX_.'htl_room_type` hrt ON (p.`id_product` = hrt.`id_product` AND hrt.`id_hotel` = '.(int)$id_hotel.')';
+                } else {
+                    $sql .= ' INNER JOIN `'._DB_PREFIX_.'htl_room_type_service_product` hrtsp ON (p.`id_product` = hrtsp.`id_product` AND hrtsp.`id_element` = '.(int)$id_hotel.' AND hrtsp.`element_type` = '.(int)RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL.')';
+                }
+            } else {
+                $sql .= ' LEFT JOIN `'._DB_PREFIX_.'htl_room_type` hrt ON (p.`id_product` = hrt.`id_product` AND hrt.`id_hotel` = '.(int)$id_hotel.')';
+                $sql .= ' LEFT JOIN `'._DB_PREFIX_.'htl_room_type_service_product` hrtsp ON (p.`id_product` = hrtsp.`id_product` AND hrtsp.`id_element` = '.(int)$id_hotel.' AND hrtsp.`element_type` = '.(int)RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL.')';
             }
         }
 
-        $where = 'pl.`name` LIKE \'%'.pSQL($query).'%\'
+        $sql .= ' WHERE 1';
+        if (!is_null($booking_product)) {
+            $sql .= $booking_product ? ' AND p.`booking_product` = 1' : ' AND p.`booking_product` = 0';
+        } elseif ($id_hotel) {
+            $sql .= ' AND IF (p.`booking_product` = 1, (p.`id_product` = hrt.`id_product`) , (p.`id_product` = hrtsp.`id_product` AND hrtsp.`id_element` = '.(int)$id_hotel.' AND hrtsp.`element_type` = '.(int)RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL.'))';
+        }
+        if ($selling_preference_type) {
+            $sql .= ' AND p.`selling_preference_type` = '.(int)$selling_preference_type;
+        }
+
+        $sql .= ' AND (pl.`name` LIKE \'%'.pSQL($query).'%\'
 		OR p.`ean13` LIKE \'%'.pSQL($query).'%\'
 		OR p.`upc` LIKE \'%'.pSQL($query).'%\'
 		OR p.`reference` LIKE \'%'.pSQL($query).'%\'
 		OR p.`supplier_reference` LIKE \'%'.pSQL($query).'%\'
 		OR EXISTS(SELECT * FROM `'._DB_PREFIX_.'product_supplier` sp WHERE sp.`id_product` = p.`id_product` AND `product_supplier_reference` LIKE \'%'.pSQL($query).'%\')';
-
-        $sql->orderBy('pl.`name` ASC');
-
         if (Combination::isFeatureActive()) {
-            $where .= ' OR EXISTS(SELECT * FROM `'._DB_PREFIX_.'product_attribute` `pa` WHERE pa.`id_product` = p.`id_product` AND (pa.`reference` LIKE \'%'.pSQL($query).'%\'
+            $sql .= ' OR EXISTS(SELECT * FROM `'._DB_PREFIX_.'product_attribute` `pa` WHERE pa.`id_product` = p.`id_product` AND (pa.`reference` LIKE \'%'.pSQL($query).'%\'
 			OR pa.`supplier_reference` LIKE \'%'.pSQL($query).'%\'
 			OR pa.`ean13` LIKE \'%'.pSQL($query).'%\'
-			OR pa.`upc` LIKE \'%'.pSQL($query).'%\'))';
+			OR pa.`upc` LIKE \'%'.pSQL($query).'%\')))';
         }
-        $sql->where($where);
-        $sql->join(Product::sqlStock('p', 0));
+
+        $sql .= ' ORDER BY pl.`name` ASC';
 
         $result = Db::getInstance()->executeS($sql);
 

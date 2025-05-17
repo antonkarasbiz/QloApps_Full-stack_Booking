@@ -433,6 +433,7 @@ class OrderOpcControllerCore extends ParentOrderController
      */
     public function initContent()
     {
+        $this->_assignCheckoutValidationVars();
         parent::initContent();
 
         /* id_carrier is not defined in database before choosing a carrier, set it to a default one to match a potential cart _rule */
@@ -1108,6 +1109,7 @@ class OrderOpcControllerCore extends ParentOrderController
     {
         $response = array('success' => false);
         if ($this->context->cart->getProducts()) {
+            $this->_assignCheckoutValidationVars();
             $this->_assignCheckoutVars();
             $this->_assignShoppingCart();
             $response['success'] = true;

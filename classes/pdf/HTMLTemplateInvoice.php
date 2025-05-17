@@ -325,10 +325,11 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
                 $totalDemandsPriceTE = 0;
                 $totalDemandsPriceTI = 0;
                 foreach ($order_details as $type_key => $type_value) {
-                    if (isset($processed_product[$type_value['product_id'].'_'.$type_value['selling_preference_type']])) {
+                    $processProuctKey = $type_value['product_id'].'_'.$type_value['selling_preference_type'].'_'.$type_value['id_order_detail'];
+                    if (isset($processed_product[$processProuctKey])) {
                         continue;
                     }
-                    $processed_product[$type_value['product_id'].'_'.$type_value['selling_preference_type']] = $type_value['product_id'];
+                    $processed_product[$processProuctKey] = $type_value['product_id'];
 
                     if ($type_value['is_booking_product']) {
                         if ($display_product_images) {

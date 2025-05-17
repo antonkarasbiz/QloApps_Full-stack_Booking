@@ -140,6 +140,11 @@
     margin: 7px 0;
     font-weight: 400;
 }
+.product-detail .hotel-location {
+    font-size: 14px;
+    padding: 10px 0px 0px 0px;
+    color: #777777;
+}
 .product-detail dd {
     margin: 7px 0;
     font-weight: 700;

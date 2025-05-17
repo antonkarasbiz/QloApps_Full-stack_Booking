@@ -100,10 +100,10 @@ class RoomTypeServiceProduct extends ObjectModel
         return Db::getInstance()->insert($this->def['table'], $rowData);
     }
 
-    public function getAssociatedHotelsAndRoomType($idProduct, $elementType = 0, $formated = true) {
+    public function getAssociatedHotelsAndRoomType($idProduct, $elementType = 0, $idElement = 0, $formated = true) {
         $rows = Db::getInstance()->executeS(
             'SELECT * FROM `'._DB_PREFIX_.'htl_room_type_service_product` AS rsp
-            WHERE `id_product` = '.(int)$idProduct . ($elementType ? ' AND rsp.`element_type` = ' . (int)$elementType : "")
+            WHERE `id_product` = '.(int)$idProduct . ($elementType ? ' AND rsp.`element_type` = ' . (int)$elementType : "" . ($idElement ? ' AND rsp.`id_element` = ' . (int)$idElement : ""))
         );
 
         if ($formated) {
@@ -114,6 +114,7 @@ class RoomTypeServiceProduct extends ObjectModel
             }
             return $response;
         }
+
         return $rows;
     }
 

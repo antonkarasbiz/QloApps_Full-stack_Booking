@@ -217,12 +217,7 @@
                 {block name='order_detail_refund_requests'}
                     {if (isset($refundReqBookings) && $refundReqBookings) || (isset($refundReqProducts) && $refundReqProducts)}
                         <div class="alert alert-info-light cancel_requests_link_wrapper">
-                            <i class="icon-info-circle"></i>
-                            {if count($refundReqBookings) <= 1}
-                                <span>{l s='Your cancellation request for 1 room is being processed. To check request status'} <a target="_blank" href="{$link->getPageLink('order-follow')|escape:'html':'UTF-8'}?id_order={$order->id|escape:'html':'UTF-8'}">{l s='click here.'}</a>
-                            {else}
-                                <span>{l s='Your cancellation request for %d rooms is being processed. To check request statuses' sprintf=[count($refundReqBookings)]} <a target="_blank" href="{$link->getPageLink('order-follow')|escape:'html':'UTF-8'}?id_order={$order->id|escape:'html':'UTF-8'}">{l s='click here.'}</a>
-                            {/if}
+                            <i class="icon-info-circle"></i> <span>{l s='Your cancellation request for'} {if (isset($refundReqBookings) && $refundReqBookings) && (isset($refundReqProducts) && $refundReqProducts)}{l s='%d room(s) and %d product(s)' sprintf=[count($refundReqBookings), count($refundReqProducts)]}{elseif isset($refundReqBookings) && $refundReqBookings}{l s='%d room(s)' sprintf=[count($refundReqBookings)]}{elseif isset($refundReqProducts) && $refundReqProducts}{l s='%d product(s)' sprintf=[count($refundReqProducts)]}{/if} {l s='is being processed. To check request status' sprintf=[count($refundReqBookings)]} <a target="_blank" href="{$link->getPageLink('order-follow')|escape:'html':'UTF-8'}?id_order={$order->id|escape:'html':'UTF-8'}">{l s='click here.'}</a>
                         </div>
                     {/if}
                 {/block}

@@ -1633,6 +1633,8 @@ class CartCore extends ObjectModel
         $ecotax_total = 0;
         $totalDemandsPrice = 0;
         $objCartBookingData = new HotelCartBookingData();
+        $objServiceProductCartDetail = new ServiceProductCartDetail();
+        $objAdvPayment = new HotelAdvancedPayment();
         foreach ($products as $product) {
             // skip products if selection os for only room or only normal products
             if ($product['booking_product']) {
@@ -1745,7 +1747,6 @@ class CartCore extends ObjectModel
             }
             if (!$product['booking_product']) {
                 if (Product::SELLING_PREFERENCE_STANDALONE == $product['selling_preference_type']) {
-                    $objServiceProductCartDetail = new ServiceProductCartDetail();
                     if ($servicePorducts = $objServiceProductCartDetail->getServiceProductsInCart(
                         $this->id,
                         [],
@@ -1771,7 +1772,6 @@ class CartCore extends ObjectModel
                 } else if (Product::SELLING_PREFERENCE_HOTEL_STANDALONE == $product['selling_preference_type']
                     || Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE == $product['selling_preference_type']
                 ) {
-                    $objServiceProductCartDetail = new ServiceProductCartDetail();
                     if ($type == Cart::ONLY_ROOM_SERVICES
                         || $type == Cart::ONLY_CONVENIENCE_FEE
                         || $type == Cart::ONLY_ROOM_SERVICES_WITHOUT_AUTO_ADD
@@ -1822,7 +1822,6 @@ class CartCore extends ObjectModel
                         }
                     }
                 } else if (Product::SELLING_PREFERENCE_WITH_ROOM_TYPE == $product['selling_preference_type']) {
-                    $objServiceProductCartDetail = new ServiceProductCartDetail();
                     if ($servicesWithRoom = $objServiceProductCartDetail->getServiceProductsInCart(
                         $this->id,
                         [],
@@ -1877,7 +1876,6 @@ class CartCore extends ObjectModel
 
                     // If customer has selected advance payment of the cart
                     if ($type == Cart::ADVANCE_PAYMENT || $type == Cart::ADVANCE_PAYMENT_ONLY_PRODUCTS) {
-                        $objAdvPayment = new HotelAdvancedPayment();
                         $advProductPrice = $objAdvPayment->getProductMinAdvPaymentAmountByIdCart(
                             $this->id,
                             $cartRoomInfo['id_product'],

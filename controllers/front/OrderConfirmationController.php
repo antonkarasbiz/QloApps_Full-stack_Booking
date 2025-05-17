@@ -376,6 +376,13 @@ class OrderConfirmationControllerCore extends FrontController
                                     $type_value['total_price_tax_incl'] = $serviceProduct['total_price_tax_incl'];
                                     $type_value['product_quantity'] = $serviceProduct['quantity'];
                                     $type_value['option_name'] = $serviceProduct['option_name'];
+                                    $type_value['location'] = $serviceProduct['option_name'];
+
+                                    if ($hotelInfo = $objHtlBranchInfo->hotelBranchesInfo($this->context->language->id, 2, 1, $serviceProduct['id_hotel'])) {
+                                        $type_value['hotel_location'] = $hotelInfo['hotel_name'].', '.$hotelInfo['city'].
+                                        ($hotelInfo['state_name']?', '.$hotelInfo['state_name']:'').', '.
+                                        $hotelInfo['country_name'].', '.$hotelInfo['postcode'];
+                                    }
                                     $cart_hotel_service_products[] = $type_value;
                                 }
                             } else if ($type_value['selling_preference_type'] == Product::SELLING_PREFERENCE_STANDALONE) {

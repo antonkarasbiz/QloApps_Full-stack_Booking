@@ -805,7 +805,6 @@ var ajaxCart = {
             }
             $('.vouchers').show();
         }
-
     },
 
     // Update product quantity
@@ -844,7 +843,7 @@ var ajaxCart = {
                 if (parseInt(this.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE
                     || parseInt(this.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
                 ) {
-                    if (typeof value.hotel_wise_data != 'undefined' && value.hotel_wise_data.length) {
+                    if (typeof value.hotel_wise_data != 'undefined') {
                         $(value.hotel_wise_data).each(function(i, val) {
                             ajaxCart.addProductRow(value, val);
                         });
@@ -887,11 +886,12 @@ var ajaxCart = {
                 content += '<div class="cart-info-sec rm_product_info_' + productId + '">';
                 content += '<span class="product_info_label">Price:</span>';
                 content += '<span class="price product_info_data">&nbsp;';
+
                 if (product.booking_product) {
                     content += formatCurrency(parseFloat(product.bookingData.total_room_type_amount), currency_format, currency_sign, currency_blank);
                 }else if ((parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE
                     || parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE)
-                    && (typeof(hotel_wise_data) != 'undefined' && hotel_wise_data.length)
+                    && (typeof(hotel_wise_data) != 'undefined')
                 ) {
                     content += formatCurrency(parseFloat(hotel_wise_data.amount), currency_format, currency_sign, currency_blank);
                 } else {

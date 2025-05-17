@@ -996,7 +996,7 @@ abstract class PaymentModuleCore extends Module
                                 if ($hotelProducts = $objServiceProductCartDetail->getServiceProductsInCart(
                                     $this->context->cart->id,
                                     [],
-                                    null,
+                                    $product['id_hotel'],
                                     0,
                                     null,
                                     $product['id_product']
@@ -1334,7 +1334,6 @@ abstract class PaymentModuleCore extends Module
                             '{products_txt}' => $product_list_txt,
                             '{discounts}' => $cart_rules_list_html,
                             '{discounts_txt}' => $cart_rules_list_txt,
-                            '{total_paid}' => Tools::displayPrice($total_paid, $this->context->currency, false),
                             '{total_products}' => Tools::displayPrice($total_products, $this->context->currency, false),
                             '{total_discounts}' => Tools::displayPrice(-$order->total_discounts, $this->context->currency, false),
                             '{total_shipping}' => Tools::displayPrice($order->total_shipping, $this->context->currency, false),
