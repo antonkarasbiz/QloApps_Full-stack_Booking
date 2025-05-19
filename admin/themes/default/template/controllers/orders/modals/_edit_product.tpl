@@ -33,7 +33,7 @@
                         {if !($currency->format % 2)}<div class="input-group-addon">{$currency->sign}</div>{/if}
                     </div>
                 </div>
-                <div class="productQuantity col-sm-6">
+                <div class="productQuantity col-sm-6" {if !$objProduct->allow_multiple_quantity} style="display:none" {/if}>
                     <label class="control-label">{l s='Quantity'}</label>
                     <input type="number" class="form-control" name="edit_product[product_quantity]" id="edit_product_product_quantity" value="{$ServiceProductOrderDetail->quantity}" min="1"/>
                 </div>

@@ -2557,6 +2557,12 @@ const AddProductModal = {
                                 $('#add_product_product_price_tax_incl').val(data.price_tax_incl);
                                 $('#add_product_product_price_tax_excl').val(data.price_tax_excl);
 
+                                if (parseInt(data.allow_multiple_quantity) != 0) {
+                                    $('.productQuantity').show();
+                                } else {
+                                    $('.productQuantity').hide();
+                                    $('#add_product_product_quantity').val(1);
+                                }
                                 if (data.options.length) {
                                     $('#new_product .form-group.productOptions').show();
                                     $.each(data.options, function() {

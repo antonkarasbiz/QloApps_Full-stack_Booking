@@ -130,13 +130,13 @@ class ServiceProductCartDetail extends ObjectModel
      * @param [type] $idCart
      * @param integer $idHotel : send id_hotel for products for specific hotel
      * @param integer $idHotelCartBooking: send htl_cart_booking_id for products for specific hotel room booking
-     * @param integer $sellingPreferenceTypes: Send selling preference type whcih products to be fetched
+     * @param array $sellingPreferenceTypes: Send selling preference type whcih products to be fetched
      * @param integer $idProduct
      * @param [type] $idProductOption
      * @param [type] $useTax
      * @param integer $getTotalPrice
      * @param [type] $idLang
-     * @return void
+     * @return array|float
      */
     // public function getProducts(
     public function getServiceProductsInCart(
@@ -405,23 +405,19 @@ class ServiceProductCartDetail extends ObjectModel
             $objServiceProductCartDetail->id_product_option = $idProductOption;
         }
 
-        if ($updateQty = $quantity - $objServiceProductCartDetail->quantity) {
-            $way = $updateQty > 0 ? 'up' : 'down';
-            $objServiceProductCartDetail->quantity += $updateQty;
-            if (Product::getProductPriceCalculation($idProduct) == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
-                $objHotelCartBookingData = new HotelCartBookingData($idHtlCartData);
-                $numdays = HotelHelper::getNumberOfDays($objHotelCartBookingData->date_from, $objHotelCartBookingData->date_to);
-                $updateQty *= $numdays;
-            }
-            if ($objServiceProductCartDetail->save()) {
-                $objCart = new Cart($idCart);
-                return $objCart->updateQty((int)abs($updateQty), $idProduct, null, false, $way);
-            }
-        } else {
-            return true;
+        if ($idHtlCartData && Product::getProductPriceCalculation($idProduct) == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
+            $objHotelCartBookingData = new HotelCartBookingData($idHtlCartData);
+            $numdays = HotelHelper::getNumberOfDays($objHotelCartBookingData->date_from, $objHotelCartBookingData->date_to);
+            $quantity *= $numdays;
         }
 
-        return false;
+        $objServiceProductCartDetail->quantity += $quantity;
+        if ($objServiceProductCartDetail->save()) {
+            $objCart = new Cart($idCart);
+            return $objCart->updateQty($quantity, $idProduct);
+        }
+
+        return true;
     }
 
     public function removeCartServiceProduct(

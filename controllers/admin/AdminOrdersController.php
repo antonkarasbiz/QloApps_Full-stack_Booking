@@ -1173,6 +1173,7 @@ class AdminOrdersControllerCore extends AdminController
                 )
             )) {
                 $smartyVars['ServiceProductOrderDetail'] = $objServiceProductOrderDetail;
+                $smartyVars['objProduct'] = new Product($objServiceProductOrderDetail->id_product);
                 $response['data'] = array(
                     'id_product' => $objServiceProductOrderDetail->id_product,
                     'id_product_option' => $objServiceProductOrderDetail->id_product_option,
