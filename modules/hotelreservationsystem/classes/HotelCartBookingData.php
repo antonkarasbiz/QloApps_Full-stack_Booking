@@ -930,7 +930,7 @@ class HotelCartBookingData extends ObjectModel
     }
 
     // validate cart data if not available then remove from cart
-    public static function validateCartBookings()
+    public static function validateCartBookings($checkServiceRoomLink = true)
     {
         $context = Context::getContext();
         $errors = array();
@@ -966,7 +966,7 @@ class HotelCartBookingData extends ObjectModel
                 } else {
                     if (!$product->active) {
                         $objRoomTypeServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($service['htl_cart_booking_id'], $service['id_product']);
-                    } else {
+                    } elseif ($checkServiceRoomLink) {
                         if (!$objRoomTypeServiceProduct->isRoomTypeLinkedWithProduct($service['id_product_room_type'], $service['id_product'])) {
                             $objRoomTypeServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($service['htl_cart_booking_id'], $service['id_product']);
                         }

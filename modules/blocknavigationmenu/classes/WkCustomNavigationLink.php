@@ -149,21 +149,6 @@ class WkCustomNavigationLink extends ObjectModel
 
     public function insertDemoData($populateData = null)
     {
-        //insert home link to the list
-        $languages = Language::getLanguages(false);
-        $objCustomNavigationLink = new WkCustomNavigationLink();
-        foreach ($languages as $language) {
-            $objCustomNavigationLink->name[$language['id_lang']] = 'Home';
-        }
-        $objCustomNavigationLink->position = $this->getHigherPosition();
-        $objCustomNavigationLink->id_cms = 0;
-        $objCustomNavigationLink->show_at_navigation = 1;
-        $objCustomNavigationLink->show_at_footer = 0;
-        $objCustomNavigationLink->active = 1;
-        $objCustomNavigationLink->is_custom_link = 0;
-        $objCustomNavigationLink->link = 'index';
-        $objCustomNavigationLink->save();
-
         // enter modules links
         $modsElems = array();
         // if module is installing or resetting
@@ -190,51 +175,86 @@ class WkCustomNavigationLink extends ObjectModel
             }
         }
 
+        //insert home link to the list
+        $languages = Language::getLanguages(false);
+        $https_link = (Tools::usingSecureMode() && Configuration::get('PS_SSL_ENABLED')) ? 'https://' : 'http://';
+        $objLink = new Link($https_link, $https_link);
+
+        $navigationLinks = array(
+            array(
+                'name' => 'Home',
+                'id_cms' => 0,
+                'show_at_navigation' => 1,
+                'show_at_footer' => 0,
+                'is_custom_link' => 0,
+                'link' => 'index',
+            ),
+            array(
+                'name' => 'Our Properties',
+                'id_cms' => 0,
+                'show_at_navigation' => 1,
+                'show_at_footer' => 0,
+                'is_custom_link' => 1,
+                'link' => $objLink->getPageLink('our-properties'),
+            ),
+        );
+
         if ($modsElems) {
             $indexLink = Context::getContext()->shop->getBaseURI();
             foreach ($modsElems as $name => $modElm) {
-                $objCustomNavigationLink = new WkCustomNavigationLink();
-                foreach ($languages as $language) {
-                    $objCustomNavigationLink->name[$language['id_lang']] = $name;
-                }
-                $objCustomNavigationLink->position = $this->getHigherPosition();
-                $objCustomNavigationLink->id_cms = 0;
-                $objCustomNavigationLink->show_at_navigation = 1;
-                $objCustomNavigationLink->show_at_footer = 0;
-                $objCustomNavigationLink->active = 1;
-                $objCustomNavigationLink->link = $indexLink.'#'.$modElm;
-                $objCustomNavigationLink->is_custom_link = 1;
-                $objCustomNavigationLink->save();
+                $navigationLinks[] = array(
+                    'name' => $name,
+                    'id_cms' => 0,
+                    'show_at_navigation' => 1,
+                    'show_at_footer' => 0,
+                    'is_custom_link' => 1,
+                    'link' => $indexLink.'#'.$modElm
+                );
             }
         }
+
         // enter CMS pages data
         if ($cmsPagesCMS = CMS::getCMSPages(Configuration::get('PS_LANG_DEFAULT'), 1)) {
             $showAtNavigation = 0;
             foreach ($cmsPagesCMS as $cmsPage) {
-                $objCustomNavigationLink = new WkCustomNavigationLink();
-                $objCustomNavigationLink->position = $this->getHigherPosition();
-                $objCustomNavigationLink->id_cms = $cmsPage['id_cms'];
-                $objCustomNavigationLink->show_at_navigation = $showAtNavigation;
-                $objCustomNavigationLink->show_at_footer = 1;
-                $objCustomNavigationLink->active = 1;
-                $objCustomNavigationLink->is_custom_link = 0;
-                $objCustomNavigationLink->save();
+                $navigationLinks[] = array(
+                    'id_cms' => $cmsPage['id_cms'],
+                    'show_at_navigation' => $showAtNavigation,
+                    'show_at_footer' => 1,
+                    'is_custom_link' => 0,
+                );
                 $showAtNavigation = !$showAtNavigation;
             }
         }
-        //insert contact link to the list
-        $objCustomNavigationLink = new WkCustomNavigationLink();
-        foreach ($languages as $language) {
-            $objCustomNavigationLink->name[$language['id_lang']] = 'Contact Us';
+
+        $navigationLinks[] = array(
+            'name' => 'Contact Us',
+            'id_cms' => 0,
+            'show_at_navigation' => 1,
+            'show_at_footer' => 0,
+            'is_custom_link' => 0,
+            'link' => 'contact',
+        );
+        foreach ($navigationLinks as $navigationLink) {
+            $objCustomNavigationLink = new WkCustomNavigationLink();
+            if (isset($navigationLink['name'])) {
+                foreach ($languages as $language) {
+                    $objCustomNavigationLink->name[$language['id_lang']] = $navigationLink['name'];
+                }
+            }
+
+            $objCustomNavigationLink->position = $this->getHigherPosition();
+            $objCustomNavigationLink->id_cms = $navigationLink['id_cms'];
+            $objCustomNavigationLink->show_at_navigation = $navigationLink['show_at_navigation'];
+            $objCustomNavigationLink->show_at_footer = $navigationLink['show_at_footer'];
+            $objCustomNavigationLink->active = 1;
+            if (isset($navigationLink['link'])) {
+                $objCustomNavigationLink->link = $navigationLink['link'];
+            }
+
+            $objCustomNavigationLink->is_custom_link = $navigationLink['is_custom_link'];
+            $objCustomNavigationLink->save();
         }
-        $objCustomNavigationLink->position = $this->getHigherPosition();
-        $objCustomNavigationLink->id_cms = 0;
-        $objCustomNavigationLink->show_at_navigation = 1;
-        $objCustomNavigationLink->show_at_footer = 0;
-        $objCustomNavigationLink->active = 1;
-        $objCustomNavigationLink->is_custom_link = 0;
-        $objCustomNavigationLink->link = 'contact';
-        $objCustomNavigationLink->save();
 
         return true;
     }
