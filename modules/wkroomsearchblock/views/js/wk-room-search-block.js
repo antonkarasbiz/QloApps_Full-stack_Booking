@@ -139,7 +139,6 @@ const BookingSearchManager = {
                         if (result.status) {
                             $('#hotel_cat_id').val('');
                             $('#id_hotel_button').html(result.html_hotel_options);
-                            $('#id_hotel_button').focus();
                             $('#id_hotel_button').trigger('chosen:updated');
                             // Resetting the data from previously selected hotel
                             $('#min_booking_offset').val(0);
