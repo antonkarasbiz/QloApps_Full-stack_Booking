@@ -35,6 +35,7 @@ class HotelBranchInformation extends ObjectModel
     public $map_formated_address;
     public $map_input_text;
     public $active_refund;
+    public $fax;
     public $date_add;
     public $date_upd;
 
@@ -54,6 +55,7 @@ class HotelBranchInformation extends ObjectModel
             'map_formated_address' => array('type' => self::TYPE_HTML, 'validate' => 'isCleanHtml'),
             'map_input_text' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'active_refund' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
+            'fax' => array('type' => self::TYPE_STRING, 'validate' => 'isGenericName'),
             'date_add' => array('type' => self::TYPE_DATE, 'validate' => 'isDate', 'copy_post' => false),
             'date_upd' => array('type' => self::TYPE_DATE, 'validate' => 'isDate', 'copy_post' => false),
 
@@ -1161,6 +1163,8 @@ class HotelBranchInformation extends ObjectModel
                 $message = sprintf(Tools::displayError('The Zip/Postal code you have entered is invalid. It must follow this format: %s'), str_replace('C', $objCountry->iso_code, str_replace('N', '0', str_replace('L', 'A', $objCountry->zip_code_format))));
             } elseif ($this->zipcode && !Validate::isPostCode($this->zipcode)) {
                 $message = Tools::displayError('The Zip / Postal code is invalid.');
+            } elseif ($this->fax && !Validate::isGenericName($this->fax)) {
+                $message = Tools::displayError('The Fax is invalid.');
             } else {
                 if ($addressValidation = Address::getValidationRules('Address')) {
                     foreach ($addressValidation['size'] as $field => $maxSize) {

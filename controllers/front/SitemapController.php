@@ -28,6 +28,11 @@ class SitemapControllerCore extends FrontController
 {
     public $php_self = 'sitemap';
 
+    public function init()
+    {
+        Tools::redirect($this->context->link->getPageLink('index'));
+    }
+
     public function setMedia()
     {
         parent::setMedia();
