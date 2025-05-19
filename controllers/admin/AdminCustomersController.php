@@ -1042,7 +1042,7 @@ class AdminCustomersControllerCore extends AdminController
                     $this->errors[] = Tools::displayError('Some error ocurred while deleting the Customer');
                     return;
                 } else {
-                    if ($idCustomerGuest = CustomerGuestDetail::getIdCustomerGuest($customerEmail, false)) {
+                    if ($idCustomerGuest = CustomerGuestDetail::getCustomerGuestByEmail($customerEmail, false)) {
                         $objCustomerGuestDetail = new CustomerGuestDetail($idCustomerGuest);
                         $objCustomerGuestDetail->phone = preg_replace('/[0-9]/', '0', $objCustomer->phone);
                         $objCustomerGuestDetail->email = $objCustomer->email;

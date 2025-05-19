@@ -549,7 +549,7 @@ class OrderOpcControllerCore extends ParentOrderController
         if ($this->isLogged) {
             if ($idCustomerGuestDetail = CustomerGuestDetail::getCustomerGuestIdByIdCart($this->context->cart->id)) {
                 $this->context->smarty->assign(
-                    'customer_guest_detail', CustomerGuestDetail::getCustomerGuestDetail($idCustomerGuestDetail)
+                    'customer_guest_detail', CustomerGuestDetail::getCustomerGuestDetailById($idCustomerGuestDetail)
                 );
             }
             $this->context->smarty->assign('id_customer_guest_detail', $idCustomerGuestDetail);
@@ -1098,9 +1098,9 @@ class OrderOpcControllerCore extends ParentOrderController
             $customerGuestDetailLastname = Tools::getValue('customer_guest_detail_lastname');
             $customerGuestDetailEmail = Tools::getValue('customer_guest_detail_email');
             $customerGuestDetailPhone = Tools::getValue('customer_guest_detail_phone');
-            if ($idCustomerGuestDetail = CustomerGuestDetail::getIdCustomerGuest($customerGuestDetailEmail, $this->context->cart->id)) {
+            if ($idCustomerGuestDetail = CustomerGuestDetail::getCustomerGuestByEmail($customerGuestDetailEmail, $this->context->cart->id)) {
                 $objCustomerGuestDetail = new CustomerGuestDetail($idCustomerGuestDetail);
-            } else if ($idCustomerGuestDetail = CustomerGuestDetail::getIdCustomerGuest($customerGuestDetailEmail, $this->context->customer->id, null)) {
+            } else if ($idCustomerGuestDetail = CustomerGuestDetail::getCustomerGuestByEmail($customerGuestDetailEmail, $this->context->customer->id, null)) {
                 $objCustomerGuestDetail = new CustomerGuestDetail($idCustomerGuestDetail);
             } else {
                 $objCustomerGuestDetail = new CustomerGuestDetail();

@@ -98,7 +98,7 @@ class CustomerGuestDetailCore extends ObjectModel
      *
      * @return bool True on success, false on failure
      */
-    public function deleteCartCustomerGuestByIdGuest()
+    public function deleteCustomerGuestFromCart()
     {
         return Db::getInstance()->delete(
             'cart_customer_guest',
@@ -108,28 +108,34 @@ class CustomerGuestDetailCore extends ObjectModel
 
     public function delete()
     {
-        $this->deleteCartCustomerGuestByIdGuest();
+        $this->deleteCustomerGuestFromCart();
 
         return parent::delete();
     }
 
     /**
-     * Deletes the guest profiles created by customer.
+     * Deletes the guest profiles created by a customer.
      *
-     * @param int id_customer
-     * @param int offset
+     * @param int $idCustomer Customer ID
+     * @param int $offset     Number of guests to skip
      * @return bool True on success, false on failure
      */
     public function deleteCustomerGuestByIdCustomer($idCustomer, $offset = 0)
     {
+        $guests = $this->getCustomerGuestsByIdCustomer((int)$idCustomer);
+        if (empty($guests)) {
+            return true;
+        }
+
+        $guestsToDelete = array_slice($guests, $offset);
+        if (empty($guestsToDelete)) {
+            return true;
+        }
+
         $res = true;
-        if (($guests = $this->getCustomerGuestsByIdCustomer($idCustomer))
-            && ($guests = array_slice($guests, $offset))
-        ) {
-            foreach ($guests as $guest) {
-                $objCustomerGuestDetail = new CustomerGuestDetail((int) $guest['id_customer_guest_detail']);
-                $res &= $objCustomerGuestDetail->delete();
-            }
+        foreach ($guestsToDelete as $guest) {
+            $customerGuestDetail = new CustomerGuestDetail($guest['id_customer_guest_detail']);
+            $res &= $customerGuestDetail->delete();
         }
 
         return $res;
@@ -175,7 +181,7 @@ class CustomerGuestDetailCore extends ObjectModel
      * @param int id_customer_guest_detail
      * @return array customer guest details.
      */
-    public static function getCustomerGuestDetail($idCustomerGuestDetail)
+    public static function getCustomerGuestDetailById($idCustomerGuestDetail)
     {
         return Db::getInstance()->getRow('
             SELECT `id_gender`, `firstname`, `lastname`, `email`, `phone`
@@ -190,7 +196,7 @@ class CustomerGuestDetailCore extends ObjectModel
      * @param int email
      * @return int|false id customer guest details.
      */
-    public static function getIdCustomerGuest($email, $idCustomer = null, $idCart = 0)
+    public static function getCustomerGuestByEmail($email, $idCustomer = null, $idCart = 0)
     {
         return Db::getInstance()->getValue(
             'SELECT cgd.`id_customer_guest_detail` FROM `'._DB_PREFIX_.'customer_guest_detail` as cgd
