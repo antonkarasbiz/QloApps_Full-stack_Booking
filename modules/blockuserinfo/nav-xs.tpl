@@ -20,7 +20,7 @@
 <ul class="nav nav-pills nav-stacked visible-xs wk-nav-style">
 	{if $logged}
 		<li>
-			<a class="navigation-link" href="{$link->getPageLink('history', true)|escape:'html'}" title="{l s='View my orders' mod='blockuserinfo'}">{l s='Booking History' mod='blockuserinfo'}</a>
+			<a class="navigation-link" href="{$link->getPageLink('history', true)|escape:'html'}" title="{l s='Bookings' mod='blockuserinfo'}">{l s='Bookings' mod='blockuserinfo'}</a>
 		</li>
 		<li>
 			<a class="navigation-link" href="{$link->getPageLink('my-account', true)|escape:'html'}" title="{l s='View my customer account' mod='blockuserinfo'}">{l s='Accounts Settings' mod='blockuserinfo'}</a>

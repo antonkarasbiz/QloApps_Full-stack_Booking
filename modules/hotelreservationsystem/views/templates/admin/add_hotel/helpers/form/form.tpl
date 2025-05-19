@@ -198,6 +198,12 @@
 							<textarea name="address" rows="4" cols="35" >{if isset($smarty.post.address)}{$smarty.post.address}{elseif isset($edit)}{$address_info.address1|escape:'htmlall':'UTF-8'}{/if}</textarea>
 						</div>
 					</div>
+					<div class="form-group check_in_div" style="position:relative">
+						<label class="col-sm-3 control-label" for="fax">{l s='Fax' mod='hotelreservationsystem'}</label>
+						<div class="col-sm-6">
+							<input autocomplete="off" type="text" class="form-control" id="fax" name="fax" value="{if isset($smarty.post.fax)}{$smarty.post.fax}{elseif isset($edit)}{$hotel_info.fax|escape:'htmlall':'UTF-8'}{/if}" />
+						</div>
+					</div>
 					<div class="form-group">
 						<label class="control-label col-sm-3 required" for="hotel_country">{l s='Rating :' mod='hotelreservationsystem'}</label>
 						<div class="col-sm-6">

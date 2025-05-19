@@ -281,10 +281,17 @@ class ContactControllerCore extends FrontController
             }
             $this->context->smarty->assign('customerThread', $customer_thread);
         }
-        // Send Hotel location information
-        $gblHtlAddress = Configuration::get('WK_HOTEL_GLOBAL_ADDRESS');
-        $gblHtlPhone = Configuration::get('WK_HOTEL_GLOBAL_CONTACT_NUMBER');
-        $gblHtlEmail = Configuration::get('WK_HOTEL_GLOBAL_CONTACT_EMAIL');
+
+        $objShop = new Shop();
+        $shopAddress = '';
+        $shopAddress_obj = $objShop->getAddress();
+        if (isset($shopAddress_obj) && $shopAddress_obj instanceof Address) {
+            $shopAddress = AddressFormat::generateAddress($shopAddress_obj, array(), ', ', ' ');
+        }
+
+        $gblHtlAddress = $shopAddress;
+        $gblHtlPhone = Configuration::get('PS_SHOP_PHONE');
+        $gblHtlEmail = Configuration::get('PS_SHOP_EMAIL');
         $objHotelInfo = new HotelBranchInformation();
         if ($hotelsInfo = $objHotelInfo->hotelBranchesInfo(false, 1, 1)) {
             foreach ($hotelsInfo as &$hotel) {
@@ -310,12 +317,15 @@ class ContactControllerCore extends FrontController
 
 	    $contactKey = md5(uniqid(microtime(), true));
         $this->context->cookie->__set('contactFormKey', $contactKey);
+        $displayHotelMap = Configuration::get('WK_DISPLAY_CONTACT_PAGE_GOOLGE_MAP');
         $this->context->smarty->assign(
             array(
                 'hotelsInfo' => $hotelsInfo,
                 'viewOnMap' => Configuration::get('WK_GOOGLE_ACTIVE_MAP'),
+                'displayHotels' => Configuration::get('WK_DISPLAY_CONTACT_PAGE_HOTEL_LIST'),
                 'gblHtlPhone' => $gblHtlPhone,
                 'gblHtlEmail' => $gblHtlEmail,
+                'displayHotelMap' => $displayHotelMap,
                 'gblHtlAddress' => $gblHtlAddress,
                 'contacts' => Contact::getContacts($this->context->language->id),
                 'message' => html_entity_decode(Tools::getValue('message')),
@@ -324,10 +334,9 @@ class ContactControllerCore extends FrontController
         );
 
         //By webkul to send hotels Map Informations for google Map.
-        if (Configuration::get('PS_API_KEY') && Configuration::get('WK_GOOGLE_ACTIVE_MAP')) {
-            $hotelLocationArray = $objHotelInfo->getMapFormatHotelsInfo(Configuration::get('WK_MAP_HOTEL_ACTIVE_ONLY'));
-            if ($hotelLocationArray) {
-                $this->context->smarty->assign('hotelLocationArray', json_encode($hotelLocationArray));
+        if ($displayHotelMap && Configuration::get('PS_API_KEY') && Configuration::get('WK_GOOGLE_ACTIVE_MAP')) {
+            if ($hotelLocationArray = $objHotelInfo->getMapFormatHotelsInfo(Configuration::get('WK_MAP_HOTEL_ACTIVE_ONLY'))) {
+                $this->context->smarty->assign('hotelLocationArray', str_replace(array('\n', '\r'), '', json_encode($hotelLocationArray)));
             }
         }
         //End
