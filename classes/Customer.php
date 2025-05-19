@@ -283,9 +283,7 @@ class CustomerCore extends ObjectModel
             }
         }
 
-        $objOldCustomer = new Customer($this->id);
-        $success = parent::update(true);
-        return $success;
+        return  parent::update(true);
     }
 
     public function delete()
@@ -327,6 +325,9 @@ class CustomerCore extends ObjectModel
 
         CartRule::deleteByIdCustomer((int)$this->id);
         // delete customer data from customerGuest table
+        $objCustomerGuestDetail = new CustomerGuestDetail();
+        $objCustomerGuestDetail->deleteCustomerGuestByIdCustomer($this->id);
+
         return parent::delete();
     }
 
@@ -516,18 +517,6 @@ class CustomerCore extends ObjectModel
             return $result;
         }
         return Cache::retrieve($cache_id);
-    }
-
-    public static function getPhone($id_customer)
-    {
-
-        return Db::getInstance()->getValue(
-            'SELECT cgd.`phone`
-            FROM `'._DB_PREFIX_.'customer` c
-            INNER JOIN `'._DB_PREFIX_.'cart_customer_guest_detail` cgd
-            ON (cgd.`email` = c.`email`)
-            WHERE `id_cart` = 0 AND c.`id_customer` = '.(int)($id_customer)
-        );
     }
 
     public static function getCustomerIdAddress($id_customer, $use_cache = true)

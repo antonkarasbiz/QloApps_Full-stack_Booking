@@ -956,5 +956,8 @@
 	<configuration id="PS_BACKDATE_ORDER_EMPLOYEES" name="PS_BACKDATE_ORDER_EMPLOYEES">
       <value>0</value>
     </configuration>
+	<configuration id="PS_CUSTOMER_GUEST_MAX_LIMIT" name="PS_CUSTOMER_GUEST_MAX_LIMIT">
+      <value>5</value>
+    </configuration>
   </entities>
 </entity_configuration>
