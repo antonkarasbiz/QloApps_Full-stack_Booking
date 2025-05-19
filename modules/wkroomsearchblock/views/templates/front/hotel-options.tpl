@@ -17,7 +17,7 @@
  * @license LICENSE.txt
  *}
 
- <option value="">{l s='Select Hotel' mod='wkroomsearchblock'}</option>
+ <option value=""></option>
 {if isset($hotels_info) && is_array($hotels_info)}
     {foreach from=$hotels_info item=hotel_info}
         <option class="search_result_li" data-id-hotel="{$hotel_info.id_hotel}" data-hotel-cat-id="{$hotel_info.id_category}" data-max_order_date="{$hotel_info.max_order_date}" data-min_booking_offset="{$hotel_info.min_booking_offset}" tabindex="-1">
