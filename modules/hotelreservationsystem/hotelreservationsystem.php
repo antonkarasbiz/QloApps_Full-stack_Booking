@@ -606,6 +606,7 @@ class HotelReservationSystem extends Module
             || !$this->callInstallTab()
             || !$objHtlHelper->insertDefaultHotelEntries()
             || !$objHtlHelper->createHotelRoomDefaultFeatures()
+            || !$objHtlHelper->createHotelDefaultBedTypes()
             || !$objHtlHelper->insertHotelCommonFeatures()
         ) {
             return false;

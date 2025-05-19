@@ -86,7 +86,7 @@ class HotelRoomTypeBedType extends ObjectModel
     {
         return Db::getInstance()->delete(
             $this->table,
-            ' WHERE 1 '.($idBedType ? ' AND `id_bed_type`='.(int) $idBedType : '').($idProduct ? ' AND `id_product`='.(int) $idProduct : '')
+            ' 1 '.($idBedType ? ' AND `id_bed_type`='.(int) $idBedType : '').($idProduct ? ' AND `id_product`='.(int) $idProduct : '')
         );
     }
 
