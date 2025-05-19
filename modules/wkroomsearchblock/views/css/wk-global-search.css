@@ -79,6 +79,11 @@
     padding-right: 20px;
     background: url("../../views/img/icon-hotel.svg") no-repeat 10px 50%, url("../../views/img/icon-dropdown-arrow.svg") no-repeat calc(100% - 10px) 50%;
     background-color: #FFF;}
+  #id_hotel_button{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   #search_hotel_block_form .input-date {
     display: grid;
     cursor: text;}
