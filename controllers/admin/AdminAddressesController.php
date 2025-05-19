@@ -474,6 +474,19 @@ class AdminAddressesControllerCore extends AdminController
             $this->_redirect = false;
             // set deleted=1 as customer can have only one address and this address is for an order only
             $_POST['deleted'] = 1;
+            // if the deleted address is the customer current address then we will create a new one using the same information.
+            if (($customerAddressId = Address::getFirstCustomerAddressId((int) $address->id_customer))
+                && $customerAddressId == $address->id
+            ) {
+                // initialized with the old address information
+                $objAddress = new Address($address->id);
+                $objAddress->id = $objAddress->id_address = null;
+            }
+
+            if ($address->isUsed() > 1) {
+                // If this address is used in other orders, we will create a new address, and will not update the older addresses.
+                $this->id_object = null;
+            }
         }
 
         // Check the requires fields which are settings in the BO
@@ -483,6 +496,10 @@ class AdminAddressesControllerCore extends AdminController
         $return = false;
         if (empty($this->errors)) {
             $return = parent::processSave();
+            // creating new address here since the customer older address needs to be set as deleted first as customer can only have one active address.
+            if (isset($objAddress)) {
+                $objAddress->save();
+            }
         } else {
             // if we have errors, we stay on the form instead of going back to the list
             $this->display = 'edit';
