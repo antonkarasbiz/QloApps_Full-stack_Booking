@@ -1270,5 +1270,6 @@
         {addJsDefL name=txt_booking_document_upload_success}{l s='Document uploaded successfully.' js=1}{/addJsDefL}
         {addJsDefL name=txt_booking_document_delete_confirm}{l s='Are you sure?' js=1}{/addJsDefL}
         {addJsDefL name=txt_booking_document_delete_success}{l s='Document deleted successfully.' js=1}{/addJsDefL}
+        {addJsDefL name='error_found_txt'}{l s='Errors found' js=1}{/addJsDefL}
     {/strip}
 {/block}

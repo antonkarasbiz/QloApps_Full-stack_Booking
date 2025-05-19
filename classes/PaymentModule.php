@@ -400,16 +400,16 @@ abstract class PaymentModuleCore extends Module
                     }
 
                     // save customer guest information
-                    if ($id_customer_guest_detail = CartCustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
-                        if (Validate::isLoadedObject($objCartCustomerGuestDetail = new CartCustomerGuestDetail(
-                            $id_customer_guest_detail
+                    if ($idCustomerGuestDetail = CustomerGuestDetail::getCustomerGuestIdByIdCart($this->context->cart->id)) {
+                        if (Validate::isLoadedObject($objCustomerGuestDetail = new CustomerGuestDetail(
+                            $idCustomerGuestDetail
                         ))) {
                             $objOrderCustomerGuestDetail = new OrderCustomerGuestDetail();
-                            $objOrderCustomerGuestDetail->id_gender = $objCartCustomerGuestDetail->id_gender;
-                            $objOrderCustomerGuestDetail->firstname = $objCartCustomerGuestDetail->firstname;
-                            $objOrderCustomerGuestDetail->lastname = $objCartCustomerGuestDetail->lastname;
-                            $objOrderCustomerGuestDetail->email = $objCartCustomerGuestDetail->email;
-                            $objOrderCustomerGuestDetail->phone = $objCartCustomerGuestDetail->phone;
+                            $objOrderCustomerGuestDetail->id_gender = $objCustomerGuestDetail->id_gender;
+                            $objOrderCustomerGuestDetail->firstname = $objCustomerGuestDetail->firstname;
+                            $objOrderCustomerGuestDetail->lastname = $objCustomerGuestDetail->lastname;
+                            $objOrderCustomerGuestDetail->email = $objCustomerGuestDetail->email;
+                            $objOrderCustomerGuestDetail->phone = $objCustomerGuestDetail->phone;
                             $objOrderCustomerGuestDetail->id_order = (int)$order->id;
                             $objOrderCustomerGuestDetail->save();
                         }
@@ -1236,9 +1236,9 @@ abstract class PaymentModuleCore extends Module
                                 );
                             }
                             // send mail to customer guest if customer booked for someone other.
-                            if ($id_customer_guest_detail = OrderCustomerGuestDetail::isCustomerGuestBooking($order->id)) {
+                            if ($idCustomerGuestDetail = OrderCustomerGuestDetail::isCustomerGuestBooking($order->id)) {
                                 if ($objOrderCustomerGuestDetail = new OrderCustomerGuestDetail(
-                                    $id_customer_guest_detail
+                                    $idCustomerGuestDetail
                                 )) {
                                     if (Validate::isEmail($objOrderCustomerGuestDetail->email)) {
                                         $data['{firstname}'] = $objOrderCustomerGuestDetail->firstname;
@@ -1391,7 +1391,7 @@ abstract class PaymentModuleCore extends Module
             } // End foreach $order_detail_list
 
             // delete cart feature prices after booking creation success
-            HotelRoomTypeFeaturePricing::deleteFeaturePrices($id_cart);
+            HotelRoomTypeFeaturePricing::deleteByIdCart($id_cart);
 
             if (count($cart_rules)) {
                 foreach ($cart_rules as $idCartRule => $cartRule) {
