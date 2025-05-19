@@ -300,7 +300,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                         $product['date_from'],
                         $product['date_to'],
                         $useTax,
-                        false,
+                        $idCart,
                         $id_address
                     );
 
@@ -317,7 +317,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                                 $product['date_from'],
                                 $product['date_to'],
                                 $useTax,
-                                false,
+                                $idCart,
                                 $id_address
                             );
 
@@ -328,7 +328,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                                 $product['date_from'],
                                 $product['date_to'],
                                 false,
-                                false,
+                                $idCart,
                                 $id_address
                             );
 
@@ -339,7 +339,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                                 $product['date_from'],
                                 $product['date_to'],
                                 true,
-                                false,
+                                $idCart,
                                 $id_address
                             );
                             $selectedServiceProducts[$product['htl_cart_booking_id']]['selected_products_info'][$product['id_product']] = array(
@@ -358,7 +358,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                                     $product['date_from'],
                                     $product['date_to'],
                                     false,
-                                    false,
+                                    $idCart,
                                     $id_address
                                 ) / $numdays),
                                 'unit_price_tax_incl' => ($objRoomTypeServiceProductPrice->getServicePrice(
@@ -368,7 +368,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                                     $product['date_from'],
                                     $product['date_to'],
                                     true,
-                                    false,
+                                    $idCart,
                                     $id_address
                                 ) / $numdays),
                                 'total_price' => $servicePrice,
@@ -400,7 +400,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                             $product['date_from'],
                             $product['date_to'],
                             $useTax,
-                            false,
+                            $idCart,
                             $id_address
                         );
 
@@ -411,7 +411,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                             $product['date_from'],
                             $product['date_to'],
                             false,
-                            false,
+                            $idCart,
                             $id_address
                         );
 
@@ -422,7 +422,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                             $product['date_from'],
                             $product['date_to'],
                             true,
-                            false,
+                            $idCart,
                             $id_address
                         );
                         if ($idProduct) {
@@ -440,7 +440,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                                 $product['date_from'],
                                 $product['date_to'],
                                 false,
-                                false,
+                                $idCart,
                                 $id_address
                             ) / $numdays;
                             $selectedServiceProducts[$product['htl_cart_booking_id']]['unit_price_tax_incl'] = $objRoomTypeServiceProductPrice->getServicePrice(
@@ -450,7 +450,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                                 $product['date_from'],
                                 $product['date_to'],
                                 true,
-                                false,
+                                $idCart,
                                 $id_address
                             ) / $numdays;
                             $selectedServiceProducts[$product['htl_cart_booking_id']]['total_price'] = $servicePrice;
@@ -473,7 +473,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                                     null,
                                     null,
                                     false,
-                                    false,
+                                    $idCart,
                                     $id_address
                                 ) / $numdays),
                                 'unit_price_tax_incl' => ($objRoomTypeServiceProductPrice->getServicePrice(
@@ -483,7 +483,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
                                     null,
                                     null,
                                     true,
-                                    false,
+                                    $idCart,
                                     $id_address
                                 ) / $numdays),
                                 'total_price' => $servicePrice,
@@ -505,6 +505,7 @@ class RoomTypeServiceProductCartDetail extends ObjectModel
         if ($getTotalPrice) {
             return $totalPrice;
         }
+
         return $selectedServiceProducts;
     }
 

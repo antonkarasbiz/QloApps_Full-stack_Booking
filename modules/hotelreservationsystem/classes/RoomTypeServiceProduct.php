@@ -171,8 +171,9 @@ class RoomTypeServiceProduct extends ObjectModel
 
     public function getServiceProductsData($idProductRoomType, $p = 1, $n = 0, $front = false, $available_for_order = 2, $auto_add_to_cart = 0, $subCategory = false, $idLang = false)
     {
+        $context = Context::getContext();
         if (!$idLang) {
-            $idLang = Context::getContext()->language->id;
+            $idLang = $context->language->id;
         }
         $objProduct = new Product($idProductRoomType);
         if ($serviceProducts = $objProduct->getProductServiceProducts(
@@ -195,7 +196,8 @@ class RoomTypeServiceProduct extends ObjectModel
                     1,
                     null,
                     null,
-                    false
+                    false,
+                    $context->cart->id
                 );
 
                 $serviceProduct['price_tax_incl'] = $objRoomTypeServiceProductPrice->getServicePrice(
@@ -204,7 +206,8 @@ class RoomTypeServiceProduct extends ObjectModel
                     1,
                     null,
                     null,
-                    true
+                    true,
+                    $context->cart->id
                 );
                 $useTax = Product::$_taxCalculationMethod == PS_TAX_EXC ? false : true;
                 $serviceProduct['price_without_reduction'] = $objRoomTypeServiceProductPrice->getServicePrice(
@@ -213,7 +216,8 @@ class RoomTypeServiceProduct extends ObjectModel
                     1,
                     null,
                     null,
-                    $useTax
+                    $useTax,
+                    $context->cart->id
                 );
                 $serviceProduct['images'] = Image::getImages((int)Context::getContext()->language->id, $serviceProduct['id_product']);
             }
