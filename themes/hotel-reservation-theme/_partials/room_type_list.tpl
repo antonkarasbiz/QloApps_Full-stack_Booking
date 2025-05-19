@@ -20,7 +20,7 @@
 {block name='displayRoomTypeListBefore'}
 	{hook h='displayRoomTypeListBefore'}
 {/block}
-{if isset($booking_data['stats']) && $booking_data['stats']['num_avail'] || isset($display_all_room_types) && $display_all_room_types}
+{if isset($booking_data['stats']) && $booking_data['stats']['num_avail'] || isset($display_all_room_types) && $display_all_room_types && isset($booking_data['rm_data'])}
 	{foreach from=$booking_data['rm_data'] key=room_k item=room_v}
 		{if $room_v['data']['available']|count || isset($display_all_room_types) && $display_all_room_types }
 			<div class="col-sm-12 room_cont" data-id-product="{$room_v['id_product']|escape:'htmlall':'UTF-8'}">
