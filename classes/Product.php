@@ -562,6 +562,9 @@ class ProductCore extends ObjectModel
     const PRICE_CALCULATION_METHOD_PER_BOOKING = 1;
     const PRICE_CALCULATION_METHOD_PER_DAY = 2;
 
+    const STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOMER = 1;
+    const STANDARD_PRODUCT_ADDRESS_PREFERENCE_HOTEL = 2;
+    const STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOM = 3;
 
     public function __construct($id_product = null, $full = false, $id_lang = null, $id_shop = null, Context $context = null)
     {
@@ -584,7 +587,11 @@ class ProductCore extends ObjectModel
             // Keep base price
             $this->base_price = $this->price;
 
-            $this->price = Product::getPriceStatic((int)$this->id, false, null, 6, null, false, true, 1, false, null, null, null, $this->specificPrice);
+            if ($this->booking_product) {
+                $this->price = Product::getPriceStatic((int)$this->id, false, null, 6, null, false, true, 1, false, null, null, null, $this->specificPrice);
+            } else {
+                $this->price = Product::getServiceProductPrice((int)$this->id);
+            }
             $this->unit_price = ($this->unit_price_ratio != 0  ? $this->price / $this->unit_price_ratio : 0);
             if ($this->id) {
                 $this->tags = Tag::getProductTags((int)$this->id);
@@ -934,15 +941,25 @@ class ProductCore extends ObjectModel
         ), 'id_product = '.(int)$id_product);
     }
 
-    public static function getSellingPreferenceType($id_product) {
-        return Db::getInstance()->getValue(
-            'SELECT p.`selling_preference_type`
-            FROM `'._DB_PREFIX_.'product` p '.Shop::addSqlAssociation('product', 'p').'
-            WHERE p.`id_product` = '.(int)$id_product
-        );
+    public static function getSellingPreferenceType($id_product)
+    {
+        $cache_key = 'Product::getSellingPreferenceType_'.(int) $id_product;
+        if (!Cache::isStored($cache_key)) {
+            $res = Db::getInstance()->getValue(
+                'SELECT p.`selling_preference_type`
+                FROM `'._DB_PREFIX_.'product` p '.Shop::addSqlAssociation('product', 'p').'
+                WHERE p.`id_product` = '.(int)$id_product
+            );
+            Cache::store($cache_key, $res);
+        } else {
+            $res = Cache::retrieve($cache_key);
+        }
+
+        return $res;
     }
 
-    public static function getProductPriceCalculation($id_product) {
+    public static function getProductPriceCalculation($id_product)
+    {
         return Db::getInstance()->getValue(
             'SELECT product_shop.`price_calculation_method`
             FROM `'._DB_PREFIX_.'product` p '.Shop::addSqlAssociation('product', 'p').'
@@ -3109,6 +3126,25 @@ class ProductCore extends ObjectModel
                 Cache::store($cache_id, $cart_quantity);
             } else {
                 $cart_quantity = Cache::retrieve($cache_id);
+            }
+        }
+
+        if (!Product::isBookingProduct($id_product)
+            && (Product::getSellingPreferenceType($id_product) == Product::SELLING_PREFERENCE_STANDALONE)
+            && !$id_address
+        ) {
+            $serviceAddressPrefrenceType = Configuration::get('PS_STANDARD_PRODUCT_ORDER_ADDRESS_PREFRENCE');
+            if ($serviceAddressPrefrenceType == Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOMER) {
+                $customer = $context->customer;
+                if (isset($customer->id)
+                    && ($idCustomerAddress = Address::getFirstCustomerAddressId($customer->id))
+                ) {
+                    $id_address = $idCustomerAddress;
+                }
+            } else if (($serviceAddressPrefrenceType == Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOM)
+                && ($idCustomAddress = Configuration::get('PS_STANDARD_PRODUCT_ORDER_ADDRESS_ID'))
+            ) {
+                $id_address = $idCustomAddress;
             }
         }
 

@@ -282,7 +282,6 @@ class AdminOrderPreferencesControllerCore extends AdminController
                         'validation' => 'isInt',
                         'type' => 'text',
                         'class' => 'fixed-width-xxl',
-                        'validation' => 'isInt',
                         'id' => 'PS_MAX_OVERBOOKING_PER_HOTEL_PER_DAY',
                     ),
                     'OVERBOOKING_ORDER_CANCEL_ACTION' => array(
@@ -312,6 +311,69 @@ class AdminOrderPreferencesControllerCore extends AdminController
             ),
         );
 
+        if (Hook::exec('actionEnableStandartProductConfig') || _PS_MODE_DEV_) {
+            $addressPrefrenceTypes = array(
+                array(
+                    'value' => Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOMER,
+                    'name' => $this->l('Customer Address')
+                ),
+                array(
+                    'value' => Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_HOTEL,
+                    'name' => $this->l('Hotel Address')
+                ),
+                array(
+                    'value' => Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOM,
+                    'name' => $this->l('Custom Address')
+                )
+            );
+
+            $customAddressDetails = array();
+            $objHotelBranch = new HotelBranchInformation();
+            if ((($idCustomAddress = Configuration::get('PS_STANDARD_PRODUCT_ORDER_ADDRESS_ID'))
+                    && Validate::isLoadedObject($objAddress = new Address($idCustomAddress))
+                ) || (($primaryHotelId = Configuration::get('WK_PRIMARY_HOTEL'))
+                    && ($idHotelAddresss = HotelBranchInformation::getAddress((int) $primaryHotelId))
+                    && Validate::isLoadedObject($objAddress = new Address($idHotelAddresss['id_address']))
+                ) || (($hotels = $objHotelBranch->hotelBranchesInfo(false, 1))
+                    && ($idHotelAddresss = HotelBranchInformation::getAddress((int) $hotels[0]['id']))
+                    && Validate::isLoadedObject($objAddress = new Address($idHotelAddresss))
+            )) {
+                $customAddressDetails = array(
+                    'id_country' => $objAddress->id_country,
+                    'id_state' => $objAddress->id_state,
+                    'city' => $objAddress->city,
+                    'postcode' => $objAddress->postcode,
+                );
+
+                $this->context->smarty->assign('custom_address_details', $customAddressDetails);
+            }
+
+            $countries = Country::getCountries($this->context->language->id);
+            $this->context->smarty->assign('countries', $countries);
+            $this->fields_options['standard_product'] = array(
+                'title' => $this->l('Standard Product'),
+                'icon' => 'icon-cogs',
+                'fields' => array(
+                    'PS_STANDARD_PRODUCT_ORDER_ADDRESS_PREFRENCE' => array(
+                        'title' => $this->l('Standard product address type'),
+                        'validation' => 'isInt',
+                        'type' => 'select',
+                        'cast' => 'intval',
+                        'list' => $addressPrefrenceTypes,
+                        'identifier' => 'value',
+                        'js' => "changeStandardProductAddressType()",
+                        'hint' => $this->l('Select Standard product Address type, this will be used to calculate the tax for the standard product price.'),
+                        'desc' => $this->l('The selected address type will be used to calculate tax for the standard product.')
+                    ),
+                    'PS_STANDARD_PRODUCT_ORDER_ADDRESS' => array(
+                        'title' => $this->l('Standard product custom address'),
+                        'hint' => $this->l('Set the Address details'),
+                        'type' => 'html',
+                    ),
+                ),
+                'submit' => array('title' => $this->l('Save'))
+            );
+        }
         if (!Configuration::get('PS_ALLOW_MULTISHIPPING')) {
             unset($this->fields_options['general']['fields']['PS_ALLOW_MULTISHIPPING']);
         }
@@ -350,11 +412,80 @@ class AdminOrderPreferencesControllerCore extends AdminController
         } elseif ($globalPreparationTime !== '0' && !Validate::isUnsignedInt($globalPreparationTime)) {
             $this->errors[] = Tools::displayError('Field \'Minimum booking offset\' is invalid.');
         }
+
+        $idCountry = Tools::getValue('service_id_country');
+        $idSate = Tools::getValue('service_id_state');
+        $city = trim(Tools::getValue('service_city'));
+        $postcode = trim(Tools::getValue('service_postcode'));
+        $serviceAddressPrefrenceType = Tools::getValue('PS_STANDARD_PRODUCT_ORDER_ADDRESS_PREFRENCE');
+        if ($serviceAddressPrefrenceType == Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOM) {
+            $addressValidation = Address::getValidationRules('Address');
+            if (!$idCountry) {
+                $this->errors[] = Tools::displayError('Field country is required');
+            } elseif (!Validate::isLoadedObject($objCountry = new Country($idCountry))) {
+                $this->errors[] = Tools::displayError('Invaid country');
+            } elseif ($objCountry->zip_code_format && !$objCountry->checkZipCode($postcode)) {
+                $this->errors[] = sprintf($this->l('The Zip/Postal code you\'ve entered is invalid. It must follow this format: %s'), str_replace('C', $objCountry->iso_code, str_replace('N', '0', str_replace('L', 'A', $objCountry->zip_code_format))));
+            } elseif (!$postcode && $objCountry->need_zip_code) {
+                $this->errors[] = $this->l('Zip / Postal code is required.');
+            } elseif ($postcode && !Validate::isPostCode($postcode)) {
+                $this->errors[] = $this->l('The Zip / Postal code is invalid.');
+            } elseif (Tools::strlen($postcode) > $addressValidation['postcode']) {
+                $this->errors[] = sprintf(Tools::displayError('The zip code is too long (%1$d chars max).'), $addressValidation['postcode']);
+            } elseif ($objCountry->contains_states && !$idSate) {
+                $this->errors[] = Tools::displayError('Field State is required');
+            } elseif (!Validate::isLoadedObject(new State($idSate))) {
+                $this->errors[] = Tools::displayError('Invaid state');
+            }
+
+            if (!$city || $city == '') {
+                $this->errors[] = $this->l('City is required field.');
+            } elseif (!Validate::isCityName($city)) {
+                $this->errors[] = $this->l('Enter a valid city name.');
+            } elseif (Tools::strlen($city) > $addressValidation['city']) {
+                $this->errors[] = sprintf(Tools::displayError('The city name is too long (%1$d chars max).'), $addressValidation['city']);
+            }
+        }
+    }
+
+    public function processUpdateOptions()
+    {
+        parent::processUpdateOptions();
+        if (empty($this->errors)) {
+            $serviceAddressPrefrenceType = Tools::getValue('PS_STANDARD_PRODUCT_ORDER_ADDRESS_PREFRENCE');
+            if ($serviceAddressPrefrenceType == Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOM) {
+                $idCountry = Tools::getValue('service_id_country');
+                if ($idCustomAddress = Configuration::get('PS_STANDARD_PRODUCT_ORDER_ADDRESS_ID')) {
+                    $objAddress = new Address($idCustomAddress);
+                } else {
+                    $objAddress = new Address();
+                }
+
+                $objCountry = new Country($idCountry, $this->context->language->id);
+                $objAddress->alias = 'Standard Product -'.$objCountry->name;
+                $objAddress->address1 = 'Standard Product -'.$objCountry->name;
+                $objAddress->firstname = 'Stand Alone';
+                $objAddress->lastname = 'Standard Product';
+                $objAddress->id_country = $idCountry;
+                $objAddress->id_customer = 0;
+                $objAddress->id_hotel = 0;
+                $objAddress->id_state = Tools::getValue('service_id_state');
+
+                $objAddress->city = Tools::getValue('service_city');
+                $objAddress->postcode = Tools::getValue('service_postcode');
+                if ($objAddress->save()) {
+                    Configuration::updateValue('PS_STANDARD_PRODUCT_ORDER_ADDRESS_ID', $objAddress->id);
+                }
+            }
+        }
     }
 
     public function setMedia()
     {
         parent::setMedia();
+        Media::addJsDef(array(
+            'STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOM' => Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOM
+        ));
         $this->addCSS(_MODULE_DIR_.'hotelreservationsystem/views/css/HotelReservationAdmin.css');
         $this->addJS(_MODULE_DIR_.'hotelreservationsystem/views/js/HotelReservationAdmin.js');
     }
