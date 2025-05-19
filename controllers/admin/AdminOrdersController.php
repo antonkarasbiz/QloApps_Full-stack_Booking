@@ -4999,7 +4999,7 @@ class AdminOrdersControllerCore extends AdminController
                                 true,
                                 1,
                                 $objBookingDetail->date_from,
-                                $objBookingDetail->date_to,
+                                $objBookingDetail->date_to
                             ) / $numDays;
                             $unitPriceTaxExcl = Product::getServiceProductPrice(
                                 (int) $service['id_product'],
@@ -5009,7 +5009,7 @@ class AdminOrdersControllerCore extends AdminController
                                 false,
                                 1,
                                 $objBookingDetail->date_from,
-                                $objBookingDetail->date_to,
+                                $objBookingDetail->date_to
                             ) / $numDays;
 
                             $objServiceProductOrderDetail = new ServiceProductOrderDetail();

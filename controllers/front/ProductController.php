@@ -768,7 +768,7 @@ class ProductControllerCore extends FrontController
                         $useTax,
                         $product['quantity'],
                         $dateFrom,
-                        $dateTo,
+                        $dateTo
                     );
                     $product['price'] = $productPrice;
                     $serviceProductsPrice += $productPrice;
