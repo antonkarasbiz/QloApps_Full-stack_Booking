@@ -364,7 +364,7 @@ class HotelReservationSystemDb
                 PRIMARY KEY (`id_room_type_demand`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
 
-            "CREATE TABLE `"._DB_PREFIX_."htl_room_type_service_product` (
+            "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_room_type_service_product` (
                 `id_room_type_service_product` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `id_product` int(11) UNSIGNED NOT NULL,
                 `position` smallint(2) unsigned NOT NULL DEFAULT '0',
@@ -374,7 +374,7 @@ class HotelReservationSystemDb
                 KEY `id_product` (`id_product`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
 
-            "CREATE TABLE `"._DB_PREFIX_."htl_room_type_service_product_price` (
+            "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_room_type_service_product_price` (
                 `id_room_type_service_product_price` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `id_product` int(11) UNSIGNED NOT NULL,
                 `price` decimal(20,6) NOT NULL DEFAULT '0.000000',
@@ -385,7 +385,7 @@ class HotelReservationSystemDb
                 KEY `id_product` (`id_product`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
 
-            "CREATE TABLE `"._DB_PREFIX_."htl_hotel_service_product_cart_detail` (
+            "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_hotel_service_product_cart_detail` (
                 `id_hotel_service_product_cart_detail` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `id_cart` int(11) unsigned NOT NULL,
                 `id_product` int(11) UNSIGNED NOT NULL,
@@ -395,7 +395,7 @@ class HotelReservationSystemDb
                 KEY `id_product` (`id_product`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
 
-            "CREATE TABLE `"._DB_PREFIX_."htl_room_type_service_product_cart_detail` (
+            "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_room_type_service_product_cart_detail` (
                 `id_room_type_service_product_cart_detail` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `id_product` int(11) UNSIGNED NOT NULL,
                 `quantity` int(11) UNSIGNED NOT NULL,
@@ -466,6 +466,24 @@ class HotelReservationSystemDb
                 `date_add` datetime NOT NULL,
                 `date_upd` datetime NOT NULL,
                 PRIMARY KEY (`id_settings_link`)
+            ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
+            "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_bed_type` (
+                `id_bed_type` INT(11) NOT NULL AUTO_INCREMENT,
+                `length` DECIMAL(20,6) NOT NULL DEFAULT '0.000000',
+                `width` DECIMAL(20,6) NOT NULL DEFAULT '0.000000',
+                PRIMARY KEY (`id_bed_type`)
+            ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
+            "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_bed_type_lang`(
+                `id_bed_type` INT(11) NOT NULL,
+                `name` VARCHAR(255) DEFAULT NULL,
+                `id_lang` INT(11) NOT NULL,
+                PRIMARY KEY (`id_bed_type`, `id_lang`)
+            ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
+            "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_room_type_bed_type` (
+                `id_room_type_bed_type` INT(11) NOT NULL AUTO_INCREMENT,
+                `id_product` INT(11) NOT NULL,
+                `id_bed_type` INT(11) NOT NULL,
+                PRIMARY KEY (`id_room_type_bed_type`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
 
             "INSERT INTO `"._DB_PREFIX_."htl_settings_link` (`id_settings_link`, `icon`, `link`, `new_window`, `position`, `unremovable`, `active`, `date_add`, `date_upd`) VALUES
@@ -561,6 +579,14 @@ class HotelReservationSystemDb
             `'._DB_PREFIX_.'htl_settings_link`,
             `'._DB_PREFIX_.'htl_settings_link_lang`,
             `'._DB_PREFIX_.'htl_room_type_restriction_date_range`,
+            `'._DB_PREFIX_.'htl_room_type_service_product`,
+            `'._DB_PREFIX_.'htl_room_type_service_product_price`,
+            `'._DB_PREFIX_.'htl_hotel_service_product_cart_detail`,
+            `'._DB_PREFIX_.'htl_room_type_service_product_cart_detail`,
+            `'._DB_PREFIX_.'htl_room_type_service_product_order_detail`,
+            `'._DB_PREFIX_.'htl_bed_type`,
+            `'._DB_PREFIX_.'htl_bed_type_lang`,
+            `'._DB_PREFIX_.'htl_room_type_bed_type`,
             `'._DB_PREFIX_.'htl_access`'
         );
     }
