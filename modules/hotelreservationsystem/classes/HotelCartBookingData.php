@@ -374,7 +374,6 @@ class HotelCartBookingData extends ObjectModel
         )) {
             $numRooms = count($cartBookingInfo);
             if ($updPsCart) {
-                $objBookingDetail = new HotelBookingDetail();
                 if (isset(Context::getContext()->controller->controller_type)) {
                     $controllerType = Context::getContext()->controller->controller_type;
                 } else {
@@ -385,7 +384,7 @@ class HotelCartBookingData extends ObjectModel
                     $idPsCart = $bookingRow['id_cart'];
                     $idPsProduct = $bookingRow['id_product'];
                     $objCart = new Cart($idPsCart);
-                    $updQty = $objBookingDetail->getNumberOfDays($bookingRow['date_from'], $bookingRow['date_to']);
+                    $updQty = HotelHelper::getNumberOfDays($bookingRow['date_from'], $bookingRow['date_to']);
                     // remove service product for this room
                     $objServiceProductCartDetail->removeServiceProductByIdHtlCartBooking($bookingRow['id']);
                     // if room type is deleting from admin then reduce product cart quantity by updating directly table
@@ -724,8 +723,7 @@ class HotelCartBookingData extends ObjectModel
 
         $num_rm = Db::getInstance()->NumRows();
 
-        $obj_htl_bk_dtl = new HotelBookingDetail();
-        $num_days = $obj_htl_bk_dtl->getNumberOfDays($date_from, $date_to);
+        $num_days = HotelHelper::getNumberOfDays($date_from, $date_to);
 
         $qty = (int) $num_rm * (int) $num_days;
         if ($qty) {
@@ -1503,7 +1501,6 @@ class HotelCartBookingData extends ObjectModel
             $price_tax = HotelBookingDetail::useTax();
             // create needed objects
             $objCartBooking = new self();
-            $objBookingDetail = new HotelBookingDetail();
             $objRoomType = new HotelRoomType();
             $objHotelBranch = new HotelBranchInformation();
             $objHtlFeatures = new HotelFeatures();
@@ -1634,7 +1631,7 @@ class HotelCartBookingData extends ObjectModel
                                 $totalAdditionalServicePrice = $demandPrice + $serviceProductPrice;
 
                                 if (isset($cartHotelData[$prodKey]['date_diff'][$dateJoin])) {
-                                    $numDays = $objBookingDetail->getNumberOfDays($data_v['date_from'], $data_v['date_to']);
+                                    $numDays = HotelHelper::getNumberOfDays($data_v['date_from'], $data_v['date_to']);
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['demand_price'] += $totalAdditionalServicePrice;
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['num_rm'] += 1;
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['num_days'] = $numDays;
@@ -1691,7 +1688,7 @@ class HotelCartBookingData extends ObjectModel
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['amount_without_auto_add'] += $amountWithoutAutoAdd;
                                 } else {
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['demand_price'] = $totalAdditionalServicePrice;
-                                    $numDays = $objBookingDetail->getNumberOfDays($data_v['date_from'], $data_v['date_to']);
+                                    $numDays = HotelHelper::getNumberOfDays($data_v['date_from'], $data_v['date_to']);
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['num_rm'] = 1;
                                     $cartHotelData[$prodKey]['date_diff'][$dateJoin]['data_form'] = date(
                                         'Y-m-d H:i:s',

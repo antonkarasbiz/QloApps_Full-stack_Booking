@@ -166,7 +166,7 @@ class ServiceProductCartDetail extends ObjectModel
             $language = new Language($idLang);
         }
 
-        $sql = 'SELECT spc.*, p.`selling_preference_type`, p.`price_calculation_method`, hcbd.`id_product` as `id_product_room_type`';
+        $sql = 'SELECT spc.*, p.`selling_preference_type`, hcbd.`date_from`, hcbd.`date_to`, p.`price_calculation_method`, hcbd.`id_product` as `id_product_room_type`';
         if (!$getTotalPrice) {
             $sql .= ', hbil.`hotel_name` ';
         }
@@ -219,6 +219,7 @@ class ServiceProductCartDetail extends ObjectModel
         $selectedProducts = array();
         $objServiceProductOption = new ServiceProductOption();
         if ($serviceProducts = Db::getInstance()->executeS($sql)) {
+            $context = Context::getContext();
             foreach ($serviceProducts as $product) {
                 $objProduct = new Product($product['id_product'], false, $language->id);
                 if (!$objProduct->booking_product) {
@@ -231,12 +232,19 @@ class ServiceProductCartDetail extends ObjectModel
                             $product['id_product_room_type'],
                             $useTax,
                             $qty,
-                            null,
-                            null,
+                            $product['date_from'],
+                            $product['date_to'],
                             $idCart
                         );
                     } else {
-                        $context = Context::getContext();
+                        $numDays = 1;
+                        // If price type is per day but the dates are not valid.
+                        if (($objProduct->price_calculation_method == Product::PRICE_CALCULATION_METHOD_PER_DAY)
+                            && (!$numDays = HotelHelper::getNumberOfDays($product['date_from'], $product['date_to']))
+                        ) {
+                            $numDays = 1;
+                        }
+
                         $priceTaxIncl = Product::getServiceProductPrice(
                             $objProduct->id,
                             $product['id_product_option'],
@@ -244,10 +252,10 @@ class ServiceProductCartDetail extends ObjectModel
                             $product['id_product_room_type'],
                             true,
                             1,
-                            null,
-                            null,
+                            $product['date_from'],
+                            $product['date_to'],
                             $idCart
-                        );
+                        )/$numDays;
                         $priceTaxExcl = Product::getServiceProductPrice(
                             $objProduct->id,
                             $product['id_product_option'],
@@ -255,10 +263,10 @@ class ServiceProductCartDetail extends ObjectModel
                             $product['id_product_room_type'],
                             false,
                             1,
-                            null,
-                            null,
+                            $product['date_from'],
+                            $product['date_to'],
                             $idCart
-                        );
+                        )/$numDays;
 
                         $optionDetails = false;
                         if (ServiceProductOption::productHasOptions($product['id_product'])) {
@@ -298,8 +306,8 @@ class ServiceProductCartDetail extends ObjectModel
                             'unit_price_tax_incl' => $priceTaxIncl,
                             'unit_price_tax_excl' => $priceTaxExcl,
                             'quantity' => $product['quantity'],
-                            'total_price_tax_incl' => $priceTaxIncl * (int)$product['quantity'],
-                            'total_price_tax_excl' => $priceTaxExcl * (int)$product['quantity'],
+                            'total_price_tax_incl' => $priceTaxIncl * (int)$product['quantity'] * $numDays,
+                            'total_price_tax_excl' => $priceTaxExcl * (int)$product['quantity'] * $numDays,
                             'cover_img' => $coverImg,
                             'price_calculation_method' => $product['price_calculation_method'],
                         );
@@ -309,7 +317,7 @@ class ServiceProductCartDetail extends ObjectModel
                             $productInfo['date_from'] = $objHotelCartBooking->date_from;
                             $productInfo['date_to'] = $objHotelCartBooking->date_to;
                             $productInfo['id_room_type_hotel'] = $objHotelCartBooking->id_hotel;
-                            $productInfo['id_room_type'] = $objHotelCartBooking->id_hotel;
+                            $productInfo['id_room_type'] = $objHotelCartBooking->id_product;
                             $productInfo['id_room'] = $objHotelCartBooking->id_room;
                         } else {
                             $productInfo['date_from'] = $product['date_from'] = '';
@@ -403,12 +411,6 @@ class ServiceProductCartDetail extends ObjectModel
             $objServiceProductCartDetail->htl_cart_booking_id = $idHtlCartData;
             $objServiceProductCartDetail->id_cart = $idCart;
             $objServiceProductCartDetail->id_product_option = $idProductOption;
-        }
-
-        if ($idHtlCartData && Product::getProductPriceCalculation($idProduct) == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
-            $objHotelCartBookingData = new HotelCartBookingData($idHtlCartData);
-            $numdays = HotelHelper::getNumberOfDays($objHotelCartBookingData->date_from, $objHotelCartBookingData->date_to);
-            $quantity *= $numdays;
         }
 
         $objServiceProductCartDetail->quantity += $quantity;

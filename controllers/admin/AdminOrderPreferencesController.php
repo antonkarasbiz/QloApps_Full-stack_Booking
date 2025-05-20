@@ -311,7 +311,7 @@ class AdminOrderPreferencesControllerCore extends AdminController
             ),
         );
 
-        if (Hook::exec('actionEnableStandartProductConfig') || _PS_MODE_DEV_) {
+        if (Hook::exec('actionEnableStandartProductConfig')) {
             $addressPrefrenceTypes = array(
                 array(
                     'value' => Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOMER,
