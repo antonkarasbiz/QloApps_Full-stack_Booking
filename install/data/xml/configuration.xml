@@ -970,6 +970,7 @@
     </configuration>
 	<configuration id="PS_CUSTOMER_SERVICE_CONTACT_ALLOW" name="PS_CUSTOMER_SERVICE_CONTACT_ALLOW">
       <value>1</value>
+    </configuration>
 	<configuration id="PS_CUSTOMER_GUEST_MAX_LIMIT" name="PS_CUSTOMER_GUEST_MAX_LIMIT">
       <value>5</value>
     </configuration>
