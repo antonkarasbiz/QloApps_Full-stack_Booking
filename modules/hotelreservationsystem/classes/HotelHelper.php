@@ -1801,7 +1801,7 @@ class HotelHelper
         $roomTypeDemoDataLang = array(
             array(
                 'price' => 1000,
-                'id_bed_types' => array(1, 2, 3, 7),
+                'id_bed_types' => array(4),
                 'en' => array(
                     'name' => 'General Rooms',
                     'description_short' => 'Our General Rooms offer space and comfort with multiple bedrooms and a cozy living area. Enjoy flat-screen TVs, complimentary Wi-Fi, and a kitchenette for a perfect family getaway.',
@@ -1835,7 +1835,7 @@ class HotelHelper
             ),
             array(
                 'price' => 1500,
-                'id_bed_types' => array(4, 5, 9, 8),
+                'id_bed_types' => array(4, 5),
                 'en' => array(
                     'name' => 'Delux Rooms',
                     'description_short' => 'Enjoy lake views from our Deluxe Rooms with a king-sized bed, elegant furnishings, and a spacious sitting area. Perfect for guests seeking comfort, luxury, and modern amenities.',
@@ -1869,7 +1869,7 @@ class HotelHelper
             ),
             array(
                 'price' => 2000,
-                'id_bed_types' => array(2, 5, 6, 9, 8),
+                'id_bed_types' => array(5, 6),
                 'en' => array(
                     'name' => 'Executive Rooms',
                     'description_short' => 'Indulge in our Executive Rooms, featuring separate living and sleeping areas, a luxurious bathroom, and exclusive lounge access. Ideal for business travelers seeking privacy',
@@ -1903,7 +1903,7 @@ class HotelHelper
             ),
             array(
                 'price' => 2500,
-                'id_bed_types' => array(4, 5, 6, 8),
+                'id_bed_types' => array(6, 8),
                 'en' => array(
                     'name' => 'Luxury Rooms',
                     'description_short' => 'Retreat to tranquility in our Luxury Rooms with expansive views. Featuring a queen-sized bed, workspace, and serene decor, perfect for business and leisure travelers alike.',

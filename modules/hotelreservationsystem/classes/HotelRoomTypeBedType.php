@@ -63,18 +63,18 @@ class HotelRoomTypeBedType extends ObjectModel
 
         // Removing the non selected bed types.
         if ($roomTypeBedTypes) {
-            $res &= $this->deleteRoomTypeBedTypes($roomTypeBedTypes);
+            $res &= $this->deleteRoomTypeBedTypesById($roomTypeBedTypes);
         }
 
         return $res;
     }
 
-    public function deleteRoomTypeBedTypesById($roomTypeBedTypes)
+    public function deleteRoomTypeBedTypesById($idRoomTypeBedTypes)
     {
         $res = true;
-        if ($roomTypeBedTypes) {
-            foreach ($roomTypeBedTypes as $roomTypeBedType) {
-                $objHotelRoomTypeBedType = new self($roomTypeBedType);
+        if ($idRoomTypeBedTypes) {
+            foreach ($idRoomTypeBedTypes as $idRoomTypeBedType) {
+                $objHotelRoomTypeBedType = new self($idRoomTypeBedType);
                 $res &= $objHotelRoomTypeBedType->delete();
             }
         }
