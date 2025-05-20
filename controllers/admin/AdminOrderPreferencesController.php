@@ -82,22 +82,19 @@ class AdminOrderPreferencesControllerCore extends AdminController
             )
         );
 
-        $maxOrderDate = Tools::getValue('MAX_GLOBAL_BOOKING_DATE', Configuration::get('MAX_GLOBAL_BOOKING_DATE'));
         $this->fields_options = array(
             'order_restrict' => array(
                 'title' => $this->l('Order Restrict'),
                 'icon' => 'icon-cogs',
                 'fields' => array(
-                    'MAX_GLOBAL_BOOKING_DATE' => array(
-                        'title' => $this->l('Maximum Global Check-out Date to book a room'),
-                        'hint' => $this->l('Maximum date of check-out for which rooms of your hotels can be booked.'),
+                    'PS_MAX_CHECKOUT_OFFSET' => array(
+                        'title' => $this->l('Maximum checkout offset'),
+                        'hint' => $this->l('The maximum checkout offset defines how many days from today checkout is allowed. For example, if this value is set to 10 and someone is booking on March 1st, they can only select a checkout date up to March 11th.'),
                         'type' => 'text',
-                        'id' => 'max_global_book_date',
-                        'auto_value' => false,
-                        'value' => date('d-m-Y', strtotime($maxOrderDate)),
-                        'class' => 'fixed-width-xxl readonly',
+                        'class' => 'fixed-width-xl',
+                        'suffix' => $this->l('day(s)'),
                     ),
-                    'GLOBAL_PREPARATION_TIME' => array(
+                    'PS_MIN_BOOKING_OFFSET' => array(
                         'title' => $this->l('Minimum booking offset'),
                         'hint' => $this->l('The minimum booking offset is the minimum number of days before the check-in date that a guest must book a room. For example, if you set this value to 3 and someone is booking on 2nd of March he can only book rooms for dates from and after 3 days, i.e, 5th of March.'),
                         'desc' => $this->l('Set to 0 to disable this feature.'),
@@ -197,7 +194,7 @@ class AdminOrderPreferencesControllerCore extends AdminController
                         'type' => 'bool'
                     ),
                     'PS_ORDER_LIST_PRICE_DISPLAY_CURRENCY' => array(
-                        'title' => $this->l('Display order list prices in'),
+                        'title' => $this->l('Display order list prices in Back Office'),
                         'hint' => $this->l('Choose the currency in which you want the prices in the order list to be displayed.'),
                         'desc' => $this->l('\'Order currency\' is the currency in which customer created the order and \'Default currency\' is the currency configured in localization.'),
                         'validation' => 'isInt',
@@ -221,6 +218,20 @@ class AdminOrderPreferencesControllerCore extends AdminController
                         'validation' => 'isUnsignedInt',
                         'class' => 'fixed-width-xl',
                         'suffix' => $this->l('day(s)'),
+                    ),
+                    'PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING' => array(
+                        'title' => $this->l('Allow to add all services in a booking'),
+                        'hint' => $this->l('Enable to allow all services created to be added in a booking while adding or editing a booking. Disable to allow only attached services with room type.'),
+                        'desc' => $this->l('If disabled, only attached services with room type will be available to be added to a booking.'),
+                        'cast' => 'intval',
+                        'type' => 'bool'
+                    ),
+                    'PS_ALLOW_CREATE_CUSTOM_SERVICES_IN_BOOKING' => array(
+                        'title' => $this->l('Allow to create custom service for a booking'),
+                        'hint' => $this->l('Enable to allow to create custom service while adding or editing a booking.'),
+                        'desc' => $this->l('If disabled, a custom service can not be created while adding or editing a booking.'),
+                        'cast' => 'intval',
+                        'type' => 'bool'
                     ),
                 ),
                 'submit' => array('title' => $this->l('Save'))
@@ -332,23 +343,22 @@ class AdminOrderPreferencesControllerCore extends AdminController
             $this->errors[] = Tools::displayError('Please assign a valid CMS page for Terms and Conditions.');
         }
 
-        $_POST['MAX_GLOBAL_BOOKING_DATE'] = date('Y-m-d', strtotime(Tools::getValue('MAX_GLOBAL_BOOKING_DATE')));
-        $maxGlobalBookingDate = Tools::getValue('MAX_GLOBAL_BOOKING_DATE');
-        $globalPreparationTime = Tools::getValue('GLOBAL_PREPARATION_TIME');
-        $maxGlobalBookingDateFormatted = date('Y-m-d', strtotime($maxGlobalBookingDate));
-
-        if ($maxGlobalBookingDate == '') {
-            $this->errors[] = Tools::displayError('Field \'Maximum Global Check-out Date to book a room\' can not be empty.');
-        } elseif (!Validate::isDate($maxGlobalBookingDateFormatted)) {
-            $this->errors[] = Tools::displayError('Field \'Maximum Global Check-out Date to book a room\' is invalid.');
-        } elseif (strtotime($maxGlobalBookingDateFormatted) < strtotime(date('Y-m-d'))) {
-            $this->errors[] = Tools::displayError('Field \'Maximum Global Check-out Date to book a room\' can not be a past date. Please use a future date.');
+        $maxCheckoutOffset = Tools::getValue('PS_MAX_CHECKOUT_OFFSET');
+        $minBookingOffset = Tools::getValue('PS_MIN_BOOKING_OFFSET');
+        if ($maxCheckoutOffset === '') {
+            $this->errors[] = Tools::displayError('Field \'Maximum checkout offset\' can not be empty.');
+        } elseif (!$maxCheckoutOffset || !Validate::isUnsignedInt($maxCheckoutOffset)) {
+            $this->errors[] = Tools::displayError('Field \'Maximum checkout offset\' is invalid.');
         }
 
-        if ($globalPreparationTime === '') {
+        if ($minBookingOffset === '') {
             $this->errors[] = Tools::displayError('Field \'Minimum booking offset\' can not be empty.');
-        } elseif ($globalPreparationTime !== '0' && !Validate::isUnsignedInt($globalPreparationTime)) {
+        } elseif ($minBookingOffset != 0 && !Validate::isUnsignedInt($minBookingOffset)) {
             $this->errors[] = Tools::displayError('Field \'Minimum booking offset\' is invalid.');
+        }
+
+        if ($maxCheckoutOffset && $maxCheckoutOffset <= $minBookingOffset) {
+            $this->errors[] = Tools::displayError('Field \'Maximum checkout offset\' cannot be be less than or equal to \'Minimum booking offset\'.');
         }
     }
 

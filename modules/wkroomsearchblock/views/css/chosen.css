@@ -372,6 +372,9 @@
 }
 
 /* chosen-drop top - start */
+.hotel-selector-wrap{
+  min-width: 0px;
+}
 .hotel-selector-wrap .chosen-container .chosen-drop.top .chosen-results {
   position: absolute;
   width: 100%;

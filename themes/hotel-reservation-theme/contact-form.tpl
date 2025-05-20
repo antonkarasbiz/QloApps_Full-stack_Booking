@@ -159,7 +159,7 @@
 			{hook h='displayBeforeHotelBranchInformation'}
 		{/block}
 		{block name='contact_form_hotel_branches'}
-			{if isset($hotelsInfo) && $hotelsInfo}
+			{if isset($displayHotels) && $displayHotels && isset($hotelsInfo) && $hotelsInfo}
 				<div class="row hotels-container">
 					<div class="col-sm-12 hotel-header">
 						<span>{l s='Our Hotels'}</span>
@@ -200,8 +200,8 @@
 			{hook h='displayAfterHotelBranchInformation'}
 		{/block}
 		{block name='contact_form_hotel_locations'}
-			{if isset($hotelLocationArray)}
-				<div class="row">
+			{if isset($displayHotelMap) && $displayHotelMap && isset($hotelLocationArray)}
+				<div class="row {if !(isset($displayHotels) && $displayHotels && isset($hotelsInfo) && $hotelsInfo)} margin-top-20{/if}">
 					<div class="col-xs-12 col-sm-12" id="googleMapWrapper">
 						<div id="map"></div>
 					</div>

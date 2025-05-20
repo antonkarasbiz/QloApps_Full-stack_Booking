@@ -551,23 +551,29 @@ $(document).ready(function() {
         $("#conf_id_WK_BO_MESSAGE").hide();
     });
 
-    /*For OrderRestrict Functionality*/
-    $("#max_htl_book_date").datepicker({
-        defaultDate: new Date(),
-        dateFormat: 'dd-mm-yy',
-        minDate: 0,
-    });
-
-    $("#max_global_book_date").datepicker({
-        defaultDate: new Date(),
-        dateFormat: 'dd-mm-yy',
-        minDate: 0,
-    });
-
-    //$( "#max_global_book_date" ).datepicker( "option", "maxDate", '20 Mar 2020');
-    /*END*/
-
     /* ----  AdminHotelFeaturePricesSettingsController Admin ---- */
+
+    if ($('input[name="create_multiple"]:checked').val() == 1) {
+        $('.room-type-name').hide();
+        $('.room-type-name-tree').show();
+        $('[name="submitAddhtl_room_type_feature_pricingAndStay"]').hide();
+    } else {
+        $('.room-type-name').show();
+        $('[name="submitAddhtl_room_type_feature_pricingAndStay"]').show();
+        $('.room-type-name-tree').hide();
+    }
+
+    $(document).on('change', 'input[name="create_multiple"]', function() {
+        if ($('input[name="create_multiple"]:checked').val() == 1) {
+            $('.room-type-name').hide();
+            $('.room-type-name-tree').show();
+            $('[name="submitAddhtl_room_type_feature_pricingAndStay"]').hide();
+        } else {
+            $('.room-type-name').show();
+            $('[name="submitAddhtl_room_type_feature_pricingAndStay"]').show();
+            $('.room-type-name-tree').hide();
+        }
+    });
 
     $('#date_selection_type').on('change', function() {
         if ($('#date_selection_type').val() == date_selection_types.specific) {
@@ -680,7 +686,7 @@ $(document).ready(function() {
 	      },
 	      onSelect: function(selectedDate) {
             let objDateToMin = $.datepicker.parseDate('dd-mm-yy', selectedDate);
-            objDateToMin.setDate(objDateToMin.getDate() + 1);
+            objDateToMin.setDate(objDateToMin.getDate());
 
             $('#feature_plan_date_to').datepicker('option', 'minDate', objDateToMin);
 	      },
@@ -705,7 +711,7 @@ $(document).ready(function() {
                 objDateToMin = new Date();
             }
 
-            objDateToMin.setDate(objDateToMin.getDate() + 1);
+            objDateToMin.setDate(objDateToMin.getDate());
             $('#feature_plan_date_to').datepicker('option', 'minDate', objDateToMin);
         },
         //for calender Css
@@ -805,26 +811,19 @@ $(document).ready(function() {
         });
     }
 
-    // manage hotel page
-    $('#maximum_booking_date').datepicker({
-        defaultDate: new Date(),
-        dateFormat: 'dd-mm-yy',
-        minDate: 0,
-    });
-
-    $('input[name="enable_use_global_max_order_date"]').on('change', function () {
+    $('input[name="enable_use_global_max_checkout_offset"]').on('change', function () {
         if (parseInt($(this).val())) {
-            $('input[name="maximum_booking_date"]').closest('.form-group').hide(200);
+            $('input[name="max_checkout_offset"]').closest('.form-group').hide(200);
         } else {
-            $('input[name="maximum_booking_date"]').closest('.form-group').show(200);
+            $('input[name="max_checkout_offset"]').closest('.form-group').show(200);
         }
     });
 
-    $('input[name="enable_use_global_preparation_time"]').on('change', function () {
+    $('input[name="enable_use_global_min_booking_offset"]').on('change', function () {
         if (parseInt($(this).val())) {
-            $('input[name="preparation_time"]').closest('.form-group').hide(200);
+            $('input[name="min_booking_offset"]').closest('.form-group').hide(200);
         } else {
-            $('input[name="preparation_time"]').closest('.form-group').show(200);
+            $('input[name="min_booking_offset"]').closest('.form-group').show(200);
         }
     });
 
@@ -835,8 +834,12 @@ function toggleGoogleMapsFields()
 {
     if ($('#WK_GOOGLE_ACTIVE_MAP_on').attr('checked') == 'checked') {
         $('#conf_id_WK_MAP_HOTEL_ACTIVE_ONLY').parent().show();
+        $('#conf_id_WK_DISPLAY_CONTACT_PAGE_GOOLGE_MAP').parent().show();
+        $('#conf_id_WK_DISPLAY_PROPERTIES_PAGE_GOOGLE_MAP').parent().show();
     } else {
         $('#conf_id_WK_MAP_HOTEL_ACTIVE_ONLY').parent().hide();
+        $('#conf_id_WK_DISPLAY_CONTACT_PAGE_GOOLGE_MAP').parent().hide();
+        $('#conf_id_WK_DISPLAY_PROPERTIES_PAGE_GOOGLE_MAP').parent().hide();
     }
 }
 

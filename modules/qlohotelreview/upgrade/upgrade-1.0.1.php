@@ -24,13 +24,13 @@
 if (!defined('_PS_VERSION_'))
 	exit;
 
-function upgrade_module_1_0_4($module)
+function upgrade_module_1_0_1($module)
 {
-    $objUpgrade = new UpgradeWkFooterAboutBlock104($module);
+    $objUpgrade = new UpgradeQloHotelReview101($module);
     return $objUpgrade->initUpgrade();
 }
 
-class UpgradeWkFooterAboutBlock104
+class UpgradeQloHotelReview101
 {
     public function __construct($module)
     {
@@ -39,6 +39,6 @@ class UpgradeWkFooterAboutBlock104
 
     public function initUpgrade()
     {
-        return $this->module->unregisterHook('displayFooterPaymentInfo');
+        return $this->module->registerHook('actionCleanData');
     }
 }
