@@ -479,7 +479,6 @@ class AdminStatsControllerCore extends AdminStatsTabController
 		LEFT JOIN `'._DB_PREFIX_.'customer_message` cm ON (ct.id_customer_thread = cm.id_customer_thread)
 		WHERE ct.`date_add` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59"
 		'.Shop::addSqlRestriction().$accessWhere.'
-		AND status = '.CustomerThread::QLO_CUSTOMER_THREAD_STATUS_CLOSED.'
 		GROUP BY ct.id_customer_thread');
         $threads = $messages = 0;
         foreach ($result as $row) {

@@ -729,11 +729,13 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $all = CustomerThread::getTotalCustomerThreads();
         $pending = (int)AdminStatsController::getPendingMessages();
         $open = CustomerThread::getTotalCustomerThreads('status='.CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN);
+
         $helper = new HelperKpi();
         $helper->id = 'box-messages';
         $helper->icon = 'icon-envelope';
         $helper->color = 'color1';
         $helper->title = $this->l('Total threads');
+        $helper->tooltip = $this->l('Total number of threads.');
         $helper->value = $all;
         $this->kpis[] = $helper;
 
@@ -743,6 +745,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $helper->color = 'color2';
         $helper->title = $this->l('Threads pending', null, null, false);
         $helper->value = $pending + $open;
+        $helper->tooltip = $this->l('Total number of threads having "open", "pending 1" and "pending 2" statuses.');
         $this->kpis[] = $helper;
 
         $helper = new HelperKpi();
@@ -750,6 +753,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $helper->icon = 'icon-time';
         $helper->color = 'color3';
         $helper->title = $this->l('Average Response Time', null, null, false);
+        $helper->tooltip = $this->l('The average response time.');
         $helper->subtitle = $this->l('30 days', null, null, false);
         $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=avg_msg_response_time';
         $this->kpis[] = $helper;
@@ -758,8 +762,9 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $helper->id = 'box-messages-per-thread';
         $helper->icon = 'icon-copy';
         $helper->color = 'color4';
-        $helper->title = $this->l('Messages per Thread', null, null, false);
+        $helper->title = $this->l('Average Messages per Thread', null, null, false);
         $helper->subtitle = $this->l('30 day', null, null, false);
+        $helper->tooltip = $this->l('The average number of messages in each thread.');
         $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=messages_per_thread';
         $this->kpis[] = $helper;
 
@@ -768,6 +773,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $helper->icon = 'icon-envelope';
         $helper->color = 'color1';
         $helper->title = $this->l('Customer messages', null, null, false);
+        $helper->tooltip = $this->l('Total number of messages sent by customers.');
         $helper->value = (int) CustomerMessage::getTotalCustomerMessages('cm.`id_employee` = 0');
         $this->kpis[] = $helper;
 
@@ -776,6 +782,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $helper->icon = 'icon-envelope';
         $helper->color = 'color4';
         $helper->title = $this->l('Employee messages', null, null, false);
+        $helper->tooltip = $this->l('Total number of messages sent by employees.');
         $helper->value = (int) CustomerMessage::getTotalCustomerMessages('cm.`id_employee` != 0');
         $this->kpis[] = $helper;
 
@@ -785,6 +792,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $helper->icon = 'icon-envelope';
         $helper->color = 'color2';
         $helper->title = $this->l('Unread threads', null, null, false);
+        $helper->tooltip = $this->l('Total number of messages having open status.');
         $helper->value = (int) $open;
         $this->kpis[] = $helper;
 
@@ -794,6 +802,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $helper->color = 'color1';
         $helper->title = $this->l('Closed threads', null, null, false);
         $helper->value = (int) ($all - ($open + $pending));
+        $helper->tooltip = $this->l('Total number of messages having closed status.');
         $this->kpis[] = $helper;
 
         return parent::renderKpis();
