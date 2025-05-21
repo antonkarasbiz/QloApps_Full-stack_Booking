@@ -590,7 +590,7 @@ class AdminCartsControllerCore extends AdminController
 
     public function ajaxProcessUpdateOrderMessage()
     {
-        if ($this->tabAccess['edit'] === '1' || $this->tabAccess['add'] === '1') {
+        if ($this->tabAccess['edit'] === '1') {
             $id_message = false;
             if ($old_message = Message::getMessageByCartId((int)$this->context->cart->id)) {
                 $id_message = $old_message['id_message'];
