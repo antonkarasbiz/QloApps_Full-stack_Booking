@@ -185,6 +185,9 @@
             {/foreach}
         {/foreach}
     {/if}
+    {block name='displayAfterShoppingCartRoomsSummary'}
+		{hook h="displayAfterShoppingCartRoomsSummary"}
+	{/block}
     {if (isset($hotel_products) && $hotel_products) || (isset($standalone_products) && $standalone_products)}
         <p class="cart_section_title">{l s='Product information'}</p>
     {/if}

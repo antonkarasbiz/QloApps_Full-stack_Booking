@@ -17,7 +17,9 @@
 *  @license   https://store.webkul.com/license.html
 *}
 
+{if !isset($ajax) || !$ajax}
 <div class="panel form-horizontal" id="customer_cart_details">
+{/if}
 	<div class="panel-heading">
 		<i class="icon-shopping-cart"></i>
 		{l s='Cart Details'}
@@ -51,7 +53,7 @@
 								<td>
 									<p>{$data.room_type|escape:'html':'UTF-8'}</p>
 								</td>
-                                {assign var="is_full_date" value=($show_full_date && ($data['date_from']|date_format:'%D' == $data['date_to']|date_format:'%D'))}
+								{assign var="is_full_date" value=($show_full_date && ($data['date_from']|date_format:'%D' == $data['date_to']|date_format:'%D'))}
 								<td>{dateFormat date=$data.date_from full=$is_full_date} - {dateFormat date=$data.date_to full=$is_full_date}</td>
 								{if $occupancy_required_for_booking}
 									<td>
@@ -145,7 +147,7 @@
 									</button>
 									{if (isset($data.extra_demands) && $data.extra_demands) || isset($data.additional_service) && $data.additional_service}
 										<br />
-										<a href="#" id_room="{$data.id_room|escape:'html':'UTF-8'}" date_from="{$data.date_from|escape:'html':'UTF-8'}" date_to="{$data.date_to|escape:'html':'UTF-8'}" id_product="{$data.id_product|escape:'html':'UTF-8'}" id_cart="{$data.id_cart|escape:'html':'UTF-8'}" class="open_rooms_extra_demands btn btn-success" title="{l s='Click here to add or remove the extra services of this room type.'}">
+										<a href="#" id_hotel_cart_booking="{$data.id|escape:'html':'UTF-8'}" id_room="{$data.id_room|escape:'html':'UTF-8'}" date_from="{$data.date_from|escape:'html':'UTF-8'}" date_to="{$data.date_to|escape:'html':'UTF-8'}" id_product="{$data.id_product|escape:'html':'UTF-8'}" id_cart="{$data.id_cart|escape:'html':'UTF-8'}" class="open_rooms_extra_demands btn btn-success" title="{l s='Click here to add or remove the extra services of this room type.'}">
 											<i class="icon-pencil"></i>&nbsp;{l s='Services'}
 										</a>
 									{/if}
@@ -157,6 +159,7 @@
 			</table>
 		</div>
 	</div>
+{if !isset($ajax) || !$ajax}
 </div>
 
 {* Modal for extra demands *}
@@ -180,22 +183,14 @@
 		color:#979797;
 		font-size:12px;}
 	/*Extra demands CSS*/
-	#rooms_type_extra_demands .modal-header {
-		padding-bottom: 0px}
-	#rooms_extra_demands {
-		font-size: 16px;}
-	#rooms_extra_demands .room_demands_container {
-		border: 1px solid #ddd;}
-	#rooms_extra_demands .demand_header {
-		padding: 10px;
-		color: #333;
-		border-bottom: 1px solid #ddd;}
 	#rooms_extra_demands .rooms_extra_demands_head {
 		margin-bottom: 18px;}
 	#rooms_extra_demands .room_demand_block {
 		margin-bottom: 15px;
-		color: #333;
-		font-size: 14px;}
-	#rooms_extra_demands .room_demand_detail {
-		padding: 15px 15px 0px 15px;}
+		color: #333;}
+    #room_type_service_product_desc #back_to_service_btn {
+		display: none;}
+    #add_new_room_services_block {
+		display: none;}
 </style>
+{/if}

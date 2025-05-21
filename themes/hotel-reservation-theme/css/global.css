@@ -9179,3 +9179,8 @@ a.link {
   color: #0000ff;
   text-decoration: none;
 }
+
+div a.our_properties_link{
+  color: #fff;
+  font-size: 17px;
+  font-weight: 400;}

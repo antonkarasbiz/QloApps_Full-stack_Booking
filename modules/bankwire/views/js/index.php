@@ -21,24 +21,12 @@
 * @license https://opensource.org/license/osl-3-0-php Open Software License version 3.0
 */
 
-if (!defined('_PS_VERSION_'))
-	exit;
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");
 
-function upgrade_module_1_0_4($module)
-{
-    $objUpgrade = new UpgradeWkFooterAboutBlock104($module);
-    return $objUpgrade->initUpgrade();
-}
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
 
-class UpgradeWkFooterAboutBlock104
-{
-    public function __construct($module)
-    {
-        $this->module = $module;
-    }
-
-    public function initUpgrade()
-    {
-        return $this->module->unregisterHook('displayFooterPaymentInfo');
-    }
-}
+header("Location: ../");
+exit;

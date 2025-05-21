@@ -98,11 +98,22 @@
 																			{if $is_logged || $isGuest}
 																				{if $is_logged}
 																					{block name='order_opc_guest_detail_form'}
-																						<form id="customer_guest_detail_form">
+																						<form id="customer_guest_detail_form" method="post" action="{$link->getPageLink('order-opc', null, null)}">
+																							<input type="hidden" name="submitGuestDetails" value="1">
 																							<p class="checkbox">
 																								<input type="checkbox" name="customer_guest_detail" id="customer_guest_detail" value="1" {if $id_customer_guest_detail}checked="checked"{/if}/>
 																								<label for="customer_guest_detail" id="customer_guest_detail_txt">{l s='Booking for someone else?'}</label>
 																							</p>
+																							{if isset($customerGuestDetailErrors) && $customerGuestDetailErrors}
+																								<div class="alert alert-danger" id="customer_guest_detail_errors">
+																									<p>{if $customerGuestDetailErrors|@count > 1}{l s='There are %d errors' sprintf=$customerGuestDetailErrors|@count}{else}{l s='There is %d error' sprintf=$customerGuestDetailErrors|@count}{/if}</p>
+																									<ol>
+																										{foreach from=$customerGuestDetailErrors key=k item=customerGuestDetailError}
+																											<li>{$customerGuestDetailError}</li>
+																										{/foreach}
+																									</ol>
+																								</div>
+																							{/if}
 																							<div id="customer-guest-detail-container" {if !$id_customer_guest_detail}style="display: none;"{/if}>
 																								<div class="row">
 																									<div class="required clearfix gender-line col-sm-2">
@@ -173,7 +184,7 @@
 																						<hr>
 																						<div class="row">
 																							<div class="col-sm-12 proceed_btn_block">
-																								<a class="btn btn-default button button-medium pull-right" href="{$link->getPageLink('order-opc', null, null, ['proceed_to_payment' => 1])}" title="Proceed to Payment" rel="nofollow">
+																								<a class="btn btn-default button button-medium pull-right submit-guest-details" href="{$link->getPageLink('order-opc', null, null, ['proceed_to_payment' => 1])}" title="Proceed to Payment" rel="nofollow">
 																									<span>
 																										{l s='Proceed'}
 																									</span>

@@ -743,7 +743,7 @@
 			{if isset($id_hotel) && $id_hotel}
 				{addJsDef id_hotels = $id_hotel}
 				{addJsDef max_order_date = $max_order_date}
-				{addJsDef preparation_time = $preparation_time}
+				{addJsDef min_booking_offset = $min_booking_offset}
 				{addJsDef booking_date_to = $date_to}
 				{addJsDef booking_date_from = $date_from}
 			{/if}

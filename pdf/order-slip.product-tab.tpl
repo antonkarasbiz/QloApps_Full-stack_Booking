@@ -31,6 +31,7 @@
 			</tr>
 			<tr>
 				<th class="product header">{l s='Room Type / Reference' pdf='true'}</th>
+                <th class="product header">{l s='Hotel' pdf='true'}</th>
 				<th class="product header">{l s='Duration' pdf='true'}</th>
 				<th class="product header">{l s='Num rooms' pdf='true'}</th>
 				<th class="product header-right">{l s='Total Price' pdf='true'}<br />{if $tax_excluded_display}{l s='(Tax Excl.)' pdf='true'}{else}{l s='(Tax Incl.)' pdf='true'}{/if}</th>
@@ -50,6 +51,9 @@
 						<td class="product left">
 							{$order_detail.product_name}
 						</td>
+                        <td class="product center">
+                            {$order_detail.hotel_name}
+                        </td>
 						<td class="product center">
 							{$order_detail.date_from|date_format:"%d-%m-%Y"} {l s='To' pdf='true'} {$order_detail.date_to|date_format:"%d-%m-%Y"}
 						</td>
@@ -214,4 +218,3 @@
         </tbody>
     </table>
 {/if}
-

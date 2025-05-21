@@ -406,16 +406,16 @@ abstract class PaymentModuleCore extends Module
                     }
 
                     // save customer guest information
-                    if ($id_customer_guest_detail = CartCustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
-                        if (Validate::isLoadedObject($objCartCustomerGuestDetail = new CartCustomerGuestDetail(
-                            $id_customer_guest_detail
+                    if ($idCustomerGuestDetail = CustomerGuestDetail::getCustomerGuestIdByIdCart($this->context->cart->id)) {
+                        if (Validate::isLoadedObject($objCustomerGuestDetail = new CustomerGuestDetail(
+                            $idCustomerGuestDetail
                         ))) {
                             $objOrderCustomerGuestDetail = new OrderCustomerGuestDetail();
-                            $objOrderCustomerGuestDetail->id_gender = $objCartCustomerGuestDetail->id_gender;
-                            $objOrderCustomerGuestDetail->firstname = $objCartCustomerGuestDetail->firstname;
-                            $objOrderCustomerGuestDetail->lastname = $objCartCustomerGuestDetail->lastname;
-                            $objOrderCustomerGuestDetail->email = $objCartCustomerGuestDetail->email;
-                            $objOrderCustomerGuestDetail->phone = $objCartCustomerGuestDetail->phone;
+                            $objOrderCustomerGuestDetail->id_gender = $objCustomerGuestDetail->id_gender;
+                            $objOrderCustomerGuestDetail->firstname = $objCustomerGuestDetail->firstname;
+                            $objOrderCustomerGuestDetail->lastname = $objCustomerGuestDetail->lastname;
+                            $objOrderCustomerGuestDetail->email = $objCustomerGuestDetail->email;
+                            $objOrderCustomerGuestDetail->phone = $objCustomerGuestDetail->phone;
                             $objOrderCustomerGuestDetail->id_order = (int)$order->id;
                             $objOrderCustomerGuestDetail->save();
                         }
@@ -829,11 +829,18 @@ abstract class PaymentModuleCore extends Module
                                 $objBookingDetail->is_back_order = $objCartBookingData->is_back_order;
                                 $objBookingDetail->comment = $objCartBookingData->comment;
 
+                                $occupancy = array(
+                                    array(
+                                        'adults' => $objCartBookingData->adults,
+                                        'children' => $objCartBookingData->children,
+                                        'child_ages' => json_decode($objCartBookingData->child_ages)
+                                    )
+                                );
                                 $total_price = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
                                     $idProduct,
                                     $objCartBookingData->date_from,
                                     $objCartBookingData->date_to,
-                                    0,
+                                    $occupancy,
                                     Group::getCurrent()->id,
                                     $objCartBookingData->id_cart,
                                     $objCartBookingData->id_guest,
@@ -1413,9 +1420,9 @@ abstract class PaymentModuleCore extends Module
                                 );
                             }
                             // send mail to customer guest if customer booked for someone other.
-                            if ($id_customer_guest_detail = OrderCustomerGuestDetail::isCustomerGuestBooking($order->id)) {
+                            if ($idCustomerGuestDetail = OrderCustomerGuestDetail::isCustomerGuestBooking($order->id)) {
                                 if ($objOrderCustomerGuestDetail = new OrderCustomerGuestDetail(
-                                    $id_customer_guest_detail
+                                    $idCustomerGuestDetail
                                 )) {
                                     if (Validate::isEmail($objOrderCustomerGuestDetail->email)) {
                                         $data['{firstname}'] = $objOrderCustomerGuestDetail->firstname;
@@ -1888,6 +1895,7 @@ abstract class PaymentModuleCore extends Module
                     } else {
                         $cart_bk_data = $obj_htl_bk_dtl->getOnlyOrderBookingData($order->id, $customer->id_guest, $type_value['product_id']);
                     }
+
                     if ($cart_bk_data) {
                         $rm_dtl = $obj_rm_type->getRoomTypeInfoByIdProduct($type_value['product_id']);
 
@@ -1908,11 +1916,20 @@ abstract class PaymentModuleCore extends Module
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['adults'] += $data_v['adults'];
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['children'] += $data_v['children'];
 
+                                $occupancy = array(
+                                    array(
+                                        'adults' => $data_v['adults'],
+                                        'children' => $data_v['children'],
+                                        'child_ages' => json_decode($data_v['child_ages'])
+                                    )
+                                );
 
-
-
-                                $roomTypeDateRangePrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice($type_value['id_product'], $data_v['date_from'], $data_v['date_to']);
-
+                                $roomTypeDateRangePrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
+                                    $type_value['id_product'],
+                                    $data_v['date_from'],
+                                    $data_v['date_to'],
+                                    $occupancy
+                                );
 
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['amount'] = $roomTypeDateRangePrice['total_price_tax_incl']*$vart_quant;
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['paid_unit_price_tax_incl'] = $data_v['total_price_tax_incl']/$num_days;
@@ -1933,9 +1950,7 @@ abstract class PaymentModuleCore extends Module
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['adults'] = $data_v['adults'];
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['children'] = $data_v['children'];
 
-
-
-                                    // extra demands prices
+                                // extra demands prices
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['extra_demands'] = $objBookingDemand->getRoomTypeBookingExtraDemands(
                                     $order->id,
                                     $type_value['product_id'],
@@ -2023,6 +2038,7 @@ abstract class PaymentModuleCore extends Module
             }
             $result['cart_htl_data'] = $cart_htl_data;
         }
+
         return $result;
     }
 }

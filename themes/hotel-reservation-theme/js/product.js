@@ -1334,7 +1334,7 @@ var BookingForm = {
             width: '100%',
         });
         this.currentRequest = null;
-        BookingForm.initDatepicker(max_order_date, preparation_time, $('#room_check_in').val(), $('#room_check_out').val());
+        BookingForm.initDatepicker(max_order_date, min_booking_offset, $('#room_check_in').val(), $('#room_check_out').val());
         // initialize tootltip for extra service
         if ($('.price_desc_block .services-info').length) {
             $('.price_desc_block .services-info img').tooltip({
@@ -1385,19 +1385,17 @@ var BookingForm = {
         }
         $(document).trigger("QloApps:afterBookingFormInit");
     },
-    initDatepicker: function(max_order_date, preparation_time, dateFrom, dateTo) {
-        if ($('#room_date_range').length) {
-            let start_date = new Date();
-            if (preparation_time) {
-                start_date.setDate(start_date.getDate() + parseInt(preparation_time));
-                start_date.setHours(0, 0, 0, 0);
-                if (dateFrom && new Date(dateFrom + ' 00:00:00') < start_date) {
-                    dateFrom = $.datepicker.formatDate('yy-mm-dd', start_date);
-                    if (new Date(dateTo + ' 00:00:00') <= start_date) {
-                        dateTo = new Date(start_date);
-                        dateTo.setDate(start_date.getDate() + 1);
-                        dateTo = $.datepicker.formatDate('yy-mm-dd', dateTo);
-                    }
+    initDatepicker: function(max_order_date, min_booking_offset, dateFrom, dateTo) {
+        let start_date = new Date();
+        if (min_booking_offset) {
+            start_date.setDate(start_date.getDate() + parseInt(min_booking_offset));
+            start_date.setHours(0, 0, 0, 0);
+            if (dateFrom && new Date(dateFrom + ' 00:00:00') < start_date) {
+                dateFrom = $.datepicker.formatDate('yy-mm-dd', start_date);
+                if (new Date(dateTo + ' 00:00:00') <= start_date) {
+                    dateTo = new Date(start_date);
+                    dateTo.setDate(start_date.getDate() + 1);
+                    dateTo = $.datepicker.formatDate('yy-mm-dd', dateTo);
                 }
             }
 

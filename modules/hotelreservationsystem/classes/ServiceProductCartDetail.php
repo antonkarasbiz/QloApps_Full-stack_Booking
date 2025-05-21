@@ -166,7 +166,7 @@ class ServiceProductCartDetail extends ObjectModel
             $language = new Language($idLang);
         }
 
-        $sql = 'SELECT spc.*, p.`selling_preference_type`, hcbd.`date_from`, hcbd.`date_to`, p.`price_calculation_method`, hcbd.`id_product` as `id_product_room_type`';
+        $sql = 'SELECT spc.*, p.`selling_preference_type`, hcbd.`date_from`, spc.`id_cart` as service_id_cart, hcbd.`date_to`, p.`price_calculation_method`, hcbd.`id_product` as `id_product_room_type`';
         if (!$getTotalPrice) {
             $sql .= ', hbil.`hotel_name` ';
         }
@@ -179,7 +179,7 @@ class ServiceProductCartDetail extends ObjectModel
             $sql .= ' LEFT JOIN `'._DB_PREFIX_.'htl_branch_info_lang` hbil ON (hbil.`id` = spc.`id_hotel` AND hbil.`id_lang` = '. $language->id.')';
         }
 
-        $sql .= ' WHERE spc.`id_cart`='.(int) $idCart;
+        $sql .= ' WHERE spc.`id_product`!=0 AND spc.`id_cart`='.(int) $idCart;
 
         if (!is_null($idProductRoomType)) {
             $sql .= ' AND hcbd.`id_product`='.(int) $idProductRoomType;
@@ -394,6 +394,19 @@ class ServiceProductCartDetail extends ObjectModel
     ) {
         if ($quantity <= 0) {
             $quantity = 1;
+        }
+
+        $isAvailable = true;
+        Hook::exec('actionCheckServiceAvailability', array(
+            'id_product' => $idProduct,
+            'quantity' => $quantity,
+            'id_cart' => $idCart,
+            'htl_cart_booking_id' => $idHtlCartData,
+            'is_service_available' => &$isAvailable,
+        ));
+
+        if (!$isAvailable) {
+            return false;
         }
         if ($id_service_product_cart_detail = $this->alreadyExists(
             $idCart,

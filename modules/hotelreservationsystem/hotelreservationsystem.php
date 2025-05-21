@@ -65,15 +65,6 @@ class HotelReservationSystem extends Module
 
     public function hookDisplayHeader()
     {
-        // check max global order_restriction date is set
-        if (!Configuration::get('MAX_GLOBAL_BOOKING_DATE')
-            || (strtotime(date('Y-m-d')) > strtotime(Configuration::get('MAX_GLOBAL_BOOKING_DATE')))
-        ) {
-            Configuration::updateValue(
-                'MAX_GLOBAL_BOOKING_DATE',
-                date('Y-m-d', strtotime(date('Y-m-d', time()).' + 1 year'))
-            );
-        }
         if (!Configuration::get('PS_CATALOG_MODE')) {
             /*To remove room from cart before todays date*/
             if (isset($this->context->cart->id) && $this->context->cart->id) {
@@ -682,9 +673,6 @@ class HotelReservationSystem extends Module
         $configKeys = array(
             'WK_HOTEL_LOCATION_ENABLE',
             'WK_ROOM_LEFT_WARNING_NUMBER',
-            'WK_HOTEL_GLOBAL_ADDRESS',
-            'WK_HOTEL_GLOBAL_CONTACT_EMAIL',
-            'WK_HOTEL_GLOBAL_CONTACT_NUMBER',
             'WK_HTL_ESTABLISHMENT_YEAR',
             'WK_HTL_CHAIN_NAME',
             'WK_TITLE_HEADER_BLOCK',
@@ -698,6 +686,7 @@ class HotelReservationSystem extends Module
             'WK_HOTEL_NAME_ENABLE',
             'WK_CUSTOMER_SUPPORT_PHONE_NUMBER',
             'WK_CUSTOMER_SUPPORT_EMAIL',
+            'WK_DISPLAY_CONTACT_PAGE_HOTEL_LIST'
         );
         foreach ($configKeys as $key) {
             if (!Configuration::deleteByName($key)) {
