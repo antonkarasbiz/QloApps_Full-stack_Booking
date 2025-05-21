@@ -39,7 +39,7 @@
 					{assign var=id_customer_thread value=$tmp2.id_customer_thread}
 				{/if}
 			{/foreach}
-			<div class="col-lg-3">
+			<div class="col-lg-4">
 				<div class="panel">
 					<div class="panel-heading">
 						{$val.name}
@@ -58,7 +58,7 @@
 				</div>
 			</div>
 		{/foreach}
-		<div class="col-lg-3">
+		<div class="col-lg-4">
 			<div id="MeaningStatus" class="panel">
 				<div class="panel-heading">
 					{l s='Meaning of status'}
@@ -68,20 +68,6 @@
 					<li><i class="icon-circle text-danger"></i> {l s='Closed'}</li>
 					<li><i class="icon-circle text-warning"></i> {l s='Pending 1'}</li>
 					<li><i class="icon-circle text-warning"></i> {l s='Pending 2'}</li>
-				</ul>
-			</div>
-		</div>
-		<div class="col-lg-3">
-			<div id="CustomerService" class="panel">
-				<div class="panel-heading">
-					{l s='Statistics'}
-				</div>
-				<ul class="list-unstyled">
-					{assign var=count value=0}
-					{foreach $stats as $key => $stat}
-						{assign var=count value=$count+1}
-						<li>{$stat.title} <span class="badge">{$stat.val}</span></li>
-					{/foreach}
 				</ul>
 			</div>
 		</div>

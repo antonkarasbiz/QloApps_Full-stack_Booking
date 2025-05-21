@@ -693,7 +693,7 @@ class OrderDetailControllerCore extends FrontController
                 $objCustomer = new Customer($order->id_customer);
                 if (!$id_customer_thread) {
                     $ct = new CustomerThread();
-                    $ct->id_contact = 0;
+                    $ct->id_contact = (int)Configuration::get('PS_MAIL_EMAIL_MESSAGE');
                     $ct->id_customer = (int)$order->id_customer;
                     $ct->user_name = $objCustomer->firstname.' '.$objCustomer->lastname;
                     $ct->subject = $order->reference;

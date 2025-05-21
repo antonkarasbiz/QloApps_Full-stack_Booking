@@ -47,10 +47,10 @@ class ContactControllerCore extends FrontController
             $id_contact = (int)Tools::getValue('id_contact');
             $objCustomerThread = new CustomerThread();
             $id_customer_thread = (int)$objCustomerThread->getIdCustomerThreadByToken(Tools::getValue('token'));
-            $nameRequired = Configuration::get('PS_CUSTOMER_SERVICE_NAME_REQUIRED');
-            $phoneRequired = Configuration::get('PS_CUSTOMER_SERVICE_PHONE_REQUIRED');
-            if (!Configuration::get('PS_CUSTOMER_SERVICE_CONTACT_ALLOW')) {
-                $id_contact = (int) Configuration::get('PS_CUSTOMER_SERVICE_EMAIL_MESSAGE');
+            $nameRequired = Configuration::get('PS_CUSTOMER_SERVICE_REQUIRED_NAME');
+            $phoneRequired = Configuration::get('PS_CUSTOMER_SERVICE_REQUIRED_PHONE');
+            if (!Configuration::get('PS_CUSTOMER_SERVICE_DISPLAY_CONTACT')) {
+                $id_contact = (int) Configuration::get('PS_CUSTOMER_SERVICE_CONTACT');
             }
 
             if (!($from = trim(Tools::getValue('from'))) || !Validate::isEmail($from)) {
@@ -158,34 +158,22 @@ class ContactControllerCore extends FrontController
                     }
 
                     if (!count($this->errors)) {
-                        $var_list = array(
-                            '{order_name}' => '-',
-                            '{attached_file}' => '-',
-                            '{message}' => Tools::nl2br(stripslashes($message)),
-                            '{email}' =>  $from,
-                            '{product_name}' => '',
-                            '{subject}' => $ct->subject,
-                        );
+                        $smartyMailVars['message'] = Tools::nl2br(stripslashes($message));
+                        $smartyMailVars['email'] = $ct->email;
+                        $smartyMailVars['subject'] = $ct->subject;
+                        $smartyMailVars['phone'] = $ct->phone;
+                        $smartyMailVars['user_name'] = $ct->user_name;
 
                         if (isset($file_attachment['name'])) {
-                            $var_list['{attached_file}'] = $file_attachment['name'];
+                            $smartyMailVars['attached_file'] = $file_attachment['name'];
                         }
 
-                        $id_product = (int)Tools::getValue('id_product');
-
-                        if (isset($ct) && Validate::isLoadedObject($ct) && $ct->id_order) {
-                            $order = new Order((int)$ct->id_order);
-                            $var_list['{order_name}'] = $order->getUniqReference();
-                            $var_list['{id_order}'] = (int)$order->id;
-                        }
-
-                        if ($id_product) {
-                            $product = new Product((int)$id_product);
-                            if (Validate::isLoadedObject($product) && isset($product->name[Context::getContext()->language->id])) {
-                                $var_list['{product_name}'] = $product->name[Context::getContext()->language->id];
-                            }
-                        }
-
+                        $contact_content_txt = $this->getEmailTemplateContent('contact_content_txt.tpl', Mail::TYPE_TEXT, $smartyMailVars);
+                        $contact_content_html = $this->getEmailTemplateContent('contact_content_html.tpl', Mail::TYPE_TEXT, $smartyMailVars);
+                        $var_list = array(
+                            '{contact_content_txt}' => $contact_content_txt,
+                            '{contact_content_html}' => $contact_content_html,
+                        );
                         if (!empty($contact->email)) {
                             Mail::Send(
                                 $this->context->language->id,
@@ -215,6 +203,30 @@ class ContactControllerCore extends FrontController
                 }
             }
         }
+    }
+
+    protected function getEmailTemplateContent($template_name, $mail_type, $var)
+    {
+        $email_configuration = Configuration::get('PS_MAIL_TYPE');
+        if ($email_configuration != $mail_type && $email_configuration != Mail::TYPE_BOTH) {
+            return '';
+        }
+
+        $pathToFindEmail = array(
+            _PS_THEME_DIR_.'mails'.DIRECTORY_SEPARATOR.$this->context->language->iso_code.DIRECTORY_SEPARATOR.$template_name,
+            _PS_THEME_DIR_.'mails'.DIRECTORY_SEPARATOR.'en'.DIRECTORY_SEPARATOR.$template_name,
+            _PS_MAIL_DIR_.$this->context->language->iso_code.DIRECTORY_SEPARATOR.$template_name,
+            _PS_MAIL_DIR_.'en'.DIRECTORY_SEPARATOR.$template_name,
+        );
+
+        foreach ($pathToFindEmail as $path) {
+            if (Tools::file_exists_cache($path)) {
+                $this->context->smarty->assign($var);
+                return $this->context->smarty->fetch($path);
+            }
+        }
+
+        return '';
     }
 
     public function setMedia()
@@ -324,11 +336,11 @@ class ContactControllerCore extends FrontController
                 'contacts' => Contact::getContacts($this->context->language->id),
                 'message' => html_entity_decode(Tools::getValue('message')),
 	            'contactKey' => $contactKey,
-                'contactNameRequired' => Configuration::get('PS_CUSTOMER_SERVICE_NAME_REQUIRED'),
-                'displayContactName' => Configuration::get('PS_CUSTOMER_SERVICE_NAME_DISPLAY'),
-                'contactPhoneRequired' => Configuration::get('PS_CUSTOMER_SERVICE_PHONE_REQUIRED'),
-                'displayContactPhone' => Configuration::get('PS_CUSTOMER_SERVICE_PHONE_DISPLAY'),
-                'allowContactSelection' => Configuration::get('PS_CUSTOMER_SERVICE_CONTACT_ALLOW')
+                'contactNameRequired' => Configuration::get('PS_CUSTOMER_SERVICE_REQUIRED_NAME'),
+                'displayContactName' => Configuration::get('PS_CUSTOMER_SERVICE_DISPLAY_NAME'),
+                'contactPhoneRequired' => Configuration::get('PS_CUSTOMER_SERVICE_REQUIRED_PHONE'),
+                'displayContactPhone' => Configuration::get('PS_CUSTOMER_SERVICE_DISPLAY_PHONE'),
+                'allowContactSelection' => Configuration::get('PS_CUSTOMER_SERVICE_DISPLAY_CONTACT')
             )
         );
 

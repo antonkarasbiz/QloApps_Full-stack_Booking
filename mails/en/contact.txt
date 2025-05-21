@@ -3,13 +3,7 @@
 
 Message from a {shop_name} customer
 
-CUSTOMER E-MAIL ADDRESS: {email}
-
-TITLE : {subject}
-
-CUSTOMER MESSAGE: {message}
-
-ATTACHED FILE: {attached_file}
+{contact_content_txt}
 
 {shop_name} [/{shop_url}] powered by Webkul(tm)
 [https://webkul.com]

@@ -199,15 +199,16 @@ class AdminCustomerThreadsControllerCore extends AdminController
 
         $this->fields_options = array(
             'contact' => array(
-                'title' =>    $this->l('Contact options'),
-                'fields' =>    array(
-                    'PS_CUSTOMER_SERVICE_FILE_UPLOAD' => array(
-                        'title' => $this->l('Allow file uploading'),
-                        'hint' => $this->l('Allow customers to upload files using the contact page.'),
-                        'type' => 'bool'
+                'title' => $this->l('Contact options'),
+                'fields' => array(
+                    'PS_CUSTOMER_SERVICE_SIGNATURE' => array(
+                        'title' => $this->l('Default message'),
+                        'hint' => $this->l('Please fill out the message fields that appear by default when you answer a thread on the customer service page.'),
+                        'type' => 'textareaLang',
+                        'lang' => true
                     ),
-                    'PS_MAIL_EMAIL_MESSAGE' => array(
-                        'title' => $this->l('Send email to'),
+                     'PS_MAIL_EMAIL_MESSAGE' => array(
+                        'title' => $this->l('Send messages from order page to'),
                         'desc' => $this->l('Where customers send messages from the order page.'),
                         'validation' => 'isUnsignedId',
                         'type' => 'select',
@@ -215,13 +216,13 @@ class AdminCustomerThreadsControllerCore extends AdminController
                         'identifier' => 'email_message',
                         'list' => $arr
                     ),
-                    'PS_CUSTOMER_SERVICE_CONTACT_ALLOW' => array(
-                        'title' => $this->l('Allow guest to select contact'),
-                        'hint' => $this->l('Allow guest to select the contact while submitting message from the contact page.'),
+                    'PS_CUSTOMER_SERVICE_DISPLAY_CONTACT' => array(
+                        'title' => $this->l('Select contact on contact page'),
+                        'hint' => $this->l('Allow guest to select the contact while sending message from the contact page.'),
                         'type' => 'bool'
                     ),
-                    'PS_CUSTOMER_SERVICE_EMAIL_MESSAGE' => array(
-                        'title' => $this->l('Send email to'),
+                    'PS_CUSTOMER_SERVICE_CONTACT' => array(
+                        'title' => $this->l('Send messages from contact page to'),
                         'desc' => $this->l('Where customers send messages from the Contact page.'),
                         'validation' => 'isUnsignedId',
                         'type' => 'select',
@@ -229,32 +230,31 @@ class AdminCustomerThreadsControllerCore extends AdminController
                         'identifier' => 'email_message',
                         'list' => $arr
                     ),
-                    'PS_CUSTOMER_SERVICE_NAME_REQUIRED' => array(
-                        'title' => $this->l('Set Name as required'),
-                        'hint' => $this->l('Set Name as required while submitting message from the contact page.'),
-                        'type' => 'bool'
-                    ),
-                    'PS_CUSTOMER_SERVICE_NAME_DISPLAY' => array(
-                        'title' => $this->l('Display Name field'),
+                    'PS_CUSTOMER_SERVICE_DISPLAY_NAME' => array(
+                        'title' => $this->l('Display name on contact page'),
                         'hint' => $this->l('Display name field on contact page.'),
                         'type' => 'bool',
                     ),
-                    'PS_CUSTOMER_SERVICE_PHONE_REQUIRED' => array(
-                        'title' => $this->l('Set Phone as required'),
-                        'hint' => $this->l('Set Phone as required while submitting message from the contact page.'),
+                    'PS_CUSTOMER_SERVICE_REQUIRED_NAME' => array(
+                        'title' => $this->l('Set name as required'),
+                        'hint' => $this->l('Set name as required while submitting message from the contact page.'),
                         'type' => 'bool'
                     ),
-                    'PS_CUSTOMER_SERVICE_PHONE_DISPLAY' => array(
-                        'title' => $this->l('Display Phone field'),
+                    'PS_CUSTOMER_SERVICE_DISPLAY_PHONE' => array(
+                        'title' => $this->l('Display phone on contact page'),
                         'hint' => $this->l('Display phone field on contact page.'),
                         'type' => 'bool',
                     ),
-                    'PS_CUSTOMER_SERVICE_SIGNATURE' => array(
-                        'title' => $this->l('Default message'),
-                        'hint' => $this->l('Please fill out the message fields that appear by default when you answer a thread on the customer service page.'),
-                        'type' => 'textareaLang',
-                        'lang' => true
-                    )
+                    'PS_CUSTOMER_SERVICE_REQUIRED_PHONE' => array(
+                        'title' => $this->l('Set phone as required'),
+                        'hint' => $this->l('Set phone as required while submitting message from the contact page.'),
+                        'type' => 'bool'
+                    ),
+                    'PS_CUSTOMER_SERVICE_FILE_UPLOAD' => array(
+                        'title' => $this->l('Allow file uploading'),
+                        'hint' => $this->l('Allow customers to upload files using the contact page.'),
+                        'type' => 'bool'
+                    ),
                 ),
                 'submit' => array(
                     'title' => $this->l('Save'),
@@ -394,45 +394,10 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $this->_orderWay = 'DESC';
 
         $contacts = CustomerThread::getContacts();
-
         $categories = Contact::getCategoriesContacts();
-
-        $stats = array(
-            array(
-                'title' => $this->l('Total threads'),
-                'val' => $all = CustomerThread::getTotalCustomerThreads(),
-            ),
-            array(
-                'title' => $this->l('Threads pending'),
-                'val' => $pending = CustomerThread::getTotalCustomerThreads(
-                    'status='.CustomerThread::QLO_CUSTOMER_THREAD_STATUS_PENDING1.'
-                    OR status='.CustomerThread::QLO_CUSTOMER_THREAD_STATUS_PENDING2
-                ),
-            ),
-            array(
-                'title' => $this->l('Total number of customer messages'),
-                'val' => CustomerMessage::getTotalCustomerMessages('cm.`id_employee` = 0'),
-            ),
-            array(
-                'title' => $this->l('Total number of employee messages'),
-                'val' => CustomerMessage::getTotalCustomerMessages('cm.`id_employee` != 0'),
-            ),
-            array(
-                'title' => $this->l('Unread threads'),
-                'val' => $unread = CustomerThread::getTotalCustomerThreads(
-                    'status='.CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN
-                ),
-            ),
-            array(
-                'title' => $this->l('Closed threads'),
-                'val' => $all - ($unread + $pending),
-            ),
-        );
-
         $this->tpl_list_vars = array(
             'contacts' => $contacts,
             'categories' => $categories,
-            'stats' => $stats
         );
 
         return parent::renderList();
@@ -457,12 +422,12 @@ class AdminCustomerThreadsControllerCore extends AdminController
             if (Tools::isSubmit('submitOptionsCustomerService')) {
                 unset($this->fields_options['general']);
                 $this->processUpdateOptions();
-                if (Tools::getValue('PS_CUSTOMER_SERVICE_NAME_REQUIRED')) {
-                    Configuration::updateValue('PS_CUSTOMER_SERVICE_NAME_DISPLAY', 1);
+                if (!Tools::getValue('PS_CUSTOMER_SERVICE_DISPLAY_NAME')) {
+                    Configuration::updateValue('PS_CUSTOMER_SERVICE_REQUIRED_NAME', 0);
                 }
 
-                if (Tools::getValue('PS_CUSTOMER_SERVICE_PHONE_REQUIRED')) {
-                    Configuration::updateValue('PS_CUSTOMER_SERVICE_PHONE_DISPLAY', 1);
+                if (!Tools::getValue('PS_CUSTOMER_SERVICE_DISPLAY_PHONE')) {
+                    Configuration::updateValue('PS_CUSTOMER_SERVICE_REQUIRED_PHONE', 0);
                 }
             } else if (Tools::isSubmit('submitOptionsIMAPConfig')) {
                 unset($this->fields_options['contact']);
@@ -633,12 +598,13 @@ class AdminCustomerThreadsControllerCore extends AdminController
                             $this->context->link->getPageLink('contact', true, (int)$ct->id_lang, null, false, $ct->id_shop),
                             'token='.$ct->token
                         );
-                        $headingText = $this->l('Hi') .' '.$ct->user_name;
+                        $headingText = $this->l('Hi').' '.$ct->user_name.',';
                         $idShop = $ct->id_shop;
                         $params = array(
                             '{reply}' => Tools::nl2br(Tools::getValue('reply_message')),
                             '{link}' => $link,
                             '{headingtext}' => $headingText,
+                            '{contact_name}' => $contact->name,
                         );
                         if (!empty(trim($ct->subject))) {
                             $params['{subject}'] = $ct->subject;
@@ -652,6 +618,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
                         if ($customer->id) {
                             $headingText .= ' '.$customer->firstname.' '.$customer->lastname;
                         }
+                        $headingText .= ',';
                     }
 
                     if (Mail::Send(
@@ -759,18 +726,29 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $time = time();
         $kpis = array();
 
+        $all = CustomerThread::getTotalCustomerThreads();
+        $pending = (int)AdminStatsController::getPendingMessages();
+        $open = CustomerThread::getTotalCustomerThreads('status='.CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN);
+        $helper = new HelperKpi();
+        $helper->id = 'box-messages';
+        $helper->icon = 'icon-envelope';
+        $helper->color = 'color1';
+        $helper->title = $this->l('Total threads');
+        $helper->value = $all;
+        $this->kpis[] = $helper;
+
         $helper = new HelperKpi();
         $helper->id = 'box-pending-messages';
         $helper->icon = 'icon-envelope';
-        $helper->color = 'color1';
-        $helper->title = $this->l('Pending Discussion Threads', null, null, false);
-        $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=pending_messages';
+        $helper->color = 'color2';
+        $helper->title = $this->l('Threads pending', null, null, false);
+        $helper->value = $pending + $open;
         $this->kpis[] = $helper;
 
         $helper = new HelperKpi();
         $helper->id = 'box-age';
         $helper->icon = 'icon-time';
-        $helper->color = 'color2';
+        $helper->color = 'color3';
         $helper->title = $this->l('Average Response Time', null, null, false);
         $helper->subtitle = $this->l('30 days', null, null, false);
         $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=avg_msg_response_time';
@@ -779,10 +757,43 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $helper = new HelperKpi();
         $helper->id = 'box-messages-per-thread';
         $helper->icon = 'icon-copy';
-        $helper->color = 'color3';
+        $helper->color = 'color4';
         $helper->title = $this->l('Messages per Thread', null, null, false);
         $helper->subtitle = $this->l('30 day', null, null, false);
         $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=messages_per_thread';
+        $this->kpis[] = $helper;
+
+        $helper = new HelperKpi();
+        $helper->id = 'box-pending-messages';
+        $helper->icon = 'icon-envelope';
+        $helper->color = 'color1';
+        $helper->title = $this->l('Customer messages', null, null, false);
+        $helper->value = (int) CustomerMessage::getTotalCustomerMessages('cm.`id_employee` = 0');
+        $this->kpis[] = $helper;
+
+        $helper = new HelperKpi();
+        $helper->id = 'box-pending-messages';
+        $helper->icon = 'icon-envelope';
+        $helper->color = 'color4';
+        $helper->title = $this->l('Employee messages', null, null, false);
+        $helper->value = (int) CustomerMessage::getTotalCustomerMessages('cm.`id_employee` != 0');
+        $this->kpis[] = $helper;
+
+
+        $helper = new HelperKpi();
+        $helper->id = 'box-pending-messages';
+        $helper->icon = 'icon-envelope';
+        $helper->color = 'color2';
+        $helper->title = $this->l('Unread threads', null, null, false);
+        $helper->value = (int) $open;
+        $this->kpis[] = $helper;
+
+        $helper = new HelperKpi();
+        $helper->id = 'box-pending-messages';
+        $helper->icon = 'icon-envelope';
+        $helper->color = 'color1';
+        $helper->title = $this->l('Closed threads', null, null, false);
+        $helper->value = (int) ($all - ($open + $pending));
         $this->kpis[] = $helper;
 
         return parent::renderKpis();
@@ -911,6 +922,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
             }
         }
 
+        $this->context->smarty->assign('display', 'view');
         $this->tpl_view_vars = array(
             'id_customer_thread' => $id_customer_thread,
             'thread' => $thread,
@@ -993,6 +1005,22 @@ class AdminCustomerThreadsControllerCore extends AdminController
         }
         krsort($timeline);
         return $timeline;
+    }
+
+     public function initToolbarTitle()
+    {
+        parent::initToolbarTitle();
+        switch ($this->display) {
+            case 'view':
+                if (!($thread = $this->loadObject())) {
+                    return;
+                }
+
+                if ($thread->id) {
+                    $this->toolbar_title[] = sprintf($this->l('Title: %1$s'), $thread->subject);
+                }
+                break;
+        }
     }
 
     protected function displayMessage($message, $email = false, $id_employee = null)

@@ -425,7 +425,6 @@ class AdminStatsControllerCore extends AdminStatsTabController
     public static function getPendingMessages()
     {
         $pendingStatuses = array(
-            CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN,
             CustomerThread::QLO_CUSTOMER_THREAD_STATUS_PENDING2,
             CustomerThread::QLO_CUSTOMER_THREAD_STATUS_PENDING1
         );

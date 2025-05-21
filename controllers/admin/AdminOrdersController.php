@@ -1568,7 +1568,7 @@ class AdminOrdersControllerCore extends AdminController
                         $id_customer_thread = CustomerThread::getIdCustomerThreadByEmailAndIdOrder($customer->email, $order->id);
                         if (!$id_customer_thread) {
                             $customer_thread = new CustomerThread();
-                            $customer_thread->id_contact = 0;
+                            $customer_thread->id_contact = (int)Configuration::get('PS_MAIL_EMAIL_MESSAGE');
                             $customer_thread->id_customer = (int)$order->id_customer;
                             $customer_thread->user_name = $customer->firstname.' '.$customer->lastname;
                             $customer_thread->phone = $customer->phone;
