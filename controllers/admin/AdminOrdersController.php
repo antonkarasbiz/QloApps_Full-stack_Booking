@@ -2500,12 +2500,19 @@ class AdminOrdersControllerCore extends AdminController
             $this->kpis[] = $helper;
 
             $helper = new HelperKpi();
+            if (isset($orderHistory[0]['id_order_state']) && ($orderHistory[0]['id_order_state'] == Configuration::get('PS_OS_PAYMENT_ACCEPTED'))) {
+                $initialPaymentType = $this->l('Full Payment');
+            } elseif (isset($orderHistory[0]['id_order_state']) && ($orderHistory[0]['id_order_state'] == Configuration::get('PS_OS_PARTIAL_PAYMENT_ACCEPTED'))) {
+                $initialPaymentType = $this->l('Partial Payment');
+            } else {
+                $initialPaymentType = $this->l('No Payment');
+            }
             $helper->id = 'box-payment-type';
             $helper->icon = 'icon-home';
             $helper->color = 'color3';
-            $helper->title = $this->l('Payment Type');
-            $helper->tooltip = $this->l('The payment type refers to the type of payment that customer selected while placing this order.');
-            $helper->value = $objOrder->is_advance_payment ? $this->l('Partial Payment') : $this->l('Full Payment');
+            $helper->title = $this->l('Initial Payment Type');
+            $helper->tooltip = $this->l('Initial payment type refers to the portion of the total order amount that the customer paid at the time of placing the order.');
+            $helper->value = $initialPaymentType;
             $this->kpis[] = $helper;
 
             if ($objOrder->is_advance_payment) {
