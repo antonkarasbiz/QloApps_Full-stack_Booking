@@ -25,7 +25,7 @@
 
 {extends file="helpers/list/list_header.tpl"}
 
-{block name="list_action_filter_fields" append}
+{block name="list_filter_items" append}
 	<div class="pull-right col-xs-4 col-sm-3 col-md-2 col-lg-2">
 		<div class="list_availibility_container">
 			<button type="button" class="btn btn-default btn-left btn-block dropdown-toggle" data-toggle="dropdown" data-target="MeaningStatus">

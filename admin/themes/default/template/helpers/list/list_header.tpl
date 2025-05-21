@@ -196,44 +196,40 @@
 		{if $new_list_header_design}
 			{block name="list_action_wrapper"}
 				<div class="list_action_wrapper">
-					{block name="list_action_buttons"}
-						<div class="row">
-							{block name="list_action_optional_fields"}
-								{if $fields_optional|count}
-									<div class="col-xs-4 col-sm-3 col-md-2">
-										<div class="list_availibility_container">
-											<button type="button" class="btn btn-default btn-left btn-block dropdown-toggle" data-toggle="dropdown">
-												<span>{l s='Available Fields'}
-												<i class="icon-caret-down pull-right"></i>
-											</button>
-											<ul id="optional-list-toggle" class="dropdown-menu">
-												{foreach $fields_optional as $key => $field}
-													<li>
-														<label>
-															<input type="checkbox" name="list_fields_visibility" value="{$key}" {if isset($field['selected']) && $field['selected']}checked="checked"{/if}>
-															{$field['title']}
-														</label>
-													</li>
-												{/foreach}
-											</ul>
-										</div>
+					<div class="row">
+						{block name="list_filter_items"}
+							{if $fields_optional|count}
+								<div class="col-xs-4 col-sm-3 col-md-2">
+									<div class="list_availibility_container">
+										<button type="button" class="btn btn-default btn-left btn-block dropdown-toggle" data-toggle="dropdown">
+											<span>{l s='Available Fields'}
+											<i class="icon-caret-down pull-right"></i>
+										</button>
+										<ul id="optional-list-toggle" class="dropdown-menu">
+											{foreach $fields_optional as $key => $field}
+												<li>
+													<label>
+														<input type="checkbox" name="list_fields_visibility" value="{$key}" {if isset($field['selected']) && $field['selected']}checked="checked"{/if}>
+														{$field['title']}
+													</label>
+												</li>
+											{/foreach}
+										</ul>
 									</div>
-								{/if}
-							{/block}
-							{block name="list_action_filter_fields"}
-								{if !$simple_header && $show_filters}
-									<div class="col-xs-3 col-sm-2 col-md-1 pull-right">
-										<div class="list_filter_container">
-											<button type="button" class="btn btn-default btn-block" data-toggle="collapse" data-target="#list_filters_panel">
-												<i class="icon-sliders"></i>
-												<span>{l s='Filters'}
-											</button>
-										</div>
+								</div>
+							{/if}
+							{if !$simple_header && $show_filters}
+								<div class="col-xs-3 col-sm-2 col-md-1 pull-right">
+									<div class="list_filter_container">
+										<button type="button" class="btn btn-default btn-block" data-toggle="collapse" data-target="#list_filters_panel">
+											<i class="icon-sliders"></i>
+											<span>{l s='Filters'}
+										</button>
 									</div>
-								{/if}
-							{/block}
-						</div>
-					{/block}
+								</div>
+							{/if}
+						{/block}
+					</div>
 					<div class="row">
 						<div class="col-sm-12">
 							{if $filters_has_value}
