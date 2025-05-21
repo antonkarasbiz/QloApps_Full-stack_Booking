@@ -86,7 +86,7 @@ class AdminLocalizationControllerCore extends AdminController
                 'fields' =>    array(
                     'PS_WEIGHT_UNIT' => array(
                         'title' => $this->l('Weight unit'),
-                        'hint' => $this->l('The default weight unit for your shop (e.g. "kg" for kilograms, "lbs" for pound-mass, etc.).'),
+                        'hint' => $this->l('The default weight unit for your hotel (e.g. "kg" for kilograms, "lbs" for pound-mass, etc.).'),
                         'validation' => 'isWeightUnit',
                         'required' => true,
                         'type' => 'text',
@@ -94,7 +94,7 @@ class AdminLocalizationControllerCore extends AdminController
                     ),
                     'PS_DISTANCE_UNIT' => array(
                         'title' => $this->l('Distance unit'),
-                        'hint' => $this->l('The default distance unit for your shop (e.g. "km" for kilometer, "mi" for mile, etc.).'),
+                        'hint' => $this->l('The default distance unit for your hotel (e.g. "km" for kilometer, "mi" for mile, etc.).'),
                         'validation' => 'isDistanceUnit',
                         'required' => true,
                         'type' => 'text',
@@ -102,7 +102,7 @@ class AdminLocalizationControllerCore extends AdminController
                     ),
                     'PS_VOLUME_UNIT' => array(
                         'title' => $this->l('Volume unit'),
-                        'hint' => $this->l('The default volume unit for your shop (e.g. "L" for liter, "gal" for gallon, etc.).'),
+                        'hint' => $this->l('The default volume unit for your hotel (e.g. "L" for liter, "gal" for gallon, etc.).'),
                         'validation' => 'isWeightUnit',
                         'required' => true,
                         'type' => 'text',
@@ -110,7 +110,7 @@ class AdminLocalizationControllerCore extends AdminController
                     ),
                     'PS_DIMENSION_UNIT' => array(
                         'title' => $this->l('Dimension unit'),
-                        'hint' => $this->l('The default dimension unit for your shop (e.g. "cm" for centimeter, "in" for inch, etc.).'),
+                        'hint' => $this->l('The default dimension unit for your hotel (e.g. "cm" for centimeter, "in" for inch, etc.).'),
                         'validation' => 'isDistanceUnit',
                         'required' => true,
                         'type' => 'text',

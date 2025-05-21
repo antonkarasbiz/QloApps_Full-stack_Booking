@@ -389,6 +389,20 @@ class ProductControllerCore extends FrontController
                         }
                     }
 
+                    $objHotelBedType = new HotelBedType();
+                    if ($bedTypes = $objHotelBedType->getAllBedTypes($this->context->language->id)) {
+                        foreach ($bedTypes as $bedTypeKey => $bedType) {
+                            $bedTypes[$bedTypeKey]['area'] = Tools::ps_round($bedType['width'], 2).' * '.Tools::ps_round($bedType['length'], 2);
+                        }
+
+                        $bedTypes = array_column($bedTypes, null, 'id_bed_type');
+                    }
+
+                    $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
+                    if ($selectedBedTypes = $objHotelRoomTypeBedType->getRoomTypeBedTypes($this->product->id)) {
+                        $selectedBedTypes = array_column($selectedBedTypes, 'id_bed_type');
+                    }
+
                     $this->context->smarty->assign(
                         array(
                             'id_hotel' => $hotel_id,
@@ -420,6 +434,9 @@ class ProductControllerCore extends FrontController
                             'ftr_img_src' => _PS_IMG_.'rf/',
                             'order_date_restrict' => $order_date_restrict,
                             'PS_SERVICE_PRODUCT_CATEGORY_FILTER' => Configuration::get('PS_SERVICE_PRODUCT_CATEGORY_FILTER'),
+                            'bed_types_info' => $bedTypes,
+                            'selected_bed_types' => $selectedBedTypes,
+                            'dimension_unit' => Configuration::get('PS_DIMENSION_UNIT'),
                         )
                     );
 

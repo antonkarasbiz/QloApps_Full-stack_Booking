@@ -1063,6 +1063,8 @@ class ProductCore extends ObjectModel
         }
 
         if (!$this->booking_product) {
+            $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
+            $objHotelRoomTypeBedType->deleteRoomTypeBedTypes(false, $this->id);
             if (!$this->deleteServiceInfo()) {
                 return false;
             }
