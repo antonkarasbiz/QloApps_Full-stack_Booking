@@ -1398,47 +1398,47 @@ var BookingForm = {
                     dateTo = $.datepicker.formatDate('yy-mm-dd', dateTo);
                 }
             }
+        }
 
+        if (max_order_date) {
+            max_order_date = $.datepicker.parseDate('yy-mm-dd', max_order_date );
+        } else {
+            max_order_date = false;
+        }
+        if (typeof $('#room_date_range').data('dateRangePicker') != 'undefined') {
             if (max_order_date) {
-                max_order_date = $.datepicker.parseDate('yy-mm-dd', max_order_date );
-            } else {
-                max_order_date = false;
-            }
-            if (typeof $('#room_date_range').data('dateRangePicker') != 'undefined') {
-                if (max_order_date) {
-                    if ($.datepicker.parseDate('yy-mm-dd', $('#room_check_out').val()) < max_order_date) {
-                        dateFrom = $('#room_check_in').val();
-                        dateTo = $('#room_check_out').val();
-                    }
+                if ($.datepicker.parseDate('yy-mm-dd', $('#room_check_out').val()) < max_order_date) {
+                    dateFrom = $('#room_check_in').val();
+                    dateTo = $('#room_check_out').val();
                 }
-                $('#room_date_range').data('dateRangePicker').clear();
-                $('#room_date_range').data('dateRangePicker').destroy();
-                $("#room_date_range").off("datepicker-change");
             }
+            $('#room_date_range').data('dateRangePicker').clear();
+            $('#room_date_range').data('dateRangePicker').destroy();
+            $("#room_date_range").off("datepicker-change");
+        }
 
-            if (max_order_date) {
-                max_order_date = $.datepicker.formatDate('dd-mm-yy', max_order_date);
-            }
-            $('#room_date_range').dateRangePicker({
-                endDate: max_order_date,
-                startDate: start_date,
-            }).on('datepicker-change', function(event,obj){
-                $('#room_check_in').val($.datepicker.formatDate('yy-mm-dd', obj.date1));
-                $('#room_check_out').val($.datepicker.formatDate('yy-mm-dd', obj.date2));
-                BookingForm.refresh();
-            });
+        if (max_order_date) {
+            max_order_date = $.datepicker.formatDate('dd-mm-yy', max_order_date);
+        }
+        $('#room_date_range').dateRangePicker({
+            endDate: max_order_date,
+            startDate: start_date,
+        }).on('datepicker-change', function(event,obj){
+            $('#room_check_in').val($.datepicker.formatDate('yy-mm-dd', obj.date1));
+            $('#room_check_out').val($.datepicker.formatDate('yy-mm-dd', obj.date2));
+            BookingForm.refresh();
+        });
 
-            $('body button').on('click', '', function() {
-                if (!$(this).closest('.date-picker-wrapper').length) {
-                    $('#room_date_range').data('dateRangePicker').close();
-                }
-            });
-            if (dateFrom && dateTo) {
-                $('#room_date_range').data('dateRangePicker').setDateRange(
-                    $.datepicker.formatDate('dd-mm-yy', $.datepicker.parseDate('yy-mm-dd', dateFrom)),
-                    $.datepicker.formatDate('dd-mm-yy', $.datepicker.parseDate('yy-mm-dd', dateTo))
-                );
+        $('body button').on('click', '', function() {
+            if (!$(this).closest('.date-picker-wrapper').length) {
+                $('#room_date_range').data('dateRangePicker').close();
             }
+        });
+        if (dateFrom && dateTo) {
+            $('#room_date_range').data('dateRangePicker').setDateRange(
+                $.datepicker.formatDate('dd-mm-yy', $.datepicker.parseDate('yy-mm-dd', dateFrom)),
+                $.datepicker.formatDate('dd-mm-yy', $.datepicker.parseDate('yy-mm-dd', dateTo))
+            );
         }
     },
     getFormData: function () {

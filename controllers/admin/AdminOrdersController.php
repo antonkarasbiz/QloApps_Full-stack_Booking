@@ -5394,6 +5394,9 @@ class AdminOrdersControllerCore extends AdminController
                                 $objOrderInvoice->number = Order::getLastInvoiceNumber() + 1;
                             }
 
+                            $invoice_address = new Address((int) $objOrder->{Configuration::get('PS_TAX_ADDRESS_TYPE', null, null, $objOrder->id_shop)});
+                            $carrier = new Carrier((int)$objOrder->id_carrier);
+                            $tax_calculator = $carrier->getTaxCalculator($invoice_address);
                             $objOrderInvoice->total_paid_tax_excl = Tools::ps_round((float)$objCart->getOrderTotal(false, $totalMethod), 2);
                             $objOrderInvoice->total_paid_tax_incl = Tools::ps_round((float)$objCart->getOrderTotal($useTaxes, $totalMethod), 2);
                             $objOrderInvoice->total_products = (float)$objCart->getOrderTotal(false, Cart::ONLY_PRODUCTS);
