@@ -393,13 +393,6 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $this->_orderBy = 'id_customer_thread';
         $this->_orderWay = 'DESC';
 
-        $contacts = CustomerThread::getContacts();
-        $categories = Contact::getCategoriesContacts();
-        $this->tpl_list_vars = array(
-            'contacts' => $contacts,
-            'categories' => $categories,
-        );
-
         return parent::renderList();
     }
 
@@ -799,11 +792,40 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $helper = new HelperKpi();
         $helper->id = 'box-pending-messages';
         $helper->icon = 'icon-envelope';
-        $helper->color = 'color1';
+        $helper->color = 'color3';
         $helper->title = $this->l('Closed threads', null, null, false);
         $helper->value = (int) ($all - ($open + $pending));
         $helper->tooltip = $this->l('Total number of messages having closed status.');
         $this->kpis[] = $helper;
+
+        $contacts = CustomerThread::getContacts();
+        $categories = Contact::getCategoriesContacts();
+        if ($contacts) {
+            $contacts = array_column($contacts, null, 'id_contact');
+        }
+
+        if ($categories) {
+            foreach ($categories as $idContact => $category) {
+                $helper = new HelperKpi();
+                $helper->id = 'box-pending-messages';
+                $helper->icon = 'icon-envelope';
+                $helper->color = 'color'.(($idContact+1)%3 ? ($idContact+1)%3 : '4');
+                $helper->title = $category['name'];
+                if (isset($contacts[$category['id_contact']])) {
+                    $helper->href = self::$currentIndex.'&token='.$this->token.'&id_customer_thread='.$contacts[$category['id_contact']]['id_customer_thread'].'&viewcustomer_thread';
+                    if ($contacts[$category['id_contact']]['total'] > 1) {
+                        $helper->value = $contacts[$category['id_contact']]['total'].' '.$this->l('New messages');
+                    } else {
+                        $helper->value = $contacts[$category['id_contact']]['total'].' '.$this->l('New message');
+                    }
+                } else {
+                    $helper->value = $this->l('No new messages');
+                }
+
+                $helper->tooltip = $this->l('Total number of messages sent to').' '.$category['name'];
+                $this->kpis[] = $helper;
+            }
+        }
 
         return parent::renderKpis();
     }
