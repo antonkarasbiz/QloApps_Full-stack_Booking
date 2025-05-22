@@ -2505,13 +2505,13 @@ class AdminOrdersControllerCore extends AdminController
             } elseif (isset($orderHistory[0]['id_order_state']) && ($orderHistory[0]['id_order_state'] == Configuration::get('PS_OS_PARTIAL_PAYMENT_ACCEPTED'))) {
                 $initialPaymentType = $this->l('Partial Payment');
             } else {
-                $initialPaymentType = $this->l('No Payment');
+                $initialPaymentType = $this->l('No Payment Received ');
             }
             $helper->id = 'box-payment-type';
             $helper->icon = 'icon-home';
             $helper->color = 'color3';
-            $helper->title = $this->l('Initial Payment Type');
-            $helper->tooltip = $this->l('Initial payment type refers to the portion of the total order amount that the customer paid at the time of placing the order.');
+            $helper->title = $this->l('Initial Payment Status');
+            $helper->tooltip = $this->l('Initial Payment Status defines whether the order was fully paid, partially paid, or had no payment received at the time the order was placed.');
             $helper->value = $initialPaymentType;
             $this->kpis[] = $helper;
 
