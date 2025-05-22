@@ -185,7 +185,7 @@ class ProductCore extends ObjectModel
     public $available_for_order = true;
 
     // Room type required to buy
-    public $service_product_type;
+    public $selling_preference_type;
 
     // add product to cart automatically
     public $auto_add_to_cart = false;
@@ -302,7 +302,7 @@ class ProductCore extends ObjectModel
             'cache_has_attachments' =>        array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'is_virtual' =>                array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'booking_product' =>                array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
-            'service_product_type' =>        array('type' => self::TYPE_INT, 'validate' => 'isUnsignedInt'),
+            'selling_preference_type' =>        array('type' => self::TYPE_INT, 'validate' => 'isUnsignedInt'),
 
             /* Shop fields */
             'id_category_default' =>        array('type' => self::TYPE_INT, 'shop' => true, 'validate' => 'isUnsignedId'),
@@ -481,7 +481,7 @@ class ProductCore extends ObjectModel
         ),
         'hidden_fields' => array(
             'booking_product',
-            'service_product_type'
+            'selling_preference_type'
         ),
     );
 
@@ -550,8 +550,11 @@ class ProductCore extends ObjectModel
     const PRICE_DISPALY_COMBINE = 1;
     const PRICE_DISPALY_INDIVISUAL = 2;
 
-    const SERVICE_PRODUCT_WITH_ROOMTYPE = 1;
-    const SERVICE_PRODUCT_WITHOUT_ROOMTYPE = 2;
+    // Product selling preference types
+    const SELLING_PREFERENCE_WITH_ROOM_TYPE = 1; // Product to be sold with Room types
+    const SELLING_PREFERENCE_HOTEL_STANDALONE = 2; // Product to be sold Standalone with Hotels
+    const SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE = 3; // Product to be sold Standalone with Hotels and with Room types also
+    const SELLING_PREFERENCE_STANDALONE = 4; // Product to be sold standalone
 
     const PRICE_ADDITION_TYPE_WITH_ROOM = 1;
     const PRICE_ADDITION_TYPE_INDEPENDENT = 2;
@@ -559,6 +562,9 @@ class ProductCore extends ObjectModel
     const PRICE_CALCULATION_METHOD_PER_BOOKING = 1;
     const PRICE_CALCULATION_METHOD_PER_DAY = 2;
 
+    const STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOMER = 1;
+    const STANDARD_PRODUCT_ADDRESS_PREFERENCE_HOTEL = 2;
+    const STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOM = 3;
 
     public function __construct($id_product = null, $full = false, $id_lang = null, $id_shop = null, Context $context = null)
     {
@@ -581,7 +587,11 @@ class ProductCore extends ObjectModel
             // Keep base price
             $this->base_price = $this->price;
 
-            $this->price = Product::getPriceStatic((int)$this->id, false, null, 6, null, false, true, 1, false, null, null, null, $this->specificPrice);
+            if ($this->booking_product) {
+                $this->price = Product::getPriceStatic((int)$this->id, false, null, 6, null, false, true, 1, false, null, null, null, $this->specificPrice);
+            } else {
+                $this->price = Product::getServiceProductPrice((int)$this->id);
+            }
             $this->unit_price = ($this->unit_price_ratio != 0  ? $this->price / $this->unit_price_ratio : 0);
             if ($this->id) {
                 $this->tags = Tag::getProductTags((int)$this->id);
@@ -931,6 +941,23 @@ class ProductCore extends ObjectModel
         ), 'id_product = '.(int)$id_product);
     }
 
+    public static function getSellingPreferenceType($id_product)
+    {
+        $cache_key = 'Product::getSellingPreferenceType_'.(int) $id_product;
+        if (!Cache::isStored($cache_key)) {
+            $res = Db::getInstance()->getValue(
+                'SELECT p.`selling_preference_type`
+                 FROM `'._DB_PREFIX_.'product` p '.Shop::addSqlAssociation('product', 'p').'
+                WHERE p.`id_product` = '.(int)$id_product
+            );
+            Cache::store($cache_key, $res);
+        } else {
+            $res = Cache::retrieve($cache_key);
+        }
+
+        return $res;
+    }
+
     public static function getProductPriceCalculation($id_product)
     {
         $cache_key = 'Product::getProductPriceCalculation'.(int)$id_product;
@@ -1036,11 +1063,12 @@ class ProductCore extends ObjectModel
         }
 
         if (!$this->booking_product) {
-            $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
-            $objHotelRoomTypeBedType->deleteRoomTypeBedTypes(false, $this->id);
             if (!$this->deleteServiceInfo()) {
                 return false;
             }
+        } else {
+            $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
+            $objHotelRoomTypeBedType->deleteRoomTypeBedTypes(false, $this->id);
         }
 
         Hook::exec('actionProductDelete', array('id_product' => (int)$this->id, 'product' => $this));
@@ -1412,7 +1440,7 @@ class ProductCore extends ObjectModel
                     ('.
                         '(`element_type` = '.RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE.' AND `id_element` = '.(int)$this->id.')
                     )
-                    AND p.`service_product_type` = '.(int)self::SERVICE_PRODUCT_WITH_ROOMTYPE. '
+                    AND (p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_WITH_ROOM_TYPE. ' || p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE.')'. '
                     AND product_shop.`id_shop` = '.(int)$context->shop->id
                 .($sub_category? ' AND product_shop.`id_category_default` = '.(int)$sub_category : '')
                 .($front ? ' AND product_shop.`show_at_front` = 1':'')
@@ -1456,7 +1484,7 @@ class ProductCore extends ObjectModel
                     ('.
                         '(`element_type` = '.RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE.' AND `id_element` = '.(int)$this->id.')
                     )
-                    AND p.`service_product_type` = '.(int)self::SERVICE_PRODUCT_WITH_ROOMTYPE. '
+                    AND (p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_WITH_ROOM_TYPE. '|| p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE.')'. '
                     AND product_shop.`id_shop` = '.(int)$context->shop->id
                     .($sub_category? ' AND product_shop.`id_category_default` = '.(int)$sub_category : '')
                     .($front ? ' AND product_shop.`show_at_front` = 1':'')
@@ -1502,8 +1530,9 @@ class ProductCore extends ObjectModel
                     ('.
                         '(`element_type` = '.RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE.' AND `id_element` = '.(int)$this->id.')
                     )
-                    AND p.`service_product_type` = '.(int)self::SERVICE_PRODUCT_WITH_ROOMTYPE. '
-                    AND product_shop.`id_shop` = '.(int)$context->shop->id
+                    AND p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_WITH_ROOM_TYPE.
+                    ' || p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE.
+                    ' AND product_shop.`id_shop` = '.(int)$context->shop->id
                     .($front ? ' AND product_shop.`auto_add_to_cart` = 0 AND product_shop.`show_at_front` = 1':'')
                     .($active ? ' AND product_shop.`active` = 1' : '');
 
@@ -1528,7 +1557,7 @@ class ProductCore extends ObjectModel
         LEFT JOIN `'._DB_PREFIX_.'image_lang` il ON (il.`id_image` = i.`id_image` AND il.`id_lang` = '.(int) $idLang.')
         WHERE p.`booking_product` = 0'.
         (!is_null($active) ? ' AND p.`active` = '.(int) $active : '').
-        ($serviceProductType ? ' AND p.`service_product_type` = '.(int) $serviceProductType : '');
+        ($serviceProductType ? ' AND p.`selling_preference_type` = '.(int) $serviceProductType : '');
 
         if (Validate::isOrderBy($orderBy) && Validate::isOrderBy($orderWay)) {
             $sql .= ' ORDER BY '.$orderBy.' '.$orderWay;
@@ -3060,7 +3089,7 @@ class ProductCore extends ObjectModel
     public static function getPriceStatic($id_product, $usetax = true, $id_product_attribute = null, $decimals = 6, $divisor = null,
         $only_reduc = false, $usereduc = true, $quantity = 1, $force_associated_tax = false, $id_customer = null, $id_cart = null,
         $id_address = null, &$specific_price_output = null, $with_ecotax = true, $use_group_reduction = true, Context $context = null,
-        $use_customer_price = true, $id_product_roomtype = false, $id_group = null)
+        $use_customer_price = true, $id_hotel = false, $id_product_room_type = false, $id_group = null)
     {
         if (!$context) {
             $context = Context::getContext();
@@ -3119,6 +3148,29 @@ class ProductCore extends ObjectModel
             }
         }
 
+        if (!Product::isBookingProduct($id_product)
+            && (Product::getSellingPreferenceType($id_product) == Product::SELLING_PREFERENCE_STANDALONE)
+            && !$id_address
+        ) {
+            $serviceAddressPrefrenceType = Configuration::get('PS_STANDARD_PRODUCT_ORDER_ADDRESS_PREFRENCE');
+            if ($serviceAddressPrefrenceType == Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOMER) {
+                $customer = $context->customer;
+                if (isset($customer->id)
+                    && ($idCustomerAddress = Address::getFirstCustomerAddressId($customer->id))
+                ) {
+                    $id_address = $idCustomerAddress;
+                }
+            } else if (($serviceAddressPrefrenceType == Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOM)
+                && ($idCustomAddress = Configuration::get('PS_STANDARD_PRODUCT_ORDER_ADDRESS_ID'))
+            ) {
+                $id_address = $idCustomAddress;
+            }
+        }
+
+        if (is_null($id_customer) && Validate::isLoadedObject($context->customer)) {
+            $id_customer = $context->customer->id;
+        }
+
         $id_currency = Validate::isLoadedObject($context->currency) ? (int)$context->currency->id : (int)Configuration::get('PS_CURRENCY_DEFAULT');
 
         // retrieve address informations
@@ -3127,26 +3179,17 @@ class ProductCore extends ObjectModel
         $zipcode = 0;
 
         if (!$id_address) {
-            if (!Product::isBookingProduct($id_product)) {
-                if ($id_product_roomtype) {
-                    // if room type is provided with product then we know that the service product price should be calculated accroding to roomt type
-                    $id_address = Cart::getIdAddressForTaxCalculation($id_product_roomtype);
-                }
-            } else {
-                $id_address = Cart::getIdAddressForTaxCalculation($id_product);
-            }
+            $id_address = Cart::getIdAddressForTaxCalculation($id_product, $id_hotel, $id_product_room_type);
         }
 
-        if (!$id_address) {
-            if ($primaryHotel = ConfigurationCore::get('WK_PRIMARY_HOTEL')) {
-                if ($address = HotelBranchInformation::getAddress($primaryHotel)) {
-                    $address_infos['id_country'] = $address['id_country'];
-                    $address_infos['id_state'] = $address['id_state'];
-                    $address_infos['postcode'] = $address['postcode'];
-                }
-            }
-        } elseif ($id_address) {
+        if ($id_address) {
             $address_infos = Address::getCountryAndState($id_address);
+        } elseif ($primaryHotel = ConfigurationCore::get('WK_PRIMARY_HOTEL')) {
+            if ($address = HotelBranchInformation::getAddress($primaryHotel)) {
+                $address_infos['id_country'] = $address['id_country'];
+                $address_infos['id_state'] = $address['id_state'];
+                $address_infos['postcode'] = $address['postcode'];
+            }
         }
 
         if (isset($address_infos['id_country']) && $address_infos['id_country']) {
@@ -3157,10 +3200,6 @@ class ProductCore extends ObjectModel
 
         if (Tax::excludeTaxeOption()) {
             $usetax = false;
-        }
-
-        if (is_null($id_customer) && Validate::isLoadedObject($context->customer)) {
-            $id_customer = $context->customer->id;
         }
 
         $return = Product::priceCalculation(
@@ -3184,7 +3223,8 @@ class ProductCore extends ObjectModel
             $use_customer_price,
             $id_cart,
             $cart_quantity,
-            $id_product_roomtype
+            $id_hotel,
+            $id_product_room_type
         );
 
         return $return;
@@ -3218,7 +3258,7 @@ class ProductCore extends ObjectModel
      **/
     public static function priceCalculation($id_shop, $id_product, $id_product_attribute, $id_country, $id_state, $zipcode, $id_currency,
         $id_group, $quantity, $use_tax, $decimals, $only_reduc, $use_reduc, $with_ecotax, &$specific_price, $use_group_reduction,
-        $id_customer = 0, $use_customer_price = true, $id_cart = 0, $real_quantity = 0, $id_product_roomtype = false)
+        $id_customer = 0, $use_customer_price = true, $id_cart = 0, $real_quantity = 0, $id_hotel = false, $id_product_room_type = false)
     {
         static $address = null;
         static $context = null;
@@ -3239,6 +3279,13 @@ class ProductCore extends ObjectModel
             $id_customer = 0;
         }
 
+        if ($id_product_attribute) {
+            $id_product_option = $id_product_attribute;
+            $id_product_attribute = null;
+        } else {
+            $id_product_option = null;
+        }
+
         if ($id_product_attribute === null) {
             $id_product_attribute = Product::getDefaultAttribute($id_product);
         }
@@ -3246,7 +3293,7 @@ class ProductCore extends ObjectModel
         $cache_id = (int)$id_product.'-'.(int)$id_shop.'-'.(int)$id_currency.'-'.(int)$id_country.'-'.$id_state.'-'.$zipcode.'-'.(int)$id_group.
             '-'.(int)$quantity.'-'.(int)$id_product_attribute.
             '-'.(int)$with_ecotax.'-'.(int)$id_customer.'-'.(int)$use_group_reduction.'-'.(int)$id_cart.'-'.(int)$real_quantity.
-            '-'.($only_reduc?'1':'0').'-'.($use_reduc?'1':'0').'-'.($use_tax?'1':'0').'-'.(int)$decimals.'-'.($id_product_roomtype?(int)$id_product_roomtype:'0');
+            '-'.($only_reduc?'1':'0').'-'.($use_reduc?'1':'0').'-'.($use_tax?'1':'0').'-'.(int)$decimals.'-'.($id_hotel?(int)$id_hotel:'0').'-'.($id_product_option?(int)$id_product_option:'0'.'-'.($id_product_room_type?(int)$id_product_room_type:'0'));
 
         // reference parameter is filled before any returns
         $specific_price = SpecificPrice::getSpecificPrice(
@@ -3256,7 +3303,7 @@ class ProductCore extends ObjectModel
             (int)$context->country->id,
             $id_group,
             $quantity,
-            $id_product_attribute,
+            $id_product_option,
             $id_customer,
             $id_cart,
             $real_quantity
@@ -3272,6 +3319,9 @@ class ProductCore extends ObjectModel
 
         // fetch price & attribute price
         $cache_id_2 = $id_product.'-'.$id_shop;
+        if ($id_product_option) {
+            $cache_id_2 .= '-'.$id_product_option;
+        }
         if (!isset(self::$_pricesLevel2[$cache_id_2])) {
             $sql = new DbQuery();
             $sql->select('product_shop.`price`, product_shop.`ecotax`');
@@ -3285,6 +3335,10 @@ class ProductCore extends ObjectModel
                 $sql->select('0 as id_product_attribute');
             }
 
+            if ($id_product_option && ServiceProductOption::productHasOptions($id_product)) {
+                $sql->select('product_option.id_product_option, product_option.price_impact as option_impact_price');
+                $sql->leftJoin('product_option', 'product_option', '(product_option.id_product = p.id_product AND product_option.id_product_option = '.(int)$id_product_option.')');
+            }
             $res = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql);
 
             if (is_array($res) && count($res)) {
@@ -3294,10 +3348,18 @@ class ProductCore extends ObjectModel
                         'ecotax' => $row['ecotax'],
                         'attribute_price' => (isset($row['attribute_price']) ? $row['attribute_price'] : null)
                     );
+                    if (isset($row['option_impact_price'])) {
+                        $array_tmp['option_impact_price'] = $row['option_impact_price'];
+                        $array_tmp['id_product_option'] = $row['id_product_option'];
+                    }
+
                     self::$_pricesLevel2[$cache_id_2][(int)$row['id_product_attribute']] = $array_tmp;
 
                     if (isset($row['default_on']) && $row['default_on'] == 1) {
                         self::$_pricesLevel2[$cache_id_2][0] = $array_tmp;
+                    }
+                    if (isset($row['option_impact_price']) && !$id_product_option) {
+                        break;
                     }
                 }
             }
@@ -3310,10 +3372,10 @@ class ProductCore extends ObjectModel
         $result = self::$_pricesLevel2[$cache_id_2][(int)$id_product_attribute];
 
         // get price per room type
-        if ($id_product_roomtype) {
+        if ($id_product_room_type) {
             $priceForRoomInfo = RoomTypeServiceProductPrice::getProductRoomTypePriceAndTax(
                 $id_product,
-                $id_product_roomtype,
+                $id_product_room_type,
                 RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE
             );
         }
@@ -3326,6 +3388,13 @@ class ProductCore extends ObjectModel
             }
         } else {
             $price = (float)$specific_price['price'];
+        }
+
+        // add option impact only if specific price is not set for this option
+        if ((!$specific_price || !$specific_price['id_product_attribute'] || $specific_price['price'] < 0)
+            && isset($result['option_impact_price'])
+        ) {
+            $price += (float)$result['option_impact_price'];
         }
 
         // convert only if the specific price is in the default currency (id_currency = 0)
@@ -3344,9 +3413,6 @@ class ProductCore extends ObjectModel
                 $price += $attribute_price;
             }
         }
-
-        // find and add if any auto_add services are attached
-
 
         Hook::exec(
 			'actionProductPriceModifier',
@@ -4094,47 +4160,55 @@ class ProductCore extends ObjectModel
     * @param string $query Search query
     * @return array Matching products
     */
-    public static function searchByName($id_lang, $query, Context $context = null, $id_hotel = false)
+    public static function searchByName($id_lang, $query, $booking_product = null, $selling_preference_type = null, $id_hotel = false, Context $context = null)
     {
         if (!$context) {
             $context = Context::getContext();
         }
+        $sql = 'SELECT p.`id_product`, pl.`name`, p.`ean13`, p.`upc`, p.`active`, p.`reference`, m.`name` AS manufacturer_name, stock.`quantity`, product_shop.advanced_stock_management, p.`customizable`, p.`booking_product`, p.`allow_multiple_quantity`
+        FROM `'._DB_PREFIX_.'product` p
+        LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON (p.`id_product` = pl.`id_product` AND pl.`id_lang` = '.(int)$id_lang.')
+        LEFT JOIN `'._DB_PREFIX_.'manufacturer` m ON (p.`id_manufacturer` = m.`id_manufacturer`)';
+        $sql .= Product::sqlStock('p', 0);
+        $sql .= Shop::addSqlAssociation('product', 'p');
 
-        $sql = new DbQuery();
-        $sql->select('p.`id_product`, pl.`name`, p.`ean13`, p.`upc`, p.`active`, p.`reference`, m.`name` AS manufacturer_name, stock.`quantity`, product_shop.advanced_stock_management, p.`customizable`, p.`booking_product`');
-        $sql->from('product', 'p');
-        $sql->join(Shop::addSqlAssociation('product', 'p'));
-        $sql->leftJoin('product_lang', 'pl', '
-			p.`id_product` = pl.`id_product`
-			AND pl.`id_lang` = '.(int)$id_lang.Shop::addSqlRestrictionOnLang('pl')
-        );
-        $sql->leftJoin('manufacturer', 'm', 'm.`id_manufacturer` = p.`id_manufacturer`');
         if ($id_hotel) {
-            $sql->innerJoin(
-                'htl_room_type',
-                'hrt',
-                'p.`id_product` = hrt.`id_product` AND hrt.`id_hotel` = '.(int)$id_hotel
-            );
-
+            if (!is_null($booking_product)) {
+                if ($booking_product) {
+                    $sql .= ' INNER JOIN `'._DB_PREFIX_.'htl_room_type` hrt ON (p.`id_product` = hrt.`id_product` AND hrt.`id_hotel` = '.(int)$id_hotel.')';
+                } else {
+                    $sql .= ' INNER JOIN `'._DB_PREFIX_.'htl_room_type_service_product` hrtsp ON (p.`id_product` = hrtsp.`id_product` AND hrtsp.`id_element` = '.(int)$id_hotel.' AND hrtsp.`element_type` = '.(int)RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL.')';
+                }
+            } else {
+                $sql .= ' LEFT JOIN `'._DB_PREFIX_.'htl_room_type` hrt ON (p.`id_product` = hrt.`id_product` AND hrt.`id_hotel` = '.(int)$id_hotel.')';
+                $sql .= ' LEFT JOIN `'._DB_PREFIX_.'htl_room_type_service_product` hrtsp ON (p.`id_product` = hrtsp.`id_product` AND hrtsp.`id_element` = '.(int)$id_hotel.' AND hrtsp.`element_type` = '.(int)RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL.')';
+            }
         }
 
-        $where = 'pl.`name` LIKE \'%'.pSQL($query).'%\'
+        $sql .= ' WHERE 1';
+        if (!is_null($booking_product)) {
+            $sql .= $booking_product ? ' AND p.`booking_product` = 1' : ' AND p.`booking_product` = 0';
+        } elseif ($id_hotel) {
+            $sql .= ' AND IF (p.`booking_product` = 1, (p.`id_product` = hrt.`id_product`) , (p.`id_product` = hrtsp.`id_product` AND hrtsp.`id_element` = '.(int)$id_hotel.' AND hrtsp.`element_type` = '.(int)RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL.'))';
+        }
+        if ($selling_preference_type) {
+            $sql .= ' AND p.`selling_preference_type` = '.(int)$selling_preference_type;
+        }
+
+        $sql .= ' AND (pl.`name` LIKE \'%'.pSQL($query).'%\'
 		OR p.`ean13` LIKE \'%'.pSQL($query).'%\'
 		OR p.`upc` LIKE \'%'.pSQL($query).'%\'
 		OR p.`reference` LIKE \'%'.pSQL($query).'%\'
 		OR p.`supplier_reference` LIKE \'%'.pSQL($query).'%\'
 		OR EXISTS(SELECT * FROM `'._DB_PREFIX_.'product_supplier` sp WHERE sp.`id_product` = p.`id_product` AND `product_supplier_reference` LIKE \'%'.pSQL($query).'%\')';
-
-        $sql->orderBy('pl.`name` ASC');
-
         if (Combination::isFeatureActive()) {
-            $where .= ' OR EXISTS(SELECT * FROM `'._DB_PREFIX_.'product_attribute` `pa` WHERE pa.`id_product` = p.`id_product` AND (pa.`reference` LIKE \'%'.pSQL($query).'%\'
+            $sql .= ' OR EXISTS(SELECT * FROM `'._DB_PREFIX_.'product_attribute` `pa` WHERE pa.`id_product` = p.`id_product` AND (pa.`reference` LIKE \'%'.pSQL($query).'%\'
 			OR pa.`supplier_reference` LIKE \'%'.pSQL($query).'%\'
 			OR pa.`ean13` LIKE \'%'.pSQL($query).'%\'
-			OR pa.`upc` LIKE \'%'.pSQL($query).'%\'))';
+			OR pa.`upc` LIKE \'%'.pSQL($query).'%\')))';
         }
-        $sql->where($where);
-        $sql->join(Product::sqlStock('p', 0));
+
+        $sql .= ' ORDER BY pl.`name` ASC';
 
         $result = Db::getInstance()->executeS($sql);
 
@@ -6775,5 +6849,68 @@ class ProductCore extends ObjectModel
         }
 
         return true;
+    }
+
+    public static function getServiceProductPrice(
+        $idProduct,
+        $idProductOption = 0,
+        $idHotel = false,
+        $idProductRoomType = false,
+        $useTax = null,
+        $quantity = 1,
+        $dateFrom = null,
+        $dateTo = null,
+        $idCart = false,
+        $idAddress = null,
+        $useReduc = 1
+    ) {
+        if ($useTax === null) {
+            $useTax = Product::$_taxCalculationMethod == PS_TAX_EXC ? false : true;
+        }
+
+        $price = Product::getPriceStatic(
+            (int)$idProduct,
+            $useTax,
+            $idProductOption,
+            6,
+            null,
+            false,
+            $useReduc,
+            (int)$quantity,
+            false,
+            null,
+            $idCart,
+            $idAddress,
+            $specificPrice,
+            true,
+            true,
+            null,
+            true,
+            (int)$idHotel,
+            (int)$idProductRoomType
+        );
+
+        Hook::exec('actionServiceProductPricePriceModifier',
+            array(
+                'price' => &$price,
+                'id_product' => $idProduct,
+                'id_product_option' => $idProductOption,
+                'id_hotel' => $idHotel,
+                'id_product_room_type' => $idProductRoomType,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+                'use_tax' => $useTax,
+                'id_cart' => $idCart,
+                'use_reduc' => $useReduc
+            )
+        );
+
+        if (Product::getProductPriceCalculation($idProduct) == Product::PRICE_CALCULATION_METHOD_PER_DAY
+            && $dateFrom && $dateTo
+        ) {
+            $price = $price * HotelHelper::getNumberOfDays($dateFrom, $dateTo);
+        }
+
+        return $price * (int)$quantity;
     }
 }

@@ -79,8 +79,10 @@
 			var product_type_virtual = {Product::PTYPE_VIRTUAL|intval};
 			var product_type_simple = {Product::PTYPE_SIMPLE|intval};
 
-			var with_room_type = {Product::SERVICE_PRODUCT_WITH_ROOMTYPE|intval};
-			var without_room_type = {Product::SERVICE_PRODUCT_WITHOUT_ROOMTYPE|intval};
+			var SELLING_PREFERENCE_WITH_ROOM_TYPE = {Product::SELLING_PREFERENCE_WITH_ROOM_TYPE|intval};
+			var SELLING_PREFERENCE_HOTEL_STANDALONE = {Product::SELLING_PREFERENCE_HOTEL_STANDALONE|intval};
+			var SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE = {Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE|intval};
+			var SELLING_PREFERENCE_STANDALONE = {Product::SELLING_PREFERENCE_STANDALONE|intval};
 
 			var price_addition_type_with_room = {Product::PRICE_ADDITION_TYPE_WITH_ROOM|intval};
 			var price_addition_type_independent = {Product::PRICE_ADDITION_TYPE_INDEPENDENT|intval};

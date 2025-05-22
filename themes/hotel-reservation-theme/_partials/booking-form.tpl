@@ -25,6 +25,7 @@
                     <p class="hidden">
                         <input type="hidden" name="token" value="{$static_token}" />
                         <input type="hidden" name="id_product" value="{$product->id|intval}" id="product_page_product_id" />
+                        <input type="hidden" name="booking_product" value="{$product->booking_product|intval}" id="product_page_booking_product" />
                         <input type="hidden" name="add" value="1" />
                         <input type="hidden" name="id_product_attribute" id="idCombination" value="" />
                     </p>
@@ -213,47 +214,116 @@
                             {/if}
                         {/if}
                     {else}
+                        {block name='booking_form_associated_hotels'}
+                            {if isset($associated_hotels) && $associated_hotels}
+                                <div class="form-group">
+                                    <label class="control-label">{l s='Select Hotel'}</label>
+                                    <select class="chosen input-hotel" name="service_id_hotel" id="service_id_hotel">
+                                        {foreach $associated_hotels as $hotel}
+                                            <option value="{$hotel.id_hotel}" {if isset($service_id_hotel) && $service_id_hotel == $hotel['id_hotel']}selected{elseif $hotel@first}selected{/if}>{$hotel.name}</option>
+                                        {/foreach}
+                                    </select>
+                                </div>
+                            {/if}
+                        {/block}
+                        {block name='booking_form_product_option'}
+                            {if isset($product_option) && $product_option}
+                                <label class="control-label">{l s='Variants'}</label>
+                                <hr>
+                                <div class="product-options-block">
+                                    {foreach $product_option as $option}
+                                        <div class="form-group">
+                                            <label for="id_product_option{$option['id_product_option']}" class="top">
+                                                <input type="radio" name="id_product_option" id="id_product_option{$option['id_product_option']}" value="{$option['id_product_option']}" {if isset($id_product_option) && $id_product_option == $option['id_product_option']}checked="checked"{else if $option@first}checked="checked"{/if}/>
+                                                {$option['name']}
+                                                <span class="pull-right">{convertPrice price=$option['price']}</span>
+                                            </label>
+                                        </div>
+                                        <hr>
+                                    {/foreach}
+                                </div>
+                            {/if}
+                        {/block}
+                        {block name='booking_form_service_product_quantity'}
+                            {if $product->allow_multiple_quantity}
+                                <div class="row">
+                                    <div class="form-group col-sm-6" id="quantity_wanted_p"{if (!$allow_oosp && $product->quantity <= 0) || !$product->available_for_order || $PS_CATALOG_MODE} style="display: none;"{/if}>
+                                        <label for="quantity_wanted_p">{l s='Quantity'}</label>
+                                        {* {block name='quantity_field'}
+                                            {include file="./quantity_field.tpl"}
+                                        {/block} *}
 
-                        {if $product->allow_multiple_quantity}
-                            <div class="row">
-                                <div class="form-group col-sm-6" id="quantity_wanted_p"{if (!$allow_oosp && $product->quantity <= 0) || !$product->available_for_order || $PS_CATALOG_MODE} style="display: none;"{/if}>
-                                    <label for="quantity_wanted">{l s='Quantity'}</label>
-                                    <div class="qty_sec_cont">
-                                        <div class="qty_input_cont row margin-lr-0">
-                                            <input autocomplete="off" type="text" min="1" name="qty" id="quantity_wanted" class="text" value="{if isset($quantityBackup)}{$quantityBackup|intval}{else}{if $product->minimal_quantity > 1}{$product->minimal_quantity}{else}1{/if}{/if}">
-                                        </div>
-                                        <div class="qty_direction">
-                                            <a href="#" data-field-qty="qty" class="btn btn-default product_quantity_up">
-                                                <span>
-                                                    <i class="icon-plus"></i>
-                                                </span>
-                                            </a>
-                                            <a href="#" data-field-qty="qty" class="btn btn-default product_quantity_down">
-                                                <span>
-                                                    <i class="icon-minus"></i>
-                                                </span>
-                                            </a>
-                                        </div>
+                                            <div class="qty_container">
+                                                <input type="hidden" class="service_product_qty" id="service_product_qty" name="service_product_qty" data-id-product="{$product->id}" data-max_quantity="{if isset($product->max_quantity) && $product->max_quantity}{$product->max_quantity|escape:'html':'UTF-8'}{else}{$product->quantity}{/if}" value="{if isset($quantity)}{$quantity|intval}{else}{if $product->minimal_quantity > 1}{$product->minimal_quantity}{else}1{/if}{/if}">
+                                                <div class="qty_count pull-left">
+                                                    <span>{if isset($quantity)}{$quantity|intval}{else}{if $product->minimal_quantity > 1}{$product->minimal_quantity}{else}1{/if}{/if}</span>
+                                                </div>
+                                                <div class="qty_direction pull-left">
+                                                    <a href="#" class="btn btn-default quantity_up service_product_qty_up"><span><i class="icon-plus"></i></span></a>
+                                                    <a href="#" class="btn btn-default quantity_down service_product_qty_down"><span><i class="icon-minus"></i></span></a>
+                                                </div>
+                                            </div>
+                                        <span class="clearfix"></span>
                                     </div>
-                                    <span class="clearfix"></span>
+                                </div>
+                                {if $product->available_for_order}
+                                    <hr class="separator-hr-mg-10">
+                                {/if}
+                            {else}
+                                <input type="hidden" class="service_product_qty" id="service_product_qty" name="service_product_qty" data-id-product="{$product->id}" data-max_quantity="1" value="1">
+                            {/if}
+                        {/block}
+                        {block name='booking_form_actions'}
+                            <div id="booking_action_block">
+                                <div class="row">
+                                    {block name='booking_form_total_price'}
+                                        <div class="total_price_block col-xs-7 form-group">
+                                            <label class="control-label">{l s='Price'}</label>
+                                            <p>
+                                                {convertPrice price=$service_price}
+                                                {* {if !$priceDisplay || $priceDisplay == 2}
+                                                    {convertPrice price=$product->getPrice(true, $smarty.const.NULL, 6)|floatval}
+                                                {elseif $priceDisplay == 1}
+                                                    {convertPrice price=$product->getPrice(false, $smarty.const.NULL, 6)|floatval}
+                                                {/if} *}
+                                            </p>
+                                        </div>
+                                    {/block}
+                                    {block name='booking_form_available_quantity'}
+                                        {* {if $product->quantity <= 20}
+                                            <div class="col-xs-5 form-group text-right num_quantity_alert">
+                                                <span class="num_searched_avail_rooms">
+                                                    {$product->quantity|escape:'html':'UTF-8'}
+                                                </span>
+                                                {l s=' Qty Available!'}
+                                            </div>
+                                        {/if} *}
+                                    {/block}
+                                </div>
+                                <div>
+                                    {if (!$allow_oosp && $product->quantity <= 0) || !$product->available_for_order || (isset($restricted_country_mode) && $restricted_country_mode) || $PS_CATALOG_MODE}
+                                    {else}
+                                        {block name='booking_form_book_now_button'}
+                                                <p id="add_to_cart" class="buttons_bottom_block no-print">
+                                                    <button type="submit" name="Submit" class="exclusive book_now_submit">
+                                                        <span>
+                                                            {if isset($content_only) && $content_only && (isset($product->customization_required) && $product->customization_required)}{l s='Customize'}{else}{l s='Book Now'}{/if}
+                                                        </span>
+                                                        <span id="booking_action_loader"></span>
+                                                    </button>
+                                                </p>
+                                        {/block}
+                                    {/if}
                                 </div>
                             </div>
-                        {/if}
-                        <div class="row">
-                            <div class="total_price_block col-xs-7 form-group">
-                                <label class="control-label">{l s='Price'}</label>
-                                <p>
-                                    {convertPrice price=$productPrice|floatval}
-                                </p>
-                            </div>
-                        </div>
+                        {/block}
                     {/if}
                 {/if}
-                {if $order_date_restrict}
+                {* {if $order_date_restrict}
                     <div class="order_restrict_alert">
                         <span>{l s='You can\'t book rooms after %s.' sprintf=[{dateFormat date=$max_order_date full=0}]}</span>
                     </div>
-                {/if}
+                {/if} *}
             </form>
         {/block}
     </div>

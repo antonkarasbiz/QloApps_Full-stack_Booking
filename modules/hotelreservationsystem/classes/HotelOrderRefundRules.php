@@ -131,7 +131,7 @@ class HotelOrderRefundRules extends ObjectModel
         $bookingCancellations = array();
         $objHtlRefundRules = new HotelBranchRefundRules();
         $objHotelBookingDemands = new HotelBookingDemands();
-        $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
+        $objServiceProductOrderDetail = new ServiceProductOrderDetail();
 
         if ($bookingsToRefund = OrderReturn::getOrdersReturnDetail($idOrder, $idOrderReturn, $idHtlBooking)) {
             foreach ($bookingsToRefund as $booking) {
@@ -154,10 +154,20 @@ class HotelOrderRefundRules extends ObjectModel
                         $objHtlBooking->id
                     );
 
-                    $totalServicesPrice = $objRoomTypeServiceProductOrderDetail->getSelectedServicesForRoom(
-                        $objHtlBooking->id,
+                    $totalServicesPrice = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
                         1,
-                        1
+                        1,
+                        0,
+                        null,
+                        0,
+                        $objHtlBooking->id
                     );
                     $totalAmount = $objHtlBooking->total_price_tax_incl + $totalDemandsPrice + $totalServicesPrice;
 

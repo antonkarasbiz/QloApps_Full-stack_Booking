@@ -29,7 +29,7 @@ class CheckoutCustomerDetailsStepCore extends AbstractCheckoutStepCore
     public function handleRequest()
     {
         $idAddressDelivery = $this->context->cart->id_address_delivery;
-        $objAddress = new Address($idAddressDelivery);
+        // $objAddress = new Address($idAddressDelivery);
         if (Tools::getValue('proceed_to_customer_dtl')) {
             $this->step_is_reachable = 1;
             $this->step_is_current = 1;

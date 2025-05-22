@@ -385,7 +385,9 @@ class AdminProductsControllerCore extends AdminController
         );
 
         $objProduct = new Product();
-        $allServiceProducts = $objProduct->getServiceProducts();
+        $hotelServiceProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE);
+        $roomTypeServiceProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE);
+        $allServiceProducts = array_merge($roomTypeServiceProducts, $hotelServiceProducts);
         $serviceProducts = array();
         foreach ($allServiceProducts as $serviceProduct) {
             $serviceProducts[$serviceProduct['id_product']] = $serviceProduct['name'];
@@ -3000,8 +3002,6 @@ class AdminProductsControllerCore extends AdminController
                 $objRoomType = new HotelRoomType();
                 $objRoomType->id_product = $product->id;
                 $objRoomType->id_hotel = $id_hotel;
-                $idBedTypes = Tools::getValue('id_bed_types', array());
-                $objRoomType->id_bed_types = json_encode($idBedTypes);
                 $objRoomType->save();
             }
         }
@@ -3108,7 +3108,9 @@ class AdminProductsControllerCore extends AdminController
 
             $objRoomType = new HotelRoomType();
             if ($hotelRoomType = $objRoomType->getRoomTypeInfoByIdProduct($obj->id)) {
-                $allServiceProducts = $obj->getServiceProducts();
+                $hotelServiceProducts = $obj->getServiceProducts(null, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE);
+                $roomTypeServiceProducts = $obj->getServiceProducts(null, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE);
+                $allServiceProducts = array_merge($roomTypeServiceProducts, $hotelServiceProducts);
 
                 $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
                 $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();

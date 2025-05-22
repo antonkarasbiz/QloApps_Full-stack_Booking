@@ -600,12 +600,12 @@ class OrderCore extends ObjectModel
 
     public function getProductsDetail(
         $is_booking = null,
-        $product_service_type = null,
+        $selling_preference_type = null,
         $product_auto_add = null,
         $product_price_addition_type = null,
         $ids_order_detail = []
     ) {
-        $sql = 'SELECT *
+        $sql = 'SELECT *, od.`selling_preference_type` as selling_preference_type
             FROM `'._DB_PREFIX_.'order_detail` od
             LEFT JOIN `'._DB_PREFIX_.'product` p ON (p.id_product = od.product_id)
             LEFT JOIN `'._DB_PREFIX_.'product_shop` ps ON (ps.id_product = p.id_product AND ps.id_shop = od.id_shop)
@@ -617,13 +617,13 @@ class OrderCore extends ObjectModel
 
         if ($is_booking !== null) {
             $sql .= ' AND od.`is_booking_product` = '. (int)$is_booking;
-            if (!$is_booking && $product_service_type !== null) {
-                $sql .= ' AND od.`product_service_type` = '. (int)$product_service_type;
+            if (!$is_booking && $selling_preference_type !== null) {
+                $sql .= ' AND od.`selling_preference_type` = '. (int)$selling_preference_type;
             }
-            if (!$is_booking && $product_service_type == Product::SERVICE_PRODUCT_WITH_ROOMTYPE && $product_auto_add !== null) {
+            if (!$is_booking && $selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE && $product_auto_add !== null) {
                 $sql .= ' AND od.`product_auto_add` = '. (int)$product_auto_add;
             }
-            if (!$is_booking && $product_service_type == Product::SERVICE_PRODUCT_WITH_ROOMTYPE && $product_auto_add == 1 && $product_price_addition_type !== null) {
+            if (!$is_booking && $selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE && $product_auto_add == 1 && $product_price_addition_type !== null) {
                 $sql .= ' AND od.`product_price_addition_type` = '. (int)$product_price_addition_type;
             }
         }
@@ -1110,14 +1110,14 @@ class OrderCore extends ObjectModel
     public function getTotalProductsWithoutTaxes(
         $products = false,
         $bookingProducts = null,
-        $product_service_type = null,
+        $selling_preference_type = null,
         $product_auto_add = null,
         $product_price_addition_type = null,
         $ids_order_detail = []
     ) {
         // update
         if (!$products) {
-            $products = $this->getProductsDetail($bookingProducts, $product_service_type, $product_auto_add, $product_price_addition_type, $ids_order_detail);
+            $products = $this->getProductsDetail($bookingProducts, $selling_preference_type, $product_auto_add, $product_price_addition_type, $ids_order_detail);
         }
 
         $return = 0;
@@ -1136,14 +1136,14 @@ class OrderCore extends ObjectModel
     public function getTotalProductsWithTaxes(
         $products = false,
         $bookingProducts = null,
-        $product_service_type = null,
+        $selling_preference_type = null,
         $product_auto_add = null,
         $product_price_addition_type = null,
         $ids_order_detail = []
     ) {
         /* Retro-compatibility (now set directly on the validateOrder() method) */
         if (!$products) {
-            $products = $this->getProductsDetail($bookingProducts, $product_service_type, $product_auto_add, $product_price_addition_type, $ids_order_detail);
+            $products = $this->getProductsDetail($bookingProducts, $selling_preference_type, $product_auto_add, $product_price_addition_type, $ids_order_detail);
         }
 
         $return = 0;
@@ -1267,13 +1267,14 @@ class OrderCore extends ObjectModel
     */
     public function isReturnable()
     {
-        $objBookingDetail = new HotelBookingDetail();
-        if ($bookingInfo = $objBookingDetail->getBookingDataByOrderId($this->id)) {
-            $idHotel = reset($bookingInfo)['id_hotel'];
-            $objHotelBranch = new HotelBranchInformation($idHotel);
+        $vatAddress = new Address((int)$this->id_address_tax);
+        if ($vatAddress->id_hotel) {
+            $objHotelBranch = new HotelBranchInformation($vatAddress->id_hotel);
 
             // check if global as well as hotel refund is allowed
             return (Configuration::get('WK_ORDER_REFUND_ALLOWED') && $objHotelBranch->active_refund);
+        } else {
+            return Configuration::get('WK_ORDER_REFUND_ALLOWED');
         }
         return false;
     }
@@ -2450,7 +2451,7 @@ class OrderCore extends ObjectModel
      * @param $limitToOrderDetails Optional array of OrderDetails to take into account. False by default to take all OrderDetails from the current Order.
      * @return array A list of tax rows applied to the given OrderDetails (or all OrderDetails linked to the current Order).
      */
-    public function getProductTaxesDetails($limitToOrderDetails = false, $bookingProducts = null, $product_service_type = null)
+    public function getProductTaxesDetails($limitToOrderDetails = false, $bookingProducts = null, $selling_preference_type = null)
     {
         $round_type = $this->round_type;
         if ($round_type == 0) {
@@ -2470,7 +2471,7 @@ class OrderCore extends ObjectModel
         $expected_total_base = (float)$this->getTotalProductsWithoutTaxes(
             $limitToOrderDetails,
             $bookingProducts,
-            $product_service_type
+            $selling_preference_type
         );
 
         foreach ($this->getCartRules() as $order_cart_rule) {
@@ -2649,63 +2650,99 @@ class OrderCore extends ObjectModel
      */
     public function hasCompletelyRefunded($action = 0, $includeCheckIn = 0)
     {
+        $res = true;
+        // check rooms in booking
         $objHotelBooking = new HotelBookingdetail();
         if ($orderBookings = $objHotelBooking->getOrderCurrentDataByOrderId($this->id)) {
-            // If action is Order::ORDER_COMPLETE_REFUND_FLAG (for refunded) then we will check
-            // that all rooms must be refunded and at least one booking is not cancelled
-            if ($action == Order::ORDER_COMPLETE_REFUND_FLAG) {
-                $uniqueRefundedBookings = array_unique(array_column($orderBookings, 'is_refunded'));
-                if (count($uniqueRefundedBookings) == 1 && $uniqueRefundedBookings[0] == 1) {
-                    foreach ($orderBookings as $booking) {
-                        if ($booking['is_cancelled'] == 0) {
-                            return true;
-                        }
-                    }
-                }
-            // If action is Order::ORDER_COMPLETE_CANCELLATION_FLAG (for cancelled) then we will check that all rooms must be cancelled
-            } elseif ($action == Order::ORDER_COMPLETE_CANCELLATION_FLAG) {
-                $uniqueRefundedBookings = array_unique(array_column($orderBookings, 'is_cancelled'));
-                if (count($uniqueRefundedBookings) == 1 && $uniqueRefundedBookings[0] == 1) {
-                    return true;
-                }
-            // If action is Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG (for cancelled and refund requests) then we will check that all rooms are either cancelled or requested for refund
-            } elseif ($action == Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG) {
-                foreach ($orderBookings as $booking) {
-                    if (!$booking['is_refunded']) {
-                        // If booking refund request is created and request is completed but booking is not refunded then return false
-                        if ($bookingRefundDetail = OrderReturn::getOrdersReturnDetail($this->id, 0, $booking['id'])) {
-                            $bookingRefundDetail = reset($bookingRefundDetail);
-                            if ($bookingRefundDetail['refunded']) {
-                                return false;
-                            }
-                        } else {
-                            return false;
-                        }
-                    }
-                }
+            $res &= $this->checkList($orderBookings, $action, $includeCheckIn);
+        }
+        // check hotel linked products
+        $objServiceProductOrderDetail = new ServiceProductOrderDetail();
+        if ($hotelProducts = $objServiceProductOrderDetail->getServiceProductsInOrder($this->id, 0, 0, Product::SELLING_PREFERENCE_HOTEL_STANDALONE)) {
+            $res &= $this->checkList($hotelProducts, $action, false);
+        }
 
+        if ($standaloneProducts = $objServiceProductOrderDetail->getServiceProductsInOrder($this->id, 0, 0, Product::SELLING_PREFERENCE_STANDALONE)) {
+            $res &= $this->checkList($standaloneProducts, $action, false);
+        }
+
+        return $res;
+    }
+
+    public function checkList($list, $action = 0, $includeCheckIn = 0) {
+        // If action is Order::ORDER_COMPLETE_REFUND_FLAG (for refunded) then we will check
+        // that all rooms must be refunded and at least one booking is not cancelled
+        if ($action == Order::ORDER_COMPLETE_REFUND_FLAG) {
+            $uniqueRefunded = array_unique(array_column($list, 'is_refunded'));
+            if (count($uniqueRefunded) == 1 && $uniqueRefunded[0] == 1) {
+                foreach ($list as $product) {
+                    if ($product['is_cancelled'] == 0) {
+                        return true;
+                    }
+                }
+            }
+        // If action is Order::ORDER_COMPLETE_CANCELLATION_FLAG (for cancelled) then we will check that all rooms must be cancelled
+        } elseif ($action == Order::ORDER_COMPLETE_CANCELLATION_FLAG) {
+            $uniqueRefunded = array_unique(array_column($list, 'is_cancelled'));
+            if (count($uniqueRefunded) == 1 && $uniqueRefunded[0] == 1) {
                 return true;
-            // Default process to check if order is fully refunded or cancelled or not
-            } else {
-                // if is_refunded is 1 means booking either is cancelled or refunded. So check all bookings must have is_refunded = 1
-                $uniqueRefundedBookings = array_unique(array_column($orderBookings, 'is_refunded'));
-                if (count($uniqueRefundedBookings) == 1 && $uniqueRefundedBookings[0] == 1) {
-                    return true;
-                } elseif ($includeCheckIn) {
-                    foreach ($orderBookings as $booking) {
-                        if ($booking['is_refunded'] == 0
-                            && !OrderReturn::getOrdersReturnDetail($this->id, 0, $booking['id'])
-                            && $booking['id_status'] == HotelBookingDetail::STATUS_ALLOTED
-                        ) {
+            }
+        // If action is Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG (for cancelled and refund requests) then we will check that all rooms are either cancelled or requested for refund
+        } elseif ($action == Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG) {
+            foreach ($list as $product) {
+                if (!$product['is_refunded']) {
+                    // If booking refund request is created and request is completed but booking is not refunded then return false
+                    if ($refundDetail = OrderReturn::getOrdersReturnDetail(
+                        $this->id,
+                        0,
+                        isset($product['id']) ? $product['id'] : 0,
+                        isset($product['id_service_product_order_detail']) ? $product['id_service_product_order_detail'] : 0,
+                    )) {
+                        $refundDetail = reset($refundDetail);
+                        if ($refundDetail['refunded']) {
                             return false;
                         }
+                    } else {
+                        return false;
                     }
-                    return true;
                 }
+            }
+
+            return true;
+        // Default process to check if order is fully refunded or cancelled or not
+        } else {
+            // if is_refunded is 1 means booking either is cancelled or refunded. So check all bookings must have is_refunded = 1
+            $uniqueRefunded = array_unique(array_column($list, 'is_refunded'));
+            if (count($uniqueRefunded) == 1 && $uniqueRefunded[0] == 1) {
+                return true;
+            } elseif ($includeCheckIn) {
+                foreach ($list as $product) {
+                    if ($product['is_refunded'] == 0
+                        && !OrderReturn::getOrdersReturnDetail($this->id, 0, isset($product['id']) ? $product['id'] : 0)
+                        && $product['id_status'] == HotelBookingDetail::STATUS_ALLOTED
+                    ) {
+                        return false;
+                    }
+                }
+                return true;
             }
         }
 
         return false;
+    }
+
+    public function getOrderCompleteRefundStatus()
+    {
+        $idOrderState = 0;
+        if ($this->hasCompletelyRefunded(Order::ORDER_COMPLETE_REFUND_FLAG)) {
+            $idOrderState = Configuration::get('PS_OS_REFUND');
+        } elseif ($this->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_FLAG)) {
+            $idOrderState = Configuration::get('PS_OS_CANCELED');
+        } elseif ($this->hasCompletelyRefunded()) {
+            $idOrderState = Configuration::get('PS_OS_REFUND');
+        }
+
+        return $idOrderState;
     }
 
     public function getWsBookings()

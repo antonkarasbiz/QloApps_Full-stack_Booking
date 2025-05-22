@@ -1868,7 +1868,7 @@ class AdminImportControllerCore extends AdminController
                                 }
 
                                 $objServiceProduct = new Product($idServiceProduct);
-                                if (Product::SERVICE_PRODUCT_WITH_ROOMTYPE == $objServiceProduct->service_product_type) {
+                                if (Product::SELLING_PREFERENCE_WITH_ROOM_TYPE == $objServiceProduct->selling_preference_type) {
                                     $objRoomTypeServiceProduct->addRoomProductLink(
                                         $objServiceProduct->id,
                                         $product->id,
@@ -2240,7 +2240,7 @@ class AdminImportControllerCore extends AdminController
                         $product->price_addition_type = Product::PRICE_ADDITION_TYPE_WITH_ROOM;
                     }
 
-                    $product->service_product_type = Product::SERVICE_PRODUCT_WITH_ROOMTYPE;
+                    $product->selling_preference_type = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
                     if (!$serviceProductExists) {
                         if (isset($product->date_add) && $product->date_add != '') {
                             $res = $product->add(false);
@@ -2296,7 +2296,7 @@ class AdminImportControllerCore extends AdminController
                     $info['shop'] = explode($this->multiple_value_separator, $info['shop']);
 
                     RoomTypeServiceProduct::deleteRoomProductLink($product->id);
-                    if (Product::SERVICE_PRODUCT_WITH_ROOMTYPE == $product->service_product_type) {
+                    if (Product::SELLING_PREFERENCE_WITH_ROOM_TYPE == $product->selling_preference_type) {
                         $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
                         if (isset($info['id_room_types']) && $info['id_room_types']) {
                             $objRoomTypeServiceProduct->addRoomProductLink(
@@ -3278,7 +3278,6 @@ class AdminImportControllerCore extends AdminController
                 Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_cart_booking_data`');
                 Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_branch_refund_rules`');
                 Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_order_restrict_date`');
-                Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_hotel_service_product_cart_detail`');
                 Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_branch_info`');
                 $objHotelReservation = Module::getInstanceByName('hotelreservationsystem');
                 $hotelImages = $objHotelReservation->getLocalPath().'views/img/hotel_img/';
@@ -3320,7 +3319,7 @@ class AdminImportControllerCore extends AdminController
                 Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_room_type_demand_price`');
                 Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_room_type_demand`');
                 Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_room_type_service_product_price`');
-                Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_room_type_service_product_cart_detail`');
+                Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'service_product_cart_detail`');
                 Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_room_type_restriction_date_range`');
                 Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'feature_product`');
 
@@ -3386,7 +3385,7 @@ class AdminImportControllerCore extends AdminController
 
                 Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_room_type_service_product`');
                 Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_room_type_service_product_price`');
-                Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'htl_room_type_service_product_cart_detail`');
+                Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.'service_product_cart_detail`');
                 Db::getInstance()->execute('DELETE FROM `'._DB_PREFIX_.'product` WHERE booking_product=0');
             break;
             case $this->entities[$this->l('Customers')]:
@@ -3423,9 +3422,8 @@ class AdminImportControllerCore extends AdminController
                     'htl_booking_detail',
                     'htl_booking_demands',
                     'htl_booking_demands_tax',
-                    'htl_room_type_service_product_order_detail',
-                    'htl_room_type_service_product_cart_detail',
-                    'htl_hotel_service_product_cart_detail',
+                    'service_product_order_detail',
+                    'service_product_cart_detail',
                 );
                 foreach($orderRelatedTables as $table) {
                     Db::getInstance()->execute('TRUNCATE TABLE `'._DB_PREFIX_.$table.'`');

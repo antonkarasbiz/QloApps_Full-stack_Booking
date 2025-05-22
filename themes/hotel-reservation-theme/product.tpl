@@ -82,7 +82,7 @@
 										{/block}
 									</div>
 									{block name='displayRoomTypeDetailRoomTypeNameAfter'}
-										{hook h='displayRoomTypeDetailRoomTypeNameAfter' id_product=$product->id}
+										{hook h='displayRoomTypeDetailRoomTypeNameAfter' product=$product id_product=$product->id}
 									{/block}
 								{/block}
 							</div>
@@ -124,11 +124,11 @@
 												{else}
 													<span id="view_full_size">
 														<img itemprop="image" src="{$img_prod_dir}{$lang_iso}-default-large_default.jpg" id="bigpic" alt="" title="{$product->name|escape:'html':'UTF-8'}" width="{$largeSize.width}" height="{$largeSize.height}"/>
-														{if !$content_only}
+														{* {if !$content_only}
 															<span class="span_link">
 																{l s='View larger'}
 															</span>
-														{/if}
+														{/if} *}
 													</span>
 												{/if}
 												{block name='displayRoomTypeImageAfter'}
@@ -212,7 +212,7 @@
 							<section class="page-product-box">
 								{block name='product_tabs'}
 									<ul class="nav nav-tabs product_description_tabs">
-										<li class="active"><a href="#product_info_tab" class="idTabHrefShort" data-toggle="tab">{l s='Room Information'}</a></li>
+									<li class="active"><a href="#product_info_tab" class="idTabHrefShort" data-toggle="tab">{if $product->booking_product}{l s='Room Information'}{else}{l s='Product Information'}{/if}</a></li>
 										{* Block for booking products *}
 										{if isset($id_hotel) && $id_hotel}
 											<li><a href="#refund_policies_tab" class="idTabHrefShort" data-toggle="tab">{l s='Refund Policies'}</a></li>
@@ -876,6 +876,7 @@
 			{addJsDefL name=service_added_txt}{l s='Service added' js=1}{/addJsDefL}
 			{addJsDefL name=service_removed_txt}{l s='Service removed' js=1}{/addJsDefL}
 			{addJsDefL name=service_updated_txt}{l s='Service updated' js=1}{/addJsDefL}
+			{addJsDefL name=max_service_product_qty_txt}{l s='Maximum allowed quantity in the cart is' js=1}{/addJsDefL}
 		{/strip}
 	{/block}
 	{/if}

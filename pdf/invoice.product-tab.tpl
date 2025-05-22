@@ -114,4 +114,7 @@
 			{/foreach} *}
 		</tbody>
 	</table>
+    <tr>
+		<td colspan="12" height="10"></td>
+	</tr>
 {/if}
