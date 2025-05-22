@@ -317,7 +317,6 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
         $formattedHotelAddress = '';
         if (Module::isInstalled('hotelreservationsystem')) {
             $obj_htl_bk_dtl = new HotelBookingDetail();
-            $obj_rm_type = new HotelRoomType();
             $objServiceProductOrderDetail = new ServiceProductOrderDetail();
             $objHotelBranchInfo = new HotelBranchInformation((int) HotelBookingDetail::getIdHotelByIdOrder($order_obj->id), $this->context->language->id);
             $invoiceAddressPatternRules['avoid'][] = 'lastname';
@@ -520,7 +519,7 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
 
                             $cart_htl_data[$type_key]['date_diff'][$date_join]['total_price_tax_excl'] += $data_v['total_price_tax_excl'];
                             $cart_htl_data[$type_key]['date_diff'][$date_join]['total_price_tax_incl'] += $data_v['total_price_tax_incl'];
-                            $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_auto_add_ti'] += $objRoomTypeServiceProductOrderDetail->getroomTypeServiceProducts(
+                            $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_auto_add_ti'] += $objServiceProductOrderDetail->getroomTypeServiceProducts(
                                 $order_obj->id,
                                 0,
                                 0,
@@ -533,7 +532,7 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
                                 1,
                                 Product::PRICE_ADDITION_TYPE_WITH_ROOM
                             );
-                            $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_auto_add_te'] += $objRoomTypeServiceProductOrderDetail->getroomTypeServiceProducts(
+                            $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_auto_add_te'] += $objServiceProductOrderDetail->getroomTypeServiceProducts(
                                 $order_obj->id,
                                 0,
                                 0,

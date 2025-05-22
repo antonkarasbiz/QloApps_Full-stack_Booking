@@ -1334,7 +1334,9 @@ var BookingForm = {
             width: '100%',
         });
         this.currentRequest = null;
-        BookingForm.initDatepicker(max_order_date, min_booking_offset, $('#room_check_in').val(), $('#room_check_out').val());
+        if (parseInt($('#product_page_booking_product').val())) {
+            BookingForm.initDatepicker(max_order_date, min_booking_offset, $('#room_check_in').val(), $('#room_check_out').val());
+        }
         // initialize tootltip for extra service
         if ($('.price_desc_block .services-info').length) {
             $('.price_desc_block .services-info img').tooltip({
@@ -1417,9 +1419,6 @@ var BookingForm = {
             $("#room_date_range").off("datepicker-change");
         }
 
-        if (max_order_date) {
-            max_order_date = $.datepicker.formatDate('dd-mm-yy', max_order_date);
-        }
         $('#room_date_range').dateRangePicker({
             endDate: max_order_date,
             startDate: start_date,

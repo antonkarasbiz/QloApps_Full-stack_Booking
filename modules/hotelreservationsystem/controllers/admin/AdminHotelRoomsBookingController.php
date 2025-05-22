@@ -695,8 +695,7 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
 
         $opt = Tools::getValue('opt'); // if 1 then add quantity or if 0 means delete quantity
 
-        $obj_booking_dtl = new HotelBookingDetail();
-        $num_day = $obj_booking_dtl->getNumberOfDays($date_from, $date_to); //quantity of product
+        $num_day = HotelHelper::getNumberOfDays($date_from, $date_to); //quantity of product
 
         if ($opt) {
             $unit_price = Product::getPriceStatic(

@@ -47,10 +47,10 @@
                     <tbody>
                         {if isset($additionalServices) && $additionalServices}
                             {foreach $additionalServices['additional_services'] as $service}
-                                <tr class="room_demand_block" data-id_room_type_service_product_order_detail="{$service['id_room_type_service_product_order_detail']}">
+                                <tr class="room_demand_block" data-id_service_product_order_detail="{$service['id_service_product_order_detail']}">
                                     <td>
                                         <div>{$service['name']|escape:'html':'UTF-8'}</div>
-                                        <input value="{$service['id_room_type_service_product_order_detail']|escape:'html':'UTF-8'}" name="id_room_type_service_product_order_detail[]" type="hidden"/>
+                                        <input value="{$service['id_service_product_order_detail']|escape:'html':'UTF-8'}" name="id_service_product_order_detail[]" type="hidden"/>
                                     </td>
                                     <td>
                                         {if $service['product_auto_add'] && $service['product_price_addition_type'] == Product::PRICE_ADDITION_TYPE_WITH_ROOM}
@@ -63,7 +63,7 @@
                                     <td class="text-center">
                                         {if $service['allow_multiple_quantity']}
                                             <div class="qty_container">
-                                                <input type="number" class="form-control qty" min="1" data-id_product="{$service['id_product']|escape:'html':'UTF-8'}" value="{$service['quantity']|escape:'html':'UTF-8'}" name="service_qty[{$service['id_room_type_service_product_order_detail']|escape:'html':'UTF-8'}]">
+                                                <input type="number" class="form-control qty" min="1" data-id_product="{$service['id_product']|escape:'html':'UTF-8'}" value="{$service['quantity']|escape:'html':'UTF-8'}" name="service_qty[{$service['id_service_product_order_detail']|escape:'html':'UTF-8'}]">
                                                 {if $service['max_quantity']}
                                                     <p style="display:{if $service['quantity'] > $service['max_quantity']}block{else}none{/if}; margin-top: 4px;">
                                                         <span class="label label-warning">{l s='Maximum allowed quantity: %s' sprintf=$service['max_quantity']}</span>
@@ -77,7 +77,7 @@
                                     <td>
                                         <div class="input-group">
                                             <span class="input-group-addon">{$currencySign}</span>
-                                            <input type="text" class="form-control unit_price" value="{Tools::ps_round($service['unit_price_tax_excl'], 2)}" data-id-product="{$service['id_product']}" name="service_price[{$service['id_room_type_service_product_order_detail']}]">
+                                            <input type="text" class="form-control unit_price" value="{Tools::ps_round($service['unit_price_tax_excl'], 2)}" data-id-product="{$service['id_product']}" name="service_price[{$service['id_service_product_order_detail']}]">
                                             {if Product::PRICE_CALCULATION_METHOD_PER_DAY == $service.product_price_calculation_method}
                                                 <span class="input-group-addon">{l s='/ night'}</span>
                                             {/if}
@@ -87,7 +87,7 @@
                                         {/if} *}
                                     </td>
                                     <td>{displayPrice price=$service['total_price_tax_excl']|escape:'html':'UTF-8' currency=$orderCurrency}</td>
-                                    <td class="text-right"><a class="btn btn-danger pull-right del_room_additional_service" data-id_room_type_service_product_order_detail="{$service['id_room_type_service_product_order_detail']}" href="#"><i class="icon-trash"></i></a></td>
+                                    <td class="text-right"><a class="btn btn-danger pull-right del_room_additional_service" data-id_service_product_order_detail="{$service['id_service_product_order_detail']}" href="#"><i class="icon-trash"></i></a></td>
                                 </tr>
                             {/foreach}
                         {else}

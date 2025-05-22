@@ -265,16 +265,16 @@ class ServiceProductOrderDetail extends ObjectModel
             $useTax = Product::$_taxCalculationMethod == PS_TAX_EXC ? false : true;
         }
 
-        $sql = 'SELECT rsod.*';
+        $sql = 'SELECT spod.*';
         if (!$getTotalPrice) {
             $sql .= ', hbd.`id_product` as `room_type_id_product`, hbd.`id_room`, od.`product_allow_multiple_quantity`, p.`max_quantity`,
                 od.`product_auto_add`, od.`product_price_calculation_method`, od.`product_price_addition_type`';
         }
         $sql .= ' FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
-            INNER JOIN `'._DB_PREFIX_.'htl_room_type_service_product_order_detail` rsod ON(rsod.`id_htl_booking_detail` = hbd.`id`)';
+            INNER JOIN `'._DB_PREFIX_.'service_product_order_detail` spod ON(spod.`id_htl_booking_detail` = hbd.`id`)';
 
-        $sql .= ' LEFT JOIN `'._DB_PREFIX_.'order_detail` od ON(od.`id_order_detail` = rsod.`id_order_detail`)';
-        $sql .= ' LEFT JOIN `'._DB_PREFIX_.'product` p ON (p.`id_product` = rsod.`id_product`)';
+        $sql .= ' LEFT JOIN `'._DB_PREFIX_.'order_detail` od ON(od.`id_order_detail` = spod.`id_order_detail`)';
+        $sql .= ' LEFT JOIN `'._DB_PREFIX_.'product` p ON (p.`id_product` = spod.`id_product`)';
 
         $sql .= ' WHERE hbd.`id` = '.(int)$idHotelBookingDetail;
 
@@ -309,7 +309,7 @@ class ServiceProductOrderDetail extends ObjectModel
                         $selectedAdditionalServices['total_price_tax_excl'] += $product['total_price_tax_excl'];
                         $selectedAdditionalServices['total_price_tax_incl'] += $product['total_price_tax_incl'];
                         $selectedAdditionalServices['additional_services'][] = array(
-                            'id_room_type_service_product_order_detail' => $product['id_room_type_service_product_order_detail'],
+                            'id_service_product_order_detail' => $product['id_service_product_order_detail'],
                             'id_order_detail' => $product['id_order_detail'],
                             'id_product' => $product['id_product'],
                             'name' => $product['name'],
@@ -336,7 +336,7 @@ class ServiceProductOrderDetail extends ObjectModel
                         $selectedAdditionalServices['id_room'] = $product['id_room'];
                         $selectedAdditionalServices['additional_services'] = array(
                             array(
-                                'id_room_type_service_product_order_detail' => $product['id_room_type_service_product_order_detail'],
+                                'id_service_product_order_detail' => $product['id_service_product_order_detail'],
                                 'id_order_detail' => $product['id_order_detail'],
                                 'id_product' => $product['id_product'],
                                 'name' => $product['name'],

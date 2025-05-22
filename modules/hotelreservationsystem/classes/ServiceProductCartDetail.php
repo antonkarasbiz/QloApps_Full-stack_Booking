@@ -485,7 +485,7 @@ class ServiceProductCartDetail extends ObjectModel
                         $controllerType = 'front';
                     }
                     if ($controllerType == 'admin' || $controllerType == 'moduleadmin') {
-                        if ($cartQty = Cart::getProductQtyInCart($idCart, $product['id_product '])) {
+                        if ($cartQty = Cart::getProductQtyInCart($idCart, (int) $product['id_product'])) {
                             if ($removedQuantity < $cartQty) {
                                 $res &= Db::getInstance()->update(
                                     'cart_product',
