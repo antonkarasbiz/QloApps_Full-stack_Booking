@@ -704,13 +704,13 @@
                 </div>
 
                 {* Order Internal notes *}
-                {if (sizeof($messages))}
-                    <div class="panel">
+                {if isset($messages) && $messages}
+                    <div class="panel order-notes">
                         <div class="panel-heading">
-                            <i class="icon-undo"></i> &nbsp;{l s='Order Notes'}
+                            <i class="icon-undo"></i> &nbsp;{l s='Order Private Notes'}
                         </div>
                         <div class="panel-content">
-                            {foreach from=$messages item=message}
+                            {foreach from=$messages item=message name=customerMessage}
                                 <div class="message-body">
                                     <p class="message-item-text">
                                         {$message['message']|escape:'html':'UTF-8'|nl2br}
@@ -727,6 +727,7 @@
                                         {/if}
                                     </p>
                                 </div>
+                                {if !$smarty.foreach.customerMessage.last}<hr/>{/if}
                                 {* {if ($message['is_new_for_me'])}
                                     <a class="new_message" title="{l s='Mark this message as \'viewed\''}" href="{$smarty.server.REQUEST_URI}&amp;token={$smarty.get.token}&amp;messageReaded={$message['id_message']}">
                                         <i class="icon-ok"></i>
@@ -1214,7 +1215,11 @@
                 <div class="panel">
                     <div class="panel-heading">
                         <i class="icon-envelope"></i> &nbsp;{l s='Messages'} <span class="badge">{sizeof($customer_thread_message)}</span>
-                        <a href="{$link->getAdminLink('AdminCustomerThreads')|escape:'html':'UTF-8'}&amp;id_order={$order->id|intval}" class="pull-right">{l s='Show all messages'}</a>
+                        {if $id_customer_thread}
+                            <a href="{$link->getAdminLink('AdminCustomerThreads')|escape:'html':'UTF-8'}&amp;viewcustomer_thread&id_customer_thread={$id_customer_thread|intval}" class="pull-right ">{l s='Show all messages'}</a>
+                        {else}
+                            <a href="{$link->getAdminLink('AdminCustomerThreads')|escape:'html':'UTF-8'}" class="pull-right">{l s='Show all messages'}</a>
+                        {/if}
                     </div>
                     <div id="messages">
                         {if $can_edit}

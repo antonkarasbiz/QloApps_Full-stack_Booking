@@ -606,7 +606,7 @@
     color: #55c65e;
 }
 
-#sendOrderMessage {
+#sendOrderMessage, .select-room-type .card-subheader {
     margin-bottom: 10px;
 }
 

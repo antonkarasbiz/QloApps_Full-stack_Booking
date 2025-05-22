@@ -1722,13 +1722,17 @@ class AdminOrdersControllerCore extends AdminController
                         $id_customer_thread = CustomerThread::getIdCustomerThreadByEmailAndIdOrder($customer->email, $order->id);
                         if (!$id_customer_thread) {
                             $customer_thread = new CustomerThread();
-                            $customer_thread->id_contact = 0;
+                            $customer_thread->id_contact = (int)Configuration::get('PS_MAIL_EMAIL_MESSAGE');
                             $customer_thread->id_customer = (int)$order->id_customer;
+                            $customer_thread->user_name = $customer->firstname.' '.$customer->lastname;
+                            $customer_thread->phone = $customer->phone;
+                            $customer_thread->subject = $order->reference;
+                            $customer_thread->id_employee = (int)$this->context->employee->id;
                             $customer_thread->id_shop = (int)$this->context->shop->id;
                             $customer_thread->id_order = (int)$order->id;
                             $customer_thread->id_lang = (int)$this->context->language->id;
                             $customer_thread->email = $customer->email;
-                            $customer_thread->status = 'open';
+                            $customer_thread->status = CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN;
                             $customer_thread->token = Tools::passwdGen(12);
                             $customer_thread->add();
                         } else {
@@ -1761,7 +1765,7 @@ class AdminOrdersControllerCore extends AdminController
                             if (@Mail::Send(
                                 (int)$order->id_lang,
                                 'order_merchant_comment',
-                                Mail::l('New message regarding your order', (int)$order->id_lang),
+                                Mail::l('New message regarding your booking', (int)$order->id_lang),
                                 $varsTpl,
                                 $customer->email,
                                 $customer->firstname.' '.$customer->lastname,
@@ -2820,13 +2824,15 @@ class AdminOrdersControllerCore extends AdminController
             $helper->value = $objOrder->source;
             $this->kpis[] = $helper;
 
+            $objCustomerThread = new CustomerThread();
+            $idCustomerThread = $objCustomerThread->getIdCustomerThreadByIdOrder($objOrder->id);
             $helper = new HelperKpi();
             $helper->id = 'box-messages';
             $helper->icon = 'icon-comments';
             $helper->color = 'color2';
             $helper->title = $this->l('Messages');
             $helper->tooltip = $this->l('Messages is the number of customer messages for this order.');
-            $helper->href = $this->context->link->getAdminLink('AdminCustomerThreads').'&id_order='.$objOrder->id;
+            $helper->href = $this->context->link->getAdminLink('AdminCustomerThreads').((int) $idCustomerThread ? '&viewcustomer_thread&id_customer_thread='.(int) $idCustomerThread : '');
             $helper->value = count(CustomerThread::getCustomerMessages($objOrder->id_customer, null, $objOrder->id, CustomerMessage::QLO_CUSTOMER_MESSAGE_BY_CUSTOMER));
             $this->kpis[] = $helper;
 
@@ -3474,10 +3480,28 @@ class AdminOrdersControllerCore extends AdminController
             }
         }
 
+        $objCustomerThread = new CustomerThread();
+        $messages = Message::getMessagesByOrderId($order->id, true);
+        if ($customerMessages = CustomerMessage::getMessagesByOrderId($order->id, true)) {
+            foreach ($messages as $messageKey => $message) {
+                foreach ($customerMessages as $customerMessageKey => $customerMessage) {
+                    if (strcmp($message['message'], $customerMessage['message']) == 0) {
+                        unset($messages[$messageKey]);
+                    }
+                }
+            }
+
+            $messages = array_merge($customerMessages, $messages);
+            usort($messages, function ($a, $b) {
+                return strtotime($a['date_add']) < strtotime($b['date_add']);
+            });
+        }
+
         // send hotel standalone and standalone products
         $objProduct = new Product();
         $hotelStandaloneProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_HOTEL_STANDALONE);
         $standaloneProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_STANDALONE);
+
         $this->tpl_view_vars = array(
             'hotelStandaloneProducts' => $hotelStandaloneProducts,
             'standaloneProducts' => $standaloneProducts,
@@ -3527,8 +3551,9 @@ class AdminOrdersControllerCore extends AdminController
             'discounts' => $order->getCartRules(),
             'total_paid' => $order->getTotalPaid(),
             'customer_thread_message' => CustomerThread::getCustomerMessages($order->id_customer, null, $order->id),
+            'id_customer_thread' => $objCustomerThread->getIdCustomerThreadByIdOrder($order->id),
             'orderMessages' => OrderMessage::getOrderMessages($order->id_lang),
-            'messages' => Message::getMessagesByOrderId($order->id, true),
+            'messages' => $messages,
             'carrier' => new Carrier($order->id_carrier),
             'history' => $history,
             'order_payment_detail' => $order_payment_detail,

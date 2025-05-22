@@ -1063,11 +1063,12 @@ class ProductCore extends ObjectModel
         }
 
         if (!$this->booking_product) {
-            $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
-            $objHotelRoomTypeBedType->deleteRoomTypeBedTypes(false, $this->id);
             if (!$this->deleteServiceInfo()) {
                 return false;
             }
+        } else {
+            $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
+            $objHotelRoomTypeBedType->deleteRoomTypeBedTypes(false, $this->id);
         }
 
         Hook::exec('actionProductDelete', array('id_product' => (int)$this->id, 'product' => $this));

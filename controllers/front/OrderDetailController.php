@@ -493,7 +493,7 @@ class OrderDetailControllerCore extends FrontController
                         'deliveryAddressFormatedValues' => $deliveryAddressFormatedValues,
                         'deliveryState' => (Validate::isLoadedObject($addressDelivery) && $addressDelivery->id_state) ? new State($addressDelivery->id_state) : false,
                         'is_guest' => false,
-                        'messages' => CustomerMessage::getMessagesByOrderId((int) $order->id, false),
+                        'messages' => CustomerMessage::getMessagesByOrderId((int) $order->id),
                         'CUSTOMIZE_FILE' => Product::CUSTOMIZE_FILE,
                         'CUSTOMIZE_TEXTFIELD' => Product::CUSTOMIZE_TEXTFIELD,
                         'isRecyclable' => Configuration::get('PS_RECYCLABLE_PACK'),
@@ -758,26 +758,32 @@ class OrderDetailControllerCore extends FrontController
                 $id_customer_thread = CustomerThread::getIdCustomerThreadByEmailAndIdOrder($this->context->customer->email, $order->id);
                 $id_product = (int)Tools::getValue('id_product');
                 $cm = new CustomerMessage();
+                $objCustomer = new Customer($order->id_customer);
                 if (!$id_customer_thread) {
                     $ct = new CustomerThread();
-                    $ct->id_contact = 0;
+                    $ct->id_contact = (int)Configuration::get('PS_MAIL_EMAIL_MESSAGE');
                     $ct->id_customer = (int)$order->id_customer;
+                    $ct->user_name = $objCustomer->firstname.' '.$objCustomer->lastname;
+                    $ct->subject = $order->reference;
+                    $ct->phone = $objCustomer->phone;
                     $ct->id_shop = (int)$this->context->shop->id;
-                    if ($id_product && $order->orderContainProduct($id_product)) {
-                        $ct->id_product = $id_product;
-                    }
                     $ct->id_order = (int)$order->id;
                     $ct->id_lang = (int)$this->context->language->id;
                     $ct->email = $this->context->customer->email;
-                    $ct->status = 'open';
+                    $ct->status = CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN;
                     $ct->token = Tools::passwdGen(12);
                     $ct->add();
                 } else {
                     $ct = new CustomerThread((int)$id_customer_thread);
-                    $ct->status = 'open';
+                    $ct->status = CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN;
                     $ct->update();
                 }
 
+                if ($id_product && $order->orderContainProduct($id_product)) {
+                    $cm->id_product = $id_product;
+                }
+
+                $cm->user_agent = $_SERVER['HTTP_USER_AGENT'];
                 $cm->id_customer_thread = $ct->id;
                 $cm->message = $msgText;
                 $cm->ip_address = (int)ip2long($_SERVER['REMOTE_ADDR']);
@@ -829,7 +835,7 @@ class OrderDetailControllerCore extends FrontController
                 // send message html in json
                 $response['status'] = true;
 
-                $message = CustomerMessage::getMessagesByOrderId($order->id, false)[0];
+                $message = CustomerMessage::getMessagesByOrderId($order->id)[0];
                 $this->context->smarty->assign(array('message' => $message));
                 $response['message_html'] = $this->context->smarty->fetch(_PS_THEME_DIR_.'_partials/order-message.tpl');
             } else {

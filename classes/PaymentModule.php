@@ -716,7 +716,7 @@ abstract class PaymentModuleCore extends Module
                         $customer_thread->id_order = (int)$order->id;
                         $customer_thread->id_lang = (int)$this->context->language->id;
                         $customer_thread->email = $this->context->customer->email;
-                        $customer_thread->status = 'open';
+                        $customer_thread->status = CustomerThread::QLO_CUSTOMER_THREAD_STATUS_OPEN;
                         $customer_thread->token = Tools::passwdGen(12);
                         $customer_thread->add();
 
@@ -724,7 +724,7 @@ abstract class PaymentModuleCore extends Module
                         $customer_message->id_customer_thread = $customer_thread->id;
                         $customer_message->id_employee = 0;
                         $customer_message->message = $update_message->message;
-                        $customer_message->private = 0;
+                        $customer_message->private = !Tools::getValue('visibility');
 
                         if (!$customer_message->add()) {
                             $this->errors[] = Tools::displayError('An error occurred while saving message');
