@@ -2664,7 +2664,7 @@ class AdminOrdersControllerCore extends AdminController
             } elseif (isset($orderHistory[0]['id_order_state']) && ($orderHistory[0]['id_order_state'] == Configuration::get('PS_OS_PARTIAL_PAYMENT_ACCEPTED'))) {
                 $initialPaymentStatus = $this->l('Partial Payment');
             } else {
-                $initialPaymentStatus = $this->l('No Payment Received ');
+                $initialPaymentStatus = $this->l('No Payment Received');
             }
             $helper->id = 'box-payment-status';
             $helper->icon = 'icon-home';
