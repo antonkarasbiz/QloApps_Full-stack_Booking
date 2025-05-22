@@ -233,7 +233,7 @@
 		</script>
 	</div>
     {* Code For Standard product working *}
-	<div class="form-group" id="global_product_type_container">
+	{* <div class="form-group" id="global_product_type_container">
 		<label class="control-label col-lg-3" for="selling_preference_type">
 			<span class="label-tooltip" data-toggle="tooltip" title="{l s='Select whether this product will be sold with room type or as an standalone product'}">
 				{l s='Product selling preference'}
@@ -247,7 +247,7 @@
                 <option value="{Product::SELLING_PREFERENCE_STANDALONE}" {if $product->selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE}selected="selected"{/if} >{l s='Sell as standalone product'}</option>
 			</select>
 		</div>
-	</div>
+	</div> *}
     <div class="form-group" id="associated_hotel_tree" {if ($product->selling_preference_type != Product::SELLING_PREFERENCE_HOTEL_STANDALONE && $product->selling_preference_type != Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE)}style="display:none;"{/if}>
 		<div class="col-lg-1"><span class="pull-right">{include file="controllers/products/multishop/checkbox.tpl" field="category_box" type="category_box"}</span></div>
 		<label class="control-label col-lg-2" for="hotel_block">
