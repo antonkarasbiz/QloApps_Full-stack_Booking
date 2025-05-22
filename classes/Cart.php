@@ -733,11 +733,18 @@ class CartCore extends ObjectModel
                     $totalPriceByProductTaxExcl = 0;
                     $priceDisplay = Group::getPriceDisplayMethod(Group::getCurrent()->id);
                     foreach ($roomTypesByIdProduct as $key => $cartRoomInfo) {
+                        $occupancy = array(
+                            array(
+                                'adults' => $cartRoomInfo['adults'],
+                                'children' => $cartRoomInfo['children'],
+                                'child_ages' => json_decode($cartRoomInfo['child_ages'])
+                            )
+                        );
                         $roomTotalPrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
                             $cartRoomInfo['id_product'],
                             $cartRoomInfo['date_from'],
                             $cartRoomInfo['date_to'],
-                            0,
+                            $occupancy,
                             Group::getCurrent()->id,
                             $cartRoomInfo['id_cart'],
                             $cartRoomInfo['id_guest'],
@@ -1780,12 +1787,19 @@ class CartCore extends ObjectModel
                 $totalPriceByProduct = 0;
                 $priceDisplay = Group::getPriceDisplayMethod(Group::getCurrent()->id);
                 foreach ($roomTypesByIdProduct as $key => $cartRoomInfo) {
+                    $occupancy = array(
+                        array(
+                            'adults' => $cartRoomInfo['adults'],
+                            'children' => $cartRoomInfo['children'],
+                            'child_ages' => json_decode($cartRoomInfo['child_ages'])
+                        )
+                    );
                     // get the real price of the room type
                     $roomTotalPrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
                         $cartRoomInfo['id_product'],
                         $cartRoomInfo['date_from'],
                         $cartRoomInfo['date_to'],
-                        0,
+                        $occupancy,
                         Group::getCurrent()->id,
                         $cartRoomInfo['id_cart'],
                         $cartRoomInfo['id_guest'],
@@ -2294,7 +2308,6 @@ class CartCore extends ObjectModel
         $orderPackage = array();
         $serviceProducts = array();
         $objRoomType = new HotelRoomType();
-        $objHtlCartBookingData = new HotelCartBookingData();
         $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
         $objHotelServiceProductCartDetail = new HotelServiceProductCartDetail();
         foreach ($final_package_list as $id_address => $packages) {

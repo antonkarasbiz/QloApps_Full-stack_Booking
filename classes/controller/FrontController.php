@@ -330,7 +330,7 @@ class FrontControllerCore extends Controller
             $this->context->customer->logout();
 
             Tools::redirect(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null);
-        } elseif (isset($_GET['mylogout'])) {
+        } elseif (isset($_GET['mylogout']) && $this->isTokenValid()) {
             $this->context->customer->mylogout();
             Tools::redirect(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null);
         }
@@ -1192,6 +1192,7 @@ class FrontControllerCore extends Controller
             'token'                 => Tools::getToken(),
             'priceDisplayPrecision' => _PS_PRICE_DISPLAY_PRECISION_,
             'content_only'          => (int)Tools::getValue('content_only'),
+            'WK_DISPLAY_PROPERTIES_LINK_IN_HEADER' => Configuration::get('WK_DISPLAY_PROPERTIES_LINK_IN_HEADER'),
         ));
 
         $this->context->smarty->assign($this->initLogoAndFavicon());

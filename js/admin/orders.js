@@ -1344,21 +1344,99 @@ $(document).ready(function() {
         $('#back_to_demands_btn').hide();
     });
 
-    $(document).on('click', '#btn_new_room_service', function() {
-        $('.room_services_container').show();
-        $('#save_service_service').show();
-        $('#back_to_service_btn').show();
-        $('.room_ordered_services').hide();
-        $('#btn_new_room_service').hide();
-    });
     // click on back button on created facilities while additional facilities edit
     $(document).on('click', '#back_to_service_btn', function() {
         $('.room_ordered_services').show();
+        $('#btn_new_existing_room_service').show();
         $('#btn_new_room_service').show();
-        $('.room_services_container').hide();
+        $('#add_existing_room_services_form').hide();
+        $('#add_new_room_services_form').hide();
         $('#save_service_service').hide();
         $('#back_to_service_btn').hide();
     });
+
+    // Start: New custom service oprations
+
+    $(document).on('click', '#btn_new_existing_room_service', function() {
+        $('#add_existing_room_services_form').show();
+        $('#add_new_room_services_form').hide();
+        $('#save_service_service').show();
+        $('#back_to_service_btn').show();
+        $('.room_ordered_services').hide();
+        $('#btn_new_existing_room_service').hide();
+        $('#btn_new_room_service').hide();
+        $('#add_new_room_services_form').hide();
+    });
+
+    // Add new custom service: Show hide new custom service form
+    $(document).on('click', '#btn_new_room_service', function() {
+        $('#add_existing_room_services_form').hide();
+        $('#add_new_room_services_form').show();
+        $('#add_new_room_services_form').show();
+        $('#back_to_service_btn').show();
+        $('.room_ordered_services').hide();
+        $('#btn_new_existing_room_service').hide();
+        $('#btn_new_room_service').hide();
+    });
+
+    // Add new custom service: change auto added option
+    $(document).on('change', '#add_new_room_services_form input[name="new_service_auto_added"]', function() {
+        var room_type_tax_rule_group_exist = $("#room_type_tax_rule_group_exist").val();
+        if ($(this).val() == 1) {
+            $("#new_service_price_addition_type_container").show();
+            $("#new_service_qty_container").hide();
+            if (room_type_tax_rule_group_exist) {
+                $("#new_service_price_tax_rule_container").hide();
+            }
+        } else {
+            $("#new_service_price_addition_type_container").hide();
+            $("#new_service_qty_container").show();
+            $("#new_service_price_tax_rule_container").show();
+        }
+    });
+
+    // Add new custom service to the room
+    $(document).on('submit', '#add_new_room_services_form', function(e) {
+        e.preventDefault();
+        var form_data = new FormData(this);
+        form_data.append('ajax', true);
+        form_data.append('action', 'addNewRoomServices');
+
+        $(".loading_overlay").show();
+        $.ajax({
+            type: 'POST',
+            headers: {
+                "cache-control": "no-cache"
+            },
+            url: admin_order_tab_link,
+            dataType: 'JSON',
+            cache: false,
+            data: form_data,
+            processData: false,
+            contentType: false,
+            success: function(jsonData) {
+                if (!jsonData.hasError) {
+                    if (jsonData.service_panel) {
+                        $('#room_type_service_product_desc').replaceWith(jsonData.service_panel);
+                    }
+                    showSuccessMessage(txtExtraDemandSucc);
+                } else {
+                    var errorHtml = error_found_txt + ':<br>';
+                    errorHtml += '<ol>';
+                    $.each(jsonData.errors, function(key, errorMsg) {
+                        errorHtml += '<li>' + errorMsg + '</li>';
+                    });
+                    errorHtml += '</ol>';
+                    showErrorMessage(errorHtml);
+                }
+            },
+            complete: function() {
+                $(".loading_overlay").hide();
+            }
+        });
+    });
+
+    // End: New custom service oprations
 
     $(document).on('change', '#edit-room-booking-modal .room_ordered_services .qty', function(e) {
         let quantityInputField = this;
@@ -1371,26 +1449,19 @@ $(document).ready(function() {
         }
     });
 
-    $(document).on('focusout', '#edit-room-booking-modal .room_ordered_services .qty', function(e) {
-        updateAdditionalServices($(this).closest('tr'));
-    });
-
-    $(document).on('focusout', '#edit-room-booking-modal .room_ordered_services .unit_price', function(e) {
-        updateAdditionalServices($(this).closest('tr'));
-    });
-
-    $(document).on('focusout', '#edit-room-booking-modal #add_room_services_form .qty', function(e) {
+    $(document).on('focusout', '#edit-room-booking-modal #add_existing_room_services_form .qty', function(e) {
         var qty_wntd = $(this).val();
         if (qty_wntd == '' || !$.isNumeric(qty_wntd) || qty_wntd < 1) {
             $(this).val(1);
         }
     });
 
-    $(document).on('submit', '#add_room_services_form', function(e) {
+    // Add existing available service to the room
+    $(document).on('submit', '#add_existing_room_services_form', function(e) {
         e.preventDefault();
         var form_data = new FormData(this);
         form_data.append('ajax', true);
-        form_data.append('action', 'addRoomAdditionalServices');
+        form_data.append('action', 'addExistingRoomServices');
 
         $(".loading_overlay").show();
         $.ajax({
@@ -1413,6 +1484,48 @@ $(document).ready(function() {
                 } else {
                     showErrorMessage(jsonData.errors);
 
+                }
+            },
+            complete: function() {
+                $(".loading_overlay").hide();
+            }
+        });
+    });
+
+    $(document).on('submit', '#update_selected_room_services_form', function(e) {
+        e.preventDefault();
+        var form_data = new FormData(this);
+        form_data.append('ajax', true);
+        form_data.append('action', 'updateSelectedRoomServices');
+
+        $(".loading_overlay").show();
+        $.ajax({
+            type: 'POST',
+            headers: {
+                "cache-control": "no-cache"
+            },
+            url: admin_order_tab_link,
+            dataType: 'JSON',
+            cache: false,
+            data: form_data,
+            processData: false,
+            contentType: false,
+            success: function(jsonData) {
+                if (!jsonData.hasError) {
+                    if (jsonData.service_panel) {
+                        $('#room_type_service_product_desc').replaceWith(jsonData.service_panel);
+                    }
+                    showSuccessMessage(txtExtraDemandSucc);
+                } else {
+                    if (jsonData.errors != 'undefined' && jsonData.errors.length) {
+                        var errorHtml = error_found_txt + ':<br>';
+                        errorHtml += '<ol>';
+                        $.each(jsonData.errors, function(key, errorMsg) {
+                            errorHtml += '<li>' + errorMsg + '</li>';
+                        });
+                        errorHtml += '</ol>';
+                        showErrorMessage(errorHtml);
+                    }
                 }
             },
             complete: function() {
@@ -2717,56 +2830,6 @@ const RoomAllotmentCommentModal = {
         $('#room-allotment-comment-modal').modal('hide');
     }
 };
-
-function updateAdditionalServices(element)
-{
-    var id_room_type_service_product_order_detail = $(element).data('id_room_type_service_product_order_detail');
-    if ($(element).find('.qty').length) {
-        var qty = $(element).find('.qty').val();
-        if (qty == '' || !$.isNumeric(qty) || qty < 1) {
-            $(element).find('.qty').val(1);
-            qty = 1;
-        }
-    } else {
-        var qty = 1;
-    }
-
-    var unit_price = $(element).find('.unit_price').val();
-    if ($.isNumeric(qty)) {
-        $(".loading_overlay").show();
-        $.ajax({
-            type: 'POST',
-            headers: {
-                "cache-control": "no-cache"
-            },
-            url: admin_order_tab_link,
-            dataType: 'JSON',
-            cache: false,
-            data: {
-                id_room_type_service_product_order_detail: id_room_type_service_product_order_detail,
-                qty: qty,
-                unit_price: unit_price,
-                action: 'updateRoomAdditionalServices',
-                ajax: true
-            },
-            success: function(jsonData) {
-                if (!jsonData.hasError) {
-                    if (jsonData.service_panel) {
-                        $('#room_type_service_product_desc').replaceWith(jsonData.service_panel);
-                    }
-                    showSuccessMessage(txtExtraDemandSucc);
-                } else {
-                    showErrorMessage(jsonData.errors);
-
-                }
-            },
-            complete: function() {
-                $(".loading_overlay").hide();
-            }
-        });
-    }
-
-}
 
 function updateRoomDemand(element)
 {

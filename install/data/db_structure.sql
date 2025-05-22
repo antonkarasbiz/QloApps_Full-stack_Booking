@@ -606,6 +606,7 @@ CREATE TABLE `PREFIX_customer` (
   `max_payment_days` int(10) unsigned NOT NULL DEFAULT '60',
   `secure_key` varchar(32) NOT NULL DEFAULT '-1',
   `note` text,
+  `phone` varchar(32) DEFAULT NULL,
   `active` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `is_guest` tinyint(1) NOT NULL DEFAULT '0',
   `deleted` tinyint(1) NOT NULL DEFAULT '0',
@@ -633,6 +634,7 @@ CREATE TABLE `PREFIX_customer_message` (
   `id_customer_thread` int(11) DEFAULT NULL,
   `id_employee` int(10) unsigned DEFAULT NULL,
   `message` MEDIUMTEXT NOT NULL,
+  `id_product` int(10) unsigned DEFAULT NULL,
   `file_name` varchar(18) DEFAULT NULL,
   `ip_address`  varchar(16) DEFAULT NULL,
   `user_agent` varchar(128) DEFAULT NULL,
@@ -657,9 +659,12 @@ CREATE TABLE `PREFIX_customer_thread` (
   `id_lang` int(10) unsigned NOT NULL,
   `id_contact` int(10) unsigned NOT NULL,
   `id_customer` int(10) unsigned DEFAULT NULL,
+  `id_employee` int(10) unsigned DEFAULT NULL,
   `id_order` int(10) unsigned DEFAULT NULL,
-  `id_product` int(10) unsigned DEFAULT NULL,
-  `status` enum('open','closed','pending1','pending2') NOT NULL DEFAULT 'open',
+  `user_name` VARCHAR(128) DEFAULT NULL,
+  `phone` VARCHAR(32) DEFAULT NULL,
+  `subject` TEXT DEFAULT NULL,
+  `status` INT(10) NOT NULL DEFAULT 1,
   `email` varchar(128) NOT NULL,
   `token` varchar(12) DEFAULT NULL,
   `date_add` datetime NOT NULL,
@@ -669,8 +674,7 @@ CREATE TABLE `PREFIX_customer_thread` (
 	KEY `id_lang` (`id_lang`),
 	KEY `id_contact` (`id_contact`),
 	KEY `id_customer` (`id_customer`),
-	KEY `id_order` (`id_order`),
-	KEY `id_product` (`id_product`)
+	KEY `id_order` (`id_order`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATION;
 
 CREATE TABLE `PREFIX_order_customer_guest_detail` (
@@ -686,9 +690,9 @@ CREATE TABLE `PREFIX_order_customer_guest_detail` (
 	PRIMARY KEY (`id_order_customer_guest_detail`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATION;
 
-CREATE TABLE `PREFIX_cart_customer_guest_detail` (
+CREATE TABLE `PREFIX_customer_guest_detail` (
   `id_customer_guest_detail` int(10) unsigned NOT NULL auto_increment,
-  `id_cart` int(10) unsigned NOT NULL,
+  `id_customer` int(10) unsigned NOT NULL,
   `id_gender` int(10) unsigned NOT NULL,
   `firstname` varchar(32) NOT NULL,
   `lastname` varchar(32) NOT NULL,
@@ -697,6 +701,12 @@ CREATE TABLE `PREFIX_cart_customer_guest_detail` (
   `date_add` datetime NOT NULL,
   `date_upd` datetime NOT NULL,
 	PRIMARY KEY (`id_customer_guest_detail`)
+) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATION;
+
+CREATE TABLE `PREFIX_cart_customer_guest` (
+  `id_customer_guest_detail` int(10) unsigned NOT NULL,
+  `id_cart` int(10) unsigned NOT NULL,
+	PRIMARY KEY (`id_customer_guest_detail`, `id_cart`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATION;
 
 CREATE TABLE `PREFIX_customization` (

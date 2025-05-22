@@ -24,17 +24,17 @@ class HotelHelper
     {
         $objModule = new HotelreservationSystem();
         $jsVars = array(
-                'display_name' => $objModule->l('Display', 'HotelHelper', false, true),
-                'records_name' => $objModule->l('records per page', 'HotelHelper', false, true),
-                'no_product' => $objModule->l('No records found', 'HotelHelper', false, true),
-                'show_page' => $objModule->l('Showing page', 'HotelHelper', false, true),
-                'show_of' => $objModule->l('of', 'HotelHelper', false, true),
-                'no_record' => $objModule->l('No records available', 'HotelHelper', false, true),
-                'filter_from' => $objModule->l('filtered from', 'HotelHelper', false, true),
-                't_record' => $objModule->l('total records', 'HotelHelper', false, true),
-                'search_item' => $objModule->l('Search', 'HotelHelper', false, true),
-                'p_page' => $objModule->l('Previous', 'HotelHelper', false, true),
-                'n_page' => $objModule->l('Next', 'HotelHelper', false, true),
+                'display_name' => $objModule->l('Display', 'HotelHelper', true),
+                'records_name' => $objModule->l('records per page', 'HotelHelper', true),
+                'no_product' => $objModule->l('No records found', 'HotelHelper', true),
+                'show_page' => $objModule->l('Showing page', 'HotelHelper', true),
+                'show_of' => $objModule->l('of', 'HotelHelper', true),
+                'no_record' => $objModule->l('No records available', 'HotelHelper',true),
+                'filter_from' => $objModule->l('filtered from', 'HotelHelper', true),
+                't_record' => $objModule->l('total records', 'HotelHelper', true),
+                'search_item' => $objModule->l('Search', 'HotelHelper', true),
+                'p_page' => $objModule->l('Previous', 'HotelHelper', true),
+                'n_page' => $objModule->l('Next', 'HotelHelper', true),
             );
 
         Media::addJsDef($jsVars);
@@ -1044,14 +1044,13 @@ class HotelHelper
         Configuration::updateValue('WK_ROOM_LEFT_WARNING_NUMBER', 10);
         Configuration::updateValue('WK_HTL_ESTABLISHMENT_YEAR', 2010);
 
-        Configuration::updateValue(
-            'WK_HOTEL_GLOBAL_ADDRESS',
-            'The Hotel Prime, Monticello Dr, Montgomery, 10010'
-        );
-        Configuration::updateValue('WK_HOTEL_GLOBAL_CONTACT_NUMBER', '0987654321');
-        Configuration::updateValue('WK_HOTEL_GLOBAL_CONTACT_EMAIL', 'hotelprime@htl.com');
+        Configuration::updateValue('PS_SHOP_ADDR1', 'The Hotel Prime, Monticello Dr, Montgomery, 10010');
+        Configuration::updateValue('PS_SHOP_PHONE', '0987654321');
+        Configuration::updateValue('PS_SHOP_EMAIL', 'hotelprime@htl.com');
+
         Configuration::updateValue('WK_CUSTOMER_SUPPORT_PHONE_NUMBER', '0987654321');
         Configuration::updateValue('WK_CUSTOMER_SUPPORT_EMAIL', 'hotelprime@htl.com');
+        Configuration::updateValue('WK_DISPLAY_CONTACT_PAGE_HOTEL_LIST', 0);
 
         Configuration::updateValue('WK_TITLE_HEADER_BLOCK', $home_banner_default_title);
         Configuration::updateValue('WK_CONTENT_HEADER_BLOCK', $home_banner_default_content);
@@ -1063,12 +1062,8 @@ class HotelHelper
         Configuration::updateValue('WK_GLOBAL_CHILD_MAX_AGE', 15);
         Configuration::updateValue('WK_GLOBAL_MAX_CHILD_IN_ROOM', 0);
 
-        Configuration::updateValue(
-            'MAX_GLOBAL_BOOKING_DATE',
-            date('Y-m-d', strtotime(date('Y-m-d', time()).' + 1 year'))
-        );
-
-        Configuration::updateValue('GLOBAL_PREPARATION_TIME', 0);
+        Configuration::updateValue('PS_MAX_CHECKOUT_OFFSET', 365);
+        Configuration::updateValue('PS_MIN_BOOKING_OFFSET', 0);
 
         Configuration::updateValue('HTL_FEATURE_PRICING_PRIORITY', 'specific_date;special_day;date_range');
         Configuration::updateValue('WK_GOOGLE_ACTIVE_MAP', 0);
@@ -1222,6 +1217,138 @@ class HotelHelper
             }
 
             $pos++;
+        }
+
+        return true;
+    }
+
+    public function createHotelDefaultBedTypes()
+    {
+        $htlBedTypes = array(
+            array(
+                'length' => '6.25',
+                'width'  => '3.16',
+                'name' => array(
+                    'en' => 'Twin Bed',
+                    'nl' => 'Eenpersoonsbed',
+                    'fr' => 'Lit simple',
+                    'de' => 'Einzelbett',
+                    'ru' => 'Односпальная кровать',
+                    'es' => 'Cama individual',
+                ),
+            ),
+            array(
+                'length' => '6.66',
+                'width'  => '3.16',
+                'name' => array(
+                    'en' => 'Twin XL Bed',
+                    'nl' => 'Eenpersoonsbed XL',
+                    'fr' => 'Lit simple XL',
+                    'de' => 'Einzelbett XL',
+                    'ru' => 'Односпальная кровать XL',
+                    'es' => 'Cama individual XL',
+                ),
+            ),
+            array(
+                'length' => '6.25',
+                'width'  => '4.5',
+                'name' => array(
+                    'en' => 'Full Bed',
+                    'nl' => 'Tweepersoonsbed',
+                    'fr' => 'Lit double',
+                    'de' => 'Doppelbett',
+                    'ru' => 'Двуспальная кровать',
+                    'es' => 'Cama doble',
+                ),
+            ),
+            array(
+                'length' => '6.66',
+                'width'  => '5',
+                'name' => array(
+                    'en' => 'Queen Bed',
+                    'nl' => 'Queen size bed',
+                    'fr' => 'Lit Queen',
+                    'de' => 'Queen-Size-Bett',
+                    'ru' => 'Кровать Queen Size',
+                    'es' => 'Cama Queen',
+                ),
+            ),
+            array(
+                'length' => '6.66',
+                'width'  => '6.33',
+                'name' => array(
+                    'en' => 'King Bed',
+                    'nl' => 'King size bed',
+                    'fr' => 'Lit King',
+                    'de' => 'King-Size-Bett',
+                    'ru' => 'Кровать King Size',
+                    'es' => 'Cama King',
+                ),
+            ),
+            array(
+                'length' => '7',
+                'width'  => '6',
+                'name' => array(
+                    'en' => 'California King Bed',
+                    'nl' => 'California King bed',
+                    'fr' => 'Lit California King',
+                    'de' => 'California King-Bett',
+                    'ru' => 'Калифорнийская кровать King Size',
+                    'es' => 'Cama California King',
+                ),
+            ),
+            array(
+                'length' => '6.25',
+                'width'  => '3.16',
+                'name' => array(
+                    'en' => 'Bunk Bed',
+                    'nl' => 'Stapelbed',
+                    'fr' => 'Lit superposé',
+                    'de' => 'Etagenbett',
+                    'ru' => 'Двухъярусная кровать',
+                    'es' => 'Litera',
+                ),
+            ),
+            array(
+                'length' => '6.25',
+                'width'  => '4.5',
+                'name' => array(
+                    'en' => 'Sofa Bed',
+                    'nl' => 'Slaapbank',
+                    'fr' => 'Canapé-lit',
+                    'de' => 'Schlafsofa',
+                    'ru' => 'Диван-кровать',
+                    'es' => 'Sofá cama',
+                ),
+            ),
+            array(
+                'length' => '6.66',
+                'width'  => '5',
+                'name' => array(
+                    'en' => 'Murphy Bed',
+                    'nl' => 'Inklapbed',
+                    'fr' => 'Lit escamotable',
+                    'de' => 'Klappbett',
+                    'ru' => 'Откидная кровать',
+                    'es' => 'Cama abatible',
+                ),
+            ),
+        );
+
+        $languages = Language::getLanguages(true);
+        foreach ($htlBedTypes as $htlBedType) {
+            $objBedType = new HotelBedType();
+            foreach ($languages as $lang) {
+                if (isset($htlBedType['name'][$lang['iso_code']])) {
+                    $objBedType->name[$lang['id_lang']] = $htlBedType['name'][$lang['iso_code']];
+                } else {
+                    $objBedType->name[$lang['id_lang']] = $htlBedType['name']['en'];
+                }
+
+                $objBedType->width = $htlBedType['width'];
+                $objBedType->length = $htlBedType['length'];
+                $objBedType->save();
+            }
         }
 
         return true;
@@ -1674,6 +1801,7 @@ class HotelHelper
         $roomTypeDemoDataLang = array(
             array(
                 'price' => 1000,
+                'id_bed_types' => array(4),
                 'en' => array(
                     'name' => 'General Rooms',
                     'description_short' => 'Our General Rooms offer space and comfort with multiple bedrooms and a cozy living area. Enjoy flat-screen TVs, complimentary Wi-Fi, and a kitchenette for a perfect family getaway.',
@@ -1707,6 +1835,7 @@ class HotelHelper
             ),
             array(
                 'price' => 1500,
+                'id_bed_types' => array(4, 5),
                 'en' => array(
                     'name' => 'Delux Rooms',
                     'description_short' => 'Enjoy lake views from our Deluxe Rooms with a king-sized bed, elegant furnishings, and a spacious sitting area. Perfect for guests seeking comfort, luxury, and modern amenities.',
@@ -1740,6 +1869,7 @@ class HotelHelper
             ),
             array(
                 'price' => 2000,
+                'id_bed_types' => array(5, 6),
                 'en' => array(
                     'name' => 'Executive Rooms',
                     'description_short' => 'Indulge in our Executive Rooms, featuring separate living and sleeping areas, a luxurious bathroom, and exclusive lounge access. Ideal for business travelers seeking privacy',
@@ -1773,6 +1903,7 @@ class HotelHelper
             ),
             array(
                 'price' => 2500,
+                'id_bed_types' => array(6, 8),
                 'en' => array(
                     'name' => 'Luxury Rooms',
                     'description_short' => 'Retreat to tranquility in our Luxury Rooms with expansive views. Featuring a queen-sized bed, workspace, and serene decor, perfect for business and leisure travelers alike.',
@@ -1806,6 +1937,7 @@ class HotelHelper
             ),
         );
 
+        $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
         $languages = Language::getLanguages(true);
         foreach ($roomTypeDemoDataLang as $key => $roomTypeData) {
             // Add Product
@@ -1935,6 +2067,7 @@ class HotelHelper
 
             // save advance payment information
             $this->saveAdvancedPaymentInfo($product_id);
+            $objHotelRoomTypeBedType->updateRoomTypeBedTypes($roomTypeData['id_bed_types'], $product_id);
         }
     }
 
@@ -2231,6 +2364,10 @@ class HotelHelper
             $objProduct->price_calculation_method = $serviceProduct['price_calculation_method'];
             $objProduct->is_virtual = 1;
             $objProduct->indexed = 1;
+            if ($objProduct->auto_add_to_cart && $objProduct->price_addition_type == Product::PRICE_ADDITION_TYPE_WITH_ROOM) {
+                $objProduct->id_tax_rules_group = 0;
+            }
+
             $objProduct->save();
             $idProduct = $objProduct->id;
 
@@ -2495,25 +2632,38 @@ class HotelHelper
         $startDate = new DateTime($dateFrom);
         $endDate = new DateTime($dateTo);
         $daysDifference = $startDate->diff($endDate)->days;
+        Hook::exec('actionDatesDifferenceModifier', array('date_from'=> $dateFrom, 'date_to'=> $dateTo, 'days_difference'=> &$daysDifference));
 
         return $daysDifference;
     }
 
+    /**
+     * Validate the date range for a hotel booking.
+     *
+     * @param string $dateFrom Start date (format: 'Y-m-d H:i:s')
+     * @param string $dateTo End date (format: 'Y-m-d H:i:s')
+     * @param int $idHotel Hotel ID
+     * @return bool True if the date range is valid, otherwise false
+     */
     public static function validateDateRangeForHotel($dateFrom, $dateTo, $idHotel)
     {
         $validStartDateTimeStamp = strtotime(date('Y-m-d'));
-        if ($preparationTime = (int) HotelOrderRestrictDate::getPreparationTime($idHotel)) {
-            $validStartDateTimeStamp = strtotime(date('Y-m-d', strtotime('+ '.$preparationTime.' day')));
+        if ($minBookingOffset = (int) HotelOrderRestrictDate::getMinimumBookingOffset($idHotel)) {
+            $validStartDateTimeStamp = strtotime('+ '.$minBookingOffset.' day', $validStartDateTimeStamp);
         }
 
+        $maxOrderDateTimestamp = strtotime(HotelOrderRestrictDate::getMaxOrderDate($idHotel));
         $dateFromTimestamp = strtotime($dateFrom);
         $dateToTimestamp = strtotime($dateTo);
+
         $isValid = true;
         if ($dateFrom != '' && ($dateFromTimestamp === false || ($dateFromTimestamp < $validStartDateTimeStamp))) {
             $isValid = false;
         } else if ($dateTo != '' && ($dateToTimestamp === false || ($dateToTimestamp < $validStartDateTimeStamp))) {
             $isValid = false;
         } else if ($dateTo != '' && $dateFrom != '' && $dateFromTimestamp >= $dateToTimestamp) {
+            $isValid = false;
+        } else if ($dateToTimestamp > $maxOrderDateTimestamp) {
             $isValid = false;
         }
 

@@ -931,12 +931,21 @@ class ProductCore extends ObjectModel
         ), 'id_product = '.(int)$id_product);
     }
 
-    public static function getProductPriceCalculation($id_product) {
-        return Db::getInstance()->getValue(
-            'SELECT product_shop.`price_calculation_method`
-            FROM `'._DB_PREFIX_.'product` p '.Shop::addSqlAssociation('product', 'p').'
-            WHERE p.`id_product` = '.(int)$id_product
-        );
+    public static function getProductPriceCalculation($id_product)
+    {
+        $cache_key = 'Product::getProductPriceCalculation'.(int)$id_product;
+        if (!Cache::isStored($cache_key)) {
+            $res = Db::getInstance()->getValue(
+                'SELECT product_shop.`price_calculation_method`
+                FROM `'._DB_PREFIX_.'product` p '.Shop::addSqlAssociation('product', 'p').'
+                WHERE p.`id_product` = '.(int)$id_product
+            );
+            Cache::store($cache_key, $res);
+        } else {
+            $res = Cache::retrieve($cache_key);
+        }
+
+        return $res;
     }
 
     /**
@@ -945,14 +954,12 @@ class ProductCore extends ObjectModel
     public function validateField($field, $value, $id_lang = null, $skip = array(), $human_errors = false)
     {
         if ($field == 'description_short') {
-            $limit = (int)Configuration::get('PS_PRODUCT_SHORT_DESC_LIMIT');
+            $limit = (int)Configuration::get('PS_SHORT_DESC_LIMIT');
             if ($limit <= 0) {
-                $limit = 800;
+                $limit = Configuration::PS_SHORT_DESC_LIMIT;
             }
 
-            $size_without_html = Tools::strlen(strip_tags($value));
-            $size_with_html = Tools::strlen($value);
-            $this->def['fields']['description_short']['size'] = $limit + $size_with_html - $size_without_html;
+            $this->def['fields']['description_short']['size'] = $limit;
         }
         return parent::validateField($field, $value, $id_lang, $skip, $human_errors);
     }
@@ -975,10 +982,18 @@ class ProductCore extends ObjectModel
 
     public static function isBookingProduct($id_product)
     {
-        return Db::getInstance()->getValue('
-            SELECT `booking_product` FROM `'._DB_PREFIX_.'product` p
-            WHERE p.`id_product` = '.(int)$id_product
-        );
+        $cache_key = 'Product::isBookingProduct_'.(int)$id_product;
+        if (!Cache::isStored($cache_key)) {
+            $res =  Db::getInstance()->getValue('
+                SELECT `booking_product` FROM `'._DB_PREFIX_.'product` p
+                WHERE p.`id_product` = '.(int)$id_product
+            );
+            Cache::store($cache_key, $res);
+        } else {
+            $res = Cache::retrieve($cache_key);
+        }
+
+        return $res;
     }
 
     public function delete()
@@ -1021,6 +1036,8 @@ class ProductCore extends ObjectModel
         }
 
         if (!$this->booking_product) {
+            $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
+            $objHotelRoomTypeBedType->deleteRoomTypeBedTypes(false, $this->id);
             if (!$this->deleteServiceInfo()) {
                 return false;
             }
@@ -3043,7 +3060,7 @@ class ProductCore extends ObjectModel
     public static function getPriceStatic($id_product, $usetax = true, $id_product_attribute = null, $decimals = 6, $divisor = null,
         $only_reduc = false, $usereduc = true, $quantity = 1, $force_associated_tax = false, $id_customer = null, $id_cart = null,
         $id_address = null, &$specific_price_output = null, $with_ecotax = true, $use_group_reduction = true, Context $context = null,
-        $use_customer_price = true, $id_product_roomtype = false)
+        $use_customer_price = true, $id_product_roomtype = false, $id_group = null)
     {
         if (!$context) {
             $context = Context::getContext();
@@ -3060,14 +3077,16 @@ class ProductCore extends ObjectModel
         }
 
         // Initializations
-        $id_group = null;
-        if ($id_customer) {
-            $id_group = Customer::getDefaultGroupId((int)$id_customer);
-        }
+
         if (!$id_group) {
-            $id_group = (int)Group::getCurrent()->id;
+            if ($id_customer) {
+                $id_group = Customer::getDefaultGroupId((int)$id_customer);
+            }
         }
 
+        if (!$id_group || !Validate::isLoadedObject(new Group((int) $id_group))) {
+            $id_group = (int)Group::getCurrent()->id;
+        }
         // If there is cart in context or if the specified id_cart is different from the context cart id
         if (!is_object($cur_cart) || (Validate::isUnsignedInt($id_cart) && $id_cart && $cur_cart->id != $id_cart)) {
             /*

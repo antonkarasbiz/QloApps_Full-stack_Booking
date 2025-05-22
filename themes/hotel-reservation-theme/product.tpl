@@ -262,6 +262,22 @@
 															</div>
 														{/if}
 													{/block}
+													{block name='product_info_tab_room_bed_type'}
+														{if isset($selected_bed_types) && $selected_bed_types && isset($bed_types_info) && $bed_types_info}
+															<div class="info_margin_div">
+																<div class="room_info_heading">
+																	<span>{l s='Bed Types'}</span>
+																</div>
+																<div class="room_info_content">
+																	{foreach $selected_bed_types as $selected_bed_type}
+																		{if isset($bed_types_info[$selected_bed_type])}
+																			<p>{$bed_types_info[$selected_bed_type]['name']}: {$bed_types_info[$selected_bed_type]['area']} {l s='sq.'}{$dimension_unit}</p>
+																		{/if}
+																	{/foreach}
+																</div>
+															</div>
+														{/if}
+													{/block}
 													{block name='product_info_tab_room_features'}
 														{if isset($features) && $features}
 															<div class="info_margin_div">
@@ -743,7 +759,7 @@
 			{if isset($id_hotel) && $id_hotel}
 				{addJsDef id_hotels = $id_hotel}
 				{addJsDef max_order_date = $max_order_date}
-				{addJsDef preparation_time = $preparation_time}
+				{addJsDef min_booking_offset = $min_booking_offset}
 				{addJsDef booking_date_to = $date_to}
 				{addJsDef booking_date_from = $date_from}
 			{/if}

@@ -80,25 +80,11 @@ class AdminEmailsControllerCore extends AdminController
         }
 
         parent::__construct();
-
-        foreach (Contact::getContacts($this->context->language->id) as $contact) {
-            $arr[] = array('email_message' => $contact['id_contact'], 'name' => $contact['name']);
-        }
-
         $this->fields_options = array(
             'email' => array(
                 'title' => $this->l('Email'),
                 'icon' => 'icon-envelope',
-                'fields' =>    array(
-                    'PS_MAIL_EMAIL_MESSAGE' => array(
-                        'title' => $this->l('Send email to'),
-                        'desc' => $this->l('Where customers send messages from the order page.'),
-                        'validation' => 'isUnsignedId',
-                        'type' => 'select',
-                        'cast' => 'intval',
-                        'identifier' => 'email_message',
-                        'list' => $arr
-                    ),
+                'fields' => array(
                     'PS_MAIL_METHOD' => array(
                         'title' => '',
                         'validation' => 'isGenericName',
@@ -108,6 +94,12 @@ class AdminEmailsControllerCore extends AdminController
                             3 => $this->l('Never send emails (may be useful for testing purposes)'),
                             2 => $this->l('Set my own SMTP parameters (for advanced users ONLY)')
                         )
+                    ),
+                    'PS_MAIL_SUBJECT_PREFIX' => array(
+                        'title' => $this->l('Enable the website name as a prefix in the email\'s subject'),
+                        'validation' => 'isBool',
+                        'cast' => 'intval',
+                        'type' => 'bool',
                     ),
                     'PS_MAIL_TYPE' => array(
                         'title' => '',
@@ -125,7 +117,7 @@ class AdminEmailsControllerCore extends AdminController
                         'validation' => 'isBool',
                         'cast' => 'intval',
                         'type' => 'bool'
-                    ),
+                    )
                 ),
                 'submit' => array('title' => $this->l('Save'))
             ),
@@ -218,7 +210,7 @@ class AdminEmailsControllerCore extends AdminController
 
         if (!defined('_PS_HOST_MODE_')) {
             $this->fields_options['email']['fields']['PS_MAIL_METHOD']['choices'][1] =
-                $this->l('Use PHP\'s mail() function (recommended; works in most cases)');
+                $this->l('Use PHP\'s mail() function');
         }
 
         ksort($this->fields_options['email']['fields']['PS_MAIL_METHOD']['choices']);

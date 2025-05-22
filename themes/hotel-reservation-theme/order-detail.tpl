@@ -406,20 +406,6 @@
                                                     <td class="text-right">{$guestInformations['phone']|escape:'html':'UTF-8'} </td>
                                                 </tr>
                                             {/if}
-
-                                            {if isset($address_invoice->phone_mobile) && $address_invoice->phone_mobile}
-                                                <tr>
-                                                    <td>{l s='Mobile'}</td>
-                                                    <td class="text-right">{$address_invoice->phone_mobile|escape:'html':'UTF-8'}</td>
-                                                </tr>
-                                            {/if}
-
-                                            {if isset($address_invoice->phone) && $address_invoice->phone}
-                                                <tr>
-                                                    <td>{l s='Phone'}</td>
-                                                    <td class="text-right">{$address_invoice->phone|escape:'html':'UTF-8'}</td>
-                                                </tr>
-                                            {/if}
                                         {/if}
 
                                         {block name='displayOrderDetailGuestDetailsRow'}
@@ -528,6 +514,9 @@
                                     <form action="{$link->getPageLink('order-detail', true)|escape:'html':'UTF-8'}" method="post" class="std" id="sendOrderMessage">
                                         <div class="form-group select-room-type">
                                             <label for="id_product">{l s='Room Type'}</label>
+                                            <p class="card-subheader text-muted">
+                                                {l s='To add a comment about a room type, please select one first.'}
+                                            </p>
 
                                             <select name="id_product" class="form-control">
                                                 <option value="0">{l s='-- Choose --'}</option>
@@ -796,19 +785,6 @@
                                                 <tr>
                                                     <td>{l s='Phone'}</td>
                                                     <td class="text-right">{$guestInformations['phone']|escape:'html':'UTF-8'} </td>
-                                                </tr>
-                                            {/if}
-                                            {if isset($address_invoice->phone_mobile) && $address_invoice->phone_mobile}
-                                                <tr>
-                                                    <td>{l s='Mobile'}</td>
-                                                    <td class="text-right">{$address_invoice->phone_mobile|escape:'html':'UTF-8'}</td>
-                                                </tr>
-                                            {/if}
-
-                                            {if isset($address_invoice->phone) && $address_invoice->phone}
-                                                <tr>
-                                                    <td>{l s='Phone'}</td>
-                                                    <td class="text-right">{$address_invoice->phone|escape:'html':'UTF-8'}</td>
                                                 </tr>
                                             {/if}
                                         {/if}
