@@ -1545,8 +1545,9 @@ class ToolsCore
         if (Tools::strlen($str) <= $max_length) {
             return $str;
         }
-        $str = utf8_decode($str);
-        return (utf8_encode(substr($str, 0, $max_length - Tools::strlen($suffix)).$suffix));
+
+        $str = mb_convert_encoding($str, 'ISO-8859-1');
+        return (mb_convert_encoding(substr($str, 0, $max_length - Tools::strlen($suffix)).$suffix, 'UTF-8', 'ISO-8859-1'));
     }
 
     /*Copied from CakePHP String utility file*/
@@ -1744,9 +1745,10 @@ class ToolsCore
 
     public static function strlen($str, $encoding = 'UTF-8')
     {
-        if (is_array($str)) {
+        if (null === $str || is_array($str)) {
             return false;
         }
+
         $str = html_entity_decode($str, ENT_COMPAT, 'UTF-8');
         if (function_exists('mb_strlen')) {
             return mb_strlen($str, $encoding);
@@ -3007,6 +3009,10 @@ exit;
      */
     public static function nl2br($str)
     {
+        if (empty($str)) {
+            return $str;
+        }
+
         return str_replace(array("\r\n", "\r", "\n"), '<br />', $str);
     }
 
@@ -3357,7 +3363,7 @@ exit;
      */
     public static function isFresh($file, $timeout = _TIME_1_WEEK_, $check_size = true)
     {
-        if (($time = @filemtime(_PS_ROOT_DIR_.$file)) && ($check_size ? filesize(_PS_ROOT_DIR_.$file) > 0: true)) {
+        if ((file_exists(_PS_ROOT_DIR_.$file)) && ($time = @filemtime(_PS_ROOT_DIR_.$file)) && ($check_size ? filesize(_PS_ROOT_DIR_.$file) > 0: true)) {
             return ((time() - $time) < $timeout);
         }
 

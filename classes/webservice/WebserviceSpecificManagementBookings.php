@@ -762,7 +762,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
     /**
      * Checking room type information validity.
      */
-    public function validateRequestedRoomTypes($roomTypes = array(), $idHotel)
+    public function validateRequestedRoomTypes($roomTypes = array(), $idHotel = 0)
     {
         $objBookingDetail = new HotelBookingDetail();
         $objRoomType = new HotelRoomType();

@@ -29,7 +29,8 @@
  *
  * @since 1.5.0.1
  */
-class ContextCore
+#[\AllowDynamicProperties]
+ class ContextCore
 {
     /* @var Context */
     protected static $instance;

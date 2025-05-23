@@ -31,6 +31,7 @@ class UploaderCore
     private $_check_file_size;
     private $_accept_types;
     private $_files;
+    private $files;
     private $_max_size;
     private $_name;
     private $_save_path;

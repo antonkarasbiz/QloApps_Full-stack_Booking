@@ -123,6 +123,9 @@ class FrontControllerCore extends Controller
      */
     public $nb_items_per_page;
 
+     /** @var string Page name */
+    public $page_name;
+
     /**
      * Controller constructor
      *

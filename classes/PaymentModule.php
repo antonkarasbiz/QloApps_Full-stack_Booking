@@ -32,6 +32,7 @@ abstract class PaymentModuleCore extends Module
 
     /** @var int Current order's id */
     public $currentOrder;
+    public $currentOrderReference;
     public $currencies = true;
     public $currencies_mode = 'checkbox';
     public $payment_type = OrderPayment::PAYMENT_TYPE_REMOTE_PAYMENT;
@@ -165,7 +166,7 @@ abstract class PaymentModuleCore extends Module
      */
     public function validateOrder($id_cart, $id_order_state, $amount_paid, $payment_method = 'Unknown',
         $message = null, $extra_vars = array(), $currency_special = null, $dont_touch_amount = false,
-        $secure_key = false, Shop $shop = null, $send_mails = true)
+        $secure_key = false, ?Shop $shop = null, $send_mails = true)
     {
         if (self::DEBUG_MODE) {
             PrestaShopLogger::addLog('PaymentModule::validateOrder - Function called', 1, null, 'Cart', (int)$id_cart, true);
