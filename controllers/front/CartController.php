@@ -401,7 +401,7 @@ class CartControllerCore extends FrontController
 
                         if (!$this->errors) {
                             $objBookingDetail = new HotelBookingDetail();
-                            $num_days = $objBookingDetail->getNumberOfDays($date_from, $date_to);
+                            $num_days = HotelHelper::getNumberOfDays($date_from, $date_to);
                             $req_rm = $this->qty;
                             $this->qty = $this->qty * (int) $num_days;
                             $objBookingDetail = new HotelBookingDetail();
@@ -607,7 +607,7 @@ class CartControllerCore extends FrontController
                     $objHotelCartBookingData = new HotelCartBookingData();
                     $roomDemand = json_decode(Tools::getValue('roomDemands'), true);
                     $roomDemand = json_encode($roomDemand);
-                    $this->availQty = $total_available_rooms;
+                    $availQty = $total_available_rooms;
                     $update_quantity = $objHotelCartBookingData->updateCartBooking(
                         $this->id_product,
                         $occupancy,
@@ -622,7 +622,7 @@ class CartControllerCore extends FrontController
                         $id_guest
                     );
                     if ($operator == 'up') {
-                        $this->availQty = $total_available_rooms - $req_rm;
+                        $availQty = $total_available_rooms - $req_rm;
                         $this->context->cookie->currentAddedProduct = json_encode(array(
                             'date_from' => $date_from,
                             'date_to' => $date_to,
@@ -632,9 +632,9 @@ class CartControllerCore extends FrontController
                             'req_rm' => $req_rm
                         ));
                     } else {
-                        $this->availQty = $total_available_rooms + $req_rm;
+                        $availQty = $total_available_rooms + $req_rm;
                     }
-                    $this->context->cookie->avail_rooms = $this->availQty;
+                    $this->context->cookie->avail_rooms = $availQty;
                 } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE
                     || $product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
                 ) {

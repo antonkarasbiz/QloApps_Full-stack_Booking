@@ -58,6 +58,14 @@ class AdminProductsControllerCore extends AdminController
 
     protected $id_current_category;
 
+    protected $objLocationsCategory;
+
+    protected $locationsAndHotels;
+
+    protected $product_name;
+
+    protected $product_exists_in_shop;
+
     public function __construct()
     {
         $this->bootstrap = true;
@@ -2646,7 +2654,7 @@ class AdminProductsControllerCore extends AdminController
         return parent::renderList();
     }
 
-    public function displayDuplicateLink($token = null, $id, $name = null)
+    public function displayDuplicateLink($token, $id, $name = null)
     {
         return '<a href="#" title="'.$this->l('Duplicate').'"
         onclick="initDuplicateRoomType('.(int)$id.');return false;"><i class="icon-copy"></i>'.$this->l('Duplicate').'</a>';
@@ -4427,7 +4435,7 @@ class AdminProductsControllerCore extends AdminController
         // prices
         array_push($product_props,
             'price', 'wholesale_price', 'id_tax_rules_group', 'unit_price_ratio', 'on_sale',
-            'unity', 'minimum_quantity', 'additional_shipping_cost',
+            'unity', 'minimal_quantity', 'additional_shipping_cost',
             'available_now', 'available_later', 'available_date'
         );
 
@@ -5574,7 +5582,7 @@ class AdminProductsControllerCore extends AdminController
         }
     }
 
-    public function displayPreviewLink($token = null, $id, $name = null)
+    public function displayPreviewLink($token, $id, $name = null)
     {
         $tpl = $this->createTemplate('helpers/list/list_action_preview.tpl');
         if (!array_key_exists('Bad SQL query', self::$cache_lang)) {

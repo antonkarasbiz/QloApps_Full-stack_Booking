@@ -625,7 +625,9 @@ class AdminPerformanceControllerCore extends AdminController
             return;
         }
 
-        Hook::exec('action'.get_class($this).ucfirst($this->action).'Before', array('controller' => $this));
+        if (!empty($this->action)) {
+            Hook::exec('action'.get_class($this).ucfirst($this->action).'Before', array('controller' => $this));
+        }
         if (Tools::isSubmit('submitAddServer')) {
             if ($this->tabAccess['add'] === '1') {
                 if (!Tools::getValue('memcachedIp')) {

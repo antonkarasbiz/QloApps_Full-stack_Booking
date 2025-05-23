@@ -2805,7 +2805,7 @@ class AdminTranslationsControllerCore extends AdminController
      *
      * @return array
      */
-    protected function getAllModuleFiles($modules, $root_dir = null, $lang, $is_default = false)
+    protected function getAllModuleFiles(array $modules, ?string $root_dir, string $lang, bool $is_default = false)
     {
         $array_files = array();
         $initial_root_dir = $root_dir;

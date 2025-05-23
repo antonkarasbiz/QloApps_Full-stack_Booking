@@ -190,7 +190,7 @@ class AdminStockManagementControllerCore extends AdminController
             } else {
                 self::$currentIndex = self::$currentIndex.'&id_product='.(int)$product_id.'&detailsproduct';
             }
-            
+
             $this->processFilter();
             return parent::renderList();
         }
@@ -1299,7 +1299,7 @@ class AdminStockManagementControllerCore extends AdminController
      * @param int $id the identifier to add to the link
      * @return string
      */
-    public function displayAddstockLink($token = null, $id)
+    public function displayAddstockLink($token, $id)
     {
         if (!array_key_exists('AddStock', self::$cache_lang)) {
             self::$cache_lang['AddStock'] = $this->l('Add stock');
@@ -1321,7 +1321,7 @@ class AdminStockManagementControllerCore extends AdminController
      * @param int $id the identifier to add to the link
      * @return string
      */
-    public function displayRemovestockLink($token = null, $id)
+    public function displayRemovestockLink($token, $id)
     {
         if (!array_key_exists('RemoveStock', self::$cache_lang)) {
             self::$cache_lang['RemoveStock'] = $this->l('Remove stock');
@@ -1343,7 +1343,7 @@ class AdminStockManagementControllerCore extends AdminController
      * @param int $id the identifier to add to the link
      * @return string
      */
-    public function displayTransferstockLink($token = null, $id)
+    public function displayTransferstockLink($token, $id)
     {
         if (!array_key_exists('TransferStock', self::$cache_lang)) {
             self::$cache_lang['TransferStock'] = $this->l('Transfer stock');
@@ -1365,7 +1365,7 @@ class AdminStockManagementControllerCore extends AdminController
      * @param int $id the identifier to add to the link
      * @return string
      */
-    public function displayPrepareRemovestockLink($token = null, $id)
+    public function displayPrepareRemovestockLink($token, $id)
     {
         if (!array_key_exists('RemoveStock', self::$cache_lang)) {
             self::$cache_lang['RemoveStock'] = $this->l('Remove stock');
@@ -1391,7 +1391,7 @@ class AdminStockManagementControllerCore extends AdminController
      * @param int $id the identifier to add to the link
      * @return string
      */
-    public function displayPrepareTransferstockLink($token = null, $id)
+    public function displayPrepareTransferstockLink($token, $id)
     {
         if (!array_key_exists('TransferStock', self::$cache_lang)) {
             self::$cache_lang['TransferStock'] = $this->l('Transfer stock');

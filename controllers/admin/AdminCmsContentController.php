@@ -38,6 +38,8 @@ class AdminCmsContentControllerCore extends AdminController
     /** @var object Category() instance for navigation*/
     protected static $category = null;
 
+    protected $id_cms_category;
+
     public function __construct()
     {
         $this->bootstrap = true;

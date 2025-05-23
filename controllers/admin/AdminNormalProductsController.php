@@ -59,6 +59,13 @@ class AdminNormalProductsControllerCore extends AdminController
 
     protected $id_current_category;
 
+    protected $objLocationsCategory;
+
+    protected $servicesCategory;
+
+    protected $product_exists_in_shop;
+
+    protected $product_name;
 
     public function __construct()
     {
@@ -3808,7 +3815,7 @@ class AdminNormalProductsControllerCore extends AdminController
         // prices
         array_push($product_props,
             'price', 'wholesale_price', 'id_tax_rules_group', 'unit_price_ratio', 'on_sale',
-            'unity', 'minimum_quantity', 'additional_shipping_cost',
+            'unity', 'minimal_quantity', 'additional_shipping_cost',
             'available_now', 'available_later', 'available_date'
         );
 
@@ -4577,7 +4584,7 @@ class AdminNormalProductsControllerCore extends AdminController
         }
     }
 
-    public function displayPreviewLink($token = null, $id, $name = null)
+    public function displayPreviewLink($token, $id, $name = null)
     {
         $tpl = $this->createTemplate('helpers/list/list_action_preview.tpl');
         if (!array_key_exists('Bad SQL query', self::$cache_lang)) {

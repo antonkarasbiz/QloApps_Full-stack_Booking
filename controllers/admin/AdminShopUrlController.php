@@ -35,7 +35,6 @@ class AdminShopUrlControllerCore extends AdminController
         $this->table = 'shop_url';
         $this->className = 'ShopUrl';
         $this->lang = false;
-        $this->requiredDatabase = true;
         $this->multishop_context = Shop::CONTEXT_ALL;
         $this->bulk_actions = array();
 
@@ -527,7 +526,7 @@ class AdminShopUrlControllerCore extends AdminController
      * @param string $name
      * @return mixed
      */
-    public function displayDeleteLink($token = null, $id, $name = null)
+    public function displayDeleteLink($token, $id, $name = null)
     {
         $tpl = $this->createTemplate('helpers/list/list_action_delete.tpl');
 

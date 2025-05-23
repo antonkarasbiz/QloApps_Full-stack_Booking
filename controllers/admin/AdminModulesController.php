@@ -147,10 +147,10 @@ class AdminModulesControllerCore extends AdminController
     public function checkCategoriesNames($a, $b)
     {
         if ($a['name'] === $this->l('Other Modules')) {
-            return true;
+            return 1;
         }
 
-        return (bool)($a['name'] > $b['name']);
+        return ($a['name'] > $b['name']) ? 1 : 0;
     }
 
     public function setMedia()
@@ -1256,15 +1256,11 @@ class AdminModulesControllerCore extends AdminController
             }
 
             // Filter on module category
-            $category_filtered = array();
-            $filter_categories = explode('|', Configuration::get('PS_SHOW_CAT_MODULES_'.(int)$this->id_employee));
-            if (count($filter_categories) > 0) {
-                foreach ($filter_categories as $fc) {
-                    if (!empty($fc)) {
-                        $category_filtered[$fc] = 1;
-                    }
-                }
-            }
+            $category_filtered = [];
+            $filter_categories = [];
+            if (Configuration::get('PS_SHOW_CAT_MODULES_'.(int)$this->id_employee)) {
+                $filter_categories = explode('|', Configuration::get('PS_SHOW_CAT_MODULES_'.(int)$this->id_employee));
+
             if (count($category_filtered) > 0 && !isset($category_filtered[$module->tab])) {
                 return true;
             }
@@ -1404,8 +1400,11 @@ class AdminModulesControllerCore extends AdminController
         // Init
         $smarty = $this->context->smarty;
         $autocomplete_list = 'var moduleList = [';
-        $category_filtered = array();
-        $filter_categories = explode('|', Configuration::get('PS_SHOW_CAT_MODULES_'.(int)$this->id_employee));
+        $category_filtered = [];
+        $filter_categories = [];
+        if (Configuration::get('PS_SHOW_CAT_MODULES_'.(int)$this->id_employee)) {
+            $filter_categories = explode('|', Configuration::get('PS_SHOW_CAT_MODULES_'.(int)$this->id_employee));
+        }
         if (count($filter_categories) > 0) {
             foreach ($filter_categories as $fc) {
                 if (!empty($fc)) {

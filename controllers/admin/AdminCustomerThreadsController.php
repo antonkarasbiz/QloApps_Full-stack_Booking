@@ -1365,7 +1365,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
                     if (Validate::isLoadedObject($ct) && ((isset($matches2[1]) && $ct->token == $matches2[1]) || $new_ct)) {
                         $message = imap_fetchbody($mbox, $overview->msgno, 1);
                         $message = quoted_printable_decode($message);
-                        $message = utf8_encode($message);
+                        $message = mb_convert_encoding($message, 'UTF-8', 'ISO-8859-1');
                         $message = quoted_printable_decode($message);
                         $message = nl2br($message);
                         $message = Tools::substr($message, 0, (int) CustomerMessage::$definition['fields']['message']['size']);

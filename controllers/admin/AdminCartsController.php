@@ -623,6 +623,7 @@ class AdminCartsControllerCore extends AdminController
             #Code is added by webkul to change current cart tpl dinamically
             #################################################################
             $id_cart = Tools::getValue('id_cart');//get cart id from url
+            $objCart = new Cart($id_cart);
             $cart_detail_data = array();
             $cart_detail_data_obj = new HotelCartBookingData();
             $cart_detail_data_obj->updateIdCurrencyByIdCart($id_cart, $currency->id);
@@ -641,6 +642,7 @@ class AdminCartsControllerCore extends AdminController
 
             $this->context->smarty->assign(array(
                 'cart_detail_data' => $cart_detail_data,
+                'cart' => $objCart,
                 'currency' => new Currency((int)$this->context->cart->id_currency),
                 'occupancy_required_for_booking' => $occupancyRequiredForBooking,
                 'ajax' => true
@@ -1252,7 +1254,7 @@ class AdminCartsControllerCore extends AdminController
         return Cart::getTotalCart($id_cart, true, Cart::BOTH_WITHOUT_SHIPPING);
     }
 
-    public function displayDeleteLink($token = null, $id, $name = null)
+    public function displayDeleteLink($token, $id, $name = null)
     {
         // don't display ordered carts
         foreach ($this->_list as $row) {

@@ -931,7 +931,7 @@ abstract class PaymentModuleCore extends Module
 
                                             $numDays = 1;
                                             if ($objGlobalDemand->price_calc_method == HotelRoomTypeGlobalDemand::WK_PRICE_CALC_METHOD_EACH_DAY) {
-                                                $numDays = $objBookingDetail->getNumberOfDays(
+                                                $numDays = HotelHelper::getNumberOfDays(
                                                     $objBookingDetail->date_from,
                                                     $objBookingDetail->date_to
                                                 );
@@ -1940,7 +1940,7 @@ abstract class PaymentModuleCore extends Module
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['amount_tax_incl'] += $data_v['total_price_tax_incl'];
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['amount_tax_excl'] += $data_v['total_price_tax_excl'];
                             } else {
-                                $num_days = $obj_htl_bk_dtl->getNumberOfDays($data_v['date_from'], $data_v['date_to']);
+                                $num_days = HotelHelper::getNumberOfDays($data_v['date_from'], $data_v['date_to']);
 
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['num_rm'] = 1;
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['data_form'] = $data_v['date_from'];

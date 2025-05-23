@@ -4937,7 +4937,7 @@ class CartCore extends ObjectModel
                         }
 
                         if (!count($errors)) {
-                            $numDays = $objBookingDetail->getNumberOfDays($dateFrom, $dateTo);
+                            $numDays = HotelHelper::getNumberOfDays($dateFrom, $dateTo);
                             $prodQty = $prodQty * (int) $numDays;
                             $reqRooms = 1;
 

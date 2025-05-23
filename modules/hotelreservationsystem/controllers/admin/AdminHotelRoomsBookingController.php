@@ -20,6 +20,14 @@
 
 class AdminHotelRoomsBookingController extends ModuleAdminController
 {
+    protected $id_cart;
+    protected $id_guest;
+    protected $id_hotel;
+    protected $id_room_type;
+    protected $date_from;
+    protected $date_to;
+    protected $booking_product;
+    protected $occupancy;
     public function __construct()
     {
         $this->table = 'htl_booking_detail';
@@ -382,7 +390,6 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
             $this->context->smarty->assign(array(
                 'occupancy_adults' => array_sum(array_column($this->occupancy, 'adults')),
                 'occupancy_children' => array_sum(array_column($this->occupancy, 'children')),
-                'occupancy_child_ages' => array_sum(array_column($this->occupancy, 'child_ages')),
             ));
         }
     }

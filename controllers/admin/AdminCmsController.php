@@ -33,6 +33,8 @@ class AdminCmsControllerCore extends AdminController
 
     public $id_cms_category;
 
+    protected $_category;
+
     protected $position_identifier = 'id_cms';
 
     public function __construct()

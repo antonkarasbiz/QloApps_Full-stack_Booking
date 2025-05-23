@@ -110,6 +110,7 @@ class AdminThemesControllerCore extends AdminController
     public $table = 'theme';
     protected $toolbar_scroll = false;
     private $img_error;
+    protected $can_display_themes;
 
     public function init()
     {
@@ -579,7 +580,7 @@ class AdminThemesControllerCore extends AdminController
 
             if (0 !== $id_based = (int)Tools::getValue('based_on')) {
                 $base_theme = new Theme($id_based);
-                $this->copyTheme($base_theme->directory, $new_dir);
+                AdminThemesController::copyTheme($base_theme->directory, $new_dir);
                 $base_theme = new Theme((int)Tools::getValue('based_on'));
             }
 

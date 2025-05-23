@@ -29,6 +29,11 @@ class OrderOpcControllerCore extends ParentOrderController
     public $php_self = 'order-opc';
     public $isLogged;
 
+    /**
+     * @var CheckoutProcess
+     */
+    protected $checkoutProcess;
+
     protected $ajax_refresh = false;
 
     /**

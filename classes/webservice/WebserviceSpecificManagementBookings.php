@@ -3327,7 +3327,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
 
                     $qty = 1;
                     if ($objGlobalDemand->price_calc_method == HotelRoomTypeGlobalDemand::WK_PRICE_CALC_METHOD_EACH_DAY) {
-                        $numDays = $objHtlBkDtl->getNumberOfDays(
+                        $numDays = HotelHelper::getNumberOfDays(
                             $objBookingDetail->date_from,
                             $objBookingDetail->date_to
                         );

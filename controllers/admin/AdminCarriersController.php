@@ -691,7 +691,7 @@ elseif ((isset($_GET['status'.$this->table]) || isset($_GET['status'])) && Tools
         }
     }
 
-    public function displayEditLink($token = null, $id, $name = null)
+    public function displayEditLink($token, $id, $name = null)
     {
         if ($this->tabAccess['edit'] == 1) {
             $tpl = $this->createTemplate('helpers/list/list_action_edit.tpl');
@@ -711,7 +711,7 @@ elseif ((isset($_GET['status'.$this->table]) || isset($_GET['status'])) && Tools
         }
     }
 
-    public function displayDeleteLink($token = null, $id, $name = null)
+    public function displayDeleteLink($token, $id, $name = null)
     {
         if ($this->tabAccess['delete'] == 1) {
             $tpl = $this->createTemplate('helpers/list/list_action_delete.tpl');

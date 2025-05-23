@@ -35,6 +35,9 @@ class AuthControllerCore extends FrontController
      */
     protected $create_account;
     protected $id_country;
+    public $informations;
+    public $confirmations;
+    protected $ajaxExtraData;
 
     /**
      * Initialize auth controller

@@ -20,8 +20,8 @@
 
 class HotelRoomTypeDemand extends ObjectModel
 {
-    public $idProduct;
-    public $idGlobalDemand;
+    public $id_product;
+    public $id_global_demand;
     public $date_add;
     public $date_upd;
 

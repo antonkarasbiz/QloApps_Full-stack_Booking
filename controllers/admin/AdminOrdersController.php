@@ -1842,7 +1842,7 @@ class AdminOrdersControllerCore extends AdminController
                         if ($bookings) {
                             foreach ($bookings as $idHtlBooking) {
                                 $objHtlBooking = new HotelBookingDetail($idHtlBooking);
-                                $numDays = $objHtlBooking->getNumberOfDays(
+                                $numDays = HotelHelper::getNumberOfDays(
                                     $objHtlBooking->date_from,
                                     $objHtlBooking->date_to
                                 );
@@ -2046,6 +2046,8 @@ class AdminOrdersControllerCore extends AdminController
                             } else {
                                 $paymentAmount = (float) $paymentAmount;
                             }
+                        } else {
+                            $paymentAmount = $orderTotal;
                         }
 
                         if ($paymentAmount >= 0) {
@@ -3388,7 +3390,7 @@ class AdminOrdersControllerCore extends AdminController
                 /*Product price when order was created*/
                 $totalRoomsCostTE += $value['total_price_tax_excl'];
                 $total_room_tax += $value['total_price_tax_incl']-$value['total_price_tax_excl'];
-                $num_days = $objBookingDetail->getNumberOfDays($value['date_from'], $value['date_to']);
+                $num_days = HotelHelper::getNumberOfDays($value['date_from'], $value['date_to']);
                 $order_detail_data[$key]['unit_amt_tax_excl'] = $value['total_price_tax_excl']/$num_days;
                 $order_detail_data[$key]['unit_amt_tax_incl'] = $value['total_price_tax_incl']/$num_days;
                 $order_detail_data[$key]['amt_with_qty_tax_excl'] = $value['total_price_tax_excl'];
@@ -3745,7 +3747,7 @@ class AdminOrdersControllerCore extends AdminController
 
             $objHotelBookingDocument = new HotelBookingDocument();
             $objHotelBookingDocument->setFileInfoForUploadedDocument('booking_document');
-            if (!count($objHotelBookingDocument->fileInfo)) {
+            if (!$objHotelBookingDocument->fileInfo || !count($objHotelBookingDocument->fileInfo)) {
                 $this->errors[] = $this->l('Please select a file to upload.');
             } elseif ($objHotelBookingDocument->fileInfo['size'] > Tools::getMaxUploadSize()) {
                 $this->errors[] = $this->l('Uploaded file size is too large.');
@@ -4651,7 +4653,7 @@ class AdminOrdersControllerCore extends AdminController
             $req_rm = $product_informations['product_quantity'];
         }
         $obj_booking_detail = new HotelBookingDetail();
-        $num_days = $obj_booking_detail->getNumberOfDays($date_from, $date_to);
+        $num_days = HotelHelper::getNumberOfDays($date_from, $date_to);
         $product_informations['product_quantity'] = $product_informations['product_quantity'] * (int) $num_days;
 
         $obj_room_type = new HotelRoomType();
@@ -5545,7 +5547,7 @@ class AdminOrdersControllerCore extends AdminController
     /**
      * This function is called when order is changed (Add/Edit/Delete room on order)
      */
-    public function sendChangedNotification(Order $order = null)
+    public function sendChangedNotification(?Order $order = null)
     {
         if (is_null($order)) {
             $order = new Order(Tools::getValue('id_order'));
@@ -5638,8 +5640,8 @@ class AdminOrdersControllerCore extends AdminController
         $id_room = trim(Tools::getValue('id_room'));
         $id_product = trim(Tools::getValue('id_product'));
         $room_unit_price = trim(Tools::getValue('room_unit_price'));
-        $product_quantity = (int) $obj_booking_detail->getNumberOfDays($new_date_from, $new_date_to);
-        $old_product_quantity =  (int) $obj_booking_detail->getNumberOfDays($old_date_from, $old_date_to);
+        $product_quantity = (int) HotelHelper::getNumberOfDays($new_date_from, $new_date_to);
+        $old_product_quantity =  (int) HotelHelper::getNumberOfDays($old_date_from, $old_date_to);
         $qty_diff = $product_quantity - $old_product_quantity;
         $occupancy = array_shift(Tools::getValue('occupancy'));
         $adults = $occupancy['adults'];
@@ -5888,7 +5890,7 @@ class AdminOrdersControllerCore extends AdminController
                             if ($rDemand['price_calc_method'] == HotelRoomTypeGlobalDemand::WK_PRICE_CALC_METHOD_EACH_DAY) {
                                 $objBookingDemand = new HotelBookingDemands($rDemand['id_booking_demand']);
 
-                                $numDays = $obj_booking_detail->getNumberOfDays($new_date_from, $new_date_to);
+                                $numDays = HotelHelper::getNumberOfDays($new_date_from, $new_date_to);
                                 $demandPriceTE = Tools::processPriceRounding(
                                     ($objBookingDemand->unit_price_tax_excl * $numDays),
                                     1,
@@ -6170,7 +6172,7 @@ class AdminOrdersControllerCore extends AdminController
                 'error' => Tools::displayError('Booking Detail not found.'),
             )));
         }
-        $product_quantity = (int) $objBookingDetail->getNumberOfDays($objBookingDetail->date_from, $objBookingDetail->date_to);
+        $product_quantity = (int) HotelHelper::getNumberOfDays($objBookingDetail->date_from, $objBookingDetail->date_to);
         if (!Validate::isUnsignedInt($product_quantity)) {
             die(json_encode(array(
                 'result' => false,
@@ -6554,7 +6556,7 @@ class AdminOrdersControllerCore extends AdminController
         $this->ajaxDie(json_encode($response));
     }
 
-    protected function doEditProductValidation(OrderDetail $order_detail, Order $order, OrderInvoice $order_invoice = null)
+    protected function doEditProductValidation(OrderDetail $order_detail, Order $order, ?OrderInvoice $order_invoice = null)
     {
         $this->doEditValidation($order_detail, $order, $order_invoice);
 
@@ -6588,7 +6590,7 @@ class AdminOrdersControllerCore extends AdminController
      * @param OrderInvoice $order_invoice
      * @return bool
      */
-    protected function doEditRoomValidation(OrderDetail $order_detail, Order $order, OrderInvoice $order_invoice = null)
+    protected function doEditRoomValidation(OrderDetail $order_detail, Order $order, ?OrderInvoice $order_invoice = null)
     {
         $this->doEditValidation($order_detail, $order, $order_invoice);
 
@@ -6605,8 +6607,8 @@ class AdminOrdersControllerCore extends AdminController
         $id_product = trim(Tools::getValue('id_product'));
         $room_unit_price = trim(Tools::getValue('room_unit_price'));
         $obj_booking_detail = new HotelBookingDetail();
-        $product_quantity = (int) $obj_booking_detail->getNumberOfDays($new_date_from, $new_date_to);
-        $old_product_quantity =  (int) $obj_booking_detail->getNumberOfDays($old_date_from, $old_date_to);
+        $product_quantity = (int) HotelHelper::getNumberOfDays($new_date_from, $new_date_to);
+        $old_product_quantity =  (int) HotelHelper::getNumberOfDays($old_date_from, $old_date_to);
         $qty_diff = $product_quantity - $old_product_quantity;
         $occupancy = array_shift(Tools::getValue('occupancy'));
         $adults = $occupancy['adults'];
@@ -6783,7 +6785,7 @@ class AdminOrdersControllerCore extends AdminController
         }
     }
 
-    protected function doEditValidation(OrderDetail $order_detail, Order $order, OrderInvoice $order_invoice = null)
+    protected function doEditValidation(OrderDetail $order_detail, Order $order, ?OrderInvoice $order_invoice = null)
     {
         if (!Validate::isLoadedObject($order_detail)) {
             die(json_encode(array(
@@ -7414,7 +7416,7 @@ class AdminOrdersControllerCore extends AdminController
                     $this->context->currency = new Currency($objOrder->id_currency);
 
                     $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
-                    $qty = Tools::getValue('service_qty');
+                    $qty = Tools::getValue('service_qty', []);
                     $price = Tools::getValue('service_price');
                     foreach ($selectedServices as $key => $service) {
                         $objProduct = new Product($service, false, $this->context->language->id);
@@ -7615,7 +7617,7 @@ class AdminOrdersControllerCore extends AdminController
 
                             // Save changes of order
                             $order->update();
-                            if (Validate::isLoadedObject($specific_price)) {
+                            if (isset($specific_price) && Validate::isLoadedObject($specific_price)) {
                                 $specific_price->delete();
                                 unset($specific_price);
                             }
@@ -8144,7 +8146,7 @@ class AdminOrdersControllerCore extends AdminController
                                 );
                                 $numDays = 1;
                                 if ($objGlobalDemand->price_calc_method == HotelRoomTypeGlobalDemand::WK_PRICE_CALC_METHOD_EACH_DAY) {
-                                    $numDays = $objHtlBkDtl->getNumberOfDays(
+                                    $numDays = HotelHelper::getNumberOfDays(
                                         $objBookingDetail->date_from,
                                         $objBookingDetail->date_to
                                     );
@@ -8238,7 +8240,7 @@ class AdminOrdersControllerCore extends AdminController
                     $objBookingDetail = new HotelBookingDetail($objBookingDemand->id_htl_booking);
                     $order = new Order($objBookingDetail->id_order);
                     if ($objBookingDemand->price_calc_method == HotelRoomTypeGlobalDemand::WK_PRICE_CALC_METHOD_EACH_DAY) {
-                        $numDays = $objBookingDetail->getNumberOfDays(
+                        $numDays = HotelHelper::getNumberOfDays(
                             $objBookingDetail->date_from,
                             $objBookingDetail->date_to
                         );

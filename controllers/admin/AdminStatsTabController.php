@@ -175,7 +175,7 @@ abstract class AdminStatsTabControllerCore extends AdminPreferencesControllerCor
 
     public function checkModulesNames($a, $b)
     {
-        return (bool)($a['displayName'] > $b['displayName']);
+        return ($a['displayName'] > $b['displayName']) ? 1 : 0;
     }
 
     protected function getModules()
