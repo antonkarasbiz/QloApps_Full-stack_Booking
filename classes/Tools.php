@@ -153,7 +153,7 @@ class ToolsCore
      * @param Link $link
      * @param string|array $headers A list of headers to send before redirection
      */
-    public static function redirect($url, $base_uri = __PS_BASE_URI__, Link $link = null, $headers = null)
+    public static function redirect($url, $base_uri = __PS_BASE_URI__, ?Link $link = null, $headers = null)
     {
         if (!$link) {
             $link = Context::getContext()->link;
@@ -515,7 +515,7 @@ class ToolsCore
     /**
      * Set cookie id_lang
      */
-    public static function switchLanguage(Context $context = null)
+    public static function switchLanguage(?Context $context = null)
     {
         if (!$context) {
             $context = Context::getContext();
@@ -615,7 +615,7 @@ class ToolsCore
     * @return string Price correctly formated (sign, decimal separator...)
     * if you modify this function, don't forget to modify the Javascript function formatCurrency (in tools.js)
     */
-    public static function displayPrice($price, $currency = null, $no_utf8 = false, Context $context = null)
+    public static function displayPrice($price, $currency = null, $no_utf8 = false, ?Context $context = null)
     {
         if (!is_numeric($price)) {
             return $price;
@@ -727,7 +727,7 @@ class ToolsCore
     * @param Context $context
     * @return float Price
     */
-    public static function convertPrice($price, $currency = null, $to_currency = true, Context $context = null)
+    public static function convertPrice($price, $currency = null, $to_currency = true, ?Context $context = null)
     {
         static $default_currency = null;
 
@@ -792,7 +792,7 @@ class ToolsCore
      * @param Currency $currency_from if null we used the default currency
      * @param Currency $currency_to if null we used the default currency
      */
-    public static function convertPriceFull($amount, Currency $currency_from = null, Currency $currency_to = null, $round = true)
+    public static function convertPriceFull($amount, ?Currency $currency_from = null, ?Currency $currency_to = null, $round = true)
     {
         if ($currency_from == $currency_to) {
             return $amount;
@@ -990,7 +990,7 @@ class ToolsCore
     * @param string $string Error message
     * @param bool $htmlentities By default at true for parsing error message with htmlentities
     */
-    public static function displayError($string = 'Fatal error', $htmlentities = true, Context $context = null, $addslashes = false)
+    public static function displayError($string = 'Fatal error', $htmlentities = true, ?Context $context = null, $addslashes = false)
     {
         global $_ERRORS;
 
@@ -1151,7 +1151,7 @@ class ToolsCore
     /**
      * @deprecated 1.5.0
      */
-    public static function completeMetaTags($meta_tags, $default_value, Context $context = null)
+    public static function completeMetaTags($meta_tags, $default_value, ?Context $context = null)
     {
         Tools::displayAsDeprecated();
         return Meta::completeMetaTags($meta_tags, $default_value, $context);
@@ -1182,7 +1182,7 @@ class ToolsCore
     *
     * @param string $token token to encrypt
     */
-    public static function getToken($page = true, Context $context = null)
+    public static function getToken($page = true, ?Context $context = null)
     {
         if (!$context) {
             $context = Context::getContext();
@@ -1204,7 +1204,7 @@ class ToolsCore
         return !empty($string) ? Tools::encrypt($string) : false;
     }
 
-    public static function getAdminTokenLite($tab, Context $context = null)
+    public static function getAdminTokenLite($tab, ?Context $context = null)
     {
         if (!$context) {
             $context = Context::getContext();
@@ -1254,7 +1254,7 @@ class ToolsCore
     * @param bool $linkOntheLastItem Put or not a link on the current category
     * @param string [optionnal] $categoryType defined what type of categories is used (products or cms)
     */
-    public static function getPath($id_category, $path = '', $link_on_the_item = false, $category_type = 'products', Context $context = null)
+    public static function getPath($id_category, $path = '', $link_on_the_item = false, $category_type = 'products', ?Context $context = null)
     {
         if (!$context) {
             $context = Context::getContext();
@@ -1322,7 +1322,7 @@ class ToolsCore
     /**
     * @param string [optionnal] $type_cat defined what type of categories is used (products or cms)
     */
-    public static function getFullPath($id_category, $end, $type_cat = 'products', Context $context = null)
+    public static function getFullPath($id_category, $end, $type_cat = 'products', ?Context $context = null)
     {
         if (!$context) {
             $context = Context::getContext();
@@ -2722,7 +2722,7 @@ exit;
         }
     }
 
-    public static function enableCache($level = 1, Context $context = null)
+    public static function enableCache($level = 1, ?Context $context = null)
     {
         if (!$context) {
             $context = Context::getContext();
@@ -2741,7 +2741,7 @@ exit;
         $smarty->cache_lifetime = 31536000; // 1 Year
     }
 
-    public static function restoreCacheSettings(Context $context = null)
+    public static function restoreCacheSettings(?Context $context = null)
     {
         if (!$context) {
             $context = Context::getContext();
