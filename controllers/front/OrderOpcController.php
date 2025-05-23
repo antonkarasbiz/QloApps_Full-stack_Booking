@@ -1126,7 +1126,7 @@ class OrderOpcControllerCore extends ParentOrderController
                         $objCustomerGuestDetail->deleteCustomerGuestByIdCustomer($this->context->cart->id_customer, $maxGuestAccountAllowed);
                     }
                     // To prevent duplications for the same cart.
-                    $objCustomerGuestDetail->deleteCustomerGuestInCart($this->context->cart->id);
+                    CustomerGuestDetail::deleteCustomerGuestInCart($this->context->cart->id);
                     $objCustomerGuestDetail->saveCustomerGuestInCart($this->context->cart->id, $objCustomerGuestDetail->id);
                     Tools::redirect($this->context->link->getPageLink('order-opc', null, $this->context->language->id, array('proceed_to_payment' => 1)));
                 }
