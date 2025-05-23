@@ -597,7 +597,12 @@ abstract class ControllerCore
      */
     public static function myErrorHandler($errno, $errstr, $errfile, $errline)
     {
-        if (error_reporting() === 0) {
+         /**
+         * Before PHP 8.0.0, the $errno was always if expression prepended by the @ error-control operator.
+         * @see https://www.php.net/manual/fr/function.set-error-handler.php
+         * @see https://www.php.net/manual/en/language.operators.errorcontrol.php
+         */
+        if (!(error_reporting() & $errno)) {
             return false;
         }
 

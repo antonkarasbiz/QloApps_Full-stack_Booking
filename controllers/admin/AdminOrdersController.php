@@ -4274,7 +4274,7 @@ class AdminOrdersControllerCore extends AdminController
 
         if ($update_quantity < 0) {
             // If product has attribute, minimal quantity is set with minimal quantity of attribute
-            $minimal_quantity = ($product_informations['product_attribute_id']) ? Attribute::getAttributeMinimalQty($product_informations['product_attribute_id']) : $product->minimal_quantity;
+            $minimal_quantity = ($product_informations['product_attribute_id']) ? ProductAttribute::getAttributeMinimalQty($product_informations['product_attribute_id']) : $product->minimal_quantity;
             die(Tools::jsonEncode(array('error' => sprintf(Tools::displayError('You must add %d minimum quantity', false), $minimal_quantity))));
         } elseif (!$update_quantity) {
             die(Tools::jsonEncode(array('error' => Tools::displayError('You already have the maximum quantity available for this product.', false))));
@@ -4845,7 +4845,7 @@ class AdminOrdersControllerCore extends AdminController
 
         if ($update_quantity < 0) {
             // If product has attribute, minimal quantity is set with minimal quantity of attribute
-            $minimal_quantity = ($product_informations['product_attribute_id']) ? Attribute::getAttributeMinimalQty($product_informations['product_attribute_id']) : $product->minimal_quantity;
+            $minimal_quantity = ($product_informations['product_attribute_id']) ? ProductAttribute::getAttributeMinimalQty($product_informations['product_attribute_id']) : $product->minimal_quantity;
             die(json_encode(array('error' => sprintf(Tools::displayError('You must add %d minimum quantity', false), $minimal_quantity))));
         } elseif (!$update_quantity) {
             die(json_encode(array('error' => Tools::displayError('You already have the maximum quantity available for this product.', false))));

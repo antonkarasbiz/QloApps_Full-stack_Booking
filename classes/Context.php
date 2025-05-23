@@ -124,8 +124,8 @@ class ContextCore
     public function getMobileDetect()
     {
         if ($this->mobile_detect === null) {
-            require_once(_PS_TOOL_DIR_.'mobile_Detect/Mobile_Detect.php');
-            $this->mobile_detect = new Mobile_Detect();
+            require_once(_PS_TOOL_DIR_.'mobile_detect/autoload.php');
+            $this->mobile_detect = new Detection\MobileDetect();
         }
         return $this->mobile_detect;
     }
