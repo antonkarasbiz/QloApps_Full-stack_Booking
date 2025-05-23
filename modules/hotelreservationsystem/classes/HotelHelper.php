@@ -2130,7 +2130,7 @@ class HotelHelper
         );
 
         foreach ($categories as &$category) {
-            $idCategory = $this->addCategory($category['name'], $idCategoryServices, $idsGroup);
+            $idCategory = $this->addCategory(array('name' => $category['name'], 'group_ids' => $idsGroup, 'parent_category' => $idCategoryServices));
             $category['id_category'] = $idCategory;
         }
 
@@ -2529,7 +2529,7 @@ class HotelHelper
         $languages = Language::getLanguages(true);
         if ($is_hotel && $id_hotel) {
             $cat_id_hotel = Db::getInstance()->getValue(
-                'SELECT `id_category` FROM `'._DB_PREFIX_.'htl_branch_info` WHERE id='.$hotel_id
+                'SELECT `id_category` FROM `'._DB_PREFIX_.'htl_branch_info` WHERE id='.$id_hotel
             );
             if ($cat_id_hotel) {
                 $obj_cat = new Category($cat_id_hotel);
@@ -2577,7 +2577,7 @@ class HotelHelper
                     $obj->link_rewrite[$lang['id_lang']] = Tools::link_rewrite($defaultCatName);
                 }
             }
-            $obj->id_parent = $parent_cat;
+            $obj->id_parent = $parent_category;
             $obj->groupBox = $group_ids;
             $obj->add();
             $cat_id = $obj->id;

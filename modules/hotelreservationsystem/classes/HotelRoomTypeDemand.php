@@ -205,7 +205,7 @@ class HotelRoomTypeDemand extends ObjectModel
         $idCustomer = null,
         $idCart = null,
         $id_address = null,
-        Context $context = null,
+        ?Context $context = null,
         $customPrice = null
     ) {
         if (!$context) {
