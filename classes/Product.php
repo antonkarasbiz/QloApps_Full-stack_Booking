@@ -5393,7 +5393,7 @@ class ProductCore extends ObjectModel
         return $this->id_tax_rules_group;
     }
 
-    public static function getIdTaxRulesGroupByIdProduct($id_product, Context $context = null)
+    public static function getIdTaxRulesGroupByIdProduct($id_product, ?Context $context = null)
     {
         if (!$context) {
             $context = Context::getContext();

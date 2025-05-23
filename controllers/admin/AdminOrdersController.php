@@ -6223,7 +6223,7 @@ class AdminOrdersControllerCore extends AdminController
             1,
             1,
             0,
-            l,
+            null,
             0,
             $idHotelBooking
         );
@@ -6239,7 +6239,7 @@ class AdminOrdersControllerCore extends AdminController
             1,
             0,
             0,
-            l,
+            null,
             0,
             $idHotelBooking
         );
