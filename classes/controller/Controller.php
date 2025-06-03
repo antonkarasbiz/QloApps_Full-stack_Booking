@@ -28,6 +28,7 @@
  * @TODO Move undeclared variables and methods to this (base) class: $errors, $layout, checkLiveEditAccess, etc.
  * @since 1.5.0
  */
+#[\AllowDynamicProperties]
 abstract class ControllerCore
 {
     /** @var Context */

@@ -2826,6 +2826,11 @@ class AdminControllerCore extends Controller
             $helper->actions = $this->actions;
         }
 
+        // For each action, try to add the corresponding skip elements listAdd commentMore actions
+        $helper->list_skip_actions = $this->list_skip_actions;
+        $helper->orderBy = $this->_orderBy;
+        $helper->orderWay = $this->_orderWay;
+
         $this->helper = $helper;
     }
 

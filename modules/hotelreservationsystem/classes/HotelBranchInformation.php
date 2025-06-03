@@ -746,9 +746,7 @@ class HotelBranchInformation extends ObjectModel
                     $catName = $name;
                 }
                 $category->name[$lang['id_lang']] = $catName;
-                $category->description[$lang['id_lang']] = $this->moduleInstance->l(
-                    'Hotel Branch Category', 'HotelBranchInformation'
-                );
+                $category->description[$lang['id_lang']] = $this->moduleInstance->l('Hotel Branch Category', 'HotelBranchInformation');
 
                 if (is_array($link_rewrite)) {
                     $category->link_rewrite[$lang['id_lang']] = $link_rewrite[$lang['id_lang']];

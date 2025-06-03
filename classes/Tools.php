@@ -1107,12 +1107,12 @@ class ToolsCore
      *
      * @see error_log()
      * @param mixed $object
-     * @param int|null    $message_type
+     * @param int $message_type
      * @param string|null $destination
      * @param string|null $extra_headers
      * @return bool
      */
-    public static function error_log($object, $message_type = null, $destination = null, $extra_headers = null)
+    public static function error_log($object, $message_type = 0, $destination = null, $extra_headers = null)
     {
         return error_log(print_r($object, true), $message_type, $destination, $extra_headers);
     }
