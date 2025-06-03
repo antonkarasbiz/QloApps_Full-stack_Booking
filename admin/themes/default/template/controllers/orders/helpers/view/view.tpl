@@ -217,8 +217,8 @@
                                         {foreach from=$history item=row key=key}
                                             {if ($key == 0)}
                                                 <tr>
-                                                    <td style="background-color:{$row['color']}"><img src="{$link->getMediaLink("`$img_dir`os/`$row['id_order_state']|intval`.gif")}" width="16" height="16" alt="{$row['ostate_name']|stripslashes}" /></td> {* by webkul to get media link *}
-                                                    <td style="background-color:{$row['color']};color:{$row['text-color']}">{$row['ostate_name']|stripslashes}</td>
+                                                    <td style="background-color:{$row['color']}"><img src="{$link->getMediaLink("`$img_dir`os/`$row['id_order_state']|intval`.gif")}" width="16" height="16" alt="{if !empty($row['ostate_name'])}{$row['ostate_name']|stripslashes}{/if}" /></td> {* by webkul to get media link *}
+                                                    <td style="background-color:{$row['color']};color:{$row['text-color']}">{if !empty($row['ostate_name'])}{$row['ostate_name']|stripslashes}{/if}</td>
                                                     <td style="background-color:{$row['color']};color:{$row['text-color']}">{if $row['employee_lastname']}{$row['employee_firstname']|stripslashes} {$row['employee_lastname']|stripslashes}{/if}</td>
                                                     <td style="background-color:{$row['color']};color:{$row['text-color']}">{dateFormat date=$row['date_add'] full=true}</td>
 
@@ -236,7 +236,7 @@
                                             {else}
                                                 <tr>
                                                     <td><img src="{$link->getMediaLink("`$img_dir`os/`$row['id_order_state']|intval`.gif")}" width="16" height="16" /></td>
-                                                    <td>{$row['ostate_name']|stripslashes}</td>
+                                                    <td>{if !empty($row['ostate_name'])}{$row['ostate_name']|stripslashes}{/if}</td>
                                                     <td>{if $row['employee_lastname']}{$row['employee_firstname']|stripslashes} {$row['employee_lastname']|stripslashes}{else}&nbsp;{/if}</td>
                                                     <td>{dateFormat date=$row['date_add'] full=true}</td>
                                                     {if $can_edit}

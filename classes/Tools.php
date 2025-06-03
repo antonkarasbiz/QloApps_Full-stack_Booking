@@ -2151,7 +2151,7 @@ class ToolsCore
 
     public static function getBrightness($hex)
     {
-        if (Tools::strtolower($hex) == 'transparent') {
+        if (Tools::strtolower($hex) == 'transparent' || empty($hex)) {
             return '129';
         }
 
