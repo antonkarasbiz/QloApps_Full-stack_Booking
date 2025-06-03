@@ -1777,7 +1777,7 @@ class ToolsCore
 
     public static function substr($str, $start, $length = false, $encoding = 'utf-8')
     {
-        if (is_array($str) || is_null($str))
+        if (is_array($str) || is_null($str)) {
             return false;
         }
         if (function_exists('mb_substr')) {
