@@ -2682,6 +2682,10 @@ class HotelHelper
 
     public static function getNumberOfDays($dateFrom, $dateTo)
     {
+        if (empty($dateFrom) || empty($dateTo)) {
+            return 0;
+        }
+
         $startDate = new DateTime($dateFrom);
         $endDate = new DateTime($dateTo);
         $daysDifference = $startDate->diff($endDate)->days;
