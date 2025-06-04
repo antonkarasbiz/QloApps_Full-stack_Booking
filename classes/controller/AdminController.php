@@ -878,9 +878,8 @@ class AdminControllerCore extends Controller
             }
         }
 
-        if (empty($filters)) {
-            $filters = $this->context->cookie->getFamily($prefix.$this->list_id.'Filter_');
-        }
+        // To merge the older filters with the new ones, and replace if new data is added to filter.
+        $filters = array_merge($this->context->cookie->getFamily($prefix.$this->list_id.'Filter_'), $filters);
 
         foreach ($filters as $key => $value) {
             $key_org = $key;
