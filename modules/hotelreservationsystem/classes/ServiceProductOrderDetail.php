@@ -95,11 +95,24 @@ class ServiceProductOrderDetail extends ObjectModel
             $sql .= ' AND od.`selling_preference_type` = '.(int)$sellingPreferenceType;
         }
 
-        $products = Db::getInstance()->executeS($sql);
-        foreach ($products as $key => $product) {
-            // Check if this booking as any refund history then enter refund data
-            if ($refundInfo = OrderReturn::getOrdersReturnDetail($idOrder, 0, 0, $product['id_service_product_order_detail'])) {
-                $products[$key]['refund_info'] = reset($refundInfo);
+        if ($products = Db::getInstance()->executeS($sql)) {
+            $objContext = Context::getContext();
+            foreach ($products as $key => $product) {
+                // Check if this booking as any refund history then enter refund data
+                if ($refundInfo = OrderReturn::getOrdersReturnDetail($idOrder, 0, 0, $product['id_service_product_order_detail'])) {
+                    $products[$key]['refund_info'] = reset($refundInfo);
+                }
+
+                if (Validate::isLoadedObject($objProduct = new Product((int) $product['id_product'], Configuration::get('PS_LANG_DEFAULT')))
+                    && $productCoverImg = Product::getCover($product['id_product'])
+                ) {
+                    $products[$key]['cover_image'] = $objContext->link->getImageLink(
+                        $objProduct->link_rewrite[Configuration::get('PS_LANG_DEFAULT')],
+                        $productCoverImg['id_image'], 'small_default'
+                    );
+                } else {
+                    $products[$key]['cover_image'] = $objContext->link->getImageLink('', $objContext->language->iso_code.'-default', 'small_default');
+                }
             }
         }
 
