@@ -2850,9 +2850,35 @@ class AdminOrdersControllerCore extends AdminController
             $helper->color = 'color1';
             $helper->title = $this->l('Total Rooms');
             $helper->tooltip = $this->l('Total rooms is the number of rooms booked in this order.');
-            $helper->href = '#start_products';
+            $helper->href = '#start_rooms';
             $helper->value = $numRooms;
             $this->kpis[] = $helper;
+
+            // if order has normal products the add kpi for total products
+            $objServiceProductOrderDetail = new ServiceProductOrderDetail();
+            $hotelProducts = $objServiceProductOrderDetail->getServiceProductsInOrder($objOrder->id, 0, 0, Product::SELLING_PREFERENCE_HOTEL_STANDALONE);
+            $standaloneProducts = $objServiceProductOrderDetail->getServiceProductsInOrder($objOrder->id, 0, 0, Product::SELLING_PREFERENCE_STANDALONE);
+
+            if ($hotelProducts || $standaloneProducts) {
+                $helper = new HelperKpi();
+                $helper->id = 'box-total-products';
+                $helper->icon = 'icon-home';
+                $helper->color = 'color1';
+                $helper->title = $this->l('Total Products');
+                $helper->tooltip = $this->l('Total products is the number of product quantities booked in this order.');
+                $helper->href = '#start_products';
+
+                $totalProductQuantity = 0;
+                if ($hotelProducts) {
+                    $totalProductQuantity += array_sum(array_column($hotelProducts, 'quantity'));
+                }
+                if ($standaloneProducts) {
+                    $totalProductQuantity += array_sum(array_column($standaloneProducts, 'quantity'));
+                }
+
+                $helper->value = $totalProductQuantity;
+                $this->kpis[] = $helper;
+            }
 
             $helper = new HelperKpi();
             if (isset($orderHistory[0]['id_order_state']) && ($orderHistory[0]['id_order_state'] == Configuration::get('PS_OS_PAYMENT_ACCEPTED'))) {
