@@ -1124,6 +1124,7 @@ class AdminOrdersControllerCore extends AdminController
             $this->context->smarty->assign(
                 array(
                     'order' => $objOrder,
+                    'currency' => new Currency($objOrder->id_currency),
                     'current_index' => self::$currentIndex,
                     'bookingOrderInfo' => $bookingOrderInfo,
                     'serviceProducts' => array_merge($hotelProducts, $standaloneProducts)

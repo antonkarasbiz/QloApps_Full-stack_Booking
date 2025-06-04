@@ -53,6 +53,9 @@
 		{/block}
 		{block name='order_return_detail'}
 			{if $refundReqBookings}
+                {if isset($refundReqProducts) && $refundReqProducts}
+                    <h1 class="page-subheading">{l s='Rooms refund requests'}</h1>
+                {/if}
 				<div class="table-responsive wk-datatable-wrapper">
 					<table class="table table-bordered">
 						<tr>
@@ -97,12 +100,13 @@
 				</div>
 			{/if}
 			{if $refundReqProducts}
+                <h1 class="page-subheading">{l s='Products refund requests'}</h1>
 				<div class="table-responsive wk-datatable-wrapper">
 					<table class="table table-bordered">
 						<tr>
-							<th>{l s='Name'}</th>
+							<th>{l s='Product name'}</th>
 							<th>{l s='Quantity'}</th>
-							<th>{l s='Total rooms price (tax incl.)'}</th>
+							<th>{l s='Total price (tax incl.)'}</th>
 							{if $isRefundCompleted}
 								<th>{l s='Refund amount'}</th>
 								<th>{l s='Refund Status'}</th>
