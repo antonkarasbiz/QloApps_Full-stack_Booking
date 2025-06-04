@@ -2964,7 +2964,7 @@ class AdminNormalProductsControllerCore extends AdminController
             $allAssociations = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id);
             if (Product::SELLING_PREFERENCE_WITH_ROOM_TYPE == $product->selling_preference_type) {
                 $associatedRoomTypes = $allAssociations['room_type'];
-                $selectedRoomTypes = Tools::getValue('room_type_box');
+                $selectedRoomTypes = Tools::getValue('room_type_box', array());
 
                 // Generate list of new associations
                 $newRoomTypes = array();
@@ -3005,7 +3005,7 @@ class AdminNormalProductsControllerCore extends AdminController
                 );
             } elseif (Product::SELLING_PREFERENCE_HOTEL_STANDALONE == $product->selling_preference_type) {
                 $associatedHotels = $allAssociations['hotel'];
-                $selectedHotel = Tools::getValue('hotel_box');
+                $selectedHotel = Tools::getValue('hotel_box', array());
                 // Generate list of new associations
                 $newHotels = array();
                 foreach ($selectedHotel as $selectedRoomType) {
@@ -3046,7 +3046,7 @@ class AdminNormalProductsControllerCore extends AdminController
             } elseif (Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE == $product->selling_preference_type) {
                 // Add room types linking
                 $associatedRoomTypes = $allAssociations['room_type'];
-                $selectedRoomTypes = Tools::getValue('room_type_box');
+                $selectedRoomTypes = Tools::getValue('room_type_box', array());
                 // Generate list of new associations
                 $newRoomTypes = array();
                 foreach ($selectedRoomTypes as $selectedRoomType) {
@@ -3083,7 +3083,7 @@ class AdminNormalProductsControllerCore extends AdminController
 
                 // Add hotels linking
                 $associatedHotels = $allAssociations['hotel'];
-                $selectedHotel = Tools::getValue('hotel_box');
+                $selectedHotel = Tools::getValue('hotel_box', array());
                 // Generate list of new associations
                 $newHotels = array();
                 foreach ($selectedHotel as $selectedRoomType) {
@@ -3407,6 +3407,7 @@ class AdminNormalProductsControllerCore extends AdminController
                 // Get all id_product_attribute
                 $attributes = $obj->getAttributesResume($this->context->language->id);
                 if (empty($attributes)) {
+                    $attributes = array();
                     $attributes[] = array(
                         'id_product_attribute' => 0,
                         'attribute_designation' => ''

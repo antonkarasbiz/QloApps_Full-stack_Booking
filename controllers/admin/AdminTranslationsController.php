@@ -1112,7 +1112,7 @@ class AdminTranslationsControllerCore extends AdminController
 
                 foreach ($matches as $key) {
                     $md5_key = md5($key);
-                    $module_key = '<{'.Tools::strtolower($module_name).'}'.strtolower($theme_name).'>'.Tools::strtolower($template_name).'_'.$md5_key;
+                    $module_key = '<{'.Tools::strtolower($module_name).'}'.Tools::strtolower($theme_name).'>'.Tools::strtolower($template_name).'_'.$md5_key;
                     $default_key = '<{'.Tools::strtolower($module_name).'}prestashop>'.Tools::strtolower($template_name).'_'.$md5_key;
                     // to avoid duplicate entry
                     if (!in_array($module_key, $array_check_duplicate)) {

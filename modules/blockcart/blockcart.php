@@ -286,8 +286,9 @@ class Blockcart extends Module
                 null,
                 $this->context->cart->id_shop
             );
-            $image = Product::getCover($objProduct->id);
-            $image['id_product'] = $objProduct->id;
+            if ($image = Product::getCover($objProduct->id)) {
+                $image['id_product'] = $objProduct->id;
+            }
             // Product::defineProductImage(array(Product::getCover($objProduct->id)['id_image']/), $this->id_lang)
             $addedProduct['image'] = $this->context->link->getImageLink(
                 $objProduct->link_rewrite,

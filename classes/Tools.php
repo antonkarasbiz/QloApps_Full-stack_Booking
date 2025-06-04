@@ -1107,12 +1107,12 @@ class ToolsCore
      *
      * @see error_log()
      * @param mixed $object
-     * @param int|null    $message_type
+     * @param int $message_type
      * @param string|null $destination
      * @param string|null $extra_headers
      * @return bool
      */
-    public static function error_log($object, $message_type = null, $destination = null, $extra_headers = null)
+    public static function error_log($object, $message_type = 0, $destination = null, $extra_headers = null)
     {
         return error_log(print_r($object, true), $message_type, $destination, $extra_headers);
     }
@@ -1734,7 +1734,7 @@ class ToolsCore
 
     public static function strtolower($str)
     {
-        if (is_array($str)) {
+        if (is_array($str) || is_null($str)) {
             return false;
         }
         if (function_exists('mb_strtolower')) {
@@ -1766,7 +1766,7 @@ class ToolsCore
 
     public static function strtoupper($str)
     {
-        if (is_array($str)) {
+        if (is_array($str) || is_null($str)) {
             return false;
         }
         if (function_exists('mb_strtoupper')) {
@@ -1777,7 +1777,7 @@ class ToolsCore
 
     public static function substr($str, $start, $length = false, $encoding = 'utf-8')
     {
-        if (is_array($str)) {
+        if (is_array($str) || is_null($str)) {
             return false;
         }
         if (function_exists('mb_substr')) {
@@ -2151,7 +2151,7 @@ class ToolsCore
 
     public static function getBrightness($hex)
     {
-        if (Tools::strtolower($hex) == 'transparent') {
+        if (Tools::strtolower($hex) == 'transparent' || empty($hex)) {
             return '129';
         }
 
