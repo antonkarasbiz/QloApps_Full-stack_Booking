@@ -127,7 +127,9 @@ class ServiceProductOrderDetail extends ObjectModel
 
         $sql = 'SELECT spod.*';
         if (!$getTotalPrice) {
-            $sql .= ', hbd.`id_product` as `id_room_type`, od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`, hbd.`id_room`, hbd.`adults`, hbd.`children`, hbd.`id_product`, hbd.`date_from`, hbd.`date_to`, hbd.`room_type_name`, spod.`id_product` as id_product';
+            $sql .= ', hbd.`id_product` as `id_room_type`, od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`,
+            hbd.`id_room`, hbd.`adults`, hbd.`children`, hbd.`id_product`, hbd.`date_from`, hbd.`date_to`, hbd.`room_type_name`,
+            spod.`id_product` as id_product,  od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`, od.`product_auto_add`, od.`product_price_addition_type`';
         }
         $sql .= ' FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
             LEFT JOIN `'._DB_PREFIX_.'service_product_order_detail` spod ON(spod.`id_htl_booking_detail` = hbd.`id`)';
@@ -210,6 +212,8 @@ class ServiceProductOrderDetail extends ObjectModel
                             'total_price_tax_incl' => $product['total_price_tax_incl'],
                             'unit_price_tax_excl' => $product['unit_price_tax_excl'],
                             'unit_price_tax_incl' => $product['unit_price_tax_incl'],
+                            'product_auto_add' => $product['product_auto_add'],
+                            'product_price_addition_type' => $product['product_price_addition_type'],
                         );
                     } else {
                         $selectedAdditionalServices[$product['id_htl_booking_detail']]['id_order'] = $product['id_order'];
@@ -240,6 +244,8 @@ class ServiceProductOrderDetail extends ObjectModel
                                 'total_price_tax_incl' => $product['total_price_tax_incl'],
                                 'unit_price_tax_excl' => $product['unit_price_tax_excl'],
                                 'unit_price_tax_incl' => $product['unit_price_tax_incl'],
+                                'product_auto_add' => $product['product_auto_add'],
+                                'product_price_addition_type' => $product['product_price_addition_type'],
                             ),
                         );
                     }

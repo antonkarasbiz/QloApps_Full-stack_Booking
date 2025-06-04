@@ -6248,7 +6248,7 @@ class AdminOrdersControllerCore extends AdminController
             0,
             1,
             1,
-            0,
+            null, // to get the auto added services.
             null,
             0,
             $idHotelBooking
@@ -6264,7 +6264,7 @@ class AdminOrdersControllerCore extends AdminController
             0,
             1,
             0,
-            0,
+            null, // to get the auto added services.
             null,
             0,
             $idHotelBooking
@@ -6280,7 +6280,7 @@ class AdminOrdersControllerCore extends AdminController
             0,
             0,
             null,
-            0,
+            null, // to get the auto added services.
             null,
             0,
             $idHotelBooking
