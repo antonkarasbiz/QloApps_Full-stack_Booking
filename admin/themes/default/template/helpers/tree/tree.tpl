@@ -30,7 +30,7 @@
 		{/block}
 		{block name="tree"}
 			{if isset($nodes)}
-				<ul id="{$id|escape:'html':'UTF-8'}" class="tree top" style="max-height: {$max_height}px;">
+				<ul id="{$id|escape:'html':'UTF-8'}" class="tree top cattree" style="max-height: {$max_height}px;">
 				{$nodes}
 				</ul>
 			{/if}
@@ -121,7 +121,8 @@
 			});
 		{/if}
 
-		function startTree() {
+		// $id is added in the tree since we can have multiple tree on same page and the last one will override all the prev functions.
+		function startTree{$id|replace:'-':''|replace:'_':''|replace:' ':''}() {
 			if (typeof $.fn.tree === 'undefined') {
 				setTimeout(startTree, 100);
 				return;
@@ -144,7 +145,7 @@
 		}
 
 		$(document).ready(function () {
-			startTree();
+			startTree{$id|replace:'-':''|replace:'_':''|replace:' ':''}();
 		});
 	{/block}
 </script>

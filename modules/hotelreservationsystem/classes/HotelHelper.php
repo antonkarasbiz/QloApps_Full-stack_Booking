@@ -2717,20 +2717,23 @@ class HotelHelper
         if (!isset($rootNodeId)) {
             $rootNodeId = false;
         }
+        if (!isset($prefix)) {
+            $prefix = '';
+        }
         $treeData = array();
 
         if ($rootNode == self::NODE_COUNTRY) {
-            $treeData = self::generateCountryNodes($rootNodeId, $leafNode, $selectedElements);
+            $treeData = self::generateCountryNodes($rootNodeId, $leafNode, $selectedElements, false, $prefix);
         } else if ($rootNode == self::NODE_STATE) {
-            $treeData = self::generateStateNodes($rootNodeId, $leafNode, $selectedElements);
+            $treeData = self::generateStateNodes($rootNodeId, $leafNode, $selectedElements, false, $prefix);
         } else if ($rootNode == self::NODE_CITY) {
-            $treeData = self::generateCityNodes($rootNodeId, $leafNode, $selectedElements);
+            $treeData = self::generateCityNodes($rootNodeId, $leafNode, $selectedElements, false, $prefix);
         } else if ($rootNode == self::NODE_HOTEL) {
-            $treeData = self::generateHotelNodes($rootNodeId, $leafNode, $selectedElements);
+            $treeData = self::generateHotelNodes($rootNodeId, $leafNode, $selectedElements, false, $prefix);
         } else if ($rootNode == self::NODE_ROOM_TYPE) {
-            $treeData = self::generateRoomTypeNodes($rootNodeId, $leafNode, $selectedElements);
+            $treeData = self::generateRoomTypeNodes($rootNodeId, $leafNode, $selectedElements, false, $prefix);
         } else if ($rootNode == self::NODE_ROOM) {
-            $treeData = self::generateRoomNodes($rootNodeId, $leafNode, $selectedElements);
+            $treeData = self::generateRoomNodes($rootNodeId, $leafNode, $selectedElements, false, $prefix);
         }
 
         return $treeData;
@@ -2739,18 +2742,18 @@ class HotelHelper
     /**
      * Generate the node data for country
      */
-    protected static function generateCountryNodes($rootNodeId, $leafNode, $selectedElements, $previousElements = false)
+    protected static function generateCountryNodes($rootNodeId, $leafNode, $selectedElements, $previousElements = false, $prefix = '')
     {
         $return = array();
-        $countries = self::getcategoryByParent($previousElements, 3, 'country', $rootNodeId);
+        $countries = self::getcategoryByParent($previousElements, 3, $prefix.'country', $rootNodeId);
         $countriesIds = array_column($countries, 'value');
 
         if ($leafNode > self::NODE_COUNTRY) {
-            $states = self::generateStateNodes(false, $leafNode, $selectedElements, $countriesIds);
+            $states = self::generateStateNodes(false, $leafNode, $selectedElements, $countriesIds, $prefix);
         }
 
         foreach ($countries as $country) {
-            if (isset($selectedElements['state']) && in_array($country['value'], $selectedElements['state'])) {
+            if (isset($selectedElements['country']) && in_array($country['value'], $selectedElements['country'])) {
                 $country['selected'] = true;
             }
 
@@ -2771,14 +2774,14 @@ class HotelHelper
     /**
      * Generate the node data for state
      */
-    protected static function generateStateNodes($rootNodeId, $leafNode, $selectedElements, $previousElements = false)
+    protected static function generateStateNodes($rootNodeId, $leafNode, $selectedElements, $previousElements = false, $prefix = '')
     {
         $return = array();
-        $states = self::getcategoryByParent($previousElements, 4, 'state', $rootNodeId);
+        $states = self::getcategoryByParent($previousElements, 4, $prefix.'state', $rootNodeId);
         $stateIds = array_column($states, 'value');
 
         if ($leafNode > self::NODE_STATE) {
-            $cities = self::generateCityNodes(false, $leafNode, $selectedElements, $stateIds);
+            $cities = self::generateCityNodes(false, $leafNode, $selectedElements, $stateIds, $prefix);
         }
 
         foreach ($states as $state) {
@@ -2803,14 +2806,14 @@ class HotelHelper
     /**
      * Generate the node data for city
      */
-    protected static function generateCityNodes($rootNodeId, $leafNode, $selectedElements, $previousElements = false)
+    protected static function generateCityNodes($rootNodeId, $leafNode, $selectedElements, $previousElements = false, $prefix = '')
     {
         $return = array();
-        $cities = self::getcategoryByParent($previousElements, 5, 'city', $rootNodeId);
+        $cities = self::getcategoryByParent($previousElements, 5, $prefix.'city', $rootNodeId);
         $cityIds = array_column($cities, 'value');
 
         if ($leafNode > self::NODE_CITY) {
-            $hotels = self::generateHotelNodes(false, $leafNode, $selectedElements, $cityIds);
+            $hotels = self::generateHotelNodes(false, $leafNode, $selectedElements, $cityIds, $prefix);
         }
 
         foreach ($cities as $city) {
@@ -2835,10 +2838,10 @@ class HotelHelper
     /**
      * Generate the node data for hotels
      */
-    protected static function generateHotelNodes($rootNodeId, $leafNode, $selectedElements, $previousElements = false)
+    protected static function generateHotelNodes($rootNodeId, $leafNode, $selectedElements, $previousElements = false, $prefix = '')
     {
         $return = array();
-        $hotels = self::getHotelsByIdCity($previousElements, $rootNodeId);
+        $hotels = self::getHotelsByIdCity($previousElements, $rootNodeId, $prefix);
         $hotelIds = array_column($hotels, 'value');
 
         if (Validate::isLoadedObject(Context::getContext()->employee)){
@@ -2848,7 +2851,7 @@ class HotelHelper
         }
 
         if ($leafNode > self::NODE_HOTEL) {
-            $roomTypes = self::generateRoomTypeNodes(false, $leafNode, $selectedElements, $hotelIds);
+            $roomTypes = self::generateRoomTypeNodes(false, $leafNode, $selectedElements, $hotelIds, $prefix);
         }
 
         foreach ($hotels as $hotel) {
@@ -2877,10 +2880,10 @@ class HotelHelper
     /**
      * Generate the node data for room types
      */
-    protected static function generateRoomTypeNodes($rootNodeId, $leafNode, $selectedElements, $previousElements = false)
+    protected static function generateRoomTypeNodes($rootNodeId, $leafNode, $selectedElements, $previousElements = false, $prefix = '')
     {
         $return = array();
-        $roomTypes = self::getRoomTypesByHotelsId($previousElements, $rootNodeId);
+        $roomTypes = self::getRoomTypesByHotelsId($previousElements, $rootNodeId, $prefix);
         $roomTypeIds = array_column($roomTypes, 'value');
 
         if (Validate::isLoadedObject(Context::getContext()->employee)){
@@ -2896,7 +2899,7 @@ class HotelHelper
         }
 
         if ($leafNode > self::NODE_ROOM_TYPE) {
-            $rooms = self::generateRoomNodes(false, $leafNode, $selectedElements, $roomTypeIds);
+            $rooms = self::generateRoomNodes(false, $leafNode, $selectedElements, $roomTypeIds, $prefix);
         }
 
         foreach ($roomTypes as $roomType) {
@@ -2925,10 +2928,10 @@ class HotelHelper
     /**
      * Generate the node data for rooms
      */
-    protected static function generateRoomNodes($rootNodeId, $leafNode, $selectedElements, $previousElements = false)
+    protected static function generateRoomNodes($rootNodeId, $leafNode, $selectedElements, $previousElements = false, $prefix = '')
     {
         $return = array();
-        $rooms = self::getRoomsByRoomTypeId($previousElements, $rootNodeId);
+        $rooms = self::getRoomsByRoomTypeId($previousElements, $rootNodeId, $prefix);
         if (Validate::isLoadedObject(Context::getContext()->employee)){
             if (!Context::getContext()->employee->isSuperAdmin()) {
                 $rooms = HotelBranchInformation::filterDataByHotelAccess(
@@ -2986,10 +2989,10 @@ class HotelHelper
     /**
      * Get all the hotels of the passed cities (city id_category)
      */
-    protected static function getHotelsByIdCity($cities, $rootNodeId)
+    protected static function getHotelsByIdCity($cities, $rootNodeId, $prefix = '')
     {
 
-        $sql = 'SELECT hbi.`id` as `value` , hbil.`hotel_name` as `name`, "hotel_box" as `input_name`, c.`id_parent`
+        $sql = 'SELECT hbi.`id` as `value` , hbil.`hotel_name` as `name`, "'.$prefix.'hotel_box" as `input_name`, c.`id_parent`
         FROM `'._DB_PREFIX_.'htl_branch_info` AS hbi
         INNER JOIN `'._DB_PREFIX_.'htl_branch_info_lang` AS hbil
         ON (hbi.`id` = hbil.`id` AND hbil.`id_lang`='.(int)Context::getContext()->language->id.')
@@ -3008,9 +3011,9 @@ class HotelHelper
     /**
      * Get all the room types of the passed hotels
      */
-    protected static function getRoomTypesByHotelsId($hotels, $rootNodeId)
+    protected static function getRoomTypesByHotelsId($hotels, $rootNodeId, $prefix = '')
     {
-        $sql = 'SELECT p.`id_product` AS `value`, pl.`name`, "room_type_box" as `input_name`, rt.`id_hotel`
+        $sql = 'SELECT p.`id_product` AS `value`, pl.`name`, "'.$prefix.'room_type_box" as `input_name`, rt.`id_hotel`
 			FROM `'._DB_PREFIX_.'htl_room_type` AS rt';
 
         $sql .= ' INNER JOIN `'._DB_PREFIX_.'product` AS p ON (rt.`id_product` = p.`id_product`)
@@ -3031,9 +3034,9 @@ class HotelHelper
     /**
      * Get all the rooms of the passed room types (city id_category)
      */
-    protected static function getRoomsByRoomTypeId($roomTypes, $rootNodeId)
+    protected static function getRoomsByRoomTypeId($roomTypes, $rootNodeId, $prefix = '')
     {
-        $sql = 'SELECT `id` as `value`, `room_num` as `name`, "room_box" as `input_name`, `id_product`
+        $sql = 'SELECT `id` as `value`, `room_num` as `name`, "'.$prefix.'room_box" as `input_name`, `id_product`
         FROM `'._DB_PREFIX_.'htl_room_information`
         WHERE 1';
         if ($roomTypes) {
