@@ -140,15 +140,15 @@ class ServiceProductOrderDetail extends ObjectModel
 
         $sql = 'SELECT spod.*';
         if (!$getTotalPrice) {
-            $sql .= ', hbd.`id_product` as `id_room_type`, od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`,
-            hbd.`id_room`, hbd.`adults`, hbd.`children`, hbd.`id_product`, hbd.`date_from`, hbd.`date_to`, hbd.`room_type_name`,
+            $sql .= ', hbd.`id_product` as `id_room_type`, od.`product_price_calculation_method`,
+            hbd.`id_room`, hbd.`adults`, hbd.`children`, hbd.`date_from`, hbd.`date_to`, hbd.`room_type_name`,
             spod.`id_product` as id_product,  od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`, od.`product_auto_add`, od.`product_price_addition_type`';
         }
         $sql .= ' FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
             LEFT JOIN `'._DB_PREFIX_.'service_product_order_detail` spod ON(spod.`id_htl_booking_detail` = hbd.`id`)';
 
         $sql .= ' LEFT JOIN `'._DB_PREFIX_.'order_detail` od ON(od.`id_order_detail` = spod.`id_order_detail`)';
-        $sql .= ' WHERE 1';
+        $sql .= ' WHERE spod.`id_htl_booking_detail` IS NOT NULL';
 
         if ($idOrder) {
             $sql .= ' AND spod.`id_order` = '.(int)$idOrder;

@@ -113,17 +113,18 @@ class RoomTypeServiceProductPrice extends ObjectModel
         $idHotel,
         $idProductOption = null,
         $useTax = null,
-        $quantity = 1
+        $quantity = 1,
+        $useReduc = true
     ) {
         $idHotelAddress = Cart::getIdAddressForTaxCalculation($idProduct, $idHotel);
-        $price =  ProductCore::getPriceStatic(
+        $price =  Product::getPriceStatic(
             $idProduct,
             $useTax,
             $idProductOption,
             6,
             null,
             false,
-            true,
+            $useReduc,
             $quantity,
             false,
             null,
