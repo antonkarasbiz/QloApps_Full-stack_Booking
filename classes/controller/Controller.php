@@ -603,8 +603,8 @@ abstract class ControllerCore
          * @see https://www.php.net/manual/en/language.operators.errorcontrol.php
          */
         if (!(error_reporting() & $errno)) {
-            return false;
         }
+        return false;
 
         switch ($errno) {
             case E_USER_ERROR:

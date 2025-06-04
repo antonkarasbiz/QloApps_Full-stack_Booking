@@ -183,7 +183,7 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
 
         // Process reallocation of rooms
         if (Tools::isSubmit('realloc_allocated_rooms')) {
-            if ($this->tabAccess['edit'] === '1') {
+            if ($this->tabAccess['edit'] === 1) {
                 $idOrder = Tools::getValue('id_order');
                 $idHtlBookingFrom = Tools::getValue('id_htl_booking');
                 $idNewRoomType = Tools::getValue('realloc_avail_room_type');
@@ -232,7 +232,7 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
 
         // Process swap of rooms
         if (Tools::isSubmit('swap_allocated_rooms')) {
-            if ($this->tabAccess['edit'] === '1') {
+            if ($this->tabAccess['edit'] === 1) {
                 $idOrder = Tools::getValue('id_order');
                 $idHtlBookingFrom = Tools::getValue('id_htl_booking');
                 $idHtlBookingToSwap = Tools::getValue('swap_avail_rooms');

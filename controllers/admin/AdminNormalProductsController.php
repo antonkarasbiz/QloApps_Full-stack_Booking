@@ -837,7 +837,7 @@ class AdminNormalProductsControllerCore extends AdminController
 
     protected function processBulkDelete()
     {
-        if ($this->tabAccess['delete'] === '1') {
+        if ($this->tabAccess['delete'] === 1) {
             if (is_array($this->boxes) && !empty($this->boxes)) {
                 $object = new $this->className();
 
@@ -957,7 +957,7 @@ class AdminNormalProductsControllerCore extends AdminController
 
                 // Change existing one
                 if (($id_product_attribute = (int)Tools::getValue('id_product_attribute')) || ($id_product_attribute = $product->productAttributeExists(Tools::getValue('attribute_combination_list'), false, null, true, true))) {
-                    if ($this->tabAccess['edit'] === '1') {
+                    if ($this->tabAccess['edit'] === 1) {
                         if ($this->isProductFieldUpdated('available_date_attribute') && (Tools::getValue('available_date_attribute') != '' &&!Validate::isDateFormat(Tools::getValue('available_date_attribute')))) {
                             $this->errors[] = Tools::displayError('Invalid date format.');
                         } else {
@@ -984,7 +984,7 @@ class AdminNormalProductsControllerCore extends AdminController
                 }
                 // Add new
                 else {
-                    if ($this->tabAccess['add'] === '1') {
+                    if ($this->tabAccess['add'] === 1) {
                         if ($product->productAttributeExists(Tools::getValue('attribute_combination_list'))) {
                             $this->errors[] = Tools::displayError('This combination already exists.');
                         } else {
@@ -1241,7 +1241,7 @@ class AdminNormalProductsControllerCore extends AdminController
 
     public function ajaxProcessDeleteSpecificPrice()
     {
-        if ($this->tabAccess['delete'] === '1') {
+        if ($this->tabAccess['delete'] === 1) {
             $id_specific_price = (int)Tools::getValue('id_specific_price');
             if (!$id_specific_price || !Validate::isUnsignedId($id_specific_price)) {
                 $error = Tools::displayError('The specific price ID is invalid.');
@@ -1354,7 +1354,7 @@ class AdminNormalProductsControllerCore extends AdminController
         }
         // Product duplication
         elseif (Tools::getIsset('duplicate'.$this->table)) {
-            if ($this->tabAccess['add'] === '1') {
+            if ($this->tabAccess['add'] === 1) {
                 $this->action = 'duplicate';
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to add this.');
@@ -1362,7 +1362,7 @@ class AdminNormalProductsControllerCore extends AdminController
         }
         // Product images management
         elseif (Tools::getValue('id_image') && Tools::getValue('ajax')) {
-            if ($this->tabAccess['edit'] === '1') {
+            if ($this->tabAccess['edit'] === 1) {
                 $this->action = 'image';
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to edit this.');
@@ -1370,7 +1370,7 @@ class AdminNormalProductsControllerCore extends AdminController
         }
         // Product attributes management
         elseif (Tools::isSubmit('submitProductAttribute')) {
-            if ($this->tabAccess['edit'] === '1') {
+            if ($this->tabAccess['edit'] === 1) {
                 $this->action = 'productAttribute';
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to edit this.');
@@ -1378,7 +1378,7 @@ class AdminNormalProductsControllerCore extends AdminController
         }
         // Product features management
         // elseif (Tools::isSubmit('submitFeatures') || Tools::isSubmit('submitFeaturesAndStay')) {
-        //     if ($this->tabAccess['edit'] === '1') {
+        //     if ($this->tabAccess['edit'] === 1) {
         //         $this->action = 'features';
         //     } else {
         //         $this->errors[] = Tools::displayError('You do not have permission to edit this.');
@@ -1386,19 +1386,19 @@ class AdminNormalProductsControllerCore extends AdminController
         // }
         // Product specific prices management NEVER USED
         elseif (Tools::isSubmit('submitPricesModification')) {
-            if ($this->tabAccess['add'] === '1') {
+            if ($this->tabAccess['add'] === 1) {
                 $this->action = 'pricesModification';
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to add this.');
             }
         } elseif (Tools::isSubmit('deleteSpecificPrice')) {
-            if ($this->tabAccess['delete'] === '1') {
+            if ($this->tabAccess['delete'] === 1) {
                 $this->action = 'deleteSpecificPrice';
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to delete this.');
             }
         } elseif (Tools::isSubmit('submitSpecificPricePriorities')) {
-            if ($this->tabAccess['edit'] === '1') {
+            if ($this->tabAccess['edit'] === 1) {
                 $this->action = 'specificPricePriorities';
                 $this->tab_display = 'prices';
             } else {
@@ -1407,7 +1407,7 @@ class AdminNormalProductsControllerCore extends AdminController
         }
         // Customization management
         elseif (Tools::isSubmit('submitCustomizationConfiguration')) {
-            if ($this->tabAccess['edit'] === '1') {
+            if ($this->tabAccess['edit'] === 1) {
                 $this->action = 'customizationConfiguration';
                 $this->tab_display = 'customization';
                 $this->display = 'edit';
@@ -1415,7 +1415,7 @@ class AdminNormalProductsControllerCore extends AdminController
                 $this->errors[] = Tools::displayError('You do not have permission to edit this.');
             }
         } elseif (Tools::isSubmit('submitProductCustomization')) {
-            if ($this->tabAccess['edit'] === '1') {
+            if ($this->tabAccess['edit'] === 1) {
                 $this->action = 'productCustomization';
                 $this->tab_display = 'customization';
                 $this->display = 'edit';
@@ -1468,7 +1468,7 @@ class AdminNormalProductsControllerCore extends AdminController
         }
 
         if (in_array($this->display, array('add', 'edit'))
-            && $this->tabAccess['view'] == '1'
+            && $this->tabAccess['view'] === 1
             && $this->loadObject(true)
         ) {
             $this->addJqueryUI(array(
@@ -1513,7 +1513,7 @@ class AdminNormalProductsControllerCore extends AdminController
             return;
         }
 
-        if ($this->tabAccess['delete'] === '1') {
+        if ($this->tabAccess['delete'] === 1) {
             $id_product = (int)Tools::getValue('id_product');
             $id_product_attribute = (int)Tools::getValue('id_product_attribute');
 
@@ -1565,7 +1565,7 @@ class AdminNormalProductsControllerCore extends AdminController
 
     public function ajaxProcessDefaultProductAttribute()
     {
-        if ($this->tabAccess['edit'] === '1') {
+        if ($this->tabAccess['edit'] === 1) {
             if (!Combination::isFeatureActive()) {
                 return;
             }
@@ -1590,7 +1590,7 @@ class AdminNormalProductsControllerCore extends AdminController
 
     public function ajaxProcessEditProductAttribute()
     {
-        if ($this->tabAccess['edit'] === '1') {
+        if ($this->tabAccess['edit'] === 1) {
             $id_product = (int)Tools::getValue('id_product');
             $id_product_attribute = (int)Tools::getValue('id_product_attribute');
             if ($id_product && Validate::isUnsignedId($id_product) && Validate::isLoadedObject($product = new Product((int)$id_product))) {
@@ -4467,7 +4467,7 @@ class AdminNormalProductsControllerCore extends AdminController
 
     public function ajaxProcessCheckProductName()
     {
-        if ($this->tabAccess['view'] === '1') {
+        if ($this->tabAccess['view'] === 1) {
             $search = Tools::getValue('q');
             $id_lang = Tools::getValue('id_lang');
             $limit = Tools::getValue('limit');
@@ -4490,7 +4490,7 @@ class AdminNormalProductsControllerCore extends AdminController
 
     public function ajaxProcessUpdatePositions()
     {
-        if ($this->tabAccess['edit'] === '1') {
+        if ($this->tabAccess['edit'] === 1) {
             $way = (int)(Tools::getValue('way'));
             $id_product = (int)Tools::getValue('id_product');
             $id_category = (int)Tools::getValue('id_category');
@@ -4530,7 +4530,7 @@ class AdminNormalProductsControllerCore extends AdminController
 
     public function ajaxProcessPublishProduct()
     {
-        if ($this->tabAccess['edit'] === '1') {
+        if ($this->tabAccess['edit'] === 1) {
             if ($id_product = (int)Tools::getValue('id_product')) {
                 $bo_product_url = dirname($_SERVER['PHP_SELF']).'/index.php?tab=AdminNormalProducts&id_product='.$id_product.'&updateproduct&token='.$this->token;
 
@@ -4605,7 +4605,7 @@ class AdminNormalProductsControllerCore extends AdminController
         $response = array();
         $response['hasError'] = true;
         $response['error'] = $this->l('Some error occurred while deleting product option. Please try again.');
-        if ($this->tabAccess['edit'] == 1) {
+        if ($this->tabAccess['edit'] === 1) {
             $idProductOption = Tools::getValue('id_product_option');
             if (Validate::isLoadedObject($objProductOption = new ServiceProductOption((int)$idProductOption))) {
                 if ($objProductOption->delete()) {

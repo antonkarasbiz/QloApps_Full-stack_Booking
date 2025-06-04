@@ -556,10 +556,10 @@ class AdminControllerCore extends Controller
                 if (Tools::getValue($this->identifier)) {
                     $this->access_query .= ' AND a.'.$this->identifier.'='.(int) Tools::getValue($this->identifier);
                     if (!Db::getInstance()->executeS($this->access_query)) {
-                        $this->tabAccess['view'] = '0';
-                        $this->tabAccess['add'] = '0';
-                        $this->tabAccess['edit'] = '0';
-                        $this->tabAccess['delete'] = '0';
+                        $this->tabAccess['view'] = 0;
+                        $this->tabAccess['add'] = 0;
+                        $this->tabAccess['edit'] = 0;
+                        $this->tabAccess['delete'] = 0;
                     }
                 }
             }
@@ -815,7 +815,7 @@ class AdminControllerCore extends Controller
             return true;
         }
 
-        if ($this->tabAccess['view'] === '1') {
+        if ($this->tabAccess['view'] === 1) {
             return true;
         }
         return false;
@@ -3099,28 +3099,28 @@ class AdminControllerCore extends Controller
 
         /* Delete object image */
         if (isset($_GET['deleteImage'])) {
-            if ($this->tabAccess['delete'] === '1') {
+            if ($this->tabAccess['delete'] === 1) {
                 $this->action = 'delete_image';
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to delete this.');
             }
         } elseif (isset($_GET['delete'.$this->table])) {
             /* Delete object */
-            if ($this->tabAccess['delete'] === '1') {
+            if ($this->tabAccess['delete'] === 1) {
                 $this->action = 'delete';
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to delete this.');
             }
         } elseif ((isset($_GET['status'.$this->table]) || isset($_GET['status'])) && Tools::getValue($this->identifier)) {
             /* Change object statuts (active, inactive) */
-            if ($this->tabAccess['edit'] === '1') {
+            if ($this->tabAccess['edit'] === 1) {
                 $this->action = 'status';
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to edit this.');
             }
         } elseif (isset($_GET['position'])) {
             /* Move an object */
-            if ($this->tabAccess['edit'] == '1') {
+            if ($this->tabAccess['edit'] === 1) {
                 $this->action = 'position';
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to edit this.');
@@ -3131,7 +3131,7 @@ class AdminControllerCore extends Controller
             || Tools::isSubmit('submitAdd'.$this->table.'AndBackToParent')) {
             // case 1: updating existing entry
             if ($this->id_object) {
-                if ($this->tabAccess['edit'] === '1') {
+                if ($this->tabAccess['edit'] === 1) {
                     $this->action = 'save';
                     if (Tools::isSubmit('submitAdd'.$this->table.'AndStay')) {
                         $this->display = 'edit';
@@ -3143,7 +3143,7 @@ class AdminControllerCore extends Controller
                 }
             } else {
                 // case 2: creating new entry
-                if ($this->tabAccess['add'] === '1') {
+                if ($this->tabAccess['add'] === 1) {
                     $this->action = 'save';
                     if (Tools::isSubmit('submitAdd'.$this->table.'AndStay')) {
                         $this->display = 'edit';
@@ -3155,7 +3155,7 @@ class AdminControllerCore extends Controller
                 }
             }
         } elseif (isset($_GET['add'.$this->table])) {
-            if ($this->tabAccess['add'] === '1') {
+            if ($this->tabAccess['add'] === 1) {
                 $this->action = 'new';
                 $this->display = 'add';
             } else {
@@ -3163,25 +3163,25 @@ class AdminControllerCore extends Controller
             }
         } elseif (isset($_GET['update'.$this->table]) && isset($_GET[$this->identifier])) {
             $this->display = 'edit';
-            if ($this->tabAccess['edit'] !== '1') {
+            if ($this->tabAccess['edit'] !== 1) {
                 $this->errors[] = Tools::displayError('You do not have permission to edit this.');
             }
         } elseif (isset($_GET['view'.$this->table])) {
-            if ($this->tabAccess['view'] === '1') {
+            if ($this->tabAccess['view'] === 1) {
                 $this->display = 'view';
                 $this->action = 'view';
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to view this.');
             }
         } elseif (isset($_GET['details'.$this->table])) {
-            if ($this->tabAccess['view'] === '1') {
+            if ($this->tabAccess['view'] === 1) {
                 $this->display = 'details';
                 $this->action = 'details';
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to view this.');
             }
         } elseif (isset($_GET['export'.$this->table])) {
-            if ($this->tabAccess['view'] === '1') {
+            if ($this->tabAccess['view'] === 1) {
                 $this->action = 'export';
             }
         } elseif (isset($_POST['submitReset'.$this->list_id])) {
@@ -3190,14 +3190,14 @@ class AdminControllerCore extends Controller
         } elseif (Tools::isSubmit('submitOptions'.$this->table) || Tools::isSubmit('submitOptions')) {
             /* Submit options list */
             $this->display = 'options';
-            if ($this->tabAccess['edit'] === '1') {
+            if ($this->tabAccess['edit'] === 1) {
                 $this->action = 'update_options';
             } else {
                 $this->errors[] = Tools::displayError('You do not have permission to edit this.');
             }
         } elseif (Tools::getValue('action') && method_exists($this, 'process'.ucfirst(Tools::toCamelCase(Tools::getValue('action'))))) {
             $this->action = Tools::getValue('action');
-        } elseif (Tools::isSubmit('submitFields') && $this->required_database && $this->tabAccess['add'] === '1' && $this->tabAccess['delete'] === '1') {
+        } elseif (Tools::isSubmit('submitFields') && $this->required_database && $this->tabAccess['add'] === 1 && $this->tabAccess['delete'] === 1) {
             $this->action = 'update_fields';
         } elseif (is_array($this->bulk_actions)) {
             $submit_bulk_actions = array_merge(array(
@@ -3213,7 +3213,7 @@ class AdminControllerCore extends Controller
             foreach ($submit_bulk_actions as $bulk_action => $params) {
                 if (Tools::isSubmit('submitBulk'.$bulk_action.$this->table) || Tools::isSubmit('submitBulk'.$bulk_action)) {
                     if ($bulk_action === 'delete') {
-                        if ($this->tabAccess['delete'] === '1') {
+                        if ($this->tabAccess['delete'] === 1) {
                             $this->action = 'bulk'.$bulk_action;
                             $this->boxes = Tools::getValue($this->table.'Box');
                             if (empty($this->boxes) && $this->table == 'attribute') {
@@ -3223,7 +3223,7 @@ class AdminControllerCore extends Controller
                             $this->errors[] = Tools::displayError('You do not have permission to delete this.');
                         }
                         break;
-                    } elseif ($this->tabAccess['edit'] === '1') {
+                    } elseif ($this->tabAccess['edit'] === 1) {
                         $this->action = 'bulk'.$bulk_action;
                         $this->boxes = Tools::getValue($this->table.'Box');
                     } else {
@@ -3232,14 +3232,14 @@ class AdminControllerCore extends Controller
                     break;
                 } elseif (Tools::isSubmit('submitBulk')) {
                     if ($bulk_action === 'delete') {
-                        if ($this->tabAccess['delete'] === '1') {
+                        if ($this->tabAccess['delete'] === 1) {
                             $this->action = 'bulk'.$bulk_action;
                             $this->boxes = Tools::getValue($this->table.'Box');
                         } else {
                             $this->errors[] = Tools::displayError('You do not have permission to delete this.');
                         }
                         break;
-                    } elseif ($this->tabAccess['edit'] === '1') {
+                    } elseif ($this->tabAccess['edit'] === 1) {
                         $this->action = 'bulk'.Tools::getValue('select_submitBulk');
                         $this->boxes = Tools::getValue($this->table.'Box');
                     } else {
@@ -4273,7 +4273,7 @@ class AdminControllerCore extends Controller
      */
     public function displayRequiredFields()
     {
-        if (!$this->tabAccess['add'] || !$this->tabAccess['delete'] === '1' || !$this->required_database) {
+        if (!$this->tabAccess['add'] || !$this->tabAccess['delete'] === 1 || !$this->required_database) {
             return;
         }
 

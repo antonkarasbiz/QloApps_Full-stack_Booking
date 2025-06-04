@@ -409,7 +409,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
 
     public function postProcess()
     {
-        if ($this->tabAccess['edit'] === '1') {
+        if ($this->tabAccess['edit'] === 1) {
             // using this to separate the saving process for the both option fields
             $fields = $this->fields_options;
             if (Tools::isSubmit('submitOptionsCustomerService')) {
@@ -1151,7 +1151,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
 
     public function updateOptionPsSavImapOpt($value)
     {
-        if ($this->tabAccess['edit'] != '1') {
+        if ($this->tabAccess['edit'] !== 1) {
             throw new PrestaShopException(Tools::displayError('You do not have permission to edit this.'));
         }
 
@@ -1162,7 +1162,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
 
     public function ajaxProcessMarkAsRead()
     {
-        if ($this->tabAccess['edit'] != '1') {
+        if ($this->tabAccess['edit'] !== 1) {
             throw new PrestaShopException(Tools::displayError('You do not have permission to edit this.'));
         }
 
@@ -1180,7 +1180,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
      */
     public function ajaxProcessSyncImap()
     {
-        if ($this->tabAccess['edit'] != '1') {
+        if ($this->tabAccess['edit'] !== 1) {
             throw new PrestaShopException(Tools::displayError('You do not have permission to edit this.'));
         }
 

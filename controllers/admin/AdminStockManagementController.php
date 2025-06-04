@@ -258,13 +258,13 @@ class AdminStockManagementControllerCore extends AdminController
             }
 
             // Checks access
-            if (!($this->tabAccess['add'] === '1')) {
+            if (!($this->tabAccess['add'] === 1)) {
                 $this->addRowActionSkipList('addstock', array($item['id']));
             }
-            if (!($this->tabAccess['delete'] === '1')) {
+            if (!($this->tabAccess['delete'] === 1)) {
                 $this->addRowActionSkipList('removestock', array($item['id']));
             }
-            if (!($this->tabAccess['edit'] === '1')) {
+            if (!($this->tabAccess['edit'] === 1)) {
                 $this->addRowActionSkipList('transferstock', array($item['id']));
             }
         }
@@ -836,13 +836,13 @@ class AdminStockManagementControllerCore extends AdminController
         parent::postProcess();
 
         // Checks access
-        if (Tools::isSubmit('addStock') && !($this->tabAccess['add'] === '1')) {
+        if (Tools::isSubmit('addStock') && !($this->tabAccess['add'] === 1)) {
             $this->errors[] = Tools::displayError('You do not have the required permission to add stock.');
         }
-        if (Tools::isSubmit('removeStock') && !($this->tabAccess['delete'] === '1')) {
+        if (Tools::isSubmit('removeStock') && !($this->tabAccess['delete'] === 1)) {
             $this->errors[] = Tools::displayError('You do not have the required permission to delete stock');
         }
-        if (Tools::isSubmit('transferStock') && !($this->tabAccess['edit'] === '1')) {
+        if (Tools::isSubmit('transferStock') && !($this->tabAccess['edit'] === 1)) {
             $this->errors[] = Tools::displayError('You do not have the required permission to transfer stock.');
         }
 

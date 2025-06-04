@@ -706,7 +706,7 @@ class AdminShopControllerCore extends AdminController
 
     public function displayEditLink($token, $id, $name = null)
     {
-        if ($this->tabAccess['edit'] == 1) {
+        if ($this->tabAccess['edit'] === 1) {
             $tpl = $this->createTemplate('helpers/list/list_action_edit.tpl');
             if (!array_key_exists('Edit', self::$cache_lang)) {
                 self::$cache_lang['Edit'] = $this->l('Edit', 'Helper');
