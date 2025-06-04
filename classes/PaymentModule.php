@@ -1342,6 +1342,7 @@ abstract class PaymentModuleCore extends Module
                             '{products_txt}' => $product_list_txt,
                             '{discounts}' => $cart_rules_list_html,
                             '{discounts_txt}' => $cart_rules_list_txt,
+                            '{total_paid}' => Tools::displayPrice($order->total_paid, $this->context->currency, false),
                             '{total_products}' => Tools::displayPrice($total_products, $this->context->currency, false),
                             '{total_discounts}' => Tools::displayPrice(-$order->total_discounts, $this->context->currency, false),
                             '{total_shipping}' => Tools::displayPrice($order->total_shipping, $this->context->currency, false),

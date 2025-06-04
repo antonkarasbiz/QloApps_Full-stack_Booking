@@ -65,7 +65,7 @@
     </div>
     <span class="remove_link">
         {if !isset($customizedDatas.$productId.$productAttributeId) && (!isset($product.is_gift) || !$product.is_gift)}
-            <a class="ajax_cart_block_remove_link" href="{$link->getPageLink('cart', true, NULL, "delete=1&id_product={$product.id_product|intval}&ipa={$product.id_product_attribute|intval}&id_address_delivery={$product.id_address_delivery|intval}&token={$static_token}")|escape:'html':'UTF-8'}{if isset($hotel_wise_data) && $hotel_wise_data.id_hotel}&id_hotel={$hotel_wise_data.id_hotel|escape:'html':'UTF-8'}{/if}" rel="nofollow" title="{l s='remove this product from my cart' mod='blockcart'}">&nbsp;</a>
+            <a class="ajax_cart_block_remove_link" href="{$link->getPageLink('cart', true, NULL, "delete=1&id_product={$product.id_product|intval}&ipa={$product.id_product_attribute|intval}&id_address_delivery={$product.id_address_delivery|intval}&token={$static_token}")|escape:'html':'UTF-8'}{if !empty($hotel_wise_data.id_hotel)}&id_hotel={$hotel_wise_data.id_hotel|escape:'html':'UTF-8'}{/if}" rel="nofollow" title="{l s='remove this product from my cart' mod='blockcart'}">&nbsp;</a>
         {/if}
     </span>
     <div style="clear:both"></div>
