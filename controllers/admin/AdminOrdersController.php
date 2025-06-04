@@ -986,14 +986,12 @@ class AdminOrdersControllerCore extends AdminController
                 }
 
                 if ($serviceProducts) {
-                    if ($additionalServices) {
-                        foreach ($serviceProducts as $key => $servProduct) {
-                            $serviceProducts[$key]['price_tax_exc'] = $servProduct['price'];
-                            if (isset($additionalServices[$productLineData['id']])
-                                && in_array($servProduct['id_product'], array_column($additionalServices[$productLineData['id']]['additional_services'], 'id_product'))
-                            ) {
-                                unset($serviceProducts[$key]);
-                            }
+                    foreach ($serviceProducts as $key => $servProduct) {
+                        $serviceProducts[$key]['price_tax_exc'] = $servProduct['price'];
+                        if (isset($additionalServices[$productLineData['id']])
+                            && in_array($servProduct['id_product'], array_column($additionalServices[$productLineData['id']]['additional_services'], 'id_product'))
+                        ) {
+                            unset($serviceProducts[$key]);
                         }
                     }
 
@@ -1017,6 +1015,7 @@ class AdminOrdersControllerCore extends AdminController
                 $smartyVars['taxRulesGroups'] = $taxRulesGroups;
                 $smartyVars['invoices_collection'] = $objOrder->getInvoicesCollection();
                 $smartyVars['customServiceAllowed'] = Configuration::get('PS_ALLOW_CREATE_CUSTOM_SERVICES_IN_BOOKING');
+                $smartyVars['current_id_lang'] = $this->context->language->id;
 
                 $this->context->smarty->assign($smartyVars);
 

@@ -318,12 +318,15 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
         if (Module::isInstalled('hotelreservationsystem')) {
             $obj_htl_bk_dtl = new HotelBookingDetail();
             $objServiceProductOrderDetail = new ServiceProductOrderDetail();
-            $objHotelBranchInfo = new HotelBranchInformation((int) HotelBookingDetail::getIdHotelByIdOrder($order_obj->id), $context->language->id);
             $invoiceAddressPatternRules['avoid'][] = 'lastname';
-            if ($idHotelAddress = $objHotelBranchInfo->getHotelIdAddress()) {
-                $objHotelAddress = new Address((int) $idHotelAddress);
-                $objHotelAddress->firstname = $objHotelBranchInfo->hotel_name;
-                $formattedHotelAddress = AddressFormat::generateAddress($objHotelAddress, $invoiceAddressPatternRules, '<br />', ' ');
+            if ($idHotel = HotelBookingDetail::getIdHotelByIdOrder($order_obj->id)) {
+                $objHotelBranchInfo = new HotelBranchInformation((int) $idHotel, $context->language->id);
+                $invoiceAddressPatternRules['avoid'][] = 'lastname';
+                if ($idHotelAddress = $objHotelBranchInfo->getHotelIdAddress()) {
+                    $objHotelAddress = new Address((int) $idHotelAddress);
+                    $objHotelAddress->firstname = $objHotelBranchInfo->hotel_name;
+                    $formattedHotelAddress = AddressFormat::generateAddress($objHotelAddress, $invoiceAddressPatternRules, '<br />', ' ');
+                }
             }
 
             $customer = new Customer($this->order->id_customer);
@@ -580,10 +583,7 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
                                 0,
                                 $data_v['id']
                             )) {
-                                $additionalServices['product_id'] = $type_value['product_id'];
-                                $additionalServices['room_type_name'] = $type_value['product_name'];
-                                $additionalServices['date_from'] = $data_v['date_from'];
-                                $additionalServices['date_to'] = $data_v['date_to'];
+                                $additionalServices[$data_v['id']]['product_id'] = $type_value['product_id'];
                                 $room_additinal_services[] = $additionalServices[$data_v['id']];
                             }
 
