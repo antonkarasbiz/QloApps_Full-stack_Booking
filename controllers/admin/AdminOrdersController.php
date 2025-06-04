@@ -6152,6 +6152,9 @@ class AdminOrdersControllerCore extends AdminController
 
             // Save order invoice
             if (isset($objOrderInvoice)) {
+                $objOrderInvoice->total_products_wt -= $diffPriceTaxIncl;
+                $objOrderInvoice->total_paid_tax_excl += $diffPriceTaxExcl;
+                $objOrderInvoice->total_paid_tax_incl += $diffPriceTaxIncl;
                 $result &= $objOrderInvoice->update();
             }
 
