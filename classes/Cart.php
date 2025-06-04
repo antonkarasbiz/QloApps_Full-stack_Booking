@@ -2432,7 +2432,7 @@ class CartCore extends ObjectModel
                                         $array[$selectedProduct['id_room_type_hotel']]['total_price_tax_incl'] += $selectedProduct['total_price_tax_incl'];
                                     } else {
                                         $array[$selectedProduct['id_room_type_hotel']] = array(
-                                            'quantity' => 0,
+                                            'quantity' => $selectedProduct['quantity'],
                                             'id_hotel' => $selectedProduct['id_room_type_hotel'],
                                             'total_price_tax_excl' => $selectedProduct['total_price_tax_excl'],
                                             'total_price_tax_incl' => $selectedProduct['total_price_tax_incl'],
@@ -2452,35 +2452,37 @@ class CartCore extends ObjectModel
                                     }
                                 }
 
-                                foreach($array as $selectedProduct) {
-                                    $product['cart_quantity'] = $selectedProduct['quantity'];
-                                    $product['total'] = $selectedProduct['total_price_tax_excl'];
-                                    $product['total_wt'] = $selectedProduct['total_price_tax_incl'];
-                                    $product['price_wt'] = $selectedProduct['total_price_tax_incl'] / $selectedProduct['quantity'];
-                                    $product['price'] = $selectedProduct['total_price_tax_excl'] / $selectedProduct['quantity'];
-                                    $product['id_hotel'] = $selectedProduct['id_hotel'];
-                                    $product['id_room_type'] = $selectedProduct['id_room_type'];
-                                    $product['id_hotel_cart_booking'] = $selectedProduct['id_hotel_cart_booking'];
-                                    $productinfo = $product;
-                                    $productinfo['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
-                                    $orderPackage[$id_address][$selectedProduct['id_hotel']]['product_list'][] = $productinfo;
-                                    if (!isset($orderPackage[$id_address][$selectedProduct['id_hotel']]['id_hotel'])) {
-                                        $orderPackage[$id_address][$selectedProduct['id_hotel']]['id_hotel'] = $selectedProduct['id_hotel'];
-                                    }
-                                    if (!isset($orderPackage[$id_address][$selectedProduct['id_hotel']]['carrier_list'])) {
-                                        $orderPackage[$id_address][$selectedProduct['id_hotel']]['carrier_list'] = $product['carrier_list'];
-                                    } else {
-                                        $orderPackage[$id_address][$selectedProduct['id_hotel']]['carrier_list'] = array_intersect($orderPackage[$id_address][$selectedProduct['id_hotel']]['carrier_list'], $product['carrier_list']);
-                                    }
-                                    if (!isset($orderPackage[$id_address][$selectedProduct['id_hotel']]['warehouse_list'])) {
-                                        $orderPackage[$id_address][$selectedProduct['id_hotel']]['warehouse_list'] = $package['warehouse_list'];
-                                    }
-                                    if (!isset($orderPackage[$id_address][$selectedProduct['id_hotel']]['id_warehouse'])) {
-                                        $orderPackage[$id_address][$selectedProduct['id_hotel']]['id_warehouse'] = $package['id_warehouse'];
-                                    }
-                                    if (isset($package['id_carrier'])) {
-                                        if (!isset($orderPackage[$id_address][$selectedProduct['id_hotel']]['id_carrier'])) {
-                                            $orderPackage[$id_address][$selectedProduct['id_hotel']]['id_carrier'] = $package['id_carrier'];
+                                if ($array) {
+                                    foreach($array as $selectedProduct) {
+                                        $product['cart_quantity'] = $selectedProduct['quantity'];
+                                        $product['total'] = $selectedProduct['total_price_tax_excl'];
+                                        $product['total_wt'] = $selectedProduct['total_price_tax_incl'];
+                                        $product['price_wt'] = $selectedProduct['total_price_tax_incl'] / $selectedProduct['quantity'];
+                                        $product['price'] = $selectedProduct['total_price_tax_excl'] / $selectedProduct['quantity'];
+                                        $product['id_hotel'] = $selectedProduct['id_hotel'];
+                                        $product['id_room_type'] = $selectedProduct['id_room_type'];
+                                        $product['id_hotel_cart_booking'] = $selectedProduct['id_hotel_cart_booking'];
+                                        $productinfo = $product;
+                                        $productinfo['selling_preference_type'] = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
+                                        $orderPackage[$id_address][$selectedProduct['id_hotel']]['product_list'][] = $productinfo;
+                                        if (!isset($orderPackage[$id_address][$selectedProduct['id_hotel']]['id_hotel'])) {
+                                            $orderPackage[$id_address][$selectedProduct['id_hotel']]['id_hotel'] = $selectedProduct['id_hotel'];
+                                        }
+                                        if (!isset($orderPackage[$id_address][$selectedProduct['id_hotel']]['carrier_list'])) {
+                                            $orderPackage[$id_address][$selectedProduct['id_hotel']]['carrier_list'] = $product['carrier_list'];
+                                        } else {
+                                            $orderPackage[$id_address][$selectedProduct['id_hotel']]['carrier_list'] = array_intersect($orderPackage[$id_address][$selectedProduct['id_hotel']]['carrier_list'], $product['carrier_list']);
+                                        }
+                                        if (!isset($orderPackage[$id_address][$selectedProduct['id_hotel']]['warehouse_list'])) {
+                                            $orderPackage[$id_address][$selectedProduct['id_hotel']]['warehouse_list'] = $package['warehouse_list'];
+                                        }
+                                        if (!isset($orderPackage[$id_address][$selectedProduct['id_hotel']]['id_warehouse'])) {
+                                            $orderPackage[$id_address][$selectedProduct['id_hotel']]['id_warehouse'] = $package['id_warehouse'];
+                                        }
+                                        if (isset($package['id_carrier'])) {
+                                            if (!isset($orderPackage[$id_address][$selectedProduct['id_hotel']]['id_carrier'])) {
+                                                $orderPackage[$id_address][$selectedProduct['id_hotel']]['id_carrier'] = $package['id_carrier'];
+                                            }
                                         }
                                     }
                                 }
@@ -2528,38 +2530,41 @@ class CartCore extends ObjectModel
                                         );
                                     }
                                 }
-                                foreach($array as $hotelProduct) {
-                                    $serviceProduct = $product;
-                                    $serviceProduct['cart_quantity'] = $hotelProduct['quantity'];
-                                    $serviceProduct['id_hotel'] = $hotelProduct['id_hotel'];
-                                    $serviceProduct['total'] = $hotelProduct['total_price_tax_excl'];
-                                    $serviceProduct['total_wt'] = $hotelProduct['total_price_tax_incl'];
-                                    $serviceProduct['price'] = $hotelProduct['total_price_tax_excl'] / $hotelProduct['quantity'];
-                                    $serviceProduct['price_wt'] = $hotelProduct['total_price_tax_incl'] / $hotelProduct['quantity'];
-                                    $serviceProduct['id_room_type'] = $hotelProduct['id_room_type'];
-                                    $serviceProduct['id_hotel_cart_booking'] = $hotelProduct['id_hotel_cart_booking'];
-                                    // if (!empty($hotelProducts['products'])) {
-                                    //     foreach($hotelProducts['products'] as $hotelProduct) {
-                                    $productinfo = $serviceProduct;
-                                    $productinfo['selling_preference_type'] = Product::SELLING_PREFERENCE_HOTEL_STANDALONE;
-                                    $orderPackage[$id_address][$hotelProduct['id_hotel']]['product_list'][] = $productinfo;
-                                    if (!isset($orderPackage[$id_address][$hotelProduct['id_hotel']]['id_hotel'])) {
-                                        $orderPackage[$id_address][$hotelProduct['id_hotel']]['id_hotel'] = $hotelProduct['id_hotel'];
-                                    }
-                                    if (!isset($orderPackage[$id_address][$hotelProduct['id_hotel']]['carrier_list'])) {
-                                        $orderPackage[$id_address][$hotelProduct['id_hotel']]['carrier_list'] = $product['carrier_list'];
-                                    } else {
-                                        $orderPackage[$id_address][$hotelProduct['id_hotel']]['carrier_list'] = array_intersect($orderPackage[$id_address][$hotelProduct['id_hotel']]['carrier_list'], $product['carrier_list']);
-                                    }
-                                    if (!isset($orderPackage[$id_address][$hotelProduct['id_hotel']]['warehouse_list'])) {
-                                        $orderPackage[$id_address][$hotelProduct['id_hotel']]['warehouse_list'] = $package['warehouse_list'];
-                                    }
-                                    if (!isset($orderPackage[$id_address][$hotelProduct['id_hotel']]['id_warehouse'])) {
-                                        $orderPackage[$id_address][$hotelProduct['id_hotel']]['id_warehouse'] = $package['id_warehouse'];
-                                    }
-                                    if (isset($package['id_carrier'])) {
-                                        if (!isset($orderPackage[$id_address][$hotelProduct['id_hotel']]['id_carrier'])) {
-                                            $orderPackage[$id_address][$hotelProduct['id_hotel']]['id_carrier'] = $package['id_carrier'];
+
+                                if ($array) {
+                                    foreach($array as $hotelProduct) {
+                                        $serviceProduct = $product;
+                                        $serviceProduct['cart_quantity'] = $hotelProduct['quantity'];
+                                        $serviceProduct['id_hotel'] = $hotelProduct['id_hotel'];
+                                        $serviceProduct['total'] = $hotelProduct['total_price_tax_excl'];
+                                        $serviceProduct['total_wt'] = $hotelProduct['total_price_tax_incl'];
+                                        $serviceProduct['price'] = $hotelProduct['total_price_tax_excl'] / $hotelProduct['quantity'];
+                                        $serviceProduct['price_wt'] = $hotelProduct['total_price_tax_incl'] / $hotelProduct['quantity'];
+                                        $serviceProduct['id_room_type'] = $hotelProduct['id_room_type'];
+                                        $serviceProduct['id_hotel_cart_booking'] = $hotelProduct['id_hotel_cart_booking'];
+                                        // if (!empty($hotelProducts['products'])) {
+                                        //     foreach($hotelProducts['products'] as $hotelProduct) {
+                                        $productinfo = $serviceProduct;
+                                        $productinfo['selling_preference_type'] = Product::SELLING_PREFERENCE_HOTEL_STANDALONE;
+                                        $orderPackage[$id_address][$hotelProduct['id_hotel']]['product_list'][] = $productinfo;
+                                        if (!isset($orderPackage[$id_address][$hotelProduct['id_hotel']]['id_hotel'])) {
+                                            $orderPackage[$id_address][$hotelProduct['id_hotel']]['id_hotel'] = $hotelProduct['id_hotel'];
+                                        }
+                                        if (!isset($orderPackage[$id_address][$hotelProduct['id_hotel']]['carrier_list'])) {
+                                            $orderPackage[$id_address][$hotelProduct['id_hotel']]['carrier_list'] = $product['carrier_list'];
+                                        } else {
+                                            $orderPackage[$id_address][$hotelProduct['id_hotel']]['carrier_list'] = array_intersect($orderPackage[$id_address][$hotelProduct['id_hotel']]['carrier_list'], $product['carrier_list']);
+                                        }
+                                        if (!isset($orderPackage[$id_address][$hotelProduct['id_hotel']]['warehouse_list'])) {
+                                            $orderPackage[$id_address][$hotelProduct['id_hotel']]['warehouse_list'] = $package['warehouse_list'];
+                                        }
+                                        if (!isset($orderPackage[$id_address][$hotelProduct['id_hotel']]['id_warehouse'])) {
+                                            $orderPackage[$id_address][$hotelProduct['id_hotel']]['id_warehouse'] = $package['id_warehouse'];
+                                        }
+                                        if (isset($package['id_carrier'])) {
+                                            if (!isset($orderPackage[$id_address][$hotelProduct['id_hotel']]['id_carrier'])) {
+                                                $orderPackage[$id_address][$hotelProduct['id_hotel']]['id_carrier'] = $package['id_carrier'];
+                                            }
                                         }
                                     }
                                 }
