@@ -7692,7 +7692,7 @@ class AdminOrdersControllerCore extends AdminController
                         $objHotelBookingDetail->date_to,
                         $objHotelBookingDetail->id_room
                     )) {
-                        $name = Tools::getValue('new_service_name');
+                        $name = trim(Tools::getValue('new_service_name'));
                         $price = Tools::getValue('new_service_price');
                         $priceCalcMethod = Tools::getValue('new_service_price_calc_method');
                         $priceAdditionType = Tools::getValue('new_service_price_addition_type');
