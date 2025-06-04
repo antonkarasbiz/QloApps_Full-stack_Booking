@@ -81,14 +81,26 @@
 								{displayPrice price=$orderTotalPaid currency=$orderInfo['id_currency']}
 							</div>
 						</div>
-                        <div class="form-group row">
-							<div class="col-sm-3">
-								<strong>{l s='Total rooms' mod='hotelreservationsystem'} :</strong>
-							</div>
-							<div class="col-sm-9">
-								{$refundReqBookings|count}
-							</div>
-						</div>
+                        {if isset($refundReqBookings) && $refundReqBookings}
+                            <div class="form-group row">
+                                <div class="col-sm-3">
+                                    <strong>{l s='Total rooms' mod='hotelreservationsystem'} :</strong>
+                                </div>
+                                <div class="col-sm-9">
+                                    {$refundReqBookings|count}
+                                </div>
+                            </div>
+                        {/if}
+                        {if isset($refundReqProducts) && $refundReqProducts}
+                            <div class="form-group row">
+                                <div class="col-sm-3">
+                                    <strong>{l s='Total products' mod='hotelreservationsystem'} :</strong>
+                                </div>
+                                <div class="col-sm-9">
+                                    {$refundReqProducts|count}
+                                </div>
+                            </div>
+                        {/if}
 						<div class="form-group row">
 							<div class="col-sm-3">
 								<strong>{l s='Way of payment' mod='hotelreservationsystem'} :</strong>
