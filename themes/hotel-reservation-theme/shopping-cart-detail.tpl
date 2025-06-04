@@ -240,8 +240,8 @@
                         </div>
                     </div>
                     <div class="row product_price_detail_block">
-                        <div class="col-sm-4 col-xs-7">
-                            <div class="price_block">
+                        <div class="col-sm-7">
+                            <div class="price_block col-xs-7">
                                 <p class="total_price">
                                     <span>
                                         {if $priceDisplay}{displayPrice price=($product['unit_price_tax_excl'])}{else}{displayPrice price=($product['unit_price_tax_incl'])}{/if}
@@ -251,35 +251,26 @@
                                     {l s='Unit price'} {if $display_tax_label}{if $priceDisplay} {l s='(Excl.'} {else}{l s='(Incl.)'}{/if} {l s='all taxes.)'}{/if}
                                 </p>
                             </div>
-                        </div>
-                        <div class="col-sm-3 col-xs-5">
-                            <div class="quantity_cont">
-                                <input type="hidden" value="{$product.quantity}" name="quantity_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}_hidden" />
-                                <input size="2" type="text" autocomplete="off" class="cart_quantity_input grey" value="{$product.quantity}"  name="quantity_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" />
-                                <div class="cart_quantity_button">
-                                    <a rel="nofollow" class="cart_quantity_up btn btn-default" id="cart_quantity_up_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_address_delivery=0&amp;token={$token_cart}")|escape:'html':'UTF-8'}" title="{l s='Add'}"><span><i class="icon-plus"></i></span></a>
-                                    {if $product.minimal_quantity < ($product.quantity)}
-                                        <a rel="nofollow" class="cart_quantity_down btn btn-default" id="cart_quantity_down_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_address_delivery=0&amp;op=down&amp;token={$token_cart}")|escape:'html':'UTF-8'}" title="{l s='Subtract'}">
-                                            <span><i class="icon-minus"></i></span>
-                                        </a>
-                                    {else}
-                                        <a class="cart_quantity_down btn btn-default disabled" href="#" id="cart_quantity_down_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" title="{l s='You must purchase a minimum of %d of this product.' sprintf=1}">
-                                            <span><i class="icon-minus"></i></span>
-                                        </a>
-                                    {/if}
-
+                            {if $product.allow_multiple_quantity}
+                                <div class="col-xs-5">
+                                    <div class="quantity_cont">
+                                        <input type="hidden" value="{$product.quantity}" name="quantity_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}_hidden" />
+                                        <input size="2" type="text" autocomplete="off" class="cart_quantity_input grey" value="{$product.quantity}"  name="quantity_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" />
+                                        <div class="cart_quantity_button">
+                                            <a rel="nofollow" class="cart_quantity_up btn btn-default" id="cart_quantity_up_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_address_delivery=0&amp;token={$token_cart}")|escape:'html':'UTF-8'}" title="{l s='Add'}"><span><i class="icon-plus"></i></span></a>
+                                            {if $product.minimal_quantity < ($product.quantity)}
+                                                <a rel="nofollow" class="cart_quantity_down btn btn-default" id="cart_quantity_down_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_address_delivery=0&amp;op=down&amp;token={$token_cart}")|escape:'html':'UTF-8'}" title="{l s='Subtract'}">
+                                                    <span><i class="icon-minus"></i></span>
+                                                </a>
+                                            {else}
+                                                <a class="cart_quantity_down btn btn-default disabled" href="#" id="cart_quantity_down_{$product.id_product}_{if $product.id_product_option}{$product.id_product_option}{else}0{/if}_{if $product.id_hotel}{$product.id_hotel}{else}0{/if}" title="{l s='You must purchase a minimum of %d of this product.' sprintf=1}">
+                                                    <span><i class="icon-minus"></i></span>
+                                                </a>
+                                            {/if}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            {* <div class="product_quantity_block">
-                                <p class="">
-                                    <span>
-                                        {if $product['quantity'] <= 9}0{$product['quantity']}{else}{$product['quantity']}{/if}
-                                    </span>
-                                </p>
-                                <p class="product_quantity_detial">
-                                    {l s='Total Qty'}
-                                </p>
-                            </div> *}
+                            {/if}
                         </div>
                         <div class="col-sm-5">
                             <div class="total_price_block col-xs-12">
@@ -370,17 +361,6 @@
 
                                         </div>
                                     </div>
-
-                                    {* <div class="product_quantity_block">
-                                        <p class="">
-                                            <span>
-                                                {if $product['quantity'] <= 9}0{$product['quantity']}{else}{$product['quantity']}{/if}
-                                            </span>
-                                        </p>
-                                        <p class="product_quantity_detial">
-                                            {l s='Total Qty'}
-                                        </p>
-                                    </div> *}
                                 </div>
                             {/if}
                         </div>
