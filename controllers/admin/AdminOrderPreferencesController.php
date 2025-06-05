@@ -362,23 +362,24 @@ class AdminOrderPreferencesControllerCore extends AdminController
             $countries = Country::getCountries($this->context->language->id);
             $this->context->smarty->assign('countries', $countries);
             $this->fields_options['standard_product'] = array(
-                'title' => $this->l('Standard Product'),
+                'title' => $this->l('Standard Product Address configuration'),
                 'icon' => 'icon-cogs',
                 'fields' => array(
                     'PS_STANDARD_PRODUCT_ORDER_ADDRESS_PREFRENCE' => array(
-                        'title' => $this->l('Standard product address type'),
+                        'title' => $this->l('Address for standard product tax calculation'),
                         'validation' => 'isInt',
                         'type' => 'select',
                         'cast' => 'intval',
                         'list' => $addressPrefrenceTypes,
                         'identifier' => 'value',
                         'js' => "changeStandardProductAddressType()",
-                        'hint' => $this->l('Select Standard product Address type, this will be used to calculate the tax for the standard product price.'),
-                        'desc' => $this->l('The selected address type will be used to calculate tax for the standard product.')
+                        'hint' => $this->l('Select address for standard product tax calculation, this will be used to calculate the tax for the standard product price.'),
+                        'desc' => $this->l('The selected address will be used to calculate tax for standard products. To change the hotel address, update the "Primary Hotel" in the').
+                        '<a href="'.$this->context->link->getAdminLink('AdminHotelGeneralSettings').'"> '.$this->l('Hotel General Configuration.').'</a>'
                     ),
                     'PS_STANDARD_PRODUCT_ORDER_ADDRESS' => array(
-                        'title' => $this->l('Standard product custom address'),
-                        'hint' => $this->l('Set the Address details'),
+                        'title' => $this->l('Custom address for tax calculation'),
+                        'hint' => $this->l('Set the custom address details for tax calculation'),
                         'type' => 'html',
                     ),
                 ),
@@ -429,7 +430,7 @@ class AdminOrderPreferencesControllerCore extends AdminController
         $postcode = trim(Tools::getValue('service_postcode'));
         $serviceAddressPrefrenceType = Tools::getValue('PS_STANDARD_PRODUCT_ORDER_ADDRESS_PREFRENCE');
         if ($serviceAddressPrefrenceType == Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOM) {
-            $addressValidation = Address::getValidationRules('Address');
+            $addressValidation = Address::getValidationRules('Address')['size'];
             if (!$idCountry) {
                 $this->errors[] = Tools::displayError('Field country is required');
             } elseif (!Validate::isLoadedObject($objCountry = new Country($idCountry))) {
