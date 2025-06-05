@@ -1065,9 +1065,11 @@
                                                                             </label>
                                                                             {if $product_option.is_cancelled}<span class="badge badge-danger badge-cancelled">{l s='Cancelled'}</span>{else if $product_option.is_refunded}<span class="badge badge-danger badge-cancelled">{l s='Refunded'}</span>{else if isset($product_option.refund_denied) && $product_option.refund_denied}<span class="badge badge-danger badge-cancelled">{l s='Refund denied'}</span> <i class="icon-info-circle refund-denied-info" data-refund_denied_info="{l s='Refund for this product is denied. Please contact admin for more detail.'}"></i></span>{/if}
                                                                         </div>
-                                                                        <div class="quantity-wrap clearfix">
-                                                                            <span>{l s='Quantity'} : {$product_option.quantity}</span>
-                                                                        </div>
+                                                                        {if $product_option.allow_multiple_quantity}
+                                                                            <div class="quantity-wrap clearfix">
+                                                                                <span>{l s='Quantity'} : {$product_option.quantity}</span>
+                                                                            </div>
+                                                                        {/if}
                                                                     </div>
                                                                 {/foreach}
                                                             </div>

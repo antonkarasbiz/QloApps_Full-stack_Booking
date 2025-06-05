@@ -48,11 +48,11 @@
 
         {block name='blockcart_shopping_cart_product_quantity'}
             <div class="cart-info-sec rm_product_info_{$product.id_product}">
-                <span class="product_info_label">{l s='Total Qty.' mod='blockcart'}:</span>
+                {if $product.allow_multiple_quantity || $product.booking_product}<span class="product_info_label">{l s='Total Qty.' mod='blockcart'}:</span>{/if}
                 <span class="quantity-formated">
                     {if $product.booking_product}
                         <span class="quantity product_info_data">{$product.bookingData['total_num_rooms']}</span>
-                    {else}
+                    {elseif $product.allow_multiple_quantity}
                         {if $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE || $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE}
                             <span class="quantity product_info_data">{$hotel_wise_data.total_qty}</span>
                         {elseif $product.selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE}

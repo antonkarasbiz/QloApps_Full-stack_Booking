@@ -326,9 +326,10 @@ class OrderReturnCore extends ObjectModel
      */
     public function getOrderRefundRequestedProducts($idOrder, $idOrderReturn = 0, $onlyIds = 0, $skipReqCompletedNonRefunded = 0)
     {
-        $sql = 'SELECT spod.*, ord.*, orr.`state` as id_return_state FROM `'._DB_PREFIX_.'order_return` orr';
+        $sql = 'SELECT spod.*, ord.*, orr.`state` as id_return_state, p.`allow_multiple_quantity` FROM `'._DB_PREFIX_.'order_return` orr';
         $sql .= ' INNER JOIN `'._DB_PREFIX_.'order_return_detail` ord ON (orr.`id_order_return` = ord.`id_order_return`)';
         $sql .= ' INNER JOIN `'._DB_PREFIX_.'service_product_order_detail` spod ON (spod.`id_service_product_order_detail` = ord.`id_service_product_order_detail`)';
+        $sql .= ' LEFT  JOIN `'._DB_PREFIX_.'product` p ON (p.`id_product` = spod.`id_product`)';
         $sql .= ' WHERE orr.`id_order` = '.(int)$idOrder;
 
         if ($idOrderReturn) {

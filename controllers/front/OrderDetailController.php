@@ -420,11 +420,8 @@ class OrderDetailControllerCore extends FrontController
                         }
                         $roomTypes[$type_value['id_product']] = $type_value;
                     }
-                    $redirectTermsLink = $this->context->link->getCMSLink(new CMS(3, $this->context->language->id), null, $this->context->language->id);
                 }
 
-                $objHotelBookingDetail = new HotelBookingDetail();
-                $htlBookingDetail = $objHotelBookingDetail->getOrderCurrentDataByOrderId($order->id);
 
                 $this->context->smarty->assign(
                     array(
