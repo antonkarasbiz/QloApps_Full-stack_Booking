@@ -3293,7 +3293,7 @@ class AdminOrdersControllerCore extends AdminController
                     0,
                     0,
                     null,
-                    0,
+                    null,
                     null,
                     0,
                     $value['id']
