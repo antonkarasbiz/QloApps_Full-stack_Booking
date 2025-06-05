@@ -595,18 +595,28 @@
                                 {block name='order_detail_add_order_messages_form'}
                                     <form action="{$link->getPageLink('order-detail', true)|escape:'html':'UTF-8'}" method="post" class="std" id="sendOrderMessage">
                                         <div class="form-group select-room-type">
-                                            <label for="id_product">{l s='Room Type'}</label>
+                                            <label for="id_product">{l s='Room Type'}{if $service_products_formatted}/{l s='Product'}{/if}</label>
                                             <p class="card-subheader text-muted">
-                                                {l s='To add a comment about a room type, please select one first.'}
+                                                {if $service_products_formatted}
+                                                    {l s='To add a comment about a room type/product, please select one first.'}
+                                                {else}
+                                                    {l s='To add a comment about a room type, please select one first.'}
+                                                {/if}
                                             </p>
-
                                             <select name="id_product" class="form-control">
                                                 <option value="0">{l s='-- Choose --'}</option>
-                                                {foreach from=$roomTypes item=product}
-                                                    {if $product.is_booking_product}
-                                                        <option value="{$product.product_id}">{$product.product_name|escape:'html':'UTF-8'}</option>
-                                                    {/if}
-                                                {/foreach}
+                                                {if $roomTypes}
+                                                    {foreach from=$roomTypes item=product}
+                                                        {if $product.is_booking_product}
+                                                            <option value="{$product.product_id}">{$product.product_name|escape:'html':'UTF-8'}</option>
+                                                        {/if}
+                                                    {/foreach}
+                                                {/if}
+                                                {if $service_products_formatted}
+                                                    {foreach from=$service_products_formatted item=product}
+                                                        <option value="{$product.id_product}">{$product.name|escape:'html':'UTF-8'}</option>
+                                                    {/foreach}
+                                                {/if}
                                             </select>
                                         </div>
 

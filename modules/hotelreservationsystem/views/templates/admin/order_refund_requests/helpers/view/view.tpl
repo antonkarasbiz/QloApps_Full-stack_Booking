@@ -275,7 +275,7 @@
 													<td><input type="checkbox" name="id_order_return_detail[]" value="{$product['id_order_return_detail']|escape:'html':'UTF-8'}" checked/></td>
 												{/if}
 												<td>{$product['name']|escape:'htmlall':'UTF-8'}{if isset($product['option_name']) && $product['option_name']} : {$product['option_name']|escape:'htmlall':'UTF-8'}{/if}</td>
-												<td>{$product['quantity']|escape:'htmlall':'UTF-8'}</td>
+												<td>{if $product['allow_multiple_quantity']}{$product['quantity']|escape:'htmlall':'UTF-8'}{else}--{/if}</td>
 												<td>{displayPrice price=$product['total_price_tax_incl'] currency=$orderCurrency['id']}</td>
 												<td>{displayPrice price=$product['paid_amount'] currency=$orderCurrency['id']}</td>
 												{if $hasOrderDiscountOrPayment || $isRefundCompleted}
