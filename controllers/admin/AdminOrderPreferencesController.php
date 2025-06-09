@@ -189,7 +189,7 @@ class AdminOrderPreferencesControllerCore extends AdminController
                     'PS_ROOM_PRICE_AUTO_ADD_BREAKDOWN' => array(
                         'title' => $this->l('Show room price breakdown'),
                         'hint' => $this->l('Show price breakdown for rooms with auto added services on checkout page.'),
-                        'desc' => $this->l('This room price breakdown will be shown if cart rule for specific room type is applied on that room.'),
+                        'desc' => $this->l('Displays a price breakdown for rooms that have auto-added services during checkout.'),
                         'cast' => 'intval',
                         'type' => 'bool'
                     ),

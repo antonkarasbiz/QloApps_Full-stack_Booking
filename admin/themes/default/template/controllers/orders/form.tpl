@@ -635,7 +635,10 @@
 			'width': '90%',
 			'height': '90%',
 			'afterClose' : function () {
-				searchCustomers();
+				let customer = $('#customer').val();
+				if (customer != '' && customer.length > 3) {
+					searchCustomers();
+				}
 			}
 		});
 		/*$("#new_address").fancybox({
@@ -888,7 +891,7 @@
 	let customerSearchAjax = '';
 	function searchCustomers()
 	{
-		abortRunningAjax(customerSearchAjax);Add commentMore actions
+		abortRunningAjax(customerSearchAjax);
 		customerSearchAjax = $.ajax({
 			type:"POST",
 			url : "{$link->getAdminLink('AdminCustomers')}",
