@@ -1542,6 +1542,10 @@ class AdminCartsControllerCore extends AdminController
                     // Validate selected services
                     foreach ($selectedServiceProducts as $idServiceProduct => $selected) {
                         if (Validate::isLoadedObject($objProduct = new Product($idServiceProduct, false, $objCart->id_lang))) {
+                            if (!$objProduct->allow_multiple_quantity) {
+                                $serviceQuantities[$idServiceProduct] = 1;
+                            }
+
                             if ($objProduct->allow_multiple_quantity) {
                                 if (!isset($serviceQuantities[$idServiceProduct])) {
                                     $response['hasError'] = true;
@@ -1553,10 +1557,6 @@ class AdminCartsControllerCore extends AdminController
                             } elseif ($serviceQuantities[$idServiceProduct] > 1) {
                                 $response['hasError'] = true;
                                 $response['errors'][] = Tools::displayError('Can not order multiple quanitity for service').': '.$objProduct->name;
-                            }
-
-                            if (!$objProduct->allow_multiple_quantity) {
-                                $serviceQuantities[$idServiceProduct] = 1;
                             }
 
                             if (!isset($serviceUnitPrices[$idServiceProduct])
