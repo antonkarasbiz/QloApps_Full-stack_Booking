@@ -146,7 +146,7 @@ class AdminNormalProductsControllerCore extends AdminController
             }
         }
 
-        $catFitlerKey = $this->table.'Filter_a!id_category_default';
+        $catFilterKey = $this->table.'Filter_a!id_category_default';
         if (Tools::getValue('reset_filter_category')) {
             $this->context->cookie->id_category_products_filter = false;
         }
@@ -157,7 +157,7 @@ class AdminNormalProductsControllerCore extends AdminController
                 Tools::redirectAdmin($this->context->link->getAdminLink('AdminNormalProducts'));
             }
         }
-        if (!Tools::getValue($catFitlerKey)) {
+        if (!Tools::getValue($catFilterKey)) {
             $this->context->cookie->id_category_products_filter = false;
         }
         /* Join categories table */
@@ -173,9 +173,9 @@ class AdminNormalProductsControllerCore extends AdminController
             }
 
             $idFilterCategory = false;
-            if (!Tools::isSubmit($catFitlerKey)) {
+            if (!Tools::isSubmit($catFilterKey)) {
                 $prefix = $this->getCookieFilterPrefix();
-                $idFilterCategory = $this->context->cookie->{$prefix.$catFitlerKey};
+                $idFilterCategory = $this->context->cookie->{$prefix.$catFilterKey};
             }
 
             if ($idFilterCategory) {

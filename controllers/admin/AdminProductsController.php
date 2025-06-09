@@ -169,22 +169,26 @@ class AdminProductsControllerCore extends AdminController
             $_POST['productFilter_a!id_category_default'] = $id_category;
         }
 
-        $catFitlerKey = $this->table.'Filter_a!id_category_default';
-         if (!Tools::getValue($catFitlerKey)) {
+        $catFilterKey = $this->table.'Filter_a!id_category_default';
+        if (!Tools::getValue($catFilterKey)) {
             $this->context->cookie->id_category_room_types_filter = false;
         }
         if (($id_category = (int)Tools::getValue('id_category'))
-            || ($id_category = (int) Tools::getValue($catFitlerKey))
+            || ($id_category = (int)Tools::getValue($catFilterKey))
         ) {
             $this->id_current_category = $id_category;
             $this->context->cookie->id_category_room_types_filter = $id_category;
+            if (Tools::isSubmit('submitResetproduct')) {
+                $this->id_current_category = false;
+                $this->context->cookie->id_category_room_types_filter = false;
+            }
         } elseif ($id_category = $this->context->cookie->id_category_room_types_filter) {
             $this->id_current_category = $id_category;
         }  else {
             $idFilterCategory = false;
-            if (!Tools::isSubmit($catFitlerKey)) {
+            if (!Tools::isSubmit($catFilterKey)) {
                 $prefix = $this->getCookieFilterPrefix();
-                $idFilterCategory = $this->context->cookie->{$prefix.$catFitlerKey};
+                $idFilterCategory = $this->context->cookie->{$prefix.$catFilterKey};
             }
 
             if ($idFilterCategory) {
