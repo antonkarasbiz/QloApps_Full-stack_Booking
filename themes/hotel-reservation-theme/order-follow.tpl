@@ -47,7 +47,12 @@
 					<thead>
 						<tr>
 							<th>{l s='Order'}</th>
-							<th>{l s='Total rooms'}</th>
+							{if isset($hasRoomRefunds) && $hasRoomRefunds}
+                                <th>{l s='Total rooms'}</th>
+                            {/if}
+                            {if isset($hasProductRefunds) && $hasProductRefunds}
+                                <th>{l s='Total products'}</th>
+                            {/if}
 							<th>{l s='Refund status'}</th>
 							<th>{l s='Date requested'}</th>
 							<th>{l s='Actions'}</th>
@@ -59,9 +64,16 @@
 								<td>
 									#{$return.reference|escape:'html':'UTF-8'}
 								</td>
-								<td>
-									{$return.total_rooms|escape:'html':'UTF-8'}
-								</td>
+                                {if isset($hasRoomRefunds) && $hasRoomRefunds}
+                                    <td>
+                                        {$return.total_rooms|escape:'html':'UTF-8'}
+                                    </td>
+                                {/if}
+                                {if isset($hasProductRefunds) && $hasProductRefunds}
+                                    <td>
+                                        {$return.total_products|escape:'html':'UTF-8'}
+                                    </td>
+                                {/if}
 								<td>
 									<span class="badge wk-badge" style="background-color:{$return.state_color|escape:'html':'UTF-8'}">{$return.state_name|escape:'html':'UTF-8'}
 								</td>

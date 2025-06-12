@@ -36,7 +36,7 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
         $this->allow_export = true;
         $this->_new_list_header_design = true;
         if ($idOrder = Tools::getValue('id_order')) {
-            $this->_select .= ', orsl.`name` as `status_name`, ors.`color`, COUNT(ordrd.`id_order_return_detail`) as num_rooms';
+            $this->_select .= ', orsl.`name` as `status_name`, ors.`color`, SUM(IF((ordrd.id_htl_booking != 0) , 1, 0)) as num_rooms, SUM(IF((ordrd.id_service_product_order_detail != 0) , 1, 0)) as num_products';
             $this->_join .= 'LEFT JOIN '._DB_PREFIX_.'order_return_state ors ON (ors.`id_order_return_state` = a.`state`)';
             $this->_join .= 'LEFT JOIN '._DB_PREFIX_.'order_return_state_lang orsl ON (orsl.`id_order_return_state` = a.`state` AND orsl.`id_lang` = '.(int)$this->context->language->id.')';
             $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'order_return_detail` ordrd ON (a.`id_order_return` = ordrd.`id_order_return`)';
@@ -60,6 +60,11 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
         if ($idOrder = Tools::getValue('id_order')) {
             $refundStatuses = OrderReturnStateCore::getOrderReturnStates($this->context->language->id);
 
+            // to set columns for products and rooms count in render list
+            $objOrderReturn = new OrderReturn();
+            $refundReqBookings = $objOrderReturn->getOrderRefundRequestedBookings($idOrder);
+            $refundReqProducts = $objOrderReturn->getOrderRefundRequestedProducts($idOrder);
+
             $retStatuses = array();
             foreach ($refundStatuses as $status) {
                 $retStatuses[$status['id_order_return_state']] = $status['name'];
@@ -82,11 +87,21 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                 'havingFilter' => true,
                 'callback' => 'setCustomerLink',
             );
-            $this->fields_list['num_rooms'] = array(
-                'title' => $this->l('Total Rooms'),
-                'align' => 'center',
-                'havingFilter' => true,
-            );
+
+            if ($refundReqBookings) {
+                $this->fields_list['num_rooms'] = array(
+                    'title' => $this->l('Total Rooms'),
+                    'align' => 'center',
+                    'havingFilter' => true,
+                );
+            }
+            if ($refundReqProducts) {
+                $this->fields_list['num_products'] = array(
+                    'title' => $this->l('Total Products'),
+                    'align' => 'center',
+                    'havingFilter' => true,
+                );
+            }
             $this->fields_list['refunded_amount'] = array(
                 'title' => $this->l('Refunded Amount'),
                 'align' => 'center',
@@ -299,9 +314,7 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
             }
         }
 
-        if ($refundReqProducts = $objOrderReturn->getOrderRefundRequestedProducts($objOrderReturn->id_order, $objOrderReturn->id)){
-        }
-
+        $refundReqProducts = $objOrderReturn->getOrderRefundRequestedProducts($objOrderReturn->id_order, $objOrderReturn->id);
 
         $paymentMethods = array();
         foreach (PaymentModule::getInstalledPaymentModules() as $payment) {

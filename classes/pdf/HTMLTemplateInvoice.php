@@ -318,25 +318,31 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
         if (Module::isInstalled('hotelreservationsystem')) {
             $obj_htl_bk_dtl = new HotelBookingDetail();
             $objServiceProductOrderDetail = new ServiceProductOrderDetail();
-            $objHotelBranchInfo = new HotelBranchInformation((int) HotelBookingDetail::getIdHotelByIdOrder($order_obj->id), $context->language->id);
             $invoiceAddressPatternRules['avoid'][] = 'lastname';
-            if ($idHotelAddress = $objHotelBranchInfo->getHotelIdAddress()) {
-                $objHotelAddress = new Address((int) $idHotelAddress);
-                $objHotelAddress->firstname = $objHotelBranchInfo->hotel_name;
-                $formattedHotelAddress = AddressFormat::generateAddress($objHotelAddress, $invoiceAddressPatternRules, '<br />', ' ');
+            if ($idHotel = HotelBookingDetail::getIdHotelByIdOrder($order_obj->id)) {
+                $objHotelBranchInfo = new HotelBranchInformation((int) $idHotel, $context->language->id);
+                $invoiceAddressPatternRules['avoid'][] = 'lastname';
+                if ($idHotelAddress = $objHotelBranchInfo->getHotelIdAddress()) {
+                    $objHotelAddress = new Address((int) $idHotelAddress);
+                    $objHotelAddress->firstname = $objHotelBranchInfo->hotel_name;
+                    $formattedHotelAddress = AddressFormat::generateAddress($objHotelAddress, $invoiceAddressPatternRules, '<br />', ' ');
+                }
             }
 
-            $customer = new Customer($this->order->id_customer);
+            $idCustomer = 0;
+            if (ValidateCore::isLoadedObject($customer = new Customer($this->order->id_customer))) {
+                $idCustomer = $customer->id;
+            }
             if (!empty($order_details)) {
                 $processed_product = array();
                 $totalDemandsPriceTE = 0;
                 $totalDemandsPriceTI = 0;
                 foreach ($order_details as $type_key => $type_value) {
-                    $processProuctKey = $type_value['product_id'].'_'.$type_value['selling_preference_type'].'_'.$type_value['id_order_detail'];
-                    if (isset($processed_product[$processProuctKey])) {
+                    $processProductKey = $type_value['product_id'].'_'.$type_value['selling_preference_type'].'_'.$type_value['id_order_detail'];
+                    if (isset($processed_product[$processProductKey])) {
                         continue;
                     }
-                    $processed_product[$processProuctKey] = $type_value['product_id'];
+                    $processed_product[$processProductKey] = $type_value['product_id'];
 
                     if ($type_value['is_booking_product']) {
                         if ($display_product_images) {
@@ -352,14 +358,7 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
                             $cart_htl_data[$type_key]['cover_img']    = $cover_img;
                         }
 
-                        if ($type_value)
-                        if (isset($customer->id)) {
-                            $cart_obj = new Cart($this->order->id_cart);
-                            $order_bk_data = $obj_htl_bk_dtl->getOnlyOrderBookingData($this->order->id, $cart_obj->id_guest, $type_value['product_id'], $customer->id);
-                        } else {
-                            $order_bk_data = $obj_htl_bk_dtl->getOnlyOrderBookingData($this->order->id, $customer->id_guest, $type_value['product_id'], 0);
-                        }
-
+                        $order_bk_data = $obj_htl_bk_dtl->getOnlyOrderBookingData($this->order->id, 0, $type_value['product_id'], $idCustomer, $type_value['id_order_detail']);
                         $cart_htl_data[$type_key]['id_product'] = $type_value['product_id'];
                         $objBookingDemand = new HotelBookingDemands();
                         foreach ($order_bk_data as $data_k => $data_v) {
@@ -580,10 +579,7 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
                                 0,
                                 $data_v['id']
                             )) {
-                                $additionalServices['product_id'] = $type_value['product_id'];
-                                $additionalServices['room_type_name'] = $type_value['product_name'];
-                                $additionalServices['date_from'] = $data_v['date_from'];
-                                $additionalServices['date_to'] = $data_v['date_to'];
+                                $additionalServices[$data_v['id']]['product_id'] = $type_value['product_id'];
                                 $room_additinal_services[] = $additionalServices[$data_v['id']];
                             }
 
