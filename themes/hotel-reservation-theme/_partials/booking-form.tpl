@@ -280,12 +280,12 @@
                                         <div class="total_price_block col-xs-7 form-group">
                                             <label class="control-label">{l s='Price'}</label>
                                             <p>
+                                                {if $service_price && $service_price_without_reduction > $service_price}
+                                                    <span class="room_type_old_price">
+                                                        {convertPrice price=$service_price_without_reduction|floatval}
+                                                    </span>
+                                                {/if}
                                                 {convertPrice price=$service_price}
-                                                {* {if !$priceDisplay || $priceDisplay == 2}
-                                                    {convertPrice price=$product->getPrice(true, $smarty.const.NULL, 6)|floatval}
-                                                {elseif $priceDisplay == 1}
-                                                    {convertPrice price=$product->getPrice(false, $smarty.const.NULL, 6)|floatval}
-                                                {/if} *}
                                             </p>
                                         </div>
                                     {/block}

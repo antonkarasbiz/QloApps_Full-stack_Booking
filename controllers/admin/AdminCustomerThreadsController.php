@@ -860,7 +860,12 @@ class AdminCustomerThreadsControllerCore extends AdminController
                 $product = new Product((int)$mess['id_product'], false, $this->context->language->id);
                 if (Validate::isLoadedObject($product)) {
                     $messages[$key]['product_name'] = $product->name;
-                    $messages[$key]['product_link'] = $this->context->link->getAdminLink('AdminProducts').'&updateproduct&id_product='.(int)$product->id;
+                    $messages[$key]['booking_product'] = $product->booking_product;
+                    if ($product->booking_product) {
+                        $messages[$key]['product_link'] = $this->context->link->getAdminLink('AdminProducts').'&updateproduct&id_product='.(int)$product->id;
+                    } else {
+                        $messages[$key]['product_link'] = $this->context->link->getAdminLink('AdminNormalProducts').'&updateproduct&id_product='.(int)$product->id;
+                    }
                 }
             }
         }
@@ -981,8 +986,6 @@ class AdminCustomerThreadsControllerCore extends AdminController
         $timeline = array();
         foreach ($messages as $message) {
             $product = new Product((int)$message['id_product'], false, $this->context->language->id);
-            $link_product = $this->context->link->getAdminLink('AdminOrders').'&vieworder&id_order='.(int)$product->id;
-
             $content = '';
             if (!$message['private']) {
                 $customerName = false;
@@ -1000,7 +1003,13 @@ class AdminCustomerThreadsControllerCore extends AdminController
             }
 
             if (Validate::isLoadedObject($product)) {
-                $content .= $this->l('Room type: ').'<span class="label label-info">'.$product->name.'</span><br/><br/>';
+                if ($product->booking_product) {
+                    $content .= $this->l('Room type:');
+                } else {
+                    $content .= $this->l('Product:');
+                }
+
+                $content .= ' <span class="label label-info">'.$product->name.'</span><br/><br/>';
             }
             $content .= Tools::safeOutput($message['message']);
 

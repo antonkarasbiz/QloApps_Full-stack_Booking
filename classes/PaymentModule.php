@@ -621,7 +621,7 @@ abstract class PaymentModuleCore extends Module
                     $product_list_txt = '';
                     $product_list_html = '';
                     if (count($product_var_tpl_list) > 0) {
-                        $product_list_txt = $this->getEmailTemplateContent('order_conf_product_list.txt', Mail::TYPE_TEXT, $product_var_tpl_list);
+                        $product_list_txt = $this->getEmailTemplateContent('order_conf_product_list_text.tpl', Mail::TYPE_TEXT, $product_var_tpl_list);
                         $product_list_html = $this->getEmailTemplateContent('order_conf_product_list.tpl', Mail::TYPE_HTML, $product_var_tpl_list);
                     }
 
@@ -698,7 +698,7 @@ abstract class PaymentModuleCore extends Module
                     $cart_rules_list_txt = '';
                     $cart_rules_list_html = '';
                     if (count($cart_rules_list) > 0) {
-                        $cart_rules_list_txt = $this->getEmailTemplateContent('order_conf_cart_rules.txt', Mail::TYPE_TEXT, $cart_rules_list);
+                        $cart_rules_list_txt = $this->getEmailTemplateContent('order_conf_cart_rules_text.tpl', Mail::TYPE_TEXT, $cart_rules_list);
                         $cart_rules_list_html = $this->getEmailTemplateContent('order_conf_cart_rules.tpl', Mail::TYPE_HTML, $cart_rules_list);
                     }
 
@@ -1342,6 +1342,7 @@ abstract class PaymentModuleCore extends Module
                             '{products_txt}' => $product_list_txt,
                             '{discounts}' => $cart_rules_list_html,
                             '{discounts_txt}' => $cart_rules_list_txt,
+                            '{total_paid}' => Tools::displayPrice($order->total_paid, $this->context->currency, false),
                             '{total_products}' => Tools::displayPrice($total_products, $this->context->currency, false),
                             '{total_discounts}' => Tools::displayPrice(-$order->total_discounts, $this->context->currency, false),
                             '{total_shipping}' => Tools::displayPrice($order->total_shipping, $this->context->currency, false),

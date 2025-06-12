@@ -143,12 +143,25 @@ class AdminHotelBedTypesController extends ModuleAdminController
             return;
         }
 
-        if (!trim(Tools::getValue('width'))) {
-            $this->errors[] = $this->l('Field Width is required');
+        $defaultLangId = Configuration::get('PS_LANG_DEFAULT');
+        $objDefaultLanguage = Language::getLanguage((int) $defaultLangId);
+        $languages = Language::getLanguages(false);
+        if (!trim(Tools::getValue('name_'.$defaultLangId))) {
+            $this->errors[] = $this->l('Bed type name is required at least in ').$objDefaultLanguage['name'];
+        } else {
+            foreach ($languages as $lang) {
+                if (trim(Tools::getValue('name_'.$lang['id_lang'])) && !Validate::isGenericName(Tools::getValue('name_'.$lang['id_lang']))) {
+                    $this->errors[] = $this->l('Invalid bed type name in ').$lang['name'];
+                }
+            }
         }
 
-        if (!trim(Tools::getValue('length'))) {
-            $this->errors[] = $this->l('Field Length is required');
+        if (!(float) Tools::getValue('width')) {
+            $this->errors[] = $this->l('The width field is required');
+        }
+
+        if (!(float) Tools::getValue('length')) {
+            $this->errors[] = $this->l('The length field is required');
         }
 
         return parent::processSave();
