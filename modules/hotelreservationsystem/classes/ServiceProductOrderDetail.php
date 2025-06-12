@@ -95,11 +95,26 @@ class ServiceProductOrderDetail extends ObjectModel
             $sql .= ' AND od.`selling_preference_type` = '.(int)$sellingPreferenceType;
         }
 
-        $products = Db::getInstance()->executeS($sql);
-        foreach ($products as $key => $product) {
-            // Check if this booking as any refund history then enter refund data
-            if ($refundInfo = OrderReturn::getOrdersReturnDetail($idOrder, 0, 0, $product['id_service_product_order_detail'])) {
-                $products[$key]['refund_info'] = reset($refundInfo);
+        if ($products = Db::getInstance()->executeS($sql)) {
+            $objContext = Context::getContext();
+            $defaultImageLink = $objContext->link->getImageLink('', $objContext->language->iso_code.'-default', 'small_default');
+            foreach ($products as $key => $product) {
+                // Check if this booking as any refund history then enter refund data
+                if ($refundInfo = OrderReturn::getOrdersReturnDetail($idOrder, 0, 0, $product['id_service_product_order_detail'])) {
+                    $products[$key]['refund_info'] = reset($refundInfo);
+                }
+
+                $products[$key]['cover_image'] = $defaultImageLink;
+                $products[$key]['allow_multiple_quantity'] = 0;
+                if (Validate::isLoadedObject($objProduct = new Product((int) $product['id_product'], Configuration::get('PS_LANG_DEFAULT')))) {
+                    $products[$key]['allow_multiple_quantity'] = $objProduct->allow_multiple_quantity;
+                    if ($productCoverImg = Product::getCover($product['id_product'])) {
+                        $products[$key]['cover_image'] = $objContext->link->getImageLink(
+                            $objProduct->link_rewrite[Configuration::get('PS_LANG_DEFAULT')],
+                            $productCoverImg['id_image'], 'small_default'
+                        );
+                    }
+                }
             }
         }
 
@@ -127,13 +142,15 @@ class ServiceProductOrderDetail extends ObjectModel
 
         $sql = 'SELECT spod.*';
         if (!$getTotalPrice) {
-            $sql .= ', hbd.`id_product` as `id_room_type`, od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`, hbd.`id_room`, hbd.`adults`, hbd.`children`, hbd.`id_product`, hbd.`date_from`, hbd.`date_to`, hbd.`room_type_name`, spod.`id_product` as id_product';
+            $sql .= ', hbd.`id_product` as `id_room_type`, od.`product_price_calculation_method`,
+            hbd.`id_room`, hbd.`adults`, hbd.`children`, hbd.`date_from`, hbd.`date_to`, hbd.`room_type_name`,
+            spod.`id_product` as id_product,  od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`, od.`product_auto_add`, od.`product_price_addition_type`';
         }
         $sql .= ' FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
             LEFT JOIN `'._DB_PREFIX_.'service_product_order_detail` spod ON(spod.`id_htl_booking_detail` = hbd.`id`)';
 
         $sql .= ' LEFT JOIN `'._DB_PREFIX_.'order_detail` od ON(od.`id_order_detail` = spod.`id_order_detail`)';
-        $sql .= ' WHERE 1';
+        $sql .= ' WHERE spod.`id_htl_booking_detail` IS NOT NULL';
 
         if ($idOrder) {
             $sql .= ' AND spod.`id_order` = '.(int)$idOrder;
@@ -210,6 +227,8 @@ class ServiceProductOrderDetail extends ObjectModel
                             'total_price_tax_incl' => $product['total_price_tax_incl'],
                             'unit_price_tax_excl' => $product['unit_price_tax_excl'],
                             'unit_price_tax_incl' => $product['unit_price_tax_incl'],
+                            'product_auto_add' => $product['product_auto_add'],
+                            'product_price_addition_type' => $product['product_price_addition_type'],
                         );
                     } else {
                         $selectedAdditionalServices[$product['id_htl_booking_detail']]['id_order'] = $product['id_order'];
@@ -240,6 +259,8 @@ class ServiceProductOrderDetail extends ObjectModel
                                 'total_price_tax_incl' => $product['total_price_tax_incl'],
                                 'unit_price_tax_excl' => $product['unit_price_tax_excl'],
                                 'unit_price_tax_incl' => $product['unit_price_tax_incl'],
+                                'product_auto_add' => $product['product_auto_add'],
+                                'product_price_addition_type' => $product['product_price_addition_type'],
                             ),
                         );
                     }
@@ -319,7 +340,7 @@ class ServiceProductOrderDetail extends ObjectModel
                             'max_quantity' => $product['max_quantity'],
                             'product_auto_add' => $product['product_auto_add'],
                             'product_price_addition_type' => $product['product_price_addition_type'],
-                            'product_price_calculation_method' => $product['product_price_calculation_method'],
+                            'price_calculation_method' => $product['product_price_calculation_method'],
                             'unit_price_tax_excl' => $product['unit_price_tax_excl'],
                             'unit_price_tax_incl' => $product['unit_price_tax_incl'],
                             'total_price_tax_excl' => $product['total_price_tax_excl'],
@@ -346,7 +367,7 @@ class ServiceProductOrderDetail extends ObjectModel
                                 'max_quantity' => $product['max_quantity'],
                                 'product_auto_add' => $product['product_auto_add'],
                                 'product_price_addition_type' => $product['product_price_addition_type'],
-                                'product_price_calculation_method' => $product['product_price_calculation_method'],
+                                'price_calculation_method' => $product['product_price_calculation_method'],
                                 'unit_price_tax_excl' => $product['unit_price_tax_excl'],
                                 'unit_price_tax_incl' => $product['unit_price_tax_incl'],
                                 'total_price_tax_excl' => $product['total_price_tax_excl'],

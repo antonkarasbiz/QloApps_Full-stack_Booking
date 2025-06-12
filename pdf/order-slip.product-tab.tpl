@@ -27,7 +27,7 @@
     <table class="bordered-table" width="100%" cellpadding="4" cellspacing="0">
 		<thead>
             <tr>
-				<th colspan="4" class="header">{l s='Room Bookings Detail' pdf='true'}</th>
+				<th colspan="5" class="header">{l s='Room Bookings Detail' pdf='true'}</th>
 			</tr>
 			<tr>
 				<th class="product header">{l s='Room Type / Reference' pdf='true'}</th>

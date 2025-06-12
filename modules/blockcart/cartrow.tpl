@@ -48,11 +48,11 @@
 
         {block name='blockcart_shopping_cart_product_quantity'}
             <div class="cart-info-sec rm_product_info_{$product.id_product}">
-                <span class="product_info_label">{l s='Total Qty.' mod='blockcart'}:</span>
+                {if $product.allow_multiple_quantity || $product.booking_product}<span class="product_info_label">{l s='Total Qty.' mod='blockcart'}:</span>{/if}
                 <span class="quantity-formated">
                     {if $product.booking_product}
                         <span class="quantity product_info_data">{$product.bookingData['total_num_rooms']}</span>
-                    {else}
+                    {elseif $product.allow_multiple_quantity}
                         {if $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE || $product.selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE}
                             <span class="quantity product_info_data">{$hotel_wise_data.total_qty}</span>
                         {elseif $product.selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE}
@@ -65,7 +65,7 @@
     </div>
     <span class="remove_link">
         {if !isset($customizedDatas.$productId.$productAttributeId) && (!isset($product.is_gift) || !$product.is_gift)}
-            <a class="ajax_cart_block_remove_link" href="{$link->getPageLink('cart', true, NULL, "delete=1&id_product={$product.id_product|intval}&ipa={$product.id_product_attribute|intval}&id_address_delivery={$product.id_address_delivery|intval}&token={$static_token}")|escape:'html':'UTF-8'}{if isset($hotel_wise_data) && $hotel_wise_data.id_hotel}&id_hotel={$hotel_wise_data.id_hotel|escape:'html':'UTF-8'}{/if}" rel="nofollow" title="{l s='remove this product from my cart' mod='blockcart'}">&nbsp;</a>
+            <a class="ajax_cart_block_remove_link" href="{$link->getPageLink('cart', true, NULL, "delete=1&id_product={$product.id_product|intval}&ipa={$product.id_product_attribute|intval}&id_address_delivery={$product.id_address_delivery|intval}&token={$static_token}")|escape:'html':'UTF-8'}{if !empty($hotel_wise_data.id_hotel)}&id_hotel={$hotel_wise_data.id_hotel|escape:'html':'UTF-8'}{/if}" rel="nofollow" title="{l s='remove this product from my cart' mod='blockcart'}">&nbsp;</a>
         {/if}
     </span>
     <div style="clear:both"></div>

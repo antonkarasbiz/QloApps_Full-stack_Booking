@@ -1238,6 +1238,7 @@
                 };
 
                 $('#page-loader').show();
+                $('[name="submitBulkCreateRooms"]').attr('disabled', 'disable');
                 $.ajax({
                     url: prod_link,
                     type: 'POST',
@@ -1253,6 +1254,7 @@
                     },
                     complete: function() {
                         $('#page-loader').hide();
+                        $('[name="submitBulkCreateRooms"]').attr('disabled', false);
                     }
                 });
             },

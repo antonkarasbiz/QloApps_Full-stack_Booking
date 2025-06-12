@@ -401,8 +401,20 @@ class AdminLocalizationControllerCore extends AdminController
 
     public function beforeUpdateOptions()
     {
-        $lang = new Language((int)Tools::getValue('PS_LANG_DEFAULT'));
+        if (!trim(Tools::getValue('PS_WEIGHT_UNIT'))) {
+            $this->errors[] = sprintf(Tools::displayError('field %s is required.'), $this->l('Weight unit'));
+        }
+        if (!trim(Tools::getValue('PS_DISTANCE_UNIT'))) {
+            $this->errors[] = sprintf(Tools::displayError('field %s is required.'), $this->l('Distance unit'));
+        }
+        if (!trim(Tools::getValue('PS_DIMENSION_UNIT'))) {
+            $this->errors[] = sprintf(Tools::displayError('field %s is required.'), $this->l('Dimension unit'));
+        }
+        if (!trim(Tools::getValue('PS_VOLUME_UNIT'))) {
+            $this->errors[] = sprintf(Tools::displayError('field %s is required.'), $this->l('Volume unit'));
+        }
 
+        $lang = new Language((int)Tools::getValue('PS_LANG_DEFAULT'));
         if (!$lang->active) {
             $lang->active = 1;
             $lang->save();

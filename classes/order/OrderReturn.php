@@ -326,9 +326,10 @@ class OrderReturnCore extends ObjectModel
      */
     public function getOrderRefundRequestedProducts($idOrder, $idOrderReturn = 0, $onlyIds = 0, $skipReqCompletedNonRefunded = 0)
     {
-        $sql = 'SELECT spod.*, ord.*, orr.`state` as id_return_state FROM `'._DB_PREFIX_.'order_return` orr';
+        $sql = 'SELECT spod.*, ord.*, orr.`state` as id_return_state, p.`allow_multiple_quantity` FROM `'._DB_PREFIX_.'order_return` orr';
         $sql .= ' INNER JOIN `'._DB_PREFIX_.'order_return_detail` ord ON (orr.`id_order_return` = ord.`id_order_return`)';
         $sql .= ' INNER JOIN `'._DB_PREFIX_.'service_product_order_detail` spod ON (spod.`id_service_product_order_detail` = ord.`id_service_product_order_detail`)';
+        $sql .= ' LEFT  JOIN `'._DB_PREFIX_.'product` p ON (p.`id_product` = spod.`id_product`)';
         $sql .= ' WHERE orr.`id_order` = '.(int)$idOrder;
 
         if ($idOrderReturn) {
@@ -368,7 +369,7 @@ class OrderReturnCore extends ObjectModel
         }
         $sql = 'SELECT orr.`id_order`, orr.`state`, orr.`id_order_return`, orr.`payment_mode`, orr.`id_transaction`,
             orr.`id_return_type`, orr.`return_type`, ors.`id_cart_rule`, orr.`date_add`, orr.`date_upd`, orr.`refunded_amount`,
-            hbd.`is_cancelled`, SUM(IF(ord.`id_htl_booking`, 1, 0)) AS total_rooms
+            hbd.`is_cancelled`, SUM(IF(ord.`id_htl_booking`, 1, 0)) AS total_rooms, SUM(IF(ord.`id_service_product_order_detail`, 1, 0)) AS total_products
             FROM `'._DB_PREFIX_.'order_return` orr
             LEFT JOIN `'._DB_PREFIX_.'order_return_detail` ord
             ON (ord.`id_order_return` = orr.`id_order_return`)

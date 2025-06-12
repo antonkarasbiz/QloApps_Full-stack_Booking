@@ -78,13 +78,10 @@
                                         <div class="input-group">
                                             <span class="input-group-addon">{$currencySign}</span>
                                             <input type="text" class="form-control unit_price" value="{Tools::ps_round($service['unit_price_tax_excl'], 2)}" data-id-product="{$service['id_product']}" name="service_price[{$service['id_service_product_order_detail']}]">
-                                            {if Product::PRICE_CALCULATION_METHOD_PER_DAY == $service.product_price_calculation_method}
+                                            {if Product::PRICE_CALCULATION_METHOD_PER_DAY == $service.price_calculation_method}
                                                 <span class="input-group-addon">{l s='/ night'}</span>
                                             {/if}
                                         </div>
-                                        {* {if $service['product_price_calculation_method'] == Product::PRICE_CALCULATION_METHOD_PER_DAY}
-                                            {l s='/ night'}
-                                        {/if} *}
                                     </td>
                                     <td>{displayPrice price=$service['total_price_tax_excl']|escape:'html':'UTF-8' currency=$orderCurrency}</td>
                                     <td class="text-right"><a class="btn btn-danger pull-right del_room_additional_service" data-id_service_product_order_detail="{$service['id_service_product_order_detail']}" href="#"><i class="icon-trash"></i></a></td>
@@ -150,7 +147,7 @@
 										<div class="input-group">
 											<span class="input-group-addon">{$currencySign}</span>
 											<input type="text" class="form-control unit_price" name="service_price[{$product['id_product']|escape:'html':'UTF-8'}]" value="{$product['price_tax_exc']}" data-id-product="{$product.id_product}">
-											{if Product::PRICE_CALCULATION_METHOD_PER_DAY == $product['product_price_calculation_method']}
+											{if Product::PRICE_CALCULATION_METHOD_PER_DAY == $product['price_calculation_method']}
 												<span class="input-group-addon">{l s='/ night'}</span>
 											{/if}
 										</div>
@@ -274,7 +271,7 @@
 						</td>
 						<td>
 							{displayPrice price=$service['unit_price_tax_excl'] currency=$orderCurrency}
-							{if $service['product_price_calculation_method'] == Product::PRICE_CALCULATION_METHOD_PER_DAY}
+							{if $service['price_calculation_method'] == Product::PRICE_CALCULATION_METHOD_PER_DAY}
 								{l s='/ night'}
 							{/if}
 						</td>

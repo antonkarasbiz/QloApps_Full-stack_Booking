@@ -3875,14 +3875,14 @@ class AdminNormalProductsControllerCore extends AdminController
         }
 
         $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
-        $selectetRoomTypes = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id, RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE);
-        $selectetHotels = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id, RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL);
+        $selectedRoomTypes = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id, RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE);
+        $selectedHotels = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id, RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL);
 
         $tree = new HelperTree('hotels-room-tree');
         $tree->setData(HotelHelper::generateTreeData([
                 'rootNode' => HotelHelper::NODE_HOTEL,
                 'leafNode' => HotelHelper::NODE_ROOM_TYPE,
-                'selectedElements' => $selectetRoomTypes
+                'selectedElements' => $selectedRoomTypes
             ]))
             ->setUseCheckBox(true)
             ->setAutoSelectChildren(true)
@@ -3894,7 +3894,7 @@ class AdminNormalProductsControllerCore extends AdminController
         $tree->setData(HotelHelper::generateTreeData([
                 'rootNode' => HotelHelper::NODE_HOTEL,
                 'leafNode' => HotelHelper::NODE_HOTEL,
-                'selectedElements' => $selectetHotels
+                'selectedElements' => $selectedHotels
             ]))
             ->setUseCheckBox(true)
             ->setAutoSelectChildren(true)
