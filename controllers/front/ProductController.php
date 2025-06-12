@@ -891,6 +891,14 @@ class ProductControllerCore extends FrontController
             $useTax,
             $quantity
         );
+        $smartyVars['service_price_without_reduction']  = RoomTypeServiceProductPrice::getPrice(
+            $this->product->id,
+            $idHotel,
+            $idProductOption,
+            $useTax,
+            $quantity,
+            false
+        );
         if ($quantity) {
             $smartyVars['quantity']  = $quantity;
         }

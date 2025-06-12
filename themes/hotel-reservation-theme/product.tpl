@@ -217,7 +217,7 @@
 										{if isset($id_hotel) && $id_hotel}
 											<li><a href="#refund_policies_tab" class="idTabHrefShort" data-toggle="tab">{l s='Refund Policies'}</a></li>
 										{/if}
-										{if $display_google_maps && ($hotel_latitude|floatval != 0 && $hotel_longitude|floatval != 0)}
+										{if $display_google_maps && !empty($hotel_latitude) && !empty($hotel_longitude) && ($hotel_latitude|floatval != 0 && $hotel_longitude|floatval != 0)}
 											<li><a href="#room_type_map_tab" class="idTabHrefShort" data-toggle="tab">{l s='View on Map'}</a></li>
 										{/if}
 										{block name='displayProductTab'}
@@ -399,7 +399,7 @@
 											{/if}
 										{/block}
 										{block name='product_map_tab_content'}
-											{if $display_google_maps && ($hotel_latitude|floatval != 0 && $hotel_longitude|floatval != 0)}
+											{if $display_google_maps && !empty($hotel_latitude) && !empty($hotel_longitude) && ($hotel_latitude|floatval != 0 && $hotel_longitude|floatval != 0)}
 												<div id="room_type_map_tab" class="tab-pane card">
 													<div class="map-wrap"></div>
 													<div id="room-info-map-ui-content" style="display: none;">

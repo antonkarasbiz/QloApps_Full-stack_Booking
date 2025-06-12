@@ -1148,6 +1148,7 @@ class OrderOpcControllerCore extends ParentOrderController
             $this->_assignCheckoutValidationVars();
             $this->_assignCheckoutVars();
             $this->_assignShoppingCart();
+            $this->_assignSummaryInformations();
             $response['success'] = true;
             $response['shopping_cart'] = $this->context->smarty->fetch(_PS_THEME_DIR_.'shopping-cart.tpl');
             $response['cart_total_block'] = $this->context->smarty->fetch(_PS_THEME_DIR_.'cart-total-block.tpl');

@@ -53,6 +53,9 @@
 		{/block}
 		{block name='order_return_detail'}
 			{if $refundReqBookings}
+                {if isset($refundReqProducts) && $refundReqProducts}
+                    <h1 class="page-subheading">{l s='Rooms refund requests'}</h1>
+                {/if}
 				<div class="table-responsive wk-datatable-wrapper">
 					<table class="table table-bordered">
 						<tr>
@@ -97,12 +100,13 @@
 				</div>
 			{/if}
 			{if $refundReqProducts}
+                <h1 class="page-subheading">{l s='Products refund requests'}</h1>
 				<div class="table-responsive wk-datatable-wrapper">
 					<table class="table table-bordered">
 						<tr>
-							<th>{l s='Name'}</th>
+							<th>{l s='Product name'}</th>
 							<th>{l s='Quantity'}</th>
-							<th>{l s='Total rooms price (tax incl.)'}</th>
+							<th>{l s='Total price (tax incl.)'}</th>
 							{if $isRefundCompleted}
 								<th>{l s='Refund amount'}</th>
 								<th>{l s='Refund Status'}</th>
@@ -111,7 +115,7 @@
 						{foreach from=$refundReqProducts item=$product name=refundRequest}
 							<tr>
 								<td>{$product['name']|escape:'htmlall':'UTF-8'}{if isset($product['option_name']) && $product['option_name']} : {$product['option_name']}{/if}</td>
-								<td>{$product['quantity']|escape:'htmlall':'UTF-8'}</td>
+								<td>{if $product['allow_multiple_quantity']}{$product['quantity']|escape:'htmlall':'UTF-8'}{else}--{/if}</td>
 								<td>{displayPrice price=$product['total_price_tax_incl'] currency=$orderCurrency['id']}</td>
 								{if $isRefundCompleted}
 									<td>

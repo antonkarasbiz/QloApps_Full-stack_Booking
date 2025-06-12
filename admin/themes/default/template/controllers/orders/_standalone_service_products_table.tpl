@@ -58,7 +58,7 @@
                                 </a>
                             </td>
                             <td>
-                                <span class="">{(int)$product['quantity']}</span>
+                                {if $product['allow_multiple_quantity']}<span class="">{(int)$product['quantity']}</span>{else}--{/if}
                             </td>
                             <td class="unit_price_tax_excl">
                                 <p>{displayPrice price=$product.total_price_tax_excl currency=$currency->id}</p>
