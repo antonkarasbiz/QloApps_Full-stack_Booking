@@ -1751,6 +1751,7 @@
             $('#room_type_services_desc').show();
             $('#add_new_room_services_block').hide();
             $('#back_to_service_btn').hide();
+			$('#btn_new_room_service').show();
         });
 
 		// Add new custom service: Show hide new custom service form
@@ -1758,6 +1759,7 @@
 			$('#add_new_room_services_block').show();
 			$('#back_to_service_btn').show();
 			$('#room_type_services_desc').hide();
+			$('#btn_new_room_service').hide();
 		});
 
 		// Add new custom service: change auto added option

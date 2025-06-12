@@ -241,12 +241,14 @@
 																			<div class="description-list">
 																				<dl class="">
 																					<div class="row">
-																						<div class="col-xs-12 col-md-6">
-																							<div class="row">
-																								<dt class="col-xs-5">{l s='Quantity'}</dt>
-																								<dd class="col-xs-7">{$product.product_quantity}</dd>
+																						{if $product.allow_multiple_quantity}
+																							<div class="col-xs-12 col-md-6">
+																								<div class="row">
+																									<dt class="col-xs-5">{l s='Quantity'}</dt>
+																									<dd class="col-xs-7">{$product.product_quantity}</dd>
+																								</div>
 																							</div>
-																						</div>
+																						{/if}
 																						<div class="col-xs-12 col-md-6">
 																							<div class="row">
 																								<dt class="col-xs-5">{l s='Unit Price'}</dt>
@@ -261,8 +263,10 @@
 																						</div>
 																					</div>
 																					<div class="row">
-																						<div class="col-xs-12 col-md-6">
-																						</div>
+																						{if $product.allow_multiple_quantity}
+																							<div class="col-xs-12 col-md-6">
+																							</div>
+																						{/if}
 																						<div class="col-xs-12 col-md-6">
 																							<div class="row">
 																								<dt class="col-xs-5">{l s='Total Pricing'}</dt>
@@ -311,12 +315,14 @@
 																			<div class="description-list">
 																				<dl class="">
 																					<div class="row">
-																						<div class="col-xs-12 col-md-6">
-																							<div class="row">
-																								<dt class="col-xs-5">{l s='Quantity'}</dt>
-																								<dd class="col-xs-7">{$product.product_quantity}</dd>
+																						{if $product.allow_multiple_quantity}
+																							<div class="col-xs-12 col-md-6">
+																								<div class="row">
+																									<dt class="col-xs-5">{l s='Quantity'}</dt>
+																									<dd class="col-xs-7">{$product.product_quantity}</dd>
+																								</div>
 																							</div>
-																						</div>
+																						{/if}
 																						<div class="col-xs-12 col-md-6">
 																							<div class="row">
 																								<dt class="col-xs-5">{l s='Unit Price'}</dt>
@@ -331,8 +337,10 @@
 																						</div>
 																					</div>
 																					<div class="row">
-																						<div class="col-xs-12 col-md-6">
-																						</div>
+																						{if $product.allow_multiple_quantity}
+																							<div class="col-xs-12 col-md-6">
+																							</div>
+																						{/if}
 																						<div class="col-xs-12 col-md-6">
 																							<div class="row">
 																								<dt class="col-xs-5">{l s='Total Pricing'}</dt>

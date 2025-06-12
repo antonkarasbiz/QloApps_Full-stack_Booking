@@ -42,11 +42,11 @@
 		<tbody>
 			{foreach $service_product_data as $product}
 				{cycle values=["color_line_even", "color_line_odd"] assign=bgcolor_class}
-				<tr class="product {$bgcolor_class}">
+				<tr class="{$bgcolor_class}">
 					{if $display_product_images}
-						<td class="product center">
-							{if isset($product.image) && $product.image->id}
-								{$product.image_tag}
+						<td class="cart_product">
+							{if isset($product['cover_image']) && $product['cover_image']}
+								<img src="{$product['cover_image']}" class="thumbnail" />
 							{/if}
 						</td>
 					{/if}

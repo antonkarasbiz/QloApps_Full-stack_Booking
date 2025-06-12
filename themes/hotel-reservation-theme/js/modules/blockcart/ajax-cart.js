@@ -901,15 +901,19 @@ var ajaxCart = {
                 content += '</div>';
             }
             content += '<div class="cart-info-sec rm_product_info_' + productId + '">';
-            content += '<span class="product_info_label">' + total_qty_txt + ':</span>';
+            if (product.booking_product || product.allow_multiple_quantity) {
+                content += '<span class="product_info_label">' + total_qty_txt + ':</span>';
+            }
             content += '<span class="quantity-formated">';
             content += '<span class="quantity product_info_data">';
             if (product.booking_product) {
                 content += product.bookingData.total_num_rooms;
-            } else if (typeof(hotel_wise_data) != 'undefined' && hotel_wise_data.total_qty) {
-                content += hotel_wise_data.total_qty;
-            } else {
-                content += product.cart_quantity;
+            } else if (product.allow_multiple_quantity) {
+                if (typeof(hotel_wise_data) != 'undefined' && hotel_wise_data.total_qty) {
+                    content += hotel_wise_data.total_qty;
+                } else {
+                    content += product.cart_quantity;
+                }
             }
             content += '</span>';
             content += '</span>';
@@ -1186,6 +1190,7 @@ var ajaxCart = {
             product.date_from + ' - ' + product.date_to
         );
         $('#layer_cart_product_hotel_name').parent().hide();
+        $('#layer_cart_product_quantity').parent().show();
         var product_quantity_text = '';
         if(parseInt(product.booking_product)) {
             let rooms = 0;
@@ -1202,7 +1207,11 @@ var ajaxCart = {
                 product_quantity_text = product.occupancy;
             }
         } else {
-            product_quantity_text = product.qty;
+            if (product.allow_multiple_quantity) {
+                product_quantity_text = product.qty;
+            } else {
+                $('#layer_cart_product_quantity').parent().hide();
+            }
             $('#layer_cart_product_unit_price').text(product.unit_price);
             if (product.hotel_name) {
                 $('#layer_cart_product_hotel_name').text(product.hotel_name).parent().show();

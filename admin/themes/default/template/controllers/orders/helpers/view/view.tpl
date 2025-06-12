@@ -749,7 +749,12 @@
                                     <thead>
                                         <tr>
                                             <th>{l s='Request ID'}</th>
-                                            <th>{l s='Total Rooms'}</th>
+                                            {if isset($refundReqBookings) && $refundReqBookings}
+                                                <th>{l s='Total Rooms'}</th>
+                                            {/if}
+                                            {if isset($refundReqProducts) && $refundReqProducts}
+                                                <th>{l s='Total Products'}</th>
+                                            {/if}
                                             <th>{l s='Requested Date'}</th>
                                             <th>{l s='Status'}</th>
                                         </tr>
@@ -760,9 +765,12 @@
                                                 <td>
                                                     <a  href="{$link->getAdminLink('AdminOrderRefundRequests')}&vieworder_return&id_order_return={$return_info.id_order_return}" target="_blank">#{$return_info.id_order_return}</a>
                                                 </td>
-                                                <td>
-                                                    {$return_info.total_rooms|escape:'html':'UTF-8'}
-                                                </td>
+                                                {if isset($refundReqBookings) && $refundReqBookings}
+                                                    <td>{$return_info.total_rooms}</td>
+                                                {/if}
+                                                {if isset($refundReqProducts) && $refundReqProducts}
+                                                    <td>{$return_info.total_products}</td>
+                                                {/if}
                                                 <td>
                                                     {$return_info.date_add}
                                                 </td>
