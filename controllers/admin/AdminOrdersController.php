@@ -2025,6 +2025,11 @@ class AdminOrdersControllerCore extends AdminController
                     $this->context->currency = new Currency((int)$objCart->id_currency);
 
                     $this->errors = HotelCartBookingData::validateCartBookings(!Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING'));
+
+                    // Remove cart rules and add if any changes
+                    CartRule::autoRemoveFromCart($this->context);
+                    CartRule::autoAddToCart($this->context);
+
                     $orderTotal = $objCart->getOrderTotal(true, Cart::BOTH);
                     if ($objCart->is_advance_payment) {
                         $advancePaymentAmount = $objCart->getOrderTotal(true, Cart::ADVANCE_PAYMENT);
