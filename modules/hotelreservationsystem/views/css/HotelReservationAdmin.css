@@ -615,3 +615,26 @@ body.adminhotelroomsbooking .ui-tooltip {
 	padding: 15px;
 	border: 1px solid #ddd
 }
+
+a.remove_advanced_price_rule {
+    position: absolute;
+    right: 5px;
+    top: -8px;}
+#advanced_price_rule_group .panel.advanced_price_rule {
+    padding: 0px;}
+#advanced_price_rule_group .advance_price_rule_header {
+    padding: 15px;}
+#advanced_price_rule_group .advance_price_rule_header:hover {
+    cursor: pointer;}
+.advance_price_rule_header i.icon-caret-down,
+.advance_price_rule_header.collapsed i.icon-caret-up{
+    display: none;}
+.advance_price_rule_header.collapsed i.icon-caret-down{
+    display: block;}
+.advanced_price_rule_body {
+    border-top: 1px solid #d3d3d3;}
+.advanced_price_rule_body .form-group:first-child {
+    margin-top: 15px;}
+.error-border {
+    outline: rgb(210, 124, 130) solid 1px;
+    border-radius: 2px;}

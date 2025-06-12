@@ -284,11 +284,6 @@ class HotelReservationSystemDb
                 `id_cart` int(11) NOT NULL DEFAULT '0',
                 `id_guest` int(11) NOT NULL DEFAULT '0',
                 `id_room` int(11) NOT NULL DEFAULT '0',
-                `date_from` date NOT NULL,
-                `date_to` date NOT NULL,
-                `is_special_days_exists` tinyint(1) NOT NULL,
-                `date_selection_type` tinyint(1) NOT NULL,
-                `special_days` text,
                 `impact_way` tinyint(1) NOT NULL,
                 `impact_type` tinyint(1) NOT NULL,
                 `impact_value` decimal(20,6) NOT NULL DEFAULT '0.000000',
@@ -296,6 +291,19 @@ class HotelReservationSystemDb
                 `date_add` datetime NOT NULL,
                 `date_upd` datetime NOT NULL,
                 PRIMARY KEY (`id_feature_price`)
+            ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
+
+            "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_room_type_feature_pricing_rule` (
+                `id_feature_price_rule` int(11) NOT NULL AUTO_INCREMENT,
+                `id_feature_price` int(11) NOT NULL,
+                `is_special_days_exists` tinyint(1) NOT NULL,
+                `date_selection_type` tinyint(1) NOT NULL,
+                `special_days` text,
+                `date_from` date NOT NULL,
+                `date_to` date NOT NULL,
+                `date_add` datetime NOT NULL,
+                `date_upd` datetime NOT NULL,
+                PRIMARY KEY (`id_feature_price_rule`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
 
             "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_room_type_feature_pricing_lang` (
@@ -582,6 +590,7 @@ class HotelReservationSystemDb
             `'._DB_PREFIX_.'htl_room_type_feature_pricing`,
             `'._DB_PREFIX_.'htl_room_type_feature_pricing_lang`,
             `'._DB_PREFIX_.'htl_room_type_feature_pricing_group`,
+            `'._DB_PREFIX_.'htl_room_type_feature_pricing_rule`,
             `'._DB_PREFIX_.'htl_room_type_global_demand`,
             `'._DB_PREFIX_.'htl_room_type_global_demand_lang`,
             `'._DB_PREFIX_.'htl_room_type_global_demand_advance_option`,

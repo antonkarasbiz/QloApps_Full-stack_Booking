@@ -4824,7 +4824,7 @@ class AdminOrdersControllerCore extends AdminController
                     if ($createFeaturePrice) {
                         $featurePriceParams['id_room'] = $room_info['id_room'];
                         $featurePriceParams = array_merge($featurePriceParams, array('date_from' => $date_from, 'date_to' => $date_to));
-                        HotelRoomTypeFeaturePricing::createAutoFeaturePrice($featurePriceParams);
+                        HotelRoomTypeFeaturePricing::createRoomTypeFeaturePrice($featurePriceParams);
                     }
                 } else {
                     break;
@@ -5663,7 +5663,7 @@ class AdminOrdersControllerCore extends AdminController
                 'date_from' => $new_date_from,
                 'date_to' => $new_date_to
             );
-            HotelRoomTypeFeaturePricing::createAutoFeaturePrice($params);
+            HotelRoomTypeFeaturePricing::createRoomTypeFeaturePrice($params);
 
             $roomTotalPrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
                 $id_product,
