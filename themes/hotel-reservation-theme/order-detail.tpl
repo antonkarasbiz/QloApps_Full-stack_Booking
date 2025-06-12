@@ -326,57 +326,39 @@
                                         {assign var=total_standard_products_tax_incl value=($order->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_STANDALONE) + $order->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_HOTEL_STANDALONE))}
                                         {assign var=total_standard_products_tax_excl value=($order->getTotalProductsWithoutTaxes(false, false, Product::SELLING_PREFERENCE_STANDALONE) + $order->getTotalProductsWithoutTaxes(false, false, Product::SELLING_PREFERENCE_HOTEL_STANDALONE))}
                                         {if isset($cart_htl_data) && $cart_htl_data}
-                                            {if $priceDisplay && $use_tax && $room_price_tax_excl}
-                                                <tr>
-                                                    <td>{l s='Total rooms cost (tax excl.)'}</td>
-                                                    <td class="text-right">
-                                                        <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_excl + $room_services_price_tax_excl - $total_convenience_fee_te) currency=$currency}</span>
-                                                    </td>
-                                                </tr>
-                                            {else}
-                                                <tr>
-                                                    <td>{l s='Total Rooms Cost'} {if $use_tax}{l s='(tax incl.)'}{/if} </td>
-                                                    <td class="text-right">
-                                                        <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_incl + $room_services_price_tax_incl - $total_convenience_fee_ti) currency=$currency}</span>
-                                                    </td>
-                                                </tr>
-                                            {/if}
-                                        {/if}
-
-                                        {if (isset($hotel_service_products) && $hotel_service_products) || (isset($standalone_service_products) && $standalone_service_products)}
-                                            {if $priceDisplay && $use_tax}
-                                                <tr class="item">
-                                                    <td>
-                                                        <strong>{l s='Total products cost (tax excl.)'}</strong>
-                                                    </td>
-                                                    <td class="text-right">
-                                                        <span>{displayWtPriceWithCurrency price=$total_standard_products_tax_excl currency=$currency}</span>
-                                                    </td>
-                                                </tr>
-                                            {else}
-                                                <tr class="item">
-                                                    <td>
-                                                        <strong>{l s='Total products cost'} {if $use_tax}{l s='(tax incl.)'}{/if} </strong>
-                                                    </td>
-                                                    <td class="text-right">
-                                                        <span>{displayWtPriceWithCurrency price=$total_standard_products_tax_incl currency=$currency}</span>
-                                                    </td>
-                                                </tr>
-                                            {/if}
-                                        {/if}
-
-                                        {if $priceDisplay && $use_tax && $total_convenience_fee_te}
                                             <tr>
-                                                <td>{l s='Total Convenience Fees (tax excl.)'}</td>
+                                                <td>{l s='Total rooms cost'} {if $use_taxes && $display_tax_label == 1}{if $priceDisplay == 1}{l s='(tax excl.)'}{elseif $priceDisplay == 0}{l s='(tax incl.)'}{/if} {/if}</td>
                                                 <td class="text-right">
-                                                    <span class="price">{displayWtPriceWithCurrency price=$total_convenience_fee_te currency=$currency}</span>
+                                                    {if $priceDisplay && $use_tax}
+                                                        <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_excl + $room_services_price_tax_excl - $total_convenience_fee_te) currency=$currency}</span>
+                                                    {else}
+                                                        <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_incl + $room_services_price_tax_incl - $total_convenience_fee_ti) currency=$currency}</span>
+                                                    {/if}
                                                 </td>
                                             </tr>
-                                        {else if $total_convenience_fee_ti}
-                                            <tr>
-                                                <td>{l s='Total Convenience Fees (tax incl.)'}</td>
+                                        {/if}
+                                        {if (isset($hotel_service_products) && $hotel_service_products) || (isset($standalone_service_products) && $standalone_service_products)}
+                                            <tr class="item">
+                                                <td>{l s='Total products cost'} {if $use_taxes && $display_tax_label == 1}{if $priceDisplay == 1}{l s='(tax excl.)'}{elseif $priceDisplay == 0}{l s='(tax incl.)'}{/if}{/if}</td>
                                                 <td class="text-right">
-                                                    <span class="price">{displayWtPriceWithCurrency price=$total_convenience_fee_ti currency=$currency}</span>
+                                                    {if $priceDisplay && $use_tax}
+                                                        <span>{displayWtPriceWithCurrency price=$total_standard_products_tax_excl currency=$currency}</span>
+                                                    {else}
+                                                        <span>{displayWtPriceWithCurrency price=$total_standard_products_tax_incl currency=$currency}</span>
+                                                    {/if}
+                                                </td>
+                                            </tr>
+                                        {/if}
+
+                                        {if $total_convenience_fee_te || $total_convenience_fee_te}
+                                             <tr class="item">
+                                                <td>{l s='Total Convenience Fees'} {if $use_taxes && $display_tax_label == 1}{if $priceDisplay == 1}{l s='(tax excl.)'}{elseif $priceDisplay == 0}{l s='(tax incl.)'}{/if}{/if}</td>
+                                                <td class="text-right">
+                                                    {if $priceDisplay && $use_tax}
+                                                        <span class="price">{displayWtPriceWithCurrency price=$total_convenience_fee_te currency=$currency}</span>
+                                                    {else}
+                                                        <span class="price">{displayWtPriceWithCurrency price=$total_convenience_fee_ti currency=$currency}</span>
+                                                    {/if}
                                                 </td>
                                             </tr>
                                         {/if}
@@ -753,57 +735,39 @@
                                         {assign var=total_tax_without_discount value=(($room_price_tax_incl - $room_price_tax_excl) + ($room_services_price_tax_incl - $room_services_price_tax_excl) + ($total_standard_products_tax_incl - $total_standard_products_tax_excl))}
 
                                         {if isset($cart_htl_data) && $cart_htl_data}
-                                            {if $priceDisplay && $use_tax && $room_price_tax_excl}
-                                                <tr>
-                                                    <td>{l s='Total rooms cost (tax excl.)'}</td>
-                                                    <td class="text-right">
-                                                        <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_excl + $room_services_price_tax_excl - $total_convenience_fee_te) currency=$currency}</span>
-                                                    </td>
-                                                </tr>
-                                            {else}
-                                                <tr>
-                                                    <td>{l s='Total Rooms Cost'} {if $use_tax}{l s='(tax incl.)'}{/if} </td>
-                                                    <td class="text-right">
-                                                        <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_incl + $room_services_price_tax_incl - $total_convenience_fee_ti) currency=$currency}</span>
-                                                    </td>
-                                                </tr>
-                                            {/if}
-                                        {/if}
-
-                                        {if (isset($hotel_service_products) && $hotel_service_products) || (isset($standalone_service_products) && $standalone_service_products)}
-                                            {if $priceDisplay && $use_tax}
-                                                <tr class="item">
-                                                    <td>
-                                                        <strong>{l s='Total products cost (tax excl.)'}</strong>
-                                                    </td>
-                                                    <td class="text-right">
-                                                        <span>{displayWtPriceWithCurrency price=$total_standard_products_tax_excl currency=$currency}</span>
-                                                    </td>
-                                                </tr>
-                                            {else}
-                                                <tr class="item">
-                                                    <td>
-                                                        <strong>{l s='Total products cost'} {if $use_tax}{l s='(tax incl.)'}{/if} </strong>
-                                                    </td>
-                                                    <td class="text-right">
-                                                        <span>{displayWtPriceWithCurrency price=$total_standard_products_tax_incl currency=$currency}</span>
-                                                    </td>
-                                                </tr>
-                                            {/if}
-                                        {/if}
-
-                                        {if $priceDisplay && $use_tax && $total_convenience_fee_te}
                                             <tr>
-                                                <td>{l s='Total Convenience Fees (tax excl.)'}</td>
+                                                <td>{l s='Total rooms cost'} {if $use_taxes && $display_tax_label == 1}{if $priceDisplay == 1}{l s='(tax excl.)'}{elseif $priceDisplay == 0}{l s='(tax incl.)'}{/if} {/if}</td>
                                                 <td class="text-right">
-                                                    <span class="price">{displayWtPriceWithCurrency price=$total_convenience_fee_te currency=$currency}</span>
+                                                    {if $priceDisplay && $use_tax}
+                                                        <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_excl + $room_services_price_tax_excl - $total_convenience_fee_te) currency=$currency}</span>
+                                                    {else}
+                                                        <span class="price">{displayWtPriceWithCurrency price=($room_price_tax_incl + $room_services_price_tax_incl - $total_convenience_fee_ti) currency=$currency}</span>
+                                                    {/if}
                                                 </td>
                                             </tr>
-                                        {else if $total_convenience_fee_ti}
-                                            <tr>
-                                                <td>{l s='Total Convenience Fees (tax incl.)'}</td>
+                                        {/if}
+                                        {if (isset($hotel_service_products) && $hotel_service_products) || (isset($standalone_service_products) && $standalone_service_products)}
+                                            <tr class="item">
+                                                <td>{l s='Total products cost'} {if $use_taxes && $display_tax_label == 1}{if $priceDisplay == 1}{l s='(tax excl.)'}{elseif $priceDisplay == 0}{l s='(tax incl.)'}{/if}{/if}</td>
                                                 <td class="text-right">
-                                                    <span class="price">{displayWtPriceWithCurrency price=$total_convenience_fee_ti currency=$currency}</span>
+                                                    {if $priceDisplay && $use_tax}
+                                                        <span>{displayWtPriceWithCurrency price=$total_standard_products_tax_excl currency=$currency}</span>
+                                                    {else}
+                                                        <span>{displayWtPriceWithCurrency price=$total_standard_products_tax_incl currency=$currency}</span>
+                                                    {/if}
+                                                </td>
+                                            </tr>
+                                        {/if}
+
+                                        {if $total_convenience_fee_te || $total_convenience_fee_te}
+                                             <tr class="item">
+                                                <td>{l s='Total Convenience Fees'} {if $use_taxes && $display_tax_label == 1}{if $priceDisplay == 1}{l s='(tax excl.)'}{elseif $priceDisplay == 0}{l s='(tax incl.)'}{/if}{/if}</td>
+                                                <td class="text-right">
+                                                    {if $priceDisplay && $use_tax}
+                                                        <span class="price">{displayWtPriceWithCurrency price=$total_convenience_fee_te currency=$currency}</span>
+                                                    {else}
+                                                        <span class="price">{displayWtPriceWithCurrency price=$total_convenience_fee_ti currency=$currency}</span>
+                                                    {/if}
                                                 </td>
                                             </tr>
                                         {/if}

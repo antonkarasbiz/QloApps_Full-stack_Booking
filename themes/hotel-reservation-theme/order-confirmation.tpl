@@ -422,46 +422,32 @@
 												<table class="table table-sm table-responsive table-summary">
 													<tbody>
 														{if isset($cart_htl_data)}
-															{if $priceDisplay && $use_tax}
-																<tr class="item">
-																	<td>
-																		<strong>{l s='Total Rooms Cost (tax excl.)'}</strong>
-																	</td>
-																	<td class="text-right">
+															<tr class="item">
+																<td>
+																	<strong>{l s='Total Rooms Cost'} {if $use_taxes && $display_tax_label == 1}{if $priceDisplay == 1}{l s='(tax excl.)'}{elseif $priceDisplay == 0}{l s='(tax incl.)'}{/if} {/if}</strong>
+																</td>
+																<td class="text-right">
+																	{if $priceDisplay && $use_tax}
 																		<span>{displayWtPriceWithCurrency price=($orderTotalInfo['total_rooms_te'] + $orderTotalInfo['total_services_te'] + $orderTotalInfo['total_auto_add_services_te'] + $orderTotalInfo['total_demands_price_te']) currency=$objOrderCurrency}</span>
-																	</td>
-																</tr>
-															{else}
-																<tr class="item">
-																	<td>
-																		<strong>{l s='Total Rooms Cost'} {if $use_tax}{l s='(tax incl.)'}{/if} </strong>
-																	</td>
-																	<td class="text-right">
+																	{else}
 																		<span>{displayWtPriceWithCurrency price=($orderTotalInfo['total_rooms_ti'] + $orderTotalInfo['total_services_ti'] + $orderTotalInfo['total_auto_add_services_ti'] + $orderTotalInfo['total_demands_price_ti']) currency=$objOrderCurrency}</span>
-																	</td>
-																</tr>
-															{/if}
+																	{/if}
+																</td>
+															</tr>
 														{/if}
 														{if (isset($cart_standalone_service_products) && $cart_standalone_service_products) || (isset($cart_hotel_service_products) && $cart_hotel_service_products)}
-															{if $priceDisplay && $use_tax}
-																<tr class="item">
-																	<td>
-																		<strong>{l s='Total products cost (tax excl.)'}</strong>
-																	</td>
-																	<td class="text-right">
+															<tr class="item">
+																<td>
+																	<strong>{l s='Total products cost'} {if $use_taxes && $display_tax_label == 1}{if $priceDisplay == 1}{l s='(tax excl.)'}{elseif $priceDisplay == 0}{l s='(tax incl.)'}{/if} {/if}</strong>
+																</td>
+																<td class="text-right">
+																	{if $priceDisplay && $use_tax}
 																		<span>{displayWtPriceWithCurrency price=$orderTotalInfo['total_standalone_products_te'] currency=$objOrderCurrency}</span>
-																	</td>
-																</tr>
-															{else}
-																<tr class="item">
-																	<td>
-																		<strong>{l s='Total products cost'} {if $use_tax}{l s='(tax incl.)'}{/if} </strong>
-																	</td>
-																	<td class="text-right">
+																	{else}
 																		<span>{displayWtPriceWithCurrency price=$orderTotalInfo['total_standalone_products_ti'] currency=$objOrderCurrency}</span>
-																	</td>
-																</tr>
-															{/if}
+																	{/if}
+																</td>
+															</tr>
 														{/if}
 														{if $order->total_wrapping > 0}
 															<tr class="item">
@@ -473,22 +459,17 @@
 																</td>
 															</tr>
 														{/if}
-														{if $priceDisplay && $use_tax && $orderTotalInfo['total_convenience_fee_te']}
+														{if  $orderTotalInfo['total_convenience_fee_te'] || $orderTotalInfo['total_convenience_fee_ti']}
 															<tr class="item">
 																<td>
-																	<strong>{l s='Total Convenience Fees (tax excl.)'}</strong>
+																	<strong>{l s='Total Convenience Fees'} {if $use_taxes && $display_tax_label == 1}{if $priceDisplay == 1}{l s='(tax excl.)'}{elseif $priceDisplay == 0}{l s='(tax incl.)'}{/if} {/if}</strong>
 																</td>
 																<td class="text-right">
-																	<span>{displayWtPriceWithCurrency price=($orderTotalInfo['total_convenience_fee_te']) currency=$objOrderCurrency}</span>
-																</td>
-															</tr>
-														{else if $orderTotalInfo['total_convenience_fee_ti']}
-															<tr class="item">
-																<td>
-																	<strong>{l s='Total Convenience Fees'} {if $use_tax}{l s='(tax incl.)'}{/if} </strong>
-																</td>
-																<td class="text-right">
-																	<span>{displayWtPriceWithCurrency price=($orderTotalInfo['total_convenience_fee_ti']) currency=$objOrderCurrency}</span>
+																	{if $priceDisplay && $use_tax}
+																		<span>{displayWtPriceWithCurrency price=($orderTotalInfo['total_convenience_fee_te']) currency=$objOrderCurrency}</span>
+																	{else}
+																		<span>{displayWtPriceWithCurrency price=($orderTotalInfo['total_convenience_fee_ti']) currency=$objOrderCurrency}</span>
+																	{/if}
 																</td>
 															</tr>
 														{/if}

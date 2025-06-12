@@ -429,7 +429,13 @@ class ServiceProductCartDetail extends ObjectModel
             $objServiceProductCartDetail->id_product_option = $idProductOption;
         }
 
-        $objServiceProductCartDetail->quantity += $quantity;
+        $objProduct = new Product((int) $idProduct);
+        if ($objProduct->allow_multiple_quantity) {
+            $objServiceProductCartDetail->quantity += $quantity;
+        } else {
+            $objServiceProductCartDetail->quantity = 1;
+        }
+
         if ($objServiceProductCartDetail->save()) {
             $objCart = new Cart($idCart);
             return $objCart->updateQty($quantity, $idProduct);
@@ -471,7 +477,7 @@ class ServiceProductCartDetail extends ObjectModel
                 if ($quantity) {
                     $removedQuantity = $quantity;
                     $objServiceProductCartDetail->quantity -= $quantity;
-                    if ($objServiceProductCartDetail->quantity) {
+                    if ($objServiceProductCartDetail->quantity > 1) {
                         $updateQunatity = $objServiceProductCartDetail->save();
                     } else {
                         $updateQunatity = $objServiceProductCartDetail->delete();
