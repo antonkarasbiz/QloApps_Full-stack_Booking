@@ -17,7 +17,7 @@
 * @license LICENSE.txt
 *}
 
-<div class="booking-room-detail" data-id-product="{$data_v.id_product}" data-date-diff="{$rm_k}">
+<div class="product-detail" data-id-product="{$data_v.id_product}" data-date-diff="{$rm_k}">
     <div class="row">
         {block name='order_room_detail_room_image'}
             <div class="col-xs-3 col-sm-2">
@@ -30,7 +30,7 @@
             <div class="col-xs-9 col-sm-10 info-wrap">
                 <div class="row">
                     <div class="col-xs-12">
-                        <a href="{$link->getProductLink($data_v.id_product)|escape:'html':'UTF-8'}" title="{$data_v.name|escape:'html':'UTF-8'}" target="_blank" class="room-type-name">
+                        <a href="{$link->getProductLink($data_v.id_product)|escape:'html':'UTF-8'}" title="{$data_v.name|escape:'html':'UTF-8'}" target="_blank" class="product-name">
                             <h3>{$data_v.name|escape:'html':'UTF-8'}</h3>
                         </a>
 

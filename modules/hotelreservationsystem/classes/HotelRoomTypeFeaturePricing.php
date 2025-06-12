@@ -49,6 +49,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
     const IMPACT_TYPE_PERCENTAGE = 1;
     const IMPACT_TYPE_FIXED_PRICE = 2;
 
+    protected $moduleInstance;
+
     public static $definition = array(
         'table' => 'htl_room_type_feature_pricing',
         'primary' => 'id_feature_price',
@@ -256,374 +258,6 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
     }
 
     /**
-     * [getHotelRoomTypesRatesByDate returns hotel room types rates accrding to feature price plans]
-     * @param  [int]  $id_hotel   [id of th hotel]
-     * @param  integer $id_product [id of the product if supplied only rates of this room type will be returned]
-     * @param  [date]  $date_from  [start date of the date range]
-     * @param  [date]  $date_to    [end date of the date range]
-     * @return [array|false]       [returns array containing rates of room type of a hotel if found else returns false]
-     */
-    public function getHotelRoomTypesRatesAndInventoryByDate($id_hotel, $id_product=0, $date_from, $date_to)
-    {
-        $hotelRoomType = new HotelRoomType();
-        $context = Context::getContext();
-        $roomTypeRatesAndInventory = array();
-        $objBookingDetail = new HotelBookingDetail();
-        $incr = 0;
-        $date_from = date('Y-m-d', strtotime($date_from));
-        $date_to = date('Y-m-d', strtotime($date_to));
-        for($date = $date_from; $date < $date_to; $date = date('Y-m-d', strtotime('+1 day', strtotime($date)))) {
-            $currentDate = date('Y-m-d', strtotime($date));
-            $nextDayDate = date('Y-m-d', strtotime('+1 day', strtotime($currentDate)));
-            if ($id_product) {
-                $bookingParams = array(
-                    'date_from' => $currentDate,
-                    'date_to' => $nextDayDate,
-                    'hotel_id' => $id_hotel,
-                    'id_room_type' => $id_product,
-                    'only_search_data' => 1,
-                );
-                $roomTypeAvailabilityInfo = $objBookingDetail->dataForFrontSearch($bookingParams);
-                if (isset($roomTypeAvailabilityInfo['stats']['num_avail'])) {
-                    $totalAvailableRooms = $roomTypeAvailabilityInfo['stats']['num_avail'];
-                } else {
-                    $totalAvailableRooms = 0;
-                }
-
-                $roomTypePrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice($id_product, $currentDate, $nextDayDate);
-                $roomTypeRatesAndInventory[$incr]['date'] = $currentDate;
-                $roomTypeRatesAndInventory[$incr]['room_types'][0]['id'] = $id_product;
-                $roomTypeRatesAndInventory[$incr]['room_types'][0]['rates'] = $roomTypePrice;
-                $roomTypeRatesAndInventory[$incr]['room_types'][0]['available_rooms'] = $totalAvailableRooms;
-            } else {
-                $hotelRoomTypes = $hotelRoomType->getRoomTypeByHotelId($id_hotel, $context->language->id);
-                if ($hotelRoomTypes) {
-                    $roomTypeRatesAndInventory[$incr]['date'] = $currentDate;
-                    foreach ($hotelRoomTypes as $key => $product) {
-                        $roomTypePrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
-                            $product['id_product'],
-                            $currentDate,
-                            $nextDayDate
-                        );
-                        $bookingParams = array(
-                            'date_from' => $currentDate,
-                            'date_to' => $nextDayDate,
-                            'hotel_id' => $id_hotel,
-                            'id_room_type' => $product['id_product'],
-                            'only_search_data' => 1,
-                        );
-                        $roomTypeAvailabilityInfo = $objBookingDetail->dataForFrontSearch($bookingParams);
-                        if (isset($roomTypeAvailabilityInfo['stats']['num_avail'])) {
-                            $totalAvailableRooms = $roomTypeAvailabilityInfo['stats']['num_avail'];
-                        } else {
-                            $totalAvailableRooms = 0;
-                        }
-                        $roomTypeRatesAndInventory[$incr]['room_types'][$key]['id'] = $product['id_product'];
-                        $roomTypeRatesAndInventory[$incr]['room_types'][$key]['rates'] = $roomTypePrice;
-                        $roomTypeRatesAndInventory[$incr]['room_types'][$key]['available_rooms'] = $totalAvailableRooms;
-                    }
-                } else {
-                    return false;
-                }
-            }
-            $incr++;
-        }
-        return $roomTypeRatesAndInventory;
-    }
-
-    /**
-     * [updateRoomTypesFeaturePrices update and creates feature price plans by supplied information]
-     * @param  [array] $featurePricePlans [feature price plans sent from channel manager]
-     * @return [array]        [success if process is finished successfully else fasiled with errors]
-     * @information [if any feature price plan for the same date_from and date_to(supplied in the $featurePricePlans array) it will be updated otherwise it is added. While adding date range type rate plans if any plan already exist then feature price for all specific dates in the date range will be created (or updated if specific date feature price plan exists)]
-     */
-    public function updateRoomTypesFeaturePricesAvailability($featurePricePlans)
-    {
-        $this->errors = array();
-        if ($featurePricePlans) {
-            if (isset($featurePricePlans['data']) && $featurePricePlans['data']) {
-                foreach ($featurePricePlans['data'] as $roomTypeRatesData) {
-                    $dateFrom = date('Y-m-d', strtotime($roomTypeRatesData['dateFrom']));
-                    $dateTo = date('Y-m-d', strtotime('+1 day', strtotime($roomTypeRatesData['dateTo'])));
-                    if ($roomTypeRatesData['roomType']) {
-                        foreach ($roomTypeRatesData['roomType'] as $key => $roomTypeRates) {
-                            $id_product = $key;
-                            // feature price rates create and updates
-                            if (isset($roomTypeRates['rate'])) {
-                                $productPriceTE = Product::getPriceStatic((int) $id_product, false);
-                                if ($productPriceTE != $roomTypeRates['rate']) {
-                                    if ($productPriceTE > $roomTypeRates['rate']) {
-                                        $priceImpactWay = 1;
-                                        $impactValue = $productPriceTE - $roomTypeRates['rate'];
-                                    } else {
-                                        $priceImpactWay = 2;
-                                        $impactValue = $roomTypeRates['rate'] - $productPriceTE;
-                                    }
-                                    $params = array();
-                                    $params['roomTypeId'] = $id_product;
-                                    $params['featurePriceName'] = 'Webservice Feature Price';
-                                    $params['dateFrom'] = $dateFrom;
-                                    $featurePriceDateTo = date('Y-m-d', (strtotime($dateTo) - _TIME_1_DAY_));
-                                    $params['dateTo'] = $featurePriceDateTo;
-                                    $params['priceImpactWay'] = $priceImpactWay;
-                                    $params['isSpecialDaysExists'] = 0;
-                                    $params['jsonSpecialDays'] = null;
-                                    $params['priceImpactType'] = 2;
-                                    $params['impactValue'] = $impactValue;
-                                    $params['enableFeaturePrice'] = 1;
-                                    $nextDate = date('Y-m-d', strtotime('+1 day', strtotime($dateFrom)));
-                                    if ($nextDate == $dateTo) {
-                                        $params['dateSelectionType'] = self::DATE_SELECTION_TYPE_SPECIFIC;
-                                        $featurePriceExists = $this->checkRoomTypeFeaturePriceExistance(
-                                            $id_product,
-                                            $dateFrom,
-                                            $featurePriceDateTo,
-                                            'specific_date'
-                                        );
-                                        if ($featurePriceExists) {
-                                            if (!$this->saveFeaturePricePlan($featurePriceExists['id'], 2, $params)) {
-                                                $this->errors[] = $this->moduleInstance->l('Some error occured while saving Feature Price Plan Info:: Date From : ', 'HotelRoomTypeFeaturePricing').$params['dateFrom'].$this->moduleInstance->l(' Date To : ', 'HotelRoomTypeFeaturePricing').$params['dateFrom'].$this->moduleInstance->l(' Room Type Id : ', 'HotelRoomTypeFeaturePricing').$params['roomTypeId'];
-                                            }
-                                        } else {
-                                            if (!$this->saveFeaturePricePlan(0, 2, $params)) {
-                                                $this->errors[] = $this->moduleInstance->l('Some error occured while saving Feature Price Plan Info:: Date From : ', 'HotelRoomTypeFeaturePricing').$params['dateFrom'].$this->moduleInstance->l(' Date To : ', 'HotelRoomTypeFeaturePricing').$params['dateFrom'].$this->moduleInstance->l(' Room Type Id : ', 'HotelRoomTypeFeaturePricing').$params['roomTypeId'];
-                                            }
-                                        }
-                                    } else {
-                                        $params['dateSelectionType'] = self::DATE_SELECTION_TYPE_RANGE;
-                                        $featurePriceExists = $this->checkRoomTypeFeaturePriceExistance(
-                                            $id_product,
-                                            $dateFrom,
-                                            $featurePriceDateTo,
-                                            'date_range'
-                                        );
-                                        if ($featurePriceExists) {
-                                            if ($featurePriceExists['date_from'] == $dateFrom
-                                                && $featurePriceExists['date_to'] == $featurePriceDateTo
-                                            ) {
-                                                if (!$this->saveFeaturePricePlan(
-                                                    $featurePriceExists['id'],
-                                                    1,
-                                                    $params
-                                                )) {
-                                                    $this->errors[] = $this->moduleInstance->l('Some error occured while saving Feature Price Plan Info:: Date From : ', 'HotelRoomTypeFeaturePricing').$params['dateFrom'].$this->moduleInstance->l(' Date To : ', 'HotelRoomTypeFeaturePricing').$params['dateFrom'].$this->moduleInstance->l(' Room Type Id : ', 'HotelRoomTypeFeaturePricing').$params['roomTypeId'];
-                                                }
-                                            } else {
-                                                for($date = $dateFrom; $date < $dateTo; $date = date('Y-m-d', strtotime('+1 day', strtotime($date)))) {
-                                                    // Creating feature prices day wise, for single days.
-                                                    $nextDayDate = $currentDate = date('Y-m-d', $date);
-                                                    $params['dateFrom'] = $currentDate;
-                                                    $params['dateTo'] = $nextDayDate;
-                                                    $params['dateSelectionType'] = self::DATE_SELECTION_TYPE_SPECIFIC;
-                                                    $featurePriceExists = $this->checkRoomTypeFeaturePriceExistance(
-                                                        $id_product,
-                                                        $currentDate,
-                                                        $nextDayDate,
-                                                        'specific_date'
-                                                    );
-                                                    if ($featurePriceExists) {
-                                                        if (!$this->saveFeaturePricePlan(
-                                                            $featurePriceExists['id'],
-                                                            2,
-                                                            $params
-                                                        )) {
-                                                            $this->errors[] = $this->moduleInstance->l('Some error occured while saving Feature Price Plan Info:: Date From : ', 'HotelRoomTypeFeaturePricing').$params['dateFrom'].$this->moduleInstance->l(' Date To : ', 'HotelRoomTypeFeaturePricing').$params['dateFrom'].$this->moduleInstance->l(' Room Type Id : ', 'HotelRoomTypeFeaturePricing').$params['roomTypeId'];
-                                                        }
-                                                    } else {
-                                                        if (!$this->saveFeaturePricePlan(0, 2, $params)) {
-                                                            $this->errors[] = $this->moduleInstance->l('Some error occured while saving Feature Price Plan Info:: Date From : ', 'HotelRoomTypeFeaturePricing').$params['dateFrom'].$this->moduleInstance->l(' Date To : ', 'HotelRoomTypeFeaturePricing').$params['dateFrom'].$this->moduleInstance->l(' Room Type Id : ', 'HotelRoomTypeFeaturePricing').$params['roomTypeId'];
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        } else {
-                                            if (!$this->saveFeaturePricePlan(0, 1, $params)) {
-                                                $this->errors[] = $this->moduleInstance->l('Some error occured while saving Feature Price Plan Info:: Date From : ', 'HotelRoomTypeFeaturePricing').$params['dateFrom'].$this->moduleInstance->l(' Date To : ', 'HotelRoomTypeFeaturePricing').$params['dateFrom'].$this->moduleInstance->l(' Room Type Id : ', 'HotelRoomTypeFeaturePricing').$params['roomTypeId'];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (isset($roomTypeRates['inventory'])) {
-                                $totalAvailableNotBooked = 0;
-                                $totalAvailableRooms = 0;
-                                $hotelRoomType = new HotelRoomType();
-                                $hotelBookingDetail = new HotelBookingDetail();
-                                $hotelRoomInformation = new HotelRoomInformation();
-                                $roomTypeInfo = $hotelRoomType->getRoomTypeInfoByIdProduct($id_product);
-                                $id_hotel = $roomTypeInfo['id_hotel'];
-                                if ($id_hotel) {
-                                    $bookingParams = array(
-                                        'date_from' => $dateFrom,
-                                        'date_to' => $dateTo,
-                                        'hotel_id' => $id_hotel,
-                                        'id_room_type' => $id_product,
-                                        'only_search_data' => 1,
-                                    );
-                                    $roomTypeAvailabilityInfo = $hotelBookingDetail->dataForFrontSearch($bookingParams);
-                                    $bookedRoomsInfo = $hotelRoomInformation->getRoomTypeBookedRoomsForDateRange(
-                                        $id_hotel,
-                                        $id_product,
-                                        $dateFrom,
-                                        $dateTo
-                                    );
-                                    $countBookedRooms = count($bookedRoomsInfo);
-                                    if (isset($roomTypeAvailabilityInfo['stats']['total_rooms'])) {
-                                        $totalAvailableNotBooked = $roomTypeAvailabilityInfo['stats']['total_rooms'] - $countBookedRooms;
-                                        $totalAvailableRooms = $roomTypeAvailabilityInfo['stats']['num_avail'];
-                                    }
-
-                                    if ($roomTypeRates['inventory'] <= $totalAvailableNotBooked) {
-                                        if ($roomTypeRates['inventory'] < $totalAvailableRooms) {
-                                            $numDisabledRooms = $totalAvailableRooms - $roomTypeRates['inventory'];
-                                            $availableRooms = $hotelRoomInformation->getRoomTypeAvailableRoomsForDateRange(
-                                                $id_hotel,
-                                                $id_product,
-                                                $dateFrom,
-                                                $dateTo
-                                            );
-                                            if ($availableRooms) {
-                                                foreach ($availableRooms as $room) {
-                                                    $objRoomDisableDates = new HotelRoomDisableDates();
-                                                    $params['id_room'] = $room['id'];
-                                                    $params['date_from'] = $dateFrom;
-                                                    $params['date_to'] = $dateTo;
-                                                    if (!($objRoomDisableDates->checkIfRoomAlreadyDisabled($params))) {
-                                                        if ($numDisabledRooms > 0) {
-                                                            $hotelRoomInformation = new HotelRoomInformation($room['id']);
-                                                            if ($hotelRoomInformation->id_status == 3) {
-                                                                $params['reason'] = $this->moduleInstance->l('Disabled from channel manager.', 'HotelRoomTypeFeaturePricing');
-                                                                if (!$objRoomDisableDates->updateDisableDateRanges(
-                                                                    $params
-                                                                )) {
-                                                                    $this->errors[] = $this->moduleInstance->l('Some error occurred while saving disable dates for '.$dateFrom.' To '.$dateTo.' for room id-'.$room['id'], 'HotelRoomTypeFeaturePricing');
-                                                                }
-                                                            } else {
-                                                                $hotelRoomInformation->id_status = 3;
-                                                                if ($hotelRoomInformation->save()) {
-                                                                    $objRoomDisableDates = new HotelRoomDisableDates();
-                                                                    $objRoomDisableDates->id_room = $room['id'];
-                                                                    $objRoomDisableDates->date_from = $dateFrom;
-                                                                    $objRoomDisableDates->date_to = $dateTo;
-                                                                    $objRoomDisableDates->reason = $this->moduleInstance->l('Disabled from channel manager.', 'HotelRoomTypeFeaturePricing');
-                                                                    $objRoomDisableDates->save();
-                                                                }
-                                                            }
-                                                            $numDisabledRooms--;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        } elseif ($roomTypeRates['inventory'] > $totalAvailableRooms) {
-                                            $roomsToEnable = $roomTypeRates['inventory'] - $totalAvailableRooms;
-                                            $disabledRooms = $hotelRoomInformation->getRoomTypeDisabledRoomsForDateRange(
-                                                $id_hotel,
-                                                $id_product,
-                                                $dateFrom,
-                                                $dateTo
-                                            );
-                                            if ($disabledRooms) {
-                                                foreach ($disabledRooms as $disableRoom) {
-                                                    if ($roomsToEnable > 0) {
-                                                        $hotelRoomInformation = new HotelRoomInformation($disableRoom['id']);
-                                                        $objRoomDisableDates = new HotelRoomDisableDates();
-                                                        $params['id_room'] = $disableRoom['id'];
-                                                        $params['date_from'] = $dateFrom;
-                                                        $params['date_to'] = $dateTo;
-                                                        if (!$objRoomDisableDates->deleteDisabledDatesForDateRange(
-                                                            $params
-                                                        )) {
-                                                            $this->errors[] = $this->moduleInstance->l('Some error occurred while saving deleting dates for '.$dateFrom.' To '.$dateTo.' for room id-'.$disableRoom['id'], 'HotelRoomTypeFeaturePricing');
-                                                        }
-                                                        $disabledDates = $objRoomDisableDates->getRoomDisableDates(
-                                                            $disableRoom['id']
-                                                        );
-                                                        if (!count($disabledDates)) {
-                                                            $hotelRoomInformation->id_status = 1;
-                                                            $hotelRoomInformation->disabled_dates = null;
-                                                        }
-                                                        $hotelRoomInformation->save();
-                                                    }
-                                                    $roomsToEnable--;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                $this->errors[] = $this->moduleInstance->l(
-                                    'Requested rooms inventory is not available.',
-                                    'HotelRoomTypeFeaturePricing'
-                                );
-                            }
-                        }
-                    } else {
-                        $this->errors[] = $this->moduleInstance->l(
-                            'Room Types for which Feature prices to be updated are not found.',
-                            'HotelRoomTypeFeaturePricing'
-                        );
-                    }
-                }
-            } else {
-                $this->errors[] = $this->moduleInstance->l(
-                    'Update Information not found.',
-                    'HotelRoomTypeFeaturePricing'
-                );
-            }
-        } else {
-            $this->errors[] = $this->moduleInstance->l(
-                'Update Information not found.',
-                'HotelRoomTypeFeaturePricing'
-            );
-        }
-
-        $result = array();
-        if (count($this->errors)) {
-            $result['status'] = 'failed';
-            $result['errors'] = $this->errors;
-        } else {
-            $result['status'] = 'success';
-        }
-
-        return $result;
-    }
-
-    /**
-     * [saveFeaturePricePlan add or update feature price plan]
-     * @param  integer $id                [id of the feature price plan if 0 means to add else to update the feature price plan]
-     * @param  [int]  $dateSelectionType [date selection type 1 or 2 (date range or specific date)]
-     * @param  [array]  $params            [Room type rate plan info]
-     * @return [bool]                     [returns true is successfuly added or updated else returns false]
-     */
-    public function saveFeaturePricePlan($id = 0, $dateSelectionType, $params)
-    {
-        if ($id) {
-            $roomTypeFeaturePricing = new HotelRoomTypeFeaturePricing($id);
-        } else {
-            $roomTypeFeaturePricing = new HotelRoomTypeFeaturePricing();
-        }
-        $roomTypeFeaturePricing->id_product = $params['roomTypeId'];
-        // lang fields
-        $languages = Language::getLanguages(false);
-        foreach ($languages as $language) {
-            $roomTypeFeaturePricing->feature_price_name[$language['id_lang']] = $params['featurePriceName'];
-        }
-
-        $roomTypeFeaturePricing->date_selection_type = $params['dateSelectionType'];
-        $roomTypeFeaturePricing->date_from = $params['dateFrom'];
-        $roomTypeFeaturePricing->date_to = $params['dateTo'];
-        $roomTypeFeaturePricing->impact_way = $params['priceImpactWay'];
-        $roomTypeFeaturePricing->is_special_days_exists = $params['isSpecialDaysExists'];
-        $roomTypeFeaturePricing->special_days = $params['jsonSpecialDays'];
-        $roomTypeFeaturePricing->impact_type = $params['priceImpactType'];
-        $roomTypeFeaturePricing->impact_value = $params['impactValue'];
-        $roomTypeFeaturePricing->active = $params['enableFeaturePrice'];
-
-        return $roomTypeFeaturePricing->save();
-    }
-
-    /**
      * [getRoomTypeTotalPrice Returns Total price of the room type according to supplied dates].
      *
      * @param [int]  $id_product [id of the room type]
@@ -649,8 +283,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         $totalPrice['total_price_tax_excl'] = 0;
         $featureImpactPriceTE = 0;
         $featureImpactPriceTI = 0;
-        $productPriceTI = Product::getPriceStatic((int) $id_product, 1, 0, 6, null, 0, $use_reduc, 1, 0, null, null, null, $nothing, 1, 1, null, 1, 0, $id_group);
-        $productPriceTE = Product::getPriceStatic((int) $id_product, 0, 0, 6, null, 0, $use_reduc, 1, 0, null, null, null, $nothing, 1, 1, null, 1, 0, $id_group);
+        $productPriceTI = Product::getPriceStatic((int) $id_product, 1, 0, 6, null, 0, $use_reduc, 1, 0, null, null, null, $nothing, 1, 1, null, 1, 0, 0, $id_group);
+        $productPriceTE = Product::getPriceStatic((int) $id_product, 0, 0, 6, null, 0, $use_reduc, 1, 0, null, null, null, $nothing, 1, 1, null, 1, 0, 0, $id_group);
         if ($productPriceTE) {
             $taxRate = (($productPriceTI-$productPriceTE)/$productPriceTE)*100;
         } else {
@@ -738,26 +372,34 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         );
         if ($with_auto_room_services) {
             if ($id_cart && $id_room) {
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
-                if ($roomServicesServices = $objRoomTypeServiceProductCartDetail->getServiceProductsInCart(
+                $objHotelCartBookingData = new HotelCartBookingData();
+                if ($roomHtlCartInfo = $objHotelCartBookingData->getRoomRowByIdProductIdRoomInDateRange(
                     $id_cart,
-                    0,
-                    0,
                     $id_product,
                     $date_from,
                     $date_to,
-                    0,
-                    0,
-                    null,
-                    1,
-                    null,
-                    Product::PRICE_ADDITION_TYPE_WITH_ROOM,
                     $id_room
                 )) {
-                    $selectedServices = array_shift($roomServicesServices);
-                    $totalPrice['total_price_tax_incl'] += $selectedServices['total_price_tax_incl'];
-                    $totalPrice['total_price_tax_excl'] += $selectedServices['total_price_tax_excl'];
+                    $objServiceProductCartDetail = new ServiceProductCartDetail();
+                    if ($roomServicesServices = $objServiceProductCartDetail->getServiceProductsInCart(
+                        $id_cart,
+                        [],
+                        null,
+                        $roomHtlCartInfo['id'],
+                        null,
+                        null,
+                        null,
+                        null,
+                        0,
+                        1,
+                        Product::PRICE_ADDITION_TYPE_WITH_ROOM
+                    )) {
+                        $selectedServices = array_shift($roomServicesServices);
+                        $totalPrice['total_price_tax_incl'] += $selectedServices['total_price_tax_incl'];
+                        $totalPrice['total_price_tax_excl'] += $selectedServices['total_price_tax_excl'];
+                    }
                 }
+
             } else {
                 if ($servicesWithTax = RoomTypeServiceProduct::getAutoAddServices(
                     $id_product,

@@ -18,7 +18,7 @@
 *}
 
 <div class="modal-body">
-    <div id="new_product">
+    <div id="new_room">
         <input type="hidden" id="add_product_product_id" name="add_product[product_id]" value="0" />
         <div class="form-group">
             <label class="control-label">{l s='Room Type:'}</label>
@@ -126,7 +126,7 @@
                 {/if}
             </div>
 
-            {if sizeof($invoices_collection)}
+            {if isset($invoices_collection) && sizeof($invoices_collection)}
                 <div class="form-group" style="display: none;">
                     <label class="control-label">{l s='Invoice'}</label>
                     <select class="form-control" name="add_product[invoice]" id="add_product_product_invoice" disabled="disabled">
@@ -142,7 +142,7 @@
                 </div>
             {/if}
         </div>
-        <button type="button" class="btn btn-default" id="submitAddProduct" disabled="disabled" style="display:none;"></button>
+        <button type="button" class="btn btn-default" id="submitAddRoom" disabled="disabled" style="display:none;"></button>
     </div>
 
     {if isset($loaderImg) && $loaderImg}

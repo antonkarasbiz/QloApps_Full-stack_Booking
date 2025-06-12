@@ -36,7 +36,7 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
         $this->allow_export = true;
         $this->_new_list_header_design = true;
         if ($idOrder = Tools::getValue('id_order')) {
-            $this->_select .= ', orsl.`name` as `status_name`, ors.`color`, COUNT(ordrd.`id_order_return_detail`) as num_rooms';
+            $this->_select .= ', orsl.`name` as `status_name`, ors.`color`, SUM(IF((ordrd.id_htl_booking != 0) , 1, 0)) as num_rooms, SUM(IF((ordrd.id_service_product_order_detail != 0) , 1, 0)) as num_products';
             $this->_join .= 'LEFT JOIN '._DB_PREFIX_.'order_return_state ors ON (ors.`id_order_return_state` = a.`state`)';
             $this->_join .= 'LEFT JOIN '._DB_PREFIX_.'order_return_state_lang orsl ON (orsl.`id_order_return_state` = a.`state` AND orsl.`id_lang` = '.(int)$this->context->language->id.')';
             $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'order_return_detail` ordrd ON (a.`id_order_return` = ordrd.`id_order_return`)';
@@ -60,6 +60,11 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
         if ($idOrder = Tools::getValue('id_order')) {
             $refundStatuses = OrderReturnStateCore::getOrderReturnStates($this->context->language->id);
 
+            // to set columns for products and rooms count in render list
+            $objOrderReturn = new OrderReturn();
+            $refundReqBookings = $objOrderReturn->getOrderRefundRequestedBookings($idOrder);
+            $refundReqProducts = $objOrderReturn->getOrderRefundRequestedProducts($idOrder);
+
             $retStatuses = array();
             foreach ($refundStatuses as $status) {
                 $retStatuses[$status['id_order_return_state']] = $status['name'];
@@ -82,11 +87,21 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                 'havingFilter' => true,
                 'callback' => 'setCustomerLink',
             );
-            $this->fields_list['num_rooms'] = array(
-                'title' => $this->l('Total Rooms'),
-                'align' => 'center',
-                'havingFilter' => true,
-            );
+
+            if ($refundReqBookings) {
+                $this->fields_list['num_rooms'] = array(
+                    'title' => $this->l('Total Rooms'),
+                    'align' => 'center',
+                    'havingFilter' => true,
+                );
+            }
+            if ($refundReqProducts) {
+                $this->fields_list['num_products'] = array(
+                    'title' => $this->l('Total Products'),
+                    'align' => 'center',
+                    'havingFilter' => true,
+                );
+            }
             $this->fields_list['refunded_amount'] = array(
                 'title' => $this->l('Refunded Amount'),
                 'align' => 'center',
@@ -281,6 +296,7 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
         if (!($objOrderReturn = $this->loadObject())) {
             return;
         }
+
         $refundStatuses = OrderReturnStateCore::getOrderReturnStates($this->context->language->id);
         $objCustomer = new Customer($objOrderReturn->id_customer);
         $objOrder = new Order($objOrderReturn->id_order);
@@ -297,6 +313,8 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                 $booking = array_merge($booking, array_shift($bookingCharges));
             }
         }
+
+        $refundReqProducts = $objOrderReturn->getOrderRefundRequestedProducts($objOrderReturn->id_order, $objOrderReturn->id);
 
         $paymentMethods = array();
         foreach (PaymentModule::getInstalledPaymentModules() as $payment) {
@@ -317,6 +335,7 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                 'customer_email' => $objCustomer->email,
                 'orderReturnInfo' => (array)$objOrderReturn,
                 'refundReqBookings' => $refundReqBookings,
+                'refundReqProducts' => $refundReqProducts,
                 'orderInfo' => (array) $objOrder,
                 'orderCurrency' => (array) $orderCurrency,
                 'currentOrderStateInfo' => (array) new OrderState($objOrder->current_state,
@@ -434,17 +453,21 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                     foreach ($idsReturnDetail as $idRetDetail) {
                         $objOrderReturnDetail = new OrderReturnDetail($idRetDetail);
                         // set booking as refunded if return state is refunded/denied
-                        $idHtlBooking = $objOrderReturnDetail->id_htl_booking;
                         $reduction_amount = array(
                             'total_price_tax_excl' => 0,
                             'total_price_tax_incl' => 0,
                             'total_products_tax_excl' => 0,
                             'total_products_tax_incl' => 0,
                         );
-
-                        $objHtlBooking = new HotelBookingDetail($idHtlBooking);
-                        // perform booking refund processes in the booking tables
-                        $objHtlBooking->processRefundInBookingTables();
+                        if ($idHtlBooking = $objOrderReturnDetail->id_htl_booking) {
+                            $objHtlBooking = new HotelBookingDetail($idHtlBooking);
+                            // perform booking refund processes in the booking tables
+                            $objHtlBooking->processRefundInBookingTables();
+                        } elseif ($id_service_product_order_detail = $objOrderReturnDetail->id_service_product_order_detail) {
+                            $objServiceProductOrderDetail = new ServiceProductOrderDetail($id_service_product_order_detail);
+                            // perform booking refund processes in the service product order tables
+                            $objServiceProductOrderDetail->processRefundInTables();
+                        }
 
                         // save individual booking amount for every booking refund
                         $refundedAmount = $refundedAmounts[$idRetDetail];
@@ -457,22 +480,33 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
                         $totalRefundedAmount += $refundedAmount;
 
                         if (Tools::isSubmit('generateCreditSlip')) {
-                            $numDays = $objHtlBooking->getNumberOfDays(
-                                $objHtlBooking->date_from,
-                                $objHtlBooking->date_to
-                            );
+                            if ($idHtlBooking = $objOrderReturnDetail->id_htl_booking) {
+                                $numDays = HotelHelper::getNumberOfDays(
+                                    $objHtlBooking->date_from,
+                                    $objHtlBooking->date_to
+                                );
 
-                            $objHtlBooking = new HotelBookingDetail($idHtlBooking);
-                            $idOrderDetail = $objHtlBooking->id_order_detail;
+                                $objHtlBooking = new HotelBookingDetail($idHtlBooking);
+                                $idOrderDetail = $objHtlBooking->id_order_detail;
 
-                            $bookingList[$idHtlBooking] = array(
-                                'id_htl_booking' => $idHtlBooking,
-                                'id_order_detail' => $idOrderDetail,
-                                'quantity' => $numDays,
-                                'num_days' => $numDays,
-                                'unit_price' => $refundedAmount / $numDays,
-                                'amount' => $refundedAmount,
-                            );
+                                $bookingList[$idRetDetail] = array(
+                                    'id_htl_booking' => $idHtlBooking,
+                                    'id_order_detail' => $idOrderDetail,
+                                    'quantity' => $numDays,
+                                    'num_days' => $numDays,
+                                    'unit_price' => $refundedAmount / $numDays,
+                                    'amount' => $refundedAmount,
+                                );
+                            } elseif ($idServiceProductOrder = $objOrderReturnDetail->id_service_product_order_detail) {
+                                $objServiceProductOrderDetail = new ServiceProductOrderDetail($idServiceProductOrder);
+                                $bookingList[$idRetDetail] = array(
+                                    'id_service_product_order_detail' => $idServiceProductOrder,
+                                    'id_order_detail' => $objServiceProductOrderDetail->id_order_detail,
+                                    'quantity' => $objServiceProductOrderDetail->quantity,
+                                    'unit_price' => $refundedAmount / $objServiceProductOrderDetail->quantity,
+                                    'amount' => $refundedAmount,
+                                );
+                            }
                         }
                     }
 
@@ -497,12 +531,7 @@ class AdminOrderRefundRequestsController extends ModuleAdminController
 
                     // change state of the order to refunded if all the room bookings in the order are completely refunded
                     if ($objRefundState->refunded) {
-                        $idOrderState = 0;
-                        if ($objOrder->hasCompletelyRefunded(Order::ORDER_COMPLETE_REFUND_FLAG)) {
-                            $idOrderState = Configuration::get('PS_OS_REFUND');
-                        } elseif ($objOrder->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_FLAG)) {
-                            $idOrderState = Configuration::get('PS_OS_CANCELED');
-                        }
+                        $idOrderState = $objOrder->getOrderCompleteRefundStatus();
 
                         // If order is completely refunded or cancelled then change the order state
                         if ($idOrderState) {

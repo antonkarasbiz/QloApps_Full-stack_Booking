@@ -1044,14 +1044,13 @@ class HotelHelper
         Configuration::updateValue('WK_ROOM_LEFT_WARNING_NUMBER', 10);
         Configuration::updateValue('WK_HTL_ESTABLISHMENT_YEAR', 2010);
 
-        Configuration::updateValue(
-            'WK_HOTEL_GLOBAL_ADDRESS',
-            'The Hotel Prime, Monticello Dr, Montgomery, 10010'
-        );
-        Configuration::updateValue('WK_HOTEL_GLOBAL_CONTACT_NUMBER', '0987654321');
-        Configuration::updateValue('WK_HOTEL_GLOBAL_CONTACT_EMAIL', 'hotelprime@htl.com');
+        Configuration::updateValue('PS_SHOP_ADDR1', 'The Hotel Prime, Monticello Dr, Montgomery, 10010');
+        Configuration::updateValue('PS_SHOP_PHONE', '0987654321');
+        Configuration::updateValue('PS_SHOP_EMAIL', 'hotelprime@htl.com');
+
         Configuration::updateValue('WK_CUSTOMER_SUPPORT_PHONE_NUMBER', '0987654321');
         Configuration::updateValue('WK_CUSTOMER_SUPPORT_EMAIL', 'hotelprime@htl.com');
+        Configuration::updateValue('WK_DISPLAY_CONTACT_PAGE_HOTEL_LIST', 0);
 
         Configuration::updateValue('WK_TITLE_HEADER_BLOCK', $home_banner_default_title);
         Configuration::updateValue('WK_CONTENT_HEADER_BLOCK', $home_banner_default_content);
@@ -1218,6 +1217,138 @@ class HotelHelper
             }
 
             $pos++;
+        }
+
+        return true;
+    }
+
+    public function createHotelDefaultBedTypes()
+    {
+        $htlBedTypes = array(
+            array(
+                'length' => '6.25',
+                'width'  => '3.16',
+                'name' => array(
+                    'en' => 'Twin Bed',
+                    'nl' => 'Eenpersoonsbed',
+                    'fr' => 'Lit simple',
+                    'de' => 'Einzelbett',
+                    'ru' => 'Односпальная кровать',
+                    'es' => 'Cama individual',
+                ),
+            ),
+            array(
+                'length' => '6.66',
+                'width'  => '3.16',
+                'name' => array(
+                    'en' => 'Twin XL Bed',
+                    'nl' => 'Eenpersoonsbed XL',
+                    'fr' => 'Lit simple XL',
+                    'de' => 'Einzelbett XL',
+                    'ru' => 'Односпальная кровать XL',
+                    'es' => 'Cama individual XL',
+                ),
+            ),
+            array(
+                'length' => '6.25',
+                'width'  => '4.5',
+                'name' => array(
+                    'en' => 'Full Bed',
+                    'nl' => 'Tweepersoonsbed',
+                    'fr' => 'Lit double',
+                    'de' => 'Doppelbett',
+                    'ru' => 'Двуспальная кровать',
+                    'es' => 'Cama doble',
+                ),
+            ),
+            array(
+                'length' => '6.66',
+                'width'  => '5',
+                'name' => array(
+                    'en' => 'Queen Bed',
+                    'nl' => 'Queen size bed',
+                    'fr' => 'Lit Queen',
+                    'de' => 'Queen-Size-Bett',
+                    'ru' => 'Кровать Queen Size',
+                    'es' => 'Cama Queen',
+                ),
+            ),
+            array(
+                'length' => '6.66',
+                'width'  => '6.33',
+                'name' => array(
+                    'en' => 'King Bed',
+                    'nl' => 'King size bed',
+                    'fr' => 'Lit King',
+                    'de' => 'King-Size-Bett',
+                    'ru' => 'Кровать King Size',
+                    'es' => 'Cama King',
+                ),
+            ),
+            array(
+                'length' => '7',
+                'width'  => '6',
+                'name' => array(
+                    'en' => 'California King Bed',
+                    'nl' => 'California King bed',
+                    'fr' => 'Lit California King',
+                    'de' => 'California King-Bett',
+                    'ru' => 'Калифорнийская кровать King Size',
+                    'es' => 'Cama California King',
+                ),
+            ),
+            array(
+                'length' => '6.25',
+                'width'  => '3.16',
+                'name' => array(
+                    'en' => 'Bunk Bed',
+                    'nl' => 'Stapelbed',
+                    'fr' => 'Lit superposé',
+                    'de' => 'Etagenbett',
+                    'ru' => 'Двухъярусная кровать',
+                    'es' => 'Litera',
+                ),
+            ),
+            array(
+                'length' => '6.25',
+                'width'  => '4.5',
+                'name' => array(
+                    'en' => 'Sofa Bed',
+                    'nl' => 'Slaapbank',
+                    'fr' => 'Canapé-lit',
+                    'de' => 'Schlafsofa',
+                    'ru' => 'Диван-кровать',
+                    'es' => 'Sofá cama',
+                ),
+            ),
+            array(
+                'length' => '6.66',
+                'width'  => '5',
+                'name' => array(
+                    'en' => 'Murphy Bed',
+                    'nl' => 'Inklapbed',
+                    'fr' => 'Lit escamotable',
+                    'de' => 'Klappbett',
+                    'ru' => 'Откидная кровать',
+                    'es' => 'Cama abatible',
+                ),
+            ),
+        );
+
+        $languages = Language::getLanguages(true);
+        foreach ($htlBedTypes as $htlBedType) {
+            $objBedType = new HotelBedType();
+            foreach ($languages as $lang) {
+                if (isset($htlBedType['name'][$lang['iso_code']])) {
+                    $objBedType->name[$lang['id_lang']] = $htlBedType['name'][$lang['iso_code']];
+                } else {
+                    $objBedType->name[$lang['id_lang']] = $htlBedType['name']['en'];
+                }
+
+                $objBedType->width = $htlBedType['width'];
+                $objBedType->length = $htlBedType['length'];
+                $objBedType->save();
+            }
         }
 
         return true;
@@ -1624,29 +1755,34 @@ class HotelHelper
         }
         $obj_country = new Country();
         $country_name = $obj_country->getNameById(Configuration::get('PS_LANG_DEFAULT'), $def_cont_id);
-        $cat_country = $this->addCategory($country_name, false, $grp_ids);
 
-        if ($cat_country) {
+        if ($cat_country = $this->addCategory(array('name' => $country_name, 'group_ids' => $grp_ids, 'parent_category' => false))) {
             $states = State::getStatesByIdCountry($def_cont_id);
             if (count($states) > 0) {
                 $state_name = $states[0]['name'];
-                $cat_state = $this->addCategory($state_name, $cat_country, $grp_ids);
+                $cat_state = $this->addCategory(array('name' => $state_name, 'group_ids' => $grp_ids, 'parent_category' => $cat_country));
             }
         }
         if (count($states) > 0) {
-            if ($cat_state) {
-                $cat_city = $this->addCategory('Demo City', $cat_state, $grp_ids);
+            if (!empty($cat_state)) {
+                $cat_city = $this->addCategory(array('name' => 'Demo City', 'group_ids' => $grp_ids, 'parent_category' => $cat_state));
             }
         } else {
-            $cat_city = $this->addCategory('Demo City', $cat_country, $grp_ids);
+            $cat_city = $this->addCategory(array('name' => 'Demo City', 'group_ids' => $grp_ids, 'parent_category' => $cat_country));
         }
-        if ($cat_city) {
-            $cat_hotel = $this->addCategory('The Hotel Prime', $cat_city, $grp_ids, 1, $htl_id);
-        }
-        if ($cat_hotel) {
-            $obj_hotel_info = new HotelBranchInformation($htl_id);
-            $obj_hotel_info->id_category = $cat_hotel;
-            $obj_hotel_info->save();
+        if (!empty($cat_city)) {
+            if ($cat_hotel = $this->addCategory(array(
+                    'name' => 'The Hotel Prime',
+                    'group_ids' => $grp_ids,
+                    'parent_category' => $cat_city,
+                    'is_hotel' => 1,
+                    'id_hotel' => $htl_id
+                )
+            )) {
+                $obj_hotel_info = new HotelBranchInformation($htl_id);
+                $obj_hotel_info->id_category = $cat_hotel;
+                $obj_hotel_info->save();
+            }
         }
         // save dummy hotel as primary hotel
         Configuration::updateValue('WK_PRIMARY_HOTEL', $htl_id);
@@ -1670,6 +1806,7 @@ class HotelHelper
         $roomTypeDemoDataLang = array(
             array(
                 'price' => 1000,
+                'id_bed_types' => array(4),
                 'en' => array(
                     'name' => 'General Rooms',
                     'description_short' => 'Our General Rooms offer space and comfort with multiple bedrooms and a cozy living area. Enjoy flat-screen TVs, complimentary Wi-Fi, and a kitchenette for a perfect family getaway.',
@@ -1703,6 +1840,7 @@ class HotelHelper
             ),
             array(
                 'price' => 1500,
+                'id_bed_types' => array(4, 5),
                 'en' => array(
                     'name' => 'Delux Rooms',
                     'description_short' => 'Enjoy lake views from our Deluxe Rooms with a king-sized bed, elegant furnishings, and a spacious sitting area. Perfect for guests seeking comfort, luxury, and modern amenities.',
@@ -1736,6 +1874,7 @@ class HotelHelper
             ),
             array(
                 'price' => 2000,
+                'id_bed_types' => array(5, 6),
                 'en' => array(
                     'name' => 'Executive Rooms',
                     'description_short' => 'Indulge in our Executive Rooms, featuring separate living and sleeping areas, a luxurious bathroom, and exclusive lounge access. Ideal for business travelers seeking privacy',
@@ -1769,6 +1908,7 @@ class HotelHelper
             ),
             array(
                 'price' => 2500,
+                'id_bed_types' => array(6, 8),
                 'en' => array(
                     'name' => 'Luxury Rooms',
                     'description_short' => 'Retreat to tranquility in our Luxury Rooms with expansive views. Featuring a queen-sized bed, workspace, and serene decor, perfect for business and leisure travelers alike.',
@@ -1802,6 +1942,7 @@ class HotelHelper
             ),
         );
 
+        $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
         $languages = Language::getLanguages(true);
         foreach ($roomTypeDemoDataLang as $key => $roomTypeData) {
             // Add Product
@@ -1931,6 +2072,7 @@ class HotelHelper
 
             // save advance payment information
             $this->saveAdvancedPaymentInfo($product_id);
+            $objHotelRoomTypeBedType->updateRoomTypeBedTypes($roomTypeData['id_bed_types'], $product_id);
         }
     }
 
@@ -1988,7 +2130,7 @@ class HotelHelper
         );
 
         foreach ($categories as &$category) {
-            $idCategory = $this->addCategory($category['name'], $idCategoryServices, $idsGroup);
+            $idCategory = $this->addCategory(array('name' => $category['name'], 'group_ids' => $idsGroup, 'parent_category' => $idCategoryServices));
             $category['id_category'] = $idCategory;
         }
 
@@ -2219,7 +2361,7 @@ class HotelHelper
             $objProduct->active = 1;
             $objProduct->quantity = 999999999;
             $objProduct->booking_product = 0;
-            $objProduct->service_product_type = Product::SERVICE_PRODUCT_WITH_ROOMTYPE;
+            $objProduct->selling_preference_type = Product::SELLING_PREFERENCE_WITH_ROOM_TYPE;
             $objProduct->auto_add_to_cart = $serviceProduct['auto_add_to_cart'];
             $objProduct->show_at_front = $serviceProduct['show_at_front'];
             $objProduct->available_for_order = 1;
@@ -2325,10 +2467,58 @@ class HotelHelper
         return true;
     }
 
-    public function addCategory($name, $parent_cat = false, $group_ids, $ishotel = false, $hotel_id = false)
+    public function getCategoryParams($params)
     {
-        if (!$parent_cat) {
-            $parent_cat = Configuration::get('PS_LOCATIONS_CATEGORY');
+        if (!isset($params['parent_category'])) {
+            $params['parent_category'] = false;
+        }
+
+        if (!isset($params['is_hotel'])) {
+            $params['is_hotel'] = false;
+        }
+
+        if (!isset($params['id_hotel'])) {
+            $params['id_hotel'] = 0;
+        }
+
+        if (!isset($params['link_rewrite'])) {
+            $params['link_rewrite'] = false;
+        }
+
+        if (!isset($params['meta_title'])) {
+            $params['meta_title'] = false;
+        }
+
+        if (!isset($params['meta_description'])) {
+            $params['meta_description'] = false;
+        }
+
+        if (!isset($params['meta_keywords'])) {
+            $params['meta_keywords'] = false;
+        }
+
+        return $params;
+    }
+
+    /**
+     * Send parameters in array form
+     * @param array $params
+     *  $params['name']: [name of the category]
+     *  $params['group_ids']: [group_ids of the category]
+     *  $params['parent_category']: [parent_category of the category]
+     *  $params['is_hotel']: [is_hotel = 1 if category is for hotel]
+     *  $params['id_hotel']: [id_hotel of the category, if category is for hotel]
+     *  $params['link_rewrite']: [link_rewrite of the category]
+     *  $params['meta_title']: [meta_title of the category]
+     *  $params['meta_description']: [meta_description of the category]
+     *  $params['meta_keywords']: [meta_keywords of the category]
+     * @return int  returns ID of the category added.
+     */
+    public function addCategory(array $params)
+    {
+        extract($this->getCategoryParams($params));
+        if (!$parent_category) {
+            $parent_category = Configuration::get('PS_LOCATIONS_CATEGORY');
         }
 
         if (!is_array($name)) {
@@ -2337,9 +2527,9 @@ class HotelHelper
 
         $defaultCatName = $name['en'];
         $languages = Language::getLanguages(true);
-        if ($ishotel && $hotel_id) {
+        if ($is_hotel && $id_hotel) {
             $cat_id_hotel = Db::getInstance()->getValue(
-                'SELECT `id_category` FROM `'._DB_PREFIX_.'htl_branch_info` WHERE id='.$hotel_id
+                'SELECT `id_category` FROM `'._DB_PREFIX_.'htl_branch_info` WHERE id='.$id_hotel
             );
             if ($cat_id_hotel) {
                 $obj_cat = new Category($cat_id_hotel);
@@ -2357,7 +2547,7 @@ class HotelHelper
                         $obj_cat->link_rewrite[$lang['id_lang']] = Tools::link_rewrite($defaultCatName);
                     }
                 }
-                $obj_cat->id_parent = $parent_cat;
+                $obj_cat->id_parent = $parent_category;
                 $obj_cat->groupBox = $group_ids;
                 $obj_cat->save();
                 $cat_id = $obj_cat->id;
@@ -2367,7 +2557,7 @@ class HotelHelper
         }
 
         $context = Context::getContext();
-        $check_category_exists = Category::searchByNameAndParentCategoryId($context->language->id, $defaultCatName, $parent_cat);
+        $check_category_exists = Category::searchByNameAndParentCategoryId($context->language->id, $defaultCatName, $parent_category);
 
         if ($check_category_exists) {
             return $check_category_exists['id_category'];
@@ -2387,7 +2577,7 @@ class HotelHelper
                     $obj->link_rewrite[$lang['id_lang']] = Tools::link_rewrite($defaultCatName);
                 }
             }
-            $obj->id_parent = $parent_cat;
+            $obj->id_parent = $parent_category;
             $obj->groupBox = $group_ids;
             $obj->add();
             $cat_id = $obj->id;
@@ -2492,6 +2682,10 @@ class HotelHelper
 
     public static function getNumberOfDays($dateFrom, $dateTo)
     {
+        if (empty($dateFrom) || empty($dateTo)) {
+            return 0;
+        }
+
         $startDate = new DateTime($dateFrom);
         $endDate = new DateTime($dateTo);
         $daysDifference = $startDate->diff($endDate)->days;

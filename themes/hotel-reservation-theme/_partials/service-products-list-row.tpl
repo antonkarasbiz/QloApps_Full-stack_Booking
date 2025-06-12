@@ -67,13 +67,13 @@
                                 <div class="service-product-actions">
                                     {if $service_product.allow_multiple_quantity && $service_product.available_for_order}
                                         <div class="qty_container">
-                                            <input type="hidden" class="service_product_qty" id="service_product_qty_{$service_product.id_product}" name="service_product_qty_{$service_product.id_product}" data-id-product="{$service_product.id_product}" data-max_quantity="{$service_product.max_quantity}" value="{if isset($service_product.quantity_added) && $service_product.quantity_added}{$service_product.quantity_added|escape:'html':'UTF-8'}{else}1{/if}">
+                                            <input type="hidden" class="room_service_product_qty" id="room_service_product_qty_{$service_product.id_product}" name="room_service_product_qty_{$service_product.id_product}" data-id-product="{$service_product.id_product}" data-max_quantity="{$service_product.max_quantity}" value="{if isset($service_product.quantity_added) && $service_product.quantity_added}{$service_product.quantity_added|escape:'html':'UTF-8'}{else}1{/if}">
                                             <div class="qty_count pull-left">
                                                 <span>{if isset($service_product.quantity_added) && $service_product.quantity_added}{$service_product.quantity_added|escape:'html':'UTF-8'}{else}1{/if}</span>
                                             </div>
                                             <div class="qty_direction pull-left">
-                                                <a href="#" class="btn btn-default quantity_up service_product_qty_up"><span><i class="icon-plus"></i></span></a>
-                                                <a href="#" class="btn btn-default quantity_down service_product_qty_down"><span><i class="icon-minus"></i></span></a>
+                                                <a href="#" class="btn btn-default quantity_up room_service_product_qty_up"><span><i class="icon-plus"></i></span></a>
+                                                <a href="#" class="btn btn-default quantity_down room_service_product_qty_down"><span><i class="icon-minus"></i></span></a>
                                             </div>
                                         </div>
                                     {/if}

@@ -55,7 +55,7 @@ class BlockSocial extends Module
 			|| !Configuration::updateValue('BLOCKSOCIAL_PINTEREST', '')
 			|| !Configuration::updateValue('BLOCKSOCIAL_VIMEO', '')
 			|| !Configuration::updateValue('BLOCKSOCIAL_INSTAGRAM', '')
-			|| !$this->registerHook('displayFooterNotificationHook')
+			|| !$this->registerHook('displayFooterMostLeftBlock')
 		) {
 			return false;
 		}
@@ -100,7 +100,7 @@ class BlockSocial extends Module
 		return $output.$this->renderForm();
 	}
 
-	public function hookDisplayFooterNotificationHook()
+	public function hookDisplayFooterMostLeftBlock()
 	{
 		$this->smarty->assign(array(
 			'facebook_url' => Configuration::get('BLOCKSOCIAL_FACEBOOK'),

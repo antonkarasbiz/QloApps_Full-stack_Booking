@@ -29,6 +29,11 @@ class OrderOpcControllerCore extends ParentOrderController
     public $php_self = 'order-opc';
     public $isLogged;
 
+    /**
+     * @var CheckoutProcess
+     */
+    protected $checkoutProcess;
+
     protected $ajax_refresh = false;
 
     /**
@@ -119,16 +124,8 @@ class OrderOpcControllerCore extends ParentOrderController
                             if (Configuration::get('PS_ONE_PHONE_AT_LEAST') && !$phone) {
                                 $this->errors[] = Tools::displayError('Phone number is a required field.', false);
                             }
-                            $className = 'CartCustomerGuestDetail';
-                            $rules = call_user_func(array($className, 'getValidationRules'), $className);
-                            if (!Validate::isPhoneNumber($phone)) {
-                                $this->errors[] = Tools::displayError('Please enter a valid Mobile phone number.', false);
-                            } elseif (Tools::strlen($phone) > $rules['size']['phone']) {
-                                $this->errors[] = sprintf(Tools::displayError('Mobile phone number is too long. (%s chars max).'), $rules['size']['phone']);
-                            } else {
-                                $this->context->customer->phone = $phone;
-                            }
 
+                            $this->context->customer->phone = $phone;
                             $_POST['lastname'] = $_POST['customer_lastname'];
                             $_POST['firstname'] = $_POST['customer_firstname'];
                             $this->errors = array_merge($this->errors, $this->context->customer->validateController());
@@ -387,10 +384,12 @@ class OrderOpcControllerCore extends ParentOrderController
                             $this->ajaxDie($this->changeRoomDemands());
                             exit;
                             break;
-                        case 'submitCustomerGuestDetail':
-                            $this->ajaxDie($this->submitCustomerGuestDetail());
+                        case 'getCustomerGuestDetail':
+                            $this->ajaxDie($this->getCustomerGuestDetail());
                             exit;
                             break;
+                        case 'getOpcData':
+                            $this->ajaxDie($this->getOpcData());
                         default:
                             throw new PrestaShopException('Unknown method "'.Tools::getValue('method').'"');
                     }
@@ -431,12 +430,12 @@ class OrderOpcControllerCore extends ParentOrderController
      */
     public function initContent()
     {
-        // validate room types before payment by customer
-        if ($orderRestrictErr = HotelCartBookingData::validateCartBookings()) {
-            $this->errors = array_merge($this->errors, $orderRestrictErr);
-        }
-
+        $this->_assignCheckoutValidationVars();
         parent::initContent();
+
+        if (Tools::getValue('submitGuestDetails')) {
+            $this->submitCustomerGuestDetail();
+        }
 
         /* id_carrier is not defined in database before choosing a carrier, set it to a default one to match a potential cart _rule */
         if (empty($this->context->cart->id_carrier)) {
@@ -500,14 +499,12 @@ class OrderOpcControllerCore extends ParentOrderController
         // $objGlobalDemand = new HotelRoomTypeGlobalDemand();
         // $allDemands = $objGlobalDemand->getAllDemands();
         // $objCurrency = new Currency(Configuration::get('PS_CURRENCY_DEFAULT'));
+        $this->_assignCheckoutVars();
         $this->context->smarty->assign(
             array(
-                'orderRestrictErr' => count($orderRestrictErr) ? 1 : 0,
                 // 'allDemands' => $allDemands,
                 // 'defaultcurrencySign' => $objCurrency->sign,
-                'THEME_DIR' => _THEME_DIR_,
                 'PS_REGISTRATION_PROCESS_TYPE' => Configuration::get('PS_REGISTRATION_PROCESS_TYPE'),
-                'PS_ROOM_PRICE_AUTO_ADD_BREAKDOWN' => Configuration::get('PS_ROOM_PRICE_AUTO_ADD_BREAKDOWN'),
                 'free_shipping' => $free_shipping,
                 'isGuest' => isset($this->context->cookie->is_guest) ? $this->context->cookie->is_guest : 0,
                 'countries' => $countries,
@@ -551,12 +548,12 @@ class OrderOpcControllerCore extends ParentOrderController
         $this->_assignPayment();
         // GUEST BOOKING
         if ($this->isLogged) {
-            if ($id_customer_guest_detail = CartCustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
+            if ($idCustomerGuestDetail = CustomerGuestDetail::getCustomerGuestIdByIdCart($this->context->cart->id)) {
                 $this->context->smarty->assign(
-                    'customer_guest_detail', CartCustomerGuestDetail::getCustomerGuestDetail($id_customer_guest_detail)
+                    'customer_guest_detail', CustomerGuestDetail::getCustomerGuestDetailById($idCustomerGuestDetail)
                 );
             }
-            $this->context->smarty->assign('id_customer_guest_detail', $id_customer_guest_detail);
+            $this->context->smarty->assign('id_customer_guest_detail', $idCustomerGuestDetail);
         }
         Tools::safePostVars();
 
@@ -590,51 +587,7 @@ class OrderOpcControllerCore extends ParentOrderController
             $this->addJS(_THEME_JS_DIR_ . 'advanced-payment-api.js');
             $this->setTemplate(_PS_THEME_DIR_ . 'order-opc-advanced.tpl');
         } else {
-            // set used objects in the below code
-            // $objBookingDetail = new HotelBookingDetail();
-            // $objHtlRoomType = new HotelRoomType();
-
-            $cartProducts = $this->context->cart->getProducts();
-
-            if (!empty($cartProducts)) {
-
-                if ($cartBookingInfo = HotelCartBookingData::getHotelCartBookingData()) {
-                    $this->context->smarty->assign('cart_htl_data', $cartBookingInfo);
-                }
-                $objHotelServiceProductCartDetail = new HotelServiceProductCartDetail();
-                if ($normalCartProduct = $objHotelServiceProductCartDetail->getHotelProducts($this->context->cart->id, 0, 0, 0, null, null, true)) {
-                    $this->context->smarty->assign('cart_normal_data', $normalCartProduct);
-                }
-
-                // For Advanced Payment work
-                $objAdvPayment = new HotelAdvancedPayment();
-                if ($objAdvPayment->isAdvancePaymentAvailableForCurrentCart()) {
-                    if (Tools::isSubmit('submitAdvPayment')) {
-                        if (Tools::getValue('payment_type') == Order::ORDER_PAYMENT_TYPE_ADVANCE) {
-                            $this->context->cart->is_advance_payment = 1;
-                        } else {
-                            $this->context->cart->is_advance_payment = 0;
-                        }
-                        $this->context->cart->save();
-
-                        Tools::redirect($this->context->link->getPageLink('order-opc'));
-                    }
-
-                    // set if advance payment is selected by the customer
-                    if ($this->context->cart->is_advance_payment) {
-                        $this->context->smarty->assign('is_advance_payment', 1);
-                    }
-
-                    // get advance payment amount and send data to the template
-                    $advPaymentAmount = $this->context->cart->getOrderTotal(true, Cart::ADVANCE_PAYMENT);
-                    $this->context->smarty->assign(array(
-                        'advance_payment_active'=> 1,
-                        'advPaymentAmount'=> $advPaymentAmount,
-                        'dueAmount'=> ($this->context->cart->getOrderTotal() - $advPaymentAmount),
-                    ));
-                }
-            }
-
+            $this->_assignShoppingCart();
             $this->setTemplate(_PS_THEME_DIR_.'order-opc.tpl');
         }
     }
@@ -1028,21 +981,29 @@ class OrderOpcControllerCore extends ParentOrderController
 
                     }
                 }
-                $objRoomTypeServiceProductCartDetail = new RoomTypeServiceProductCartDetail();
+                $objServiceProductCartDetail = new ServiceProductCartDetail();
                 $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
                 $roomTypeServiceProducts = $objRoomTypeServiceProduct->getServiceProductsData($idProduct, 1, 0, true, 1);
-                $cartRooms = $objCartBookingData->getHotelCartRoomsInfoByRoomType($this->context->cart->id, $idProduct,$dateFrom, $dateTo);
-                foreach($cartRooms as &$room) {
-                    $room['selected_service'] = $objRoomTypeServiceProductCartDetail->getRoomServiceProducts(
-                        $room['id'],
+                $cartBookings = $objCartBookingData->getHotelCartRoomsInfoByRoomType($this->context->cart->id, $idProduct,$dateFrom, $dateTo);
+                foreach($cartBookings as &$cartBookingData) {
+                    $cartBookingData['selected_service'] = $objServiceProductCartDetail->getServiceProductsInCart(
+                        $cartBookingData['id_cart'],
+                        [],
+                        null,
+                        $cartBookingData['id'],
+                        null,
+                        null,
+                        null,
+                        null,
                         0,
                         null,
-                        null
+                        null,
+                        1
                     );
                 }
                 $this->context->smarty->assign(array(
                     'roomTypeServiceProducts' => $roomTypeServiceProducts,
-                    'cartRooms' => $cartRooms
+                    'cartRooms' => $cartBookings
                 ));
             }
         }
@@ -1069,79 +1030,132 @@ class OrderOpcControllerCore extends ParentOrderController
         die('0');
     }
 
+    public function getCustomerGuestDetail()
+    {
+        $response = array('status' => false);
+        $firstname = trim(Tools::getValue('firstname'));
+        $lastname = trim(Tools::getValue('lastname'));
+        $email = trim(Tools::getValue('email'));
+        $objCustomerGuestDetail = new CustomerGuestDetail();
+        if ($guestDetails = $objCustomerGuestDetail->getCustomerGuestsByIdCustomer(
+            $this->context->cart->id_customer,
+            $firstname,
+            $lastname,
+            $email
+        )) {
+            $response['status'] = true;
+            $response['guest_details'] = $guestDetails;
+        }
+
+        return json_encode($response);
+    }
+
+
     public function submitCustomerGuestDetail()
     {
         $customerGuestDetail = Tools::getValue('customer_guest_detail');
         $this->context->cookie->__set('customer_details_proceeded', 0);
         $this->context->cookie->checkedTOS = false;
         if ($customerGuestDetail) {
-            if ($id_customer_guest_detail = CartCustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
-                $objCustomerGuestDetail = new CartCustomerGuestDetail($id_customer_guest_detail);
-            } else {
-                $objCustomerGuestDetail = new CartCustomerGuestDetail();
-            }
-
+            $customerGuestDetailErrors = array();
             $customerGuestDetailGender = Tools::getValue('customer_guest_detail_gender');
             $customerGuestDetailFirstname = Tools::getValue('customer_guest_detail_firstname');
             $customerGuestDetailLastname = Tools::getValue('customer_guest_detail_lastname');
             $customerGuestDetailEmail = Tools::getValue('customer_guest_detail_email');
             $customerGuestDetailPhone = Tools::getValue('customer_guest_detail_phone');
-
-            $className = 'CartCustomerGuestDetail';
-            $rules = call_user_func(array($className, 'getValidationRules'), $className);
-
-            if (trim($customerGuestDetailGender) && Validate::isUnsignedInt($customerGuestDetailGender)) {
-                $objCustomerGuestDetail->id_gender = $customerGuestDetailGender;
+            if ($idCustomerGuestDetail = CustomerGuestDetail::getCustomerGuestByEmail($customerGuestDetailEmail, $this->context->cart->id)) {
+                $objCustomerGuestDetail = new CustomerGuestDetail($idCustomerGuestDetail);
+            } else if ($idCustomerGuestDetail = CustomerGuestDetail::getCustomerGuestByEmail($customerGuestDetailEmail, $this->context->customer->id, null)) {
+                $objCustomerGuestDetail = new CustomerGuestDetail($idCustomerGuestDetail);
             } else {
-                $result['errors']['customer_guest_detail_gender'] = Tools::displayError('Invalid gender');
+                $objCustomerGuestDetail = new CustomerGuestDetail();
             }
 
-            if (trim($customerGuestDetailFirstname)
-                && Validate::isName($customerGuestDetailFirstname)
-                && (!isset($rules['size']['firstname'])
+            $className = 'CustomerGuestDetail';
+            $rules = call_user_func(array($className, 'getValidationRules'), $className);
+
+            if (!(trim($customerGuestDetailGender) || !Validate::isUnsignedInt($customerGuestDetailGender))) {
+                $customerGuestDetailErrors[] = Tools::displayError('Invalid gender');
+            }
+
+            if (!trim($customerGuestDetailFirstname)
+                || !Validate::isName($customerGuestDetailFirstname)
+                || !(!isset($rules['size']['firstname'])
                    || (isset($rules['size']['firstname']) && (Tools::strlen(trim($customerGuestDetailFirstname)) <= $rules['size']['firstname']))
                 )
             ) {
-                $objCustomerGuestDetail->firstname = $customerGuestDetailFirstname;
+                $customerGuestDetailErrors[] = Tools::displayError('Invalid first name');
             }
 
-            if (trim($customerGuestDetailLastname)
-                && Validate::isName($customerGuestDetailLastname)
-                && (!isset($rules['size']['lastname'])
+            if (!trim($customerGuestDetailLastname)
+                || !Validate::isName($customerGuestDetailLastname)
+                || !(!isset($rules['size']['lastname'])
                   || (isset($rules['size']['lastname']) && (Tools::strlen(trim($customerGuestDetailLastname)) <= $rules['size']['lastname']))
                 )
             ) {
-                $objCustomerGuestDetail->lastname = $customerGuestDetailLastname;
+                $customerGuestDetailErrors[] = Tools::displayError('Invalid last name');
             }
 
-            if (trim($customerGuestDetailEmail)
-                && Validate::isEmail($customerGuestDetailEmail)
-                && (!isset($rules['size']['email'])
+            if (!trim($customerGuestDetailEmail)
+                || !Validate::isEmail($customerGuestDetailEmail)
+                || !(!isset($rules['size']['email'])
                   || (isset($rules['size']['email']) && (Tools::strlen(trim($customerGuestDetailEmail)) <= $rules['size']['email']))
                 )
             ) {
-                $objCustomerGuestDetail->email = $customerGuestDetailEmail;
+                $customerGuestDetailErrors[] = Tools::displayError('Invalid email');
             }
 
-            if (trim($customerGuestDetailPhone)
-                && Validate::isPhoneNumber($customerGuestDetailPhone)
-                && (!isset($rules['size']['phone'])
+            if (!trim($customerGuestDetailPhone)
+                || !Validate::isPhoneNumber($customerGuestDetailPhone)
+                || !(!isset($rules['size']['phone'])
                   || (isset($rules['size']['phone']) && (Tools::strlen(trim($customerGuestDetailPhone)) <= $rules['size']['phone']))
                 )
             ) {
-                $objCustomerGuestDetail->phone = $customerGuestDetailPhone;
+                $customerGuestDetailErrors[] = Tools::displayError('Invalid phone');
             }
 
-            $objCustomerGuestDetail->id_cart = $this->context->cart->id;
-            $objCustomerGuestDetail->save();
-        } else {
-            if ($id_customer_guest_detail = CartCustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
-                if (Validate::isLoadedObject($objCustomerGuestDetail = new CartCustomerGuestDetail($id_customer_guest_detail))) {
-                    $objCustomerGuestDetail->delete();
+            if (empty($customerGuestDetailErrors)) {
+                $objCustomerGuestDetail->id_gender = $customerGuestDetailGender;
+                $objCustomerGuestDetail->firstname = $customerGuestDetailFirstname;
+                $objCustomerGuestDetail->lastname = $customerGuestDetailLastname;
+                $objCustomerGuestDetail->email = $customerGuestDetailEmail;
+                $objCustomerGuestDetail->phone = $customerGuestDetailPhone;
+                $objCustomerGuestDetail->id_customer = $this->context->customer->id;
+                if ($objCustomerGuestDetail->save()) {
+                    if ($maxGuestAccountAllowed = Configuration::get('PS_CUSTOMER_GUEST_MAX_LIMIT')) {
+                        $objCustomerGuestDetail->deleteCustomerGuestByIdCustomer($this->context->cart->id_customer, $maxGuestAccountAllowed);
+                    }
+                    // To prevent duplications for the same cart.
+                    CustomerGuestDetail::deleteCustomerGuestInCart($this->context->cart->id);
+                    $objCustomerGuestDetail->saveCustomerGuestInCart($this->context->cart->id, $objCustomerGuestDetail->id);
+                    Tools::redirect($this->context->link->getPageLink('order-opc', null, $this->context->language->id, array('proceed_to_payment' => 1)));
                 }
             }
+
+            $this->context->smarty->assign('customerGuestDetailErrors', $customerGuestDetailErrors);
+        } else {
+            CustomerGuestDetail::deleteCustomerGuestInCart($this->context->cart->id);
+            Tools::redirect($this->context->link->getPageLink('order-opc', null, $this->context->language->id, array('proceed_to_payment' => 1)));
         }
 
         $this->context->cart->save();
+    }
+
+    public function getOpcData()
+    {
+        $response = array('success' => false);
+        if ($this->context->cart->getProducts()) {
+            $this->_assignCheckoutValidationVars();
+            $this->_assignCheckoutVars();
+            $this->_assignShoppingCart();
+            $this->_assignSummaryInformations();
+            $response['success'] = true;
+            $response['shopping_cart'] = $this->context->smarty->fetch(_PS_THEME_DIR_.'shopping-cart.tpl');
+            $response['cart_total_block'] = $this->context->smarty->fetch(_PS_THEME_DIR_.'cart-total-block.tpl');
+        } else {
+            $response['reload'] = 1;
+        }
+
+        return json_encode($response);
     }
 }

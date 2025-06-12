@@ -26,7 +26,7 @@
 
 class AdminStatsControllerCore extends AdminStatsTabController
 {
-    public static function getVisits($unique = false, $date_from, $date_to, $granularity = false)
+    public static function getVisits($unique, $date_from, $date_to, $granularity = false)
     {
         $visits = ($granularity == false) ? 0 : array();
         $objGoogleAnalytics = Module::isEnabled('qlogoogleanalytics') ? Module::getInstanceByName('qlogoogleanalytics') : false;
@@ -226,14 +226,24 @@ class AdminStatsControllerCore extends AdminStatsTabController
         if ($granularity == 'day') {
             $sales = array();
             if ($result = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS(
-                'SELECT LEFT(`invoice_date`, 10) AS date, SUM(total_paid_tax_excl / o.conversion_rate) AS sales
+                'SELECT LEFT(`invoice_date`, 10) AS date, SUM(total_paid_tax_excl / o.`conversion_rate`) AS sales
                 FROM `'._DB_PREFIX_.'orders` o
                 LEFT JOIN `'._DB_PREFIX_.'order_state` os ON o.current_state = os.id_order_state
                 WHERE os.logable = 1'. (($date_from && $date_to) ? ' AND `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59"' : '').'
-                AND EXISTS (
-                    SELECT 1
-                    FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
-                    WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                AND (
+                    EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                        WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                    ) OR EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                        WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel, 'spod').'
+                    )'.(!$id_hotel ? ' OR EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                        WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+                    )' : '').'
                 )
                 GROUP BY LEFT(`invoice_date`, 10)'
             )) {
@@ -249,10 +259,20 @@ class AdminStatsControllerCore extends AdminStatsTabController
                 FROM `'._DB_PREFIX_.'orders` o
                 LEFT JOIN `'._DB_PREFIX_.'order_state` os ON o.current_state = os.id_order_state
                 WHERE os.logable = 1'. (($date_from && $date_to) ? ' AND `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59"' : '').'
-                AND EXISTS (
-                    SELECT 1
-                    FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
-                    WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                AND (
+                    EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                        WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                    ) OR EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                        WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel, 'spod').'
+                    )'.(!$id_hotel ? ' OR EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                        WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+                    )' : '').'
                 )
                 GROUP BY LEFT(`invoice_date`, 7)'
             )) {
@@ -260,7 +280,7 @@ class AdminStatsControllerCore extends AdminStatsTabController
                 foreach ($result as $row) {
                    $sales[strtotime($row['date'].'-01')] = $row['sales'];
                 }
-	    }
+	        }
 
             return $sales;
         } else {
@@ -273,8 +293,22 @@ class AdminStatsControllerCore extends AdminStatsTabController
                     FROM`'._DB_PREFIX_.'htl_booking_detail` hbd
                     GROUP BY hbd.`id_order`
                 ) t ON (t.`id_order` = o.`id_order`)
-                WHERE os.logable = 1'. (($date_from && $date_to) ? ' AND `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59"' : '').
-                HotelBranchInformation::addHotelRestriction($id_hotel)
+                WHERE os.logable = 1'. (($date_from && $date_to) ? ' AND `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59"' : '').'
+                AND (
+                    EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                        WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                    ) OR EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                        WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel, 'spod').'
+                    )'.(!$id_hotel ? ' OR EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                        WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+                    )' : '').'
+                )'
             );
         }
     }
@@ -304,8 +338,22 @@ class AdminStatsControllerCore extends AdminStatsTabController
 			LEFT JOIN `'._DB_PREFIX_.'order_state` os ON o.current_state = os.id_order_state
             LEFT JOIN `'._DB_PREFIX_.'htl_booking_detail` hbd ON (hbd.`id_order` = o.`id_order`)
 			WHERE `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59" AND os.logable = 1
-			'.Shop::addSqlRestriction(false, 'o')
-            .HotelBranchInformation::addHotelRestriction($id_hotel, 'hbd').'
+			'.Shop::addSqlRestriction(false, 'o').'
+            AND (
+                EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                    WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                ) OR EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                    WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel, 'spod').'
+                )'.(!$id_hotel ? ' OR EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                    WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+                )' : '').'
+            )
 			GROUP BY LEFT(`invoice_date`, 10)')) {
                 foreach ($result as $row) {
                     $orders[strtotime($row['date'])] = $row['orders'];
@@ -320,8 +368,22 @@ class AdminStatsControllerCore extends AdminStatsTabController
 			LEFT JOIN `'._DB_PREFIX_.'order_state` os ON o.current_state = os.id_order_state
             LEFT JOIN `'._DB_PREFIX_.'htl_booking_detail` hbd ON (hbd.`id_order` = o.`id_order`)
 			WHERE `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59" AND os.logable = 1
-			'.Shop::addSqlRestriction(false, 'o')
-            .HotelBranchInformation::addHotelRestriction($id_hotel, 'hbd').'
+			'.Shop::addSqlRestriction(false, 'o').'
+            AND (
+                EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                    WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                ) OR EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                    WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel, 'spod').'
+                )'.(!$id_hotel ? ' OR EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                    WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+                )' : '').'
+            )
 			GROUP BY LEFT(`invoice_date`, 7)')) {
                 foreach ($result as $row) {
                     $orders[strtotime($row['date'].'-01')] = $row['orders'];
@@ -333,10 +395,23 @@ class AdminStatsControllerCore extends AdminStatsTabController
 			SELECT COUNT(DISTINCT o.`id_order`) as orders
 			FROM `'._DB_PREFIX_.'orders` o
 			LEFT JOIN `'._DB_PREFIX_.'order_state` os ON o.current_state = os.id_order_state
-            LEFT JOIN `'._DB_PREFIX_.'htl_booking_detail` hbd ON (hbd.`id_order` = o.`id_order`)
 			WHERE `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59" AND os.logable = 1
-			'.Shop::addSqlRestriction(false, 'o')
-            .HotelBranchInformation::addHotelRestriction($id_hotel, 'hbd'));
+			'.Shop::addSqlRestriction(false, 'o').'
+            AND (
+                EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                    WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                ) OR EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                    WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel, 'spod').'
+                )'.(!$id_hotel ? ' OR EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                    WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+                )' : '').'
+            )');
         }
 
         return $orders;
@@ -424,7 +499,14 @@ class AdminStatsControllerCore extends AdminStatsTabController
 
     public static function getPendingMessages()
     {
-        return CustomerThread::getTotalCustomerThreads('status LIKE "%pending%" OR status = "open"'.Shop::addSqlRestriction());
+        $pendingStatuses = array(
+            CustomerThread::QLO_CUSTOMER_THREAD_STATUS_PENDING2,
+            CustomerThread::QLO_CUSTOMER_THREAD_STATUS_PENDING1
+        );
+
+        return CustomerThread::getTotalCustomerThreads(
+            '`status` IN ('.implode(',', $pendingStatuses).')'.Shop::addSqlRestriction()
+        );
     }
 
     public static function getAverageMessageResponseTime($date_from, $date_to, $return_seconds = false)
@@ -455,13 +537,23 @@ class AdminStatsControllerCore extends AdminStatsTabController
 
     public static function getMessagesPerThread($date_from, $date_to)
     {
+        $accessWhere = '';
+        $employee = Context::getContext()->employee;
+        if (!$employee->isSuperAdmin()) {
+            $idProfile = $employee->id_profile;
+            if ($acsHtls = HotelBranchInformation::getProfileAccessedHotels($idProfile, 1, 1)) {
+                $accessWhere = ' AND ct.`id_order` IN (SELECT `id_order` FROM `'._DB_PREFIX_.'htl_booking_detail` hbd WHERE `id_hotel` IN ('.implode(',', $acsHtls).'))';
+            } else {
+                $accessWhere = ' AND ct.`id_order` = 0 ';
+            }
+        }
+
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS('
 		SELECT COUNT(*) as messages
 		FROM `'._DB_PREFIX_.'customer_thread` ct
 		LEFT JOIN `'._DB_PREFIX_.'customer_message` cm ON (ct.id_customer_thread = cm.id_customer_thread)
 		WHERE ct.`date_add` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59"
-		'.Shop::addSqlRestriction().'
-		AND status = "closed"
+		'.Shop::addSqlRestriction().$accessWhere.'
 		GROUP BY ct.id_customer_thread');
         $threads = $messages = 0;
         foreach ($result as $row) {
@@ -485,20 +577,26 @@ class AdminStatsControllerCore extends AdminStatsTabController
 					od.`purchase_supplier_price` > 0,
 					od.`purchase_supplier_price`,
 					(od.`original_product_price` / `conversion_rate`) * '.(int)Configuration::get('CONF_AVERAGE_PRODUCT_MARGIN').' / 100
-				)) as total_purchase_price,
-                (
-                    SELECT hbd.`id_hotel`
-                    FROM`'._DB_PREFIX_.'htl_booking_detail` hbd
-                    WHERE hbd.`id_order` = o.`id_order` LIMIT 1
-                ) AS id_hotel
+				)) as total_purchase_price
 			FROM `'._DB_PREFIX_.'orders` o
 			LEFT JOIN `'._DB_PREFIX_.'order_detail` od ON o.id_order = od.id_order
 			LEFT JOIN `'._DB_PREFIX_.'order_state` os ON o.current_state = os.id_order_state
 			WHERE `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59"
-            AND os.logable = 1 AND EXISTS (
-                SELECT 1
-                FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
-                WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+            AND os.logable = 1
+            AND (
+                EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                    WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                ) OR EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                    WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel, 'spod').'
+                )'.(!$id_hotel ? ' OR EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                    WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+                )' : '').'
             )
 			GROUP BY LEFT(`invoice_date`, 10)')) {
 
@@ -519,10 +617,21 @@ class AdminStatsControllerCore extends AdminStatsTabController
                 LEFT JOIN `'._DB_PREFIX_.'order_detail` od ON o.id_order = od.id_order
                 LEFT JOIN `'._DB_PREFIX_.'order_state` os ON o.current_state = os.id_order_state
                 WHERE `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59"
-                AND os.logable = 1 AND EXISTS (
-                    SELECT 1
-                    FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
-                    WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                AND os.logable = 1
+                AND (
+                    EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                        WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                    ) OR EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                        WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel, 'spod').'
+                    )'.(!$id_hotel ? ' OR EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                        WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+                    )' : '').'
                 )'
             );
         }
@@ -540,10 +649,21 @@ class AdminStatsControllerCore extends AdminStatsTabController
 			LEFT JOIN `'._DB_PREFIX_.'order_return` orr ON (o.id_order = orr.id_order)
             LEFT JOIN `'._DB_PREFIX_.'order_state` os ON (o.current_state = os.id_order_state)
 			WHERE orr.`payment_mode` != "" AND `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00"
-            AND "'.pSQL($date_to).' 23:59:59" AND EXISTS (
-                SELECT 1
-                FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
-                WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+            AND "'.pSQL($date_to).' 23:59:59"
+            AND (
+                EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                    WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                ) OR EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                    WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel, 'spod').'
+                )'.(!$id_hotel ? ' OR EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                    WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+                )' : '').'
             )
 			GROUP BY LEFT(`invoice_date`, 10)')) {
 
@@ -566,10 +686,20 @@ class AdminStatsControllerCore extends AdminStatsTabController
                 LEFT JOIN `'._DB_PREFIX_.'order_state` os ON (o.current_state = os.id_order_state)
                 WHERE orr.`payment_mode` != "" AND orr.`id_transaction` != ""
                 AND `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59"
-                AND EXISTS (
-                    SELECT 1
-                    FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
-                    WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                AND (
+                    EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                        WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                    ) OR EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                        WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel, 'spod').'
+                    )'.(!$id_hotel ? ' OR EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                        WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+                    )' : '').'
                 )'
             );
         }
@@ -580,24 +710,35 @@ class AdminStatsControllerCore extends AdminStatsTabController
         $expenses = ($granularity == 'day' ? array() : 0);
 
         $orders = Db::getInstance()->ExecuteS('
-		SELECT
-			LEFT(`invoice_date`, 10) as date,
-            total_paid_tax_incl / o.conversion_rate as total_paid_tax_incl,
-			total_shipping_tax_excl / o.conversion_rate as total_shipping_tax_excl,
-			o.module,
-			ad.id_country,
-			o.id_currency,
-			c.id_reference as carrier_reference,
-            (
-                SELECT hbd.`id_hotel`
-                FROM`'._DB_PREFIX_.'htl_booking_detail` hbd
-                WHERE hbd.`id_order` = o.`id_order` LIMIT 1
-            ) AS id_hotel
-		FROM `'._DB_PREFIX_.'orders` o
-		LEFT JOIN `'._DB_PREFIX_.'address` ad ON o.id_address_delivery = ad.id_address
-		LEFT JOIN `'._DB_PREFIX_.'carrier` c ON o.id_carrier = c.id_carrier
-		LEFT JOIN `'._DB_PREFIX_.'order_state` os ON o.current_state = os.id_order_state
-		WHERE `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59" AND os.logable = 1 HAVING 1'.HotelBranchInformation::addHotelRestriction($id_hotel));
+            SELECT
+                LEFT(`invoice_date`, 10) as date,
+                total_paid_tax_incl / o.conversion_rate as total_paid_tax_incl,
+                total_shipping_tax_excl / o.conversion_rate as total_shipping_tax_excl,
+                o.module,
+                ad.id_country,
+                o.id_currency,
+                c.id_reference as carrier_reference
+            FROM `'._DB_PREFIX_.'orders` o
+            LEFT JOIN `'._DB_PREFIX_.'address` ad ON o.id_address_delivery = ad.id_address
+            LEFT JOIN `'._DB_PREFIX_.'carrier` c ON o.id_carrier = c.id_carrier
+            LEFT JOIN `'._DB_PREFIX_.'order_state` os ON o.current_state = os.id_order_state
+            WHERE `invoice_date` BETWEEN "'.pSQL($date_from).' 00:00:00" AND "'.pSQL($date_to).' 23:59:59" AND os.logable = 1 HAVING 1
+            AND (
+                EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                    WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel).'
+                ) OR EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                    WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($id_hotel, 'spod').'
+                )'.(!$id_hotel ? ' OR EXISTS (
+                    SELECT 1
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                    WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+                )' : '').'
+            )'
+        );
 
         foreach ($orders as $order) {
             // Add flat fees for this order
@@ -848,10 +989,21 @@ class AdminStatsControllerCore extends AdminStatsTabController
                 FROM `'._DB_PREFIX_.'orders` o
                 LEFT JOIN `'._DB_PREFIX_.'order_state` os ON os.`id_order_state` = o.`current_state`
                 WHERE o.`invoice_date` BETWEEN "'.pSQL(date('Y-m-d', strtotime('-'.($daysForAvgOrderVal + 1).' day'))).' 00:00:00"
-                AND "'.pSQL(date('Y-m-d')).' 23:59:59" AND os.`logable` = 1 AND EXISTS (
-                    SELECT 1
-                    FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
-                    WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($idHotels).'
+                AND "'.pSQL(date('Y-m-d')).' 23:59:59" AND os.`logable` = 1
+                AND (
+                    EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                        WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($idHotels).'
+                    ) OR EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                        WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($idHotels, 'spod').'
+                    )'.(!$idHotels ? ' OR EXISTS (
+                        SELECT 1
+                        FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                        WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+                    )' : '').'
                 )');
                 $value = Tools::displayPrice($row['orders'] ? $row['total_paid_tax_excl'] / $row['orders'] : 0, $currency).' ('.$this->l('tax excl.').')';
 
@@ -1634,7 +1786,7 @@ class AdminStatsControllerCore extends AdminStatsTabController
             $totalServicesRevenue = 0;
             // Calculate services revenue
             $servicesRevenueSql = 'SELECT SUM((rtspod.`total_price_tax_excl` / o.`conversion_rate`) / DATEDIFF(hbd.`date_to`, hbd.`date_from`))
-            FROM `'._DB_PREFIX_.'htl_room_type_service_product_order_detail` rtspod
+            FROM `'._DB_PREFIX_.'service_product_order_detail` rtspod
             LEFT JOIN `'._DB_PREFIX_.'htl_booking_detail` hbd
             ON (rtspod.`id_htl_booking_detail` = hbd.`id`)
             LEFT JOIN `'._DB_PREFIX_.'product` p ON (p.`id_product` = hbd.`id_product`)
@@ -2124,7 +2276,7 @@ class AdminStatsControllerCore extends AdminStatsTabController
                             THEN ((od.`original_product_price` / o.`conversion_rate`) * '.(int)Configuration::get('CONF_AVERAGE_PRODUCT_MARGIN').' / 100) / (IF (od.`product_price_calculation_method` = '.Product::PRICE_CALCULATION_METHOD_PER_BOOKING.', DATEDIFF(hbd.`date_to`, hbd.`date_from`), 1))
                         END
                     ), 0)
-                    FROM `'._DB_PREFIX_.'htl_room_type_service_product_order_detail` rtspod
+                    FROM `'._DB_PREFIX_.'service_product_order_detail` rtspod
                     LEFT JOIN `'._DB_PREFIX_.'htl_booking_detail` hbd
                     ON (rtspod.`id_htl_booking_detail` = hbd.`id`)
                     LEFT JOIN `'._DB_PREFIX_.'product` p ON (p.`id_product` = rtspod.`id_product`)
@@ -2431,11 +2583,21 @@ class AdminStatsControllerCore extends AdminStatsTabController
         LEFT JOIN `'._DB_PREFIX_.'order_state` os ON o.current_state = os.id_order_state
         WHERE 1 ' .
         ($invalidOrderStates ? ' AND o.`current_state` NOT IN ('.implode(',', $invalidOrderStates).')' : '') .
-        (($dateFrom && $dateTo) ? ' AND o.`date_add` BETWEEN "'.pSQL($dateFrom).' 00:00:00" AND "'.pSQL($dateTo).' 23:59:59"' : '').
-        ' AND EXISTS (
-            SELECT 1
-            FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
-            WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($idHotel).'
+        (($dateFrom && $dateTo) ? ' AND o.`date_add` BETWEEN "'.pSQL($dateFrom).' 00:00:00" AND "'.pSQL($dateTo).' 23:59:59"' : '').'
+        AND (
+            EXISTS (
+                SELECT 1
+                FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+                WHERE hbd.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($idHotel).'
+            ) OR EXISTS (
+                SELECT 1
+                FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                WHERE spod.`id_order` = o.`id_order`' . HotelBranchInformation::addHotelRestriction($idHotel, 'spod').'
+            )'.(!$idHotel ? ' OR EXISTS (
+                SELECT 1
+                FROM `'._DB_PREFIX_.'service_product_order_detail` spod
+                WHERE spod.`id_order` = o.`id_order` AND spod.`id_hotel` = 0 AND spod.`id_htl_booking_detail` = 0
+            )' : '').'
         )';
         return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue($sql);
     }

@@ -108,63 +108,29 @@ class RoomTypeServiceProductPrice extends ObjectModel
         );
     }
 
-    public function getServicePrice(
+    public static function getPrice(
         $idProduct,
-        $idProductRoomType,
-        $quantity = 1,
-        $dateFrom = null,
-        $dateTo = null,
+        $idHotel,
+        $idProductOption = null,
         $useTax = null,
-        $id_cart = false,
-        $id_address = null,
-        $use_reduc= 1,
-        $idGroup = null
+        $quantity = 1,
+        $useReduc = true
     ) {
-        if ($useTax === null)
-            $useTax = Product::$_taxCalculationMethod == PS_TAX_EXC ? false : true;
-
-        $id_address =  $id_address ? $id_address : Cart::getIdAddressForTaxCalculation($idProductRoomType);
-
-        $price = Product::getPriceStatic(
-            (int)$idProduct,
+        $idHotelAddress = Cart::getIdAddressForTaxCalculation($idProduct, $idHotel);
+        $price =  Product::getPriceStatic(
+            $idProduct,
             $useTax,
-            null,
+            $idProductOption,
             6,
             null,
             false,
-            $use_reduc,
-            (int)$quantity,
+            $useReduc,
+            $quantity,
             false,
             null,
-            $id_cart,
-            $id_address,
-            $specificPrice,
-            true,
-            true,
             null,
-            true,
-            (int)$idProductRoomType,
-            $idGroup
+            $idHotelAddress
         );
-
-        Hook::exec('actionServicePriceModifier',
-            array(
-                'price' => &$price,
-                'id_service_product' => $idProduct,
-                'id_room_type' => $idProductRoomType,
-                'date_from' => $dateFrom,
-                'date_to' => $dateTo,
-                'use_tax' => $useTax,
-                'id_cart' => $id_cart,
-                'use_reduc' => $use_reduc
-            )
-        );
-
-        if (Product::getProductPriceCalculation($idProduct) == Product::PRICE_CALCULATION_METHOD_PER_DAY
-            && $dateFrom && $dateTo
-        ) {
-            $price = $price * HotelHelper::getNumberOfDays($dateFrom, $dateTo);
-        }
 
         return $price * (int)$quantity;
     }

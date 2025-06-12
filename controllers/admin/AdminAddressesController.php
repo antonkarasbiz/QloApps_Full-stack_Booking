@@ -31,6 +31,7 @@ class AdminAddressesControllerCore extends AdminController
 {
     /** @var array countries list */
     protected $countries_array = array();
+    protected $addressType;
 
     public function __construct()
     {
@@ -384,7 +385,7 @@ class AdminAddressesControllerCore extends AdminController
     {
         $this->fields_list = array_merge($this->fields_list, array(
             'email' => array('title' => $this->l('Customer Email')),
-            'phone' => array('title' => $this->l('Phone')),
+            'phone' => array('title' => $this->l('Phone'), 'filter_key' => 'a!phone'),
             'phone_mobile' => array('title' => $this->l('Mobile phone')),
             'address1' => array('title' => $this->l('Address (2)')),
             'dni' => array('title' => $this->l('Identification Number')),
@@ -579,8 +580,7 @@ class AdminAddressesControllerCore extends AdminController
             $customer = Customer::searchByName($email);
             if (!empty($customer)) {
                 $customer = $customer['0'];
-                $phone = Customer::getPhone($customer['id_customer']);
-                echo json_encode(array('infos' => pSQL($customer['firstname']).'_'.pSQL($customer['lastname']).'_'.pSQL($customer['company']).'_'.pSQL($customer['id_customer']).'_'.pSQL($phone)));
+                echo json_encode(array('infos' => pSQL($customer['firstname']).'_'.pSQL($customer['lastname']).'_'.pSQL($customer['company']).'_'.pSQL($customer['id_customer']).'_'.pSQL($customer['phone'])));
             }
         }
         die;

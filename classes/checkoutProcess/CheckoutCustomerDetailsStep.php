@@ -29,7 +29,7 @@ class CheckoutCustomerDetailsStepCore extends AbstractCheckoutStepCore
     public function handleRequest()
     {
         $idAddressDelivery = $this->context->cart->id_address_delivery;
-        $objAddress = new Address($idAddressDelivery);
+        // $objAddress = new Address($idAddressDelivery);
         if (Tools::getValue('proceed_to_customer_dtl')) {
             $this->step_is_reachable = 1;
             $this->step_is_current = 1;
@@ -39,9 +39,9 @@ class CheckoutCustomerDetailsStepCore extends AbstractCheckoutStepCore
             }
         } elseif (Tools::getValue('proceed_to_payment')) {
             $guestInfoComplete = true;
-            if ($id_customer_guest_detail = CartCustomerGuestDetail::getCartCustomerGuest($this->context->cart->id)) {
+            if ($idCustomerGuestDetail = CustomerGuestDetail::getCustomerGuestIdByIdCart($this->context->cart->id)) {
                 $guestInfoComplete = false;
-                $objCustomerGuestDetail = new CartCustomerGuestDetail($id_customer_guest_detail);
+                $objCustomerGuestDetail = new CustomerGuestDetail($idCustomerGuestDetail);
                 if ($objCustomerGuestDetail->validateGuestInfo()) {
                     $guestInfoComplete = true;
                 }

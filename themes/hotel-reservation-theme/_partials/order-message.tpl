@@ -23,7 +23,15 @@
             <div class="col-sm-6">
                 <strong>
                     {if $message.id_employee}
-                        {$obj_hotel_branch_information->hotel_name|escape:'html':'UTF-8'}
+                        {if isset($obj_hotel_branch_information->hotel_name) && $obj_hotel_branch_information->hotel_name}
+                            {$obj_hotel_branch_information->hotel_name|escape:'html':'UTF-8'}
+                        {elseif isset($message.elastname) && $message.elastname}
+                            {$message.efirstname|escape:'html':'UTF-8'} {$message.elastname|escape:'html':'UTF-8'}
+                        {elseif $message.clastname}
+                            {$message.cfirstname|escape:'html':'UTF-8'} {$message.clastname|escape:'html':'UTF-8'}
+                        {else}
+                            {$shop_name|escape:'html':'UTF-8'}
+                        {/if}
                     {else}
                         {$message.cfirstname|escape:'html':'UTF-8'} {$message.clastname|escape:'html':'UTF-8'}
                     {/if}

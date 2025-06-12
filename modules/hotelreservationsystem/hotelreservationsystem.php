@@ -54,10 +54,8 @@ class HotelReservationSystem extends Module
             'room_bookings' => array('description' => 'Room bookings', 'class' => 'HotelBookingDetail'),
             'booking_extra_demands' => array('description' => 'Booking extra demands', 'class' => 'HotelBookingDemands'),
             'extra_demands' => array('description' => 'Extra demands', 'class' => 'HotelRoomTypeGlobalDemand'),
-            'extra_services' => array('description' => 'Extra services', 'class' => 'Product', 'parameters_attribute' => 'webserviceRoomTypeServicesParameters'),
             'demand_advance_options' => array('description' => 'Extra demand advance options', 'class' => 'HotelRoomTypeGlobalDemandAdvanceOption'),
             'hotel_ari' => array('description' => 'Search availability, rates and inventory', 'specific_management' => true),
-            'qlo' => array('description' => 'qlo API', 'specific_management' => true),
         );
 
         return $resources;
@@ -119,7 +117,7 @@ class HotelReservationSystem extends Module
             $obj_htl_bk_dtl = new HotelBookingDetail();
             $obj_rm_type = new HotelRoomType();
             $objBookingDemand = new HotelBookingDemands();
-            $objRoomTypeServiceProductOrderDetail = new RoomTypeServiceProductOrderDetail();
+            $objServiceProductOrderDetail = new ServiceProductOrderDetail();
             $result['total_extra_demands_te'] = 0;
             $result['total_extra_demands_ti'] = 0;
             $cart_htl_data = array();
@@ -199,7 +197,7 @@ class HotelReservationSystem extends Module
                                     1
                                 );
                             } else {
-                                $num_days = $obj_htl_bk_dtl->getNumberOfDays($data_v['date_from'], $data_v['date_to']);
+                                $num_days = HotelHelper::getNumberOfDays($data_v['date_from'], $data_v['date_to']);
 
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['num_rm'] = 1;
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['data_form'] = $data_v['date_from'];
@@ -240,7 +238,7 @@ class HotelReservationSystem extends Module
                                     1
                                 );
 
-                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services'] = $objRoomTypeServiceProductOrderDetail->getroomTypeServiceProducts(
+                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services'] = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
                                     $order->id,
                                     0,
                                     0,
@@ -248,7 +246,7 @@ class HotelReservationSystem extends Module
                                     $data_v['date_from'],
                                     $data_v['date_to']
                                 );
-                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_ti'] = $objRoomTypeServiceProductOrderDetail->getroomTypeServiceProducts(
+                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_ti'] = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
                                     $order->id,
                                     0,
                                     0,
@@ -259,7 +257,7 @@ class HotelReservationSystem extends Module
                                     1,
                                     1
                                 );
-                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_te'] = $objRoomTypeServiceProductOrderDetail->getroomTypeServiceProducts(
+                                $cart_htl_data[$type_key]['date_diff'][$date_join]['additional_services_price_te'] = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
                                     $order->id,
                                     0,
                                     0,
@@ -510,6 +508,7 @@ class HotelReservationSystem extends Module
                 'htl_room_type_global_demand_advance_option',
                 'htl_order_refund_rules',
                 'htl_settings_link',
+                'htl_bed_type'
             );
             //If Admin update new language when we do entry in module all lang tables.
             HotelHelper::updateLangTables($newIdLang, $langTables);
@@ -552,18 +551,11 @@ class HotelReservationSystem extends Module
         $this->installTab('AdminAddHotel', 'Manage Hotel', 'AdminHotelReservationSystemManagement');
         $this->installTab('AdminHotelRoomsBooking', 'Book Now', 'AdminHotelReservationSystemManagement');
         $this->installTab('AdminHotelFeatures', 'Manage Hotel Features', 'AdminHotelReservationSystemManagement');
-        $this->installTab(
-            'AdminOrderRefundRules',
-            'Manage Order Refund Rules',
-            'AdminHotelReservationSystemManagement'
-        );
-        $this->installTab(
-            'AdminOrderRefundRequests',
-            'Manage Order Refund Requests',
-            'AdminHotelReservationSystemManagement'
-        );
+        $this->installTab('AdminOrderRefundRules', 'Manage Order Refund Rules', 'AdminHotelReservationSystemManagement');
+        $this->installTab('AdminOrderRefundRequests', 'Manage Order Refund Requests', 'AdminHotelReservationSystemManagement');
 
         $this->installTab('AdminHotelConfigurationSetting', 'General Settings', 'AdminHotelReservationSystemManagement');
+        $this->installTab('AdminHotelBedTypes', 'Bed Types', 'AdminCatalog');
         // Controllers without tabs
         $this->installTab('AdminHotelGeneralSettings', 'Hotel General Configuration', 'AdminHotelConfigurationSetting', false);
         $this->installTab('AdminHotelFeaturePricesSettings', 'Advanced Price Rules', 'AdminHotelConfigurationSetting', false);
@@ -613,6 +605,7 @@ class HotelReservationSystem extends Module
             || !$this->callInstallTab()
             || !$objHtlHelper->insertDefaultHotelEntries()
             || !$objHtlHelper->createHotelRoomDefaultFeatures()
+            || !$objHtlHelper->createHotelDefaultBedTypes()
             || !$objHtlHelper->insertHotelCommonFeatures()
         ) {
             return false;
@@ -673,9 +666,6 @@ class HotelReservationSystem extends Module
         $configKeys = array(
             'WK_HOTEL_LOCATION_ENABLE',
             'WK_ROOM_LEFT_WARNING_NUMBER',
-            'WK_HOTEL_GLOBAL_ADDRESS',
-            'WK_HOTEL_GLOBAL_CONTACT_EMAIL',
-            'WK_HOTEL_GLOBAL_CONTACT_NUMBER',
             'WK_HTL_ESTABLISHMENT_YEAR',
             'WK_HTL_CHAIN_NAME',
             'WK_TITLE_HEADER_BLOCK',
@@ -689,6 +679,7 @@ class HotelReservationSystem extends Module
             'WK_HOTEL_NAME_ENABLE',
             'WK_CUSTOMER_SUPPORT_PHONE_NUMBER',
             'WK_CUSTOMER_SUPPORT_EMAIL',
+            'WK_DISPLAY_CONTACT_PAGE_HOTEL_LIST'
         );
         foreach ($configKeys as $key) {
             if (!Configuration::deleteByName($key)) {

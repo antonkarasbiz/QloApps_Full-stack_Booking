@@ -111,7 +111,6 @@ class wkhotelfilterblock extends Module
         $helper->table = $this->table;
         $lang = new Language((int) Configuration::get('PS_LANG_DEFAULT'));
         $helper->default_form_language = $lang->id;
-        $this->fields_form = array();
         $helper->identifier = $this->identifier;
         $helper->submit_action = 'btnConfigSubmit';
         $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false).
@@ -193,7 +192,7 @@ class wkhotelfilterblock extends Module
                     if (!($date_to = Tools::getValue('date_to'))) {
                         $date_to = date('Y-m-d H:i:s', strtotime($date_from) + 86400);
                     } else {
-                        $urlData['date_from'] = $date_to;
+                        $urlData['date_to'] = $date_to;
                     }
 
                     if ($occupancy = Tools::getValue('occupancy')) {
@@ -228,8 +227,7 @@ class wkhotelfilterblock extends Module
 
                     $config = $this->getConfigFieldsValues();
 
-                    $obj_booking_detail = new HotelBookingDetail();
-                    $num_days = $obj_booking_detail->getNumberOfDays($date_from, $date_to);
+                    $num_days = HotelHelper::getNumberOfDays($date_from, $date_to);
 
                     $warning_num = Configuration::get('WK_ROOM_LEFT_WARNING_NUMBER');
                     $this->context->smarty->assign(array(

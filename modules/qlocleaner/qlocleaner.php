@@ -40,14 +40,12 @@ class QloCleaner extends Module
         $this->version = '1.0.1';
         $this->author = 'PrestaShop';
         $this->need_instance = 0;
-        $this->multishop_context = Shop::CONTEXT_ALL;
 
         $this->bootstrap = true;
         parent::__construct();
 
         $this->displayName = $this->l('QloApps Data Cleaner');
         $this->description = $this->l('Check and fix functional integrity constraints and remove default data');
-        $this->secure_key = Tools::encrypt($this->name);
     }
 
     public function install()
@@ -502,7 +500,6 @@ class QloCleaner extends Module
         $lang = new Language((int)Configuration::get('PS_LANG_DEFAULT'));
         $helper->default_form_language = $lang->id;
         $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') ? Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') : 0;
-        $this->fields_form = array();
         $helper->id = (int)Tools::getValue('id_carrier');
         $helper->identifier = $this->identifier;
         $helper->submit_action = 'btnSubmit';
@@ -716,6 +713,10 @@ class QloCleaner extends Module
                 array('htl_room_type_service_product', 'id_element', 'product', 'id_product'),
                 array('htl_room_type_service_product_price', 'id_product', 'product', 'id_product'),
                 array('htl_room_type_service_product_price', 'id_element', 'product', 'id_product'),
+                array('htl_bed_type_lang', 'id_lang', 'lang', 'id_lang'),
+                array('htl_room_type_bed_type', 'id_product', 'product', 'id_product'),
+                array('htl_room_type_bed_type', 'id_bed_type', 'htl_bed_type', 'id_bed_type'),
+
             )
         );
     }
@@ -815,6 +816,9 @@ class QloCleaner extends Module
                 'htl_room_type_global_demand',
                 'htl_room_type_service_product',
                 'htl_room_type_service_product_price',
+                'htl_bed_type',
+                'htl_bed_type_lang',
+                'htl_room_type_bed_type',
             )
         );
     }
@@ -862,10 +866,8 @@ class QloCleaner extends Module
             'htl_booking_detail',
             'htl_booking_demands',
             'htl_booking_demands_tax',
-
-            'htl_room_type_service_product_order_detail',
-            'htl_room_type_service_product_cart_detail',
-            'htl_hotel_service_product_cart_detail',
+            'service_product_order_detail',
+            'service_product_cart_detail'
         );
     }
 }

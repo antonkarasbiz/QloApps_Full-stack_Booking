@@ -17,6 +17,11 @@
  * @license LICENSE.txt
  */
 
+.order-confirmation-column {
+    font-size: 16px;
+    line-height: 23px;
+    color: #3C3C3C;
+}
 .fancybox-wrap.fancybox-extra-services .card {
     width: 650px;
     margin-bottom: 0;
@@ -70,6 +75,10 @@
     padding: 18px;
 }
 
+.order-product-summary .card .card-body {
+    padding: 0;
+}
+
 .card .card-body .card-title {
     margin: 0;
     font-size: 18px;
@@ -112,6 +121,34 @@
     margin-top: 0;
 }
 /* card-tabs - end */
+
+.product-detail {
+    padding: 18px;
+    position: relative;
+}
+.product-detail:not(:last-of-type) {
+    border-bottom: 1px solid #E5E5E5;
+}
+.product-detail .product-name a {
+    display: inline-block;
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+.product-detail dt {
+    margin: 7px 0;
+    font-weight: 400;
+}
+.product-detail .hotel-location {
+    font-size: 14px;
+    padding: 10px 0px 0px 0px;
+    color: #777777;
+}
+.product-detail dd {
+    margin: 7px 0;
+    font-weight: 700;
+}
 
 #rooms_extra_services .card-body{
     padding: 0px 18px;
@@ -212,4 +249,19 @@
 
 .price-info-tooltip-cont .list-row p {
     margin: 0;
+}
+
+.table.table-summary.table-sm td {
+    padding: 8px 0;
+}
+.table.table-summary td {
+    border-top: none;
+    /* font-size: 16px; */
+}
+
+.label {
+    font-size: 14px;
+    color: #333;
+    font-weight: normal;
+    border-radius: 2px;
 }

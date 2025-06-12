@@ -147,40 +147,10 @@
 									</button>
 									{if (isset($data.extra_demands) && $data.extra_demands) || isset($data.additional_service) && $data.additional_service}
 										<br />
-										<a href="#" id_room="{$data.id_room|escape:'html':'UTF-8'}" date_from="{$data.date_from|escape:'html':'UTF-8'}" date_to="{$data.date_to|escape:'html':'UTF-8'}" id_product="{$data.id_product|escape:'html':'UTF-8'}" id_cart="{$data.id_cart|escape:'html':'UTF-8'}" class="open_rooms_extra_demands btn btn-success" title="{l s='Click here to add or remove the extra services of this room type.'}">
+										<a href="#" id_hotel_cart_booking="{$data.id|escape:'html':'UTF-8'}" id_room="{$data.id_room|escape:'html':'UTF-8'}" date_from="{$data.date_from|escape:'html':'UTF-8'}" date_to="{$data.date_to|escape:'html':'UTF-8'}" id_product="{$data.id_product|escape:'html':'UTF-8'}" id_cart="{$data.id_cart|escape:'html':'UTF-8'}" class="open_rooms_extra_demands btn btn-success" title="{l s='Click here to add or remove the extra services of this room type.'}">
 											<i class="icon-pencil"></i>&nbsp;{l s='Services'}
 										</a>
 									{/if}
-								</td>
-							</tr>
-						{/foreach}
-					</tbody>
-				{/if}
-				{if isset($cart_normal_data) && $cart_normal_data}
-					<thead>
-						<tr>
-							<th><span class="title_box">{l s='Image'}</th>
-							<th><span class="title_box">{l s='Name'}</span></th>
-							<th colspan="2"><span class="title_box">{l s='Hotel Name'}</span></th>
-							<th colspan="2"><span class="title_box">{l s='Unit Price (tax excl)'}</span></th>
-							<th><span class="title_box">{l s='Quantity'}</span></th>
-							<th><span class="title_box">{l s='Total Price (Tax incl.)'}</span></th>
-							<th></th>
-						</tr>
-					</thead>
-					<tbody>
-						{foreach $cart_normal_data as $product}
-							<tr>
-								<td><img src="{$product['cover_img']|escape:'html':'UTF-8'}" class="img-responsive" /></td>
-								<td><p>{$product['name']|escape:'html':'UTF-8'}</p></td>
-								<td colspan="2">{$product['hotel_name']}</td>
-								<td colspan="2">{displayPrice price=$product['unit_price_tax_incl']}</td>
-								<td>{$product['quantity']|escape:'htmlall':'UTF-8'}</td>
-								<td>{displayPrice price=$product['total_price_tax_incl']}</td>
-								<td>
-									<button class="delete_service_product btn btn-danger" data-id-hotel="{$product['id_hotel']|escape:'htmlall':'UTF-8'}" data-id_product={$product['id_product']|escape:'html':'UTF-8'} data-id_cart = {$cart->id|escape:'html':'UTF-8'}>
-										<i class="icon-trash"></i>&nbsp;{l s='Delete'}
-									</button>
 								</td>
 							</tr>
 						{/foreach}
@@ -213,23 +183,14 @@
 		color:#979797;
 		font-size:12px;}
 	/*Extra demands CSS*/
-	#rooms_type_extra_demands .modal-header {
-		padding-bottom: 0px}
-	#rooms_extra_demands {
-		font-size: 16px;}
-	#rooms_extra_demands .room_demands_container {
-		border: 1px solid #ddd;}
-	#rooms_extra_demands .demand_header {
-		padding: 10px;
-		color: #333;
-		border-bottom: 1px solid #ddd;}
 	#rooms_extra_demands .rooms_extra_demands_head {
 		margin-bottom: 18px;}
 	#rooms_extra_demands .room_demand_block {
 		margin-bottom: 15px;
-		color: #333;
-		font-size: 14px;}
-	#rooms_extra_demands .room_demand_detail {
-		padding: 15px 15px 0px 15px;}
+		color: #333;}
+    #room_type_service_product_desc #back_to_service_btn {
+		display: none;}
+    #add_new_room_services_block {
+		display: none;}
 </style>
 {/if}

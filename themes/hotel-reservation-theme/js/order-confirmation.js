@@ -78,7 +78,7 @@ function initPriceTooltip() {
     if ($('.order-price-info').length) {
         $('.order-price-info').each(function () {
             $(this).tooltip({
-                content: $(this).closest('td').find('.price-info-container').html(),
+                content: $(this).closest('dd').find('.price-info-container').html(),
                 items: 'span',
                 trigger: 'hover',
                 tooltipClass: 'price-tootip',

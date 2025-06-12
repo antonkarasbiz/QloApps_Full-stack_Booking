@@ -102,7 +102,7 @@ class OrderDetailCore extends ObjectModel
     public $is_booking_product;
 
     /** @var int */
-    public $product_service_type;
+    public $selling_preference_type;
 
     /** @var bool */
     public $product_allow_multiple_quantity;
@@ -170,6 +170,12 @@ class OrderDetailCore extends ObjectModel
     /** @var float */
     public $original_wholesale_price;
 
+    /** @var bool */
+    public $product_auto_add;
+
+    /** @var int */
+    public $product_price_addition_type;
+
     /**
      * @see ObjectModel::$definition
      */
@@ -197,7 +203,7 @@ class OrderDetailCore extends ObjectModel
             'group_reduction' =>            array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat'),
             'product_quantity_discount' =>    array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat'),
             'is_booking_product' =>                array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
-            'product_service_type' =>        array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'selling_preference_type' =>        array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'product_auto_add' =>            array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'product_price_addition_type' =>    array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'product_allow_multiple_quantity' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
@@ -437,7 +443,7 @@ class OrderDetailCore extends ObjectModel
 
     public function getTaxList()
     {
-        return self::getTaxList($this->id);
+        return self::getTaxListStatic($this->id);
     }
 
     public static function getTaxListStatic($id_order_detail)
@@ -478,14 +484,16 @@ class OrderDetailCore extends ObjectModel
             /*
             *By webkul so that product quantity will not be decreased when product is ordered
              */
-            /*$update_quantity = true;
-            if (!StockAvailable::dependsOnStock($product['id_product'])) {
-                $update_quantity = StockAvailable::updateQuantity($product['id_product'], $product['id_product_attribute'], -(int)$product['cart_quantity']);
-            }
+            if (!$product['booking_product']) {
+                $update_quantity = true;
+                if (!StockAvailable::dependsOnStock($product['id_product'])) {
+                    $update_quantity = StockAvailable::updateQuantity($product['id_product'], $product['id_product_attribute'], -(int)$product['cart_quantity']);
+                }
 
-            if ($update_quantity) {
-                $product['stock_quantity'] -= $product['cart_quantity'];
-            }*/
+                if ($update_quantity) {
+                    $product['stock_quantity'] -= $product['cart_quantity'];
+                }
+            }
 
             if ($product['stock_quantity'] < 0 && Configuration::get('PS_STOCK_MANAGEMENT')) {
                 $this->outOfStock = true;
@@ -645,7 +653,7 @@ class OrderDetailCore extends ObjectModel
             $product_quantity : (int)$product['cart_quantity'];
 
         $this->is_booking_product = $product['booking_product'];
-        $this->product_service_type = $product['service_product_type'];
+        $this->selling_preference_type = $product['selling_preference_type'];
         $this->product_auto_add = $product['auto_add_to_cart'];
         $this->product_price_addition_type = $product['price_addition_type'];
         $this->product_allow_multiple_quantity = $product['allow_multiple_quantity'];
