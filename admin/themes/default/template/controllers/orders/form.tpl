@@ -635,7 +635,10 @@
 			'width': '90%',
 			'height': '90%',
 			'afterClose' : function () {
-				searchCustomers();
+				let customer = $('#customer').val();
+				if (customer != '' && customer.length > 3) {
+					searchCustomers();
+				}
 			}
 		});
 		/*$("#new_address").fancybox({
@@ -885,9 +888,11 @@
 		});
 	}
 
+	let customerSearchAjax = '';
 	function searchCustomers()
 	{
-		$.ajax({
+		abortRunningAjax(customerSearchAjax);
+		customerSearchAjax = $.ajax({
 			type:"POST",
 			url : "{$link->getAdminLink('AdminCustomers')}",
 			async: true,
@@ -926,6 +931,12 @@
 			}
 		});
 	}
+
+	function abortRunningAjax(ajaxVar) {
+        if (ajaxVar) {
+            ajaxVar.abort();
+        }
+    }
 
 	function setupCustomer(idCustomer)
 	{
