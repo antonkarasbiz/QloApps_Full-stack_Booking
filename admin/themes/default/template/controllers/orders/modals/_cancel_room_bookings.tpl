@@ -83,7 +83,7 @@
                                             <input type="checkbox" name="id_service_product_order_detail[]" value="{$product.id_service_product_order_detail|escape:'html':'UTF-8'}"/>
                                         </td>
                                         <td><b>{$product.name|escape:'html':'UTF-8'}{if $product.option_name} : {$product.option_name|escape:'html':'UTF-8'}{/if}</b></td>
-                                        <td>{$product.quantity|escape:'html':'UTF-8'}</td>
+                                        <td>{if $product.allow_multiple_quantity}{$product.quantity|escape:'html':'UTF-8'}{else}--{/if}</td>
                                         <td>{convertPriceWithCurrency price=$product.total_price_tax_incl currency=$currency->id}</td>
                                     </tr>
                                 {/foreach}

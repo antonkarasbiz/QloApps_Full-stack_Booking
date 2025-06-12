@@ -986,14 +986,12 @@ class AdminOrdersControllerCore extends AdminController
                 }
 
                 if ($serviceProducts) {
-                    if ($additionalServices) {
-                        foreach ($serviceProducts as $key => $servProduct) {
-                            $serviceProducts[$key]['price_tax_exc'] = $servProduct['price'];
-                            if (isset($additionalServices[$productLineData['id']])
-                                && in_array($servProduct['id_product'], array_column($additionalServices[$productLineData['id']]['additional_services'], 'id_product'))
-                            ) {
-                                unset($serviceProducts[$key]);
-                            }
+                    foreach ($serviceProducts as $key => $servProduct) {
+                        $serviceProducts[$key]['price_tax_exc'] = $servProduct['price'];
+                        if (isset($additionalServices[$productLineData['id']])
+                            && in_array($servProduct['id_product'], array_column($additionalServices[$productLineData['id']]['additional_services'], 'id_product'))
+                        ) {
+                            unset($serviceProducts[$key]);
                         }
                     }
 
@@ -1017,6 +1015,7 @@ class AdminOrdersControllerCore extends AdminController
                 $smartyVars['taxRulesGroups'] = $taxRulesGroups;
                 $smartyVars['invoices_collection'] = $objOrder->getInvoicesCollection();
                 $smartyVars['customServiceAllowed'] = Configuration::get('PS_ALLOW_CREATE_CUSTOM_SERVICES_IN_BOOKING');
+                $smartyVars['current_id_lang'] = $this->context->language->id;
 
                 $this->context->smarty->assign($smartyVars);
 
@@ -1124,6 +1123,7 @@ class AdminOrdersControllerCore extends AdminController
             $this->context->smarty->assign(
                 array(
                     'order' => $objOrder,
+                    'currency' => new Currency($objOrder->id_currency),
                     'current_index' => self::$currentIndex,
                     'bookingOrderInfo' => $bookingOrderInfo,
                     'serviceProducts' => array_merge($hotelProducts, $standaloneProducts)
@@ -1386,13 +1386,12 @@ class AdminOrdersControllerCore extends AdminController
         $id_lang_shop = false
     ){
         if ($this->action == 'export' && empty($this->_listsql)) {
-            $this->_select .= ', c.`email`, cgd.`phone`, a.`total_paid_real`,
+            $this->_select .= ', c.`email`, c.`phone`, a.`total_paid_real`,
                 orf.`cancellation_date`, orf.`cancellation_fee`,
                 cy.`iso_code` AS country, st.`iso_code` as state, ad.`city`,
                 CONCAT(ad.`address1`, \', \', ad.`postcode`) AS `cus_address`, hbdtl.*';
 
-            $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'cart_customer_guest_detail` cgd ON cgd.`email` = c.`email` AND cgd.`id_cart` = 0
-                LEFT JOIN `'._DB_PREFIX_.'address` ad ON a.`id_customer`= ad.`id_customer` AND ad.`id_customer`!=0
+            $this->_join .= ' LEFT JOIN `'._DB_PREFIX_.'address` ad ON a.`id_customer`= ad.`id_customer` AND ad.`id_customer`!=0
                 LEFT JOIN `'._DB_PREFIX_.'country` cy ON cy.`id_country`= ad.`id_country`
                 LEFT JOIN `'._DB_PREFIX_.'state` st ON st.`id_state`= ad.`id_state`
                 LEFT JOIN (
@@ -2025,6 +2024,11 @@ class AdminOrdersControllerCore extends AdminController
                     $this->context->currency = new Currency((int)$objCart->id_currency);
 
                     $this->errors = HotelCartBookingData::validateCartBookings(!Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING'));
+
+                    // Remove cart rules and add if any changes
+                    CartRule::autoRemoveFromCart($this->context);
+                    CartRule::autoAddToCart($this->context);
+
                     $orderTotal = $objCart->getOrderTotal(true, Cart::BOTH);
                     if ($objCart->is_advance_payment) {
                         $advancePaymentAmount = $objCart->getOrderTotal(true, Cart::ADVANCE_PAYMENT);
@@ -2850,9 +2854,35 @@ class AdminOrdersControllerCore extends AdminController
             $helper->color = 'color1';
             $helper->title = $this->l('Total Rooms');
             $helper->tooltip = $this->l('Total rooms is the number of rooms booked in this order.');
-            $helper->href = '#start_products';
+            $helper->href = '#start_rooms';
             $helper->value = $numRooms;
             $this->kpis[] = $helper;
+
+            // if order has normal products the add kpi for total products
+            $objServiceProductOrderDetail = new ServiceProductOrderDetail();
+            $hotelProducts = $objServiceProductOrderDetail->getServiceProductsInOrder($objOrder->id, 0, 0, Product::SELLING_PREFERENCE_HOTEL_STANDALONE);
+            $standaloneProducts = $objServiceProductOrderDetail->getServiceProductsInOrder($objOrder->id, 0, 0, Product::SELLING_PREFERENCE_STANDALONE);
+
+            if ($hotelProducts || $standaloneProducts) {
+                $helper = new HelperKpi();
+                $helper->id = 'box-total-products';
+                $helper->icon = 'icon-home';
+                $helper->color = 'color1';
+                $helper->title = $this->l('Total Products');
+                $helper->tooltip = $this->l('Total products is the number of product quantities booked in this order.');
+                $helper->href = '#start_products';
+
+                $totalProductQuantity = 0;
+                if ($hotelProducts) {
+                    $totalProductQuantity += array_sum(array_column($hotelProducts, 'quantity'));
+                }
+                if ($standaloneProducts) {
+                    $totalProductQuantity += array_sum(array_column($standaloneProducts, 'quantity'));
+                }
+
+                $helper->value = $totalProductQuantity;
+                $this->kpis[] = $helper;
+            }
 
             $helper = new HelperKpi();
             if (isset($orderHistory[0]['id_order_state']) && ($orderHistory[0]['id_order_state'] == Configuration::get('PS_OS_PAYMENT_ACCEPTED'))) {
@@ -3267,7 +3297,7 @@ class AdminOrdersControllerCore extends AdminController
                     0,
                     0,
                     null,
-                    0,
+                    null,
                     null,
                     0,
                     $value['id']
@@ -6138,6 +6168,9 @@ class AdminOrdersControllerCore extends AdminController
 
             // Save order invoice
             if (isset($objOrderInvoice)) {
+                $objOrderInvoice->total_products_wt -= $diffPriceTaxIncl;
+                $objOrderInvoice->total_paid_tax_excl += $diffPriceTaxExcl;
+                $objOrderInvoice->total_paid_tax_incl += $diffPriceTaxIncl;
                 $result &= $objOrderInvoice->update();
             }
 
@@ -6234,7 +6267,7 @@ class AdminOrdersControllerCore extends AdminController
             0,
             1,
             1,
-            0,
+            null, // to get the auto added services.
             null,
             0,
             $idHotelBooking
@@ -6250,7 +6283,7 @@ class AdminOrdersControllerCore extends AdminController
             0,
             1,
             0,
-            0,
+            null, // to get the auto added services.
             null,
             0,
             $idHotelBooking
@@ -6266,7 +6299,7 @@ class AdminOrdersControllerCore extends AdminController
             0,
             0,
             null,
-            0,
+            null, // to get the auto added services.
             null,
             0,
             $idHotelBooking
@@ -7675,7 +7708,7 @@ class AdminOrdersControllerCore extends AdminController
                         $objHotelBookingDetail->date_to,
                         $objHotelBookingDetail->id_room
                     )) {
-                        $name = Tools::getValue('new_service_name');
+                        $name = trim(Tools::getValue('new_service_name'));
                         $price = Tools::getValue('new_service_price');
                         $priceCalcMethod = Tools::getValue('new_service_price_calc_method');
                         $priceAdditionType = Tools::getValue('new_service_price_addition_type');

@@ -5312,6 +5312,7 @@ class AdminProductsControllerCore extends AdminController
             if ($idRooms = Tools::getValue('id_rooms')) {
                 $rowsToHighlight = array();
                 $room = array();
+                $bookedRows = array();
                 if (trim($floor = Tools::getValue('floor'))) {
                     $room['floor'] = $floor;
                     if (!Validate::isGenericName($floor)) {
@@ -5379,7 +5380,8 @@ class AdminProductsControllerCore extends AdminController
                             }
                         } else if ($room['id_status'] == HotelRoomInformation::STATUS_TEMPORARY_INACTIVE && $disableDates) {
                             foreach ($disableDates as $key => $dateRange) {
-                                if ($objHotelBookingDetail->chechRoomBooked($idRoom, $dateRange['date_from'], $dateRange['date_to'])) {
+                                if ($bookingRow = $objHotelBookingDetail->chechRoomBooked($idRoom, $dateRange['date_from'], $dateRange['date_to'])) {
+                                    $bookedRows[$bookingRow['id']] = new HotelBookingDetail($bookingRow['id']);
                                     $rowsToHighlight[] = $key;
                                 }
                             }
@@ -5389,6 +5391,18 @@ class AdminProductsControllerCore extends AdminController
                         $roomsInfo[] = $room;
 
                         Hook::exec('actionValidateRoomInformation', array('room_information' => $room));
+                    }
+
+                    if (count($bookedRows)) {
+                        foreach ($bookedRows as $bookedRow) {
+                            $this->context->smarty->assign(array(
+                                'link' => $this->context->link,
+                                'orderDetails' => $bookedRow,
+                            ));
+
+                            $this->errors[] = $this->context->smarty->fetch('controllers/products/booked_room_date_ranges_list.tpl');
+                        }
+
                     }
                 }
 
@@ -5476,7 +5490,7 @@ class AdminProductsControllerCore extends AdminController
 
                 if (!($roomQuantity = Tools::getValue('qty'))) {
                     $this->errors[] = Tools::displayError('Number of rooms is required.');
-                } else if ($roomQuantity < 1) {
+                } else if (!Validate::isUnsignedInt($roomQuantity) || $roomQuantity < 1) {
                     $this->errors[] = Tools::displayError('Invalid value for number of rooms.');
                 }
 

@@ -935,7 +935,8 @@ class AdminCartsControllerCore extends AdminController
             'id_cart' => $id_cart,
             'order_message' => $message_content,
             'link_order' => $this->context->link->getPageLink(
-                'order', false,
+                'order',
+                null,
                 (int)$this->context->cart->id_lang,
                 'step=3&recover_cart='.$id_cart.'&token_cart='.md5(_COOKIE_KEY_.'recover_cart_'.$id_cart)
             ),
@@ -1320,7 +1321,7 @@ class AdminCartsControllerCore extends AdminController
                 $idHotelCartBooking = Tools::getValue('id_hotel_cart_booking');
                 // valiadate services being added
                 if (Validate::isLoadedObject($objHtlCartBooking = new HotelCartBookingData($idHotelCartBooking))) {
-                    $name = Tools::getValue('new_service_name');
+                    $name = trim(Tools::getValue('new_service_name'));
                     $price = Tools::getValue('new_service_price');
                     $priceCalcMethod = Tools::getValue('new_service_price_calc_method');
                     $priceAdditionType = Tools::getValue('new_service_price_addition_type');
@@ -1541,6 +1542,10 @@ class AdminCartsControllerCore extends AdminController
                     // Validate selected services
                     foreach ($selectedServiceProducts as $idServiceProduct => $selected) {
                         if (Validate::isLoadedObject($objProduct = new Product($idServiceProduct, false, $objCart->id_lang))) {
+                            if (!$objProduct->allow_multiple_quantity) {
+                                $serviceQuantities[$idServiceProduct] = 1;
+                            }
+
                             if ($objProduct->allow_multiple_quantity) {
                                 if (!isset($serviceQuantities[$idServiceProduct])) {
                                     $response['hasError'] = true;
@@ -1552,10 +1557,6 @@ class AdminCartsControllerCore extends AdminController
                             } elseif ($serviceQuantities[$idServiceProduct] > 1) {
                                 $response['hasError'] = true;
                                 $response['errors'][] = Tools::displayError('Can not order multiple quanitity for service').': '.$objProduct->name;
-                            }
-
-                            if (!$objProduct->allow_multiple_quantity) {
-                                $serviceQuantities[$idServiceProduct] = 1;
                             }
 
                             if (!isset($serviceUnitPrices[$idServiceProduct])
