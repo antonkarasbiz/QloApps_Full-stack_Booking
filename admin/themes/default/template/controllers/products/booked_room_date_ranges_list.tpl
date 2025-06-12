@@ -17,7 +17,7 @@
 * @license LICENSE.txt
 *}
 
-{l s='This room already has a booking for the selected date range.'}
+{sprintf({l s='The room "%s" already has a booking for the selected date range.'}, $orderDetails->room_num)}
 <div class="row">
     <div class="col-xs-12">
         <span class="error_message_label">{l s='Order ID'}:</span> <a href="{$link->getAdminLink('AdminOrders')}&id_order={$orderDetails->id_order}&vieworder" target="_blank"><strong>#{$orderDetails->id_order|intval}</strong></a>
