@@ -464,7 +464,7 @@ class OrderDetailControllerCore extends FrontController
                         'returns' => OrderReturn::getOrdersReturn($order->id_customer, $order->id),
                         'refundReqBookings' => $refundReqBookings,
                         'refundReqProducts' => $refundReqProducts,
-                        'completeRefundRequestOrCancel' => $order->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG),
+                        'completeRefundRequestOrCancel' => $order->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG, 0, 0),
                         'refundedAmount' => $refundedAmount,
                         'shop_name' => strval(Configuration::get('PS_SHOP_NAME')),
                         'order' => $order,

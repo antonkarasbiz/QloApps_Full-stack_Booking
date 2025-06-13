@@ -513,7 +513,7 @@ class AdminOrdersControllerCore extends AdminController
 
                 if ($this->tabAccess['edit'] === 1) {
                     if (((int) $order->isReturnable())
-                        && !$order->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG)
+                        && !$order->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG, 0, 0)
                     ) {
                         $orderTotalPaid = $order->getTotalPaid();
                         $orderDiscounts = $order->getCartRules();
@@ -3560,7 +3560,6 @@ class AdminOrdersControllerCore extends AdminController
             'returns' => OrderReturn::getOrdersReturn($order->id_customer, $order->id),
             'refundReqBookings' => $refundReqBookings,
             'refundReqProducts' => $refundReqProducts,
-            'completeRefundRequestOrCancel' => $order->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG),
             'refundedAmount' => $refundedAmount,
             'totalDemandsPriceTI' => $totalDemandsPriceTI,
             'totalDemandsPriceTE' => $totalDemandsPriceTE,
@@ -5597,7 +5596,7 @@ class AdminOrdersControllerCore extends AdminController
     public function updateOrderStatusOnOrderChange($objOrder)
     {
         // If order is completely refunded or cancelled then change the order state
-        if ($idOrderRefundState = $objOrder->getOrderCompleteRefundStatus()) {
+        if ($idOrderState = $objOrder->getOrderCompleteRefundStatus()) {
             $objOrderHistory = new OrderHistory();
             $objOrderHistory->id_order = (int)$objOrder->id;
             $useExistingPayment = false;
