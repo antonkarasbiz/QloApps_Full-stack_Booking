@@ -3430,18 +3430,21 @@ class HotelBookingDetail extends ObjectModel
                                 $objOrderDetail->product_quantity_refunded = $objOrderDetail->product_quantity;
                             }
 
-                            $objOrderDetail->total_price_tax_excl -= Tools::processPriceRounding(
+                            $objOrderDetail->total_price_tax_excl -= (float) Tools::processPriceRounding(
                                 $objOrderDetail->total_price_tax_excl,
                                 1,
                                 $objOrder->round_type,
                                 $objOrder->round_mode
                             );
-                            $objOrderDetail->total_price_tax_incl -= Tools::processPriceRounding(
+                            $objOrderDetail->total_price_tax_excl = $objOrderDetail->total_price_tax_excl > 0 ? $objOrderDetail->total_price_tax_excl : 0;
+
+                            $objOrderDetail->total_price_tax_incl -= (float) Tools::processPriceRounding(
                                 $objOrderDetail->total_price_tax_incl,
                                 1,
                                 $objOrder->round_type,
                                 $objOrder->round_mode
                             );
+                            $objOrderDetail->total_price_tax_incl = $objOrderDetail->total_price_tax_incl > 0 ? $objOrderDetail->total_price_tax_incl : 0;
 
                             $objOrderDetail->save();
                         }
@@ -3474,6 +3477,7 @@ class HotelBookingDetail extends ObjectModel
                         $objOrder->round_type,
                         $objOrder->round_mode
                     );
+                    $objOrderDetail->total_price_tax_incl = $objOrderDetail->total_price_tax_incl > 0 ? $objOrderDetail->total_price_tax_incl : 0;
 
                     $objOrderDetail->total_price_tax_excl -= Tools::processPriceRounding(
                         $this->total_price_tax_excl,
@@ -3481,6 +3485,7 @@ class HotelBookingDetail extends ObjectModel
                         $objOrder->round_type,
                         $objOrder->round_mode
                     );
+                    $objOrderDetail->total_price_tax_excl = $objOrderDetail->total_price_tax_excl > 0 ? $objOrderDetail->total_price_tax_excl : 0;
 
                     if (Validate::isLoadedObject($objOrder = new Order($this->id_order))) {
                         $objOrder->total_paid = Tools::ps_round(
