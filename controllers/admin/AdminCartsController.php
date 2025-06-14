@@ -1154,8 +1154,8 @@ class AdminCartsControllerCore extends AdminController
             if (Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING')) {
                 // get all services
                 $objProduct = new Product();
-                $hotelServiceProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE);
-                $roomTypeServiceProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE);
+                $hotelServiceProducts = $objProduct->getServiceProducts(true, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE);
+                $roomTypeServiceProducts = $objProduct->getServiceProducts(true, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE);
                 $serviceProducts = array_merge($roomTypeServiceProducts, $hotelServiceProducts);
             } else {
                 $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
@@ -1469,8 +1469,8 @@ class AdminCartsControllerCore extends AdminController
             if (Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING')) {
                 // get all services
                 $objProduct = new Product();
-                $hotelServiceProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE);
-                $roomTypeServiceProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE);
+                $hotelServiceProducts = $objProduct->getServiceProducts(true, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE);
+                $roomTypeServiceProducts = $objProduct->getServiceProducts(true, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE);
                 $serviceProducts = array_merge($roomTypeServiceProducts, $hotelServiceProducts);
             } else {
                 $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
