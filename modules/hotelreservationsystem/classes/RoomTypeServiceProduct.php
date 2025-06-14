@@ -139,9 +139,16 @@ class RoomTypeServiceProduct extends ObjectModel
     public static function getAutoAddServices($idProduct, $dateFrom = null, $dateTo = null, $priceAdditionType = null, $useTax = null, $use_reduc = 1)
     {
         if (Product::isBookingProduct($idProduct)) {
+            $context = Context::getContext();
+            $front = true;
+            if (!in_array($context->controller->controller_type, array('front', 'modulefront'))) {
+                $front = false;
+            }
+
             $sql = 'SELECT p.`id_product` FROM  `'._DB_PREFIX_.'htl_room_type_service_product` rsp
             INNER JOIN `'._DB_PREFIX_.'product` p ON (rsp.`id_product` = p.`id_product` AND p.`auto_add_to_cart` = 1)
-            WHERE p.`active` = 1 AND `id_element` = '.(int)$idProduct.' AND `element_type` = '.self::WK_ELEMENT_TYPE_ROOM_TYPE;
+            WHERE p.`active` = 1 AND `id_element` = '.(int)$idProduct.' AND `element_type` = '.self::WK_ELEMENT_TYPE_ROOM_TYPE.
+            ($front ? ' AND p.`available_for_order` = 1':'');
             if (!is_null($priceAdditionType)) {
                 $sql .= ' AND p.`price_addition_type` = '.$priceAdditionType;
             }
