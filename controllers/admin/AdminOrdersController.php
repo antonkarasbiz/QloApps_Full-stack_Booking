@@ -6337,40 +6337,43 @@ class AdminOrdersControllerCore extends AdminController
         }
         // update order detail for selected aditional services
         $objServiceProductCartDetail = new ServiceProductCartDetail();
-        foreach ($selectedAdditonalServices as $service) {
-            $serviceOrderDetail = new OrderDetail($service['id_order_detail']);
+         if (isset($selectedAdditonalServices[$idHotelBooking])) {
+            $objServiceProductCartDetail = new ServiceProductCartDetail();
+            foreach ($selectedAdditonalServices[$idHotelBooking]['additional_services'] as $service) {
+                $serviceOrderDetail = new OrderDetail($service['id_order_detail']);
 
-            $cart_quantity = $service['quantity'];
-            if ($service['price_calculation_method'] == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
-                $cart_quantity = $cart_quantity * $product_quantity;
-            }
-            if ($cart_quantity >= $serviceOrderDetail->product_quantity) {
-                $serviceOrderDetail->delete();
-            } else {
-                $serviceOrderDetail->total_price_tax_incl -= $service['total_price_tax_incl'];
-                $serviceOrderDetail->total_price_tax_excl -= $service['total_price_tax_excl'];
-                $serviceOrderDetail->product_quantity -= $cart_quantity;
+                $cart_quantity = $service['quantity'];
+                if ($service['price_calculation_method'] == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
+                    $cart_quantity = $cart_quantity * $product_quantity;
+                }
+                if ($cart_quantity >= $serviceOrderDetail->product_quantity) {
+                    $serviceOrderDetail->delete();
+                } else {
+                    $serviceOrderDetail->total_price_tax_incl -= $service['total_price_tax_incl'];
+                    $serviceOrderDetail->total_price_tax_excl -= $service['total_price_tax_excl'];
+                    $serviceOrderDetail->product_quantity -= $cart_quantity;
 
-                // update taxes
-                $res &= $serviceOrderDetail->updateTaxAmount($order);
+                    // update taxes
+                    $res &= $serviceOrderDetail->updateTaxAmount($order);
 
-                // Save order detail
-                $res &= $serviceOrderDetail->update();
-            }
+                    // Save order detail
+                    $res &= $serviceOrderDetail->update();
+                }
 
-            if (isset($roomHtlCartInfo['id'])) {
-                if ($idServiceProductCartDetail = $objServiceProductCartDetail->alreadyExists(
-                    $service['id_product'],
-                    $service['id_cart'],
-                    $roomHtlCartInfo['id']
-                )) {
-                    $objServiceProductCartDetail = new ServiceProductCartDetail((int) $idServiceProductCartDetail);
-                    $serviceQuantity = $objServiceProductCartDetail->quantity;
-                    if ($objServiceProductCartDetail->delete()
-                        && Validate::isLoadedObject(new Product((int) $service['id_product']))
-                    ) {
-                        $objCart = new Cart($service['id_cart']);
-                        $objCart->updateQty((int)abs($serviceQuantity), $service['id_product'], null, false, 'down');
+                if (isset($roomHtlCartInfo['id'])) {
+                    if ($idServiceProductCartDetail = $objServiceProductCartDetail->alreadyExists(
+                        $service['id_product'],
+                        $service['id_cart'],
+                        $roomHtlCartInfo['id']
+                    )) {
+                        $objServiceProductCartDetail = new ServiceProductCartDetail((int) $idServiceProductCartDetail);
+                        $serviceQuantity = $objServiceProductCartDetail->quantity;
+                        if ($objServiceProductCartDetail->delete()
+                            && Validate::isLoadedObject(new Product((int) $service['id_product']))
+                        ) {
+                            $objCart = new Cart($service['id_cart']);
+                            $objCart->updateQty((int)abs($serviceQuantity), $service['id_product'], null, false, 'down');
+                        }
                     }
                 }
             }
