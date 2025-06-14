@@ -42,7 +42,7 @@
 						<div class="htl-global-address-div col-md-8 col-sm-12">
 							{if isset($gblHtlPhone) && $gblHtlPhone }
 								<div>
-									<p class="global-address-header">{l s='Main Branch'}</p>
+									<p class="global-address-header"><i class="icon-bed"></i> {l s='Main Branch'}</p>
 									<p class="global-address-value">
 										{$gblHtlAddress}
 									</p>
@@ -50,7 +50,7 @@
 							{/if}
 							{if isset($gblHtlPhone) && $gblHtlPhone}
 								<div>
-									<p class="global-address-header">{l s='Phone'}</p>
+									<p class="global-address-header"><i class="icon-phone"></i> {l s='Phone'}</p>
 									<p class="global-address-value">
 										{$gblHtlPhone}
 									</p>
@@ -58,9 +58,25 @@
 							{/if}
 							{if isset($gblHtlEmail) && $gblHtlEmail}
 								<div>
-									<p class="global-address-header">{l s='Mail Us'}</p>
+									<p class="global-address-header"><i class="icon-envelope"></i> {l s='Mail Us'}</p>
 									<p class="global-address-value">
 										{$gblHtlEmail}
+									</p>
+								</div>
+							{/if}
+							{if isset($gblHtlRegistrationNumber) && $gblHtlRegistrationNumber}
+								<div>
+									<p class="global-address-header"><i class="icon-book"></i> {l s='Registration number'}</p>
+									<p class="global-address-value">
+										{$gblHtlRegistrationNumber}
+									</p>
+								</div>
+							{/if}
+							{if isset($gblHtlFax) && $gblHtlFax}
+								<div>
+									<p class="global-address-header"><i class="icon-fax"></i> {l s='Fax'}</p>
+									<p class="global-address-value">
+										{$gblHtlFax}
 									</p>
 								</div>
 							{/if}
