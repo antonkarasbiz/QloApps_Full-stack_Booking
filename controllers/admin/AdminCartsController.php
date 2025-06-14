@@ -1570,25 +1570,44 @@ class AdminCartsControllerCore extends AdminController
                         }
                     }
 
-                    if (!$response['hasError']) {
+                     if (!$response['hasError']) {
                         $result = true;
                         $objServiceProductCartDetail = new ServiceProductCartDetail();
                         foreach ($selectedServiceProducts as $idServiceProduct => $selected) {
+                            $unitPrice = $serviceUnitPrices[$idServiceProduct];
+                            $updateServicePriceOnly = false;
+                            $quantity = 0;
+                            $operator = 'down';
                             if ($selected) {
                                 $operator = 'up';
-                            } else {
-                                $operator = 'down';
+                                if ($idServiceProductCartDetail = $objServiceProductCartDetail->alreadyExists(
+                                    $objHotelCartBookingData->id_cart,
+                                    $idServiceProduct,
+                                    $idCartBooking
+                                )) {
+                                    $objServiceProductCartDetail = new ServiceProductCartDetail($idServiceProductCartDetail);
+                                    if ($objServiceProductCartDetail->quantity > $serviceQuantities[$idServiceProduct]) {
+                                        $quantity = $objServiceProductCartDetail->quantity - $serviceQuantities[$idServiceProduct];
+                                        $operator = 'down';
+                                    } else if ($objServiceProductCartDetail->quantity < $serviceQuantities[$idServiceProduct]) {
+                                        $quantity = $serviceQuantities[$idServiceProduct] - $objServiceProductCartDetail->quantity;
+                                    } else {
+                                        // Only update the price no need to update quantity
+                                        $updateServicePriceOnly = true;
+                                    }
+                                } else {
+                                    $quantity = $serviceQuantities[$idServiceProduct];
+                                }
                             }
-                            $quantity = $serviceQuantities[$idServiceProduct];
-                            $unitPrice = $serviceUnitPrices[$idServiceProduct];
-                            if ($result &= $objServiceProductCartDetail->updateCartServiceProduct(
+
+                            if ($updateServicePriceOnly || ($result &= $objServiceProductCartDetail->updateCartServiceProduct(
                                 $objHotelCartBookingData->id_cart,
                                 $idServiceProduct,
                                 $operator,
                                 $quantity,
                                 0,
                                 $idCartBooking
-                            )) {
+                            ))) {
                                 $originalPrice = Product::getPriceStatic($idServiceProduct, false);
                                 // if price is different than the original service price then update the price
                                 if ($operator == 'up' && $originalPrice != $unitPrice) {
