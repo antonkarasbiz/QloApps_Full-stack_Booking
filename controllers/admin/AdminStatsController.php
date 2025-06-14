@@ -812,16 +812,18 @@ class AdminStatsControllerCore extends AdminStatsTabController
             case 'conversion_rate':
                 $nbDaysConversionRate = Validate::isUnsignedInt(Configuration::get('PS_KPI_CONVERSION_RATE_NB_DAYS')) ? Configuration::get('PS_KPI_CONVERSION_RATE_NB_DAYS') : 30;
 
+                $dateFrom = date('Y-m-d', strtotime('-'.($nbDaysConversionRate + 1).' day'));
+                $dateTo = date('Y-m-d', strtotime('-1 day'));
                 $visitors = AdminStatsController::getVisits(
-                    true,
-                    date('Y-m-d', strtotime('-'.($nbDaysConversionRate + 1).' day')),
-                    date('Y-m-d', strtotime('+1 day')),
+                    false,
+                    $dateFrom,
+                    $dateTo,
                     false /*'day'*/
                 );
 
                 $orders = AdminStatsController::getOrders(
-                    date('Y-m-d', strtotime('-'.($nbDaysConversionRate + 1).' day')),
-                    date('Y-m-d', strtotime('-1 day')),
+                    $dateFrom,
+                    $dateTo,
                     false /*'day'*/,
                     $idHotels
                 );
@@ -989,7 +991,7 @@ class AdminStatsControllerCore extends AdminStatsTabController
                 FROM `'._DB_PREFIX_.'orders` o
                 LEFT JOIN `'._DB_PREFIX_.'order_state` os ON os.`id_order_state` = o.`current_state`
                 WHERE o.`invoice_date` BETWEEN "'.pSQL(date('Y-m-d', strtotime('-'.($daysForAvgOrderVal + 1).' day'))).' 00:00:00"
-                AND "'.pSQL(date('Y-m-d')).' 23:59:59" AND os.`logable` = 1
+                AND "'.pSQL(date('Y-m-d', strtotime('-1 day'))).' 23:59:59" AND os.`logable` = 1
                 AND (
                     EXISTS (
                         SELECT 1
