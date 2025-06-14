@@ -96,7 +96,7 @@ class AdminHotelBedTypesController extends ModuleAdminController
 
     public function renderList()
     {
-        // added here instead of the constructor since the dimension unit will be update in post processs.
+        // added here instead of the constructor since the dimension unit will be update afer post processs.
         $this->fields_list = array(
             'id_bed_type' => array(
                 'title' => $this->l('ID'),
@@ -175,6 +175,27 @@ class AdminHotelBedTypesController extends ModuleAdminController
         );
 
         return parent::renderForm();
+    }
+
+    public function beforeUpdateOptions()
+    {
+        $defaultLangId = Configuration::get('PS_LANG_DEFAULT');
+        $objDefaultLanguage = Language::getLanguage((int) $defaultLangId);
+        $languages = Language::getLanguages(false);
+        if (!trim(Tools::getValue('WK_DIMENSION_UNIT_'.$defaultLangId))
+            && Tools::getValue('WK_DIMENSION_UNIT_'.$defaultLangId)
+        ) {
+            $this->errors[] = $this->l('Default dimension unit is required at least in ').$objDefaultLanguage['name'];
+        } else {
+            foreach ($languages as $lang) {
+                if (Tools::getValue('WK_DIMENSION_UNIT_'.$lang['id_lang'])
+                    && (!trim(Tools::getValue('WK_DIMENSION_UNIT_'.$lang['id_lang']))
+                    || !Validate::isGenericName(Tools::getValue('WK_DIMENSION_UNIT_'.$lang['id_lang'])))
+                ) {
+                    $this->errors[] = $this->l('Invalid dimension unit in ').$lang['name'];
+                }
+            }
+        }
     }
 
     public function processSave()
