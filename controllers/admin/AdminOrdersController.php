@@ -2022,6 +2022,7 @@ class AdminOrdersControllerCore extends AdminController
                 if (Validate::isLoadedObject($objCart)) {
                     $this->context->cart = $objCart;
                     $this->context->currency = new Currency((int)$objCart->id_currency);
+                    $this->context->customer = new Customer((int) $objCart->id_customer);
 
                     $this->errors = HotelCartBookingData::validateCartBookings(!Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING'));
 
@@ -2076,8 +2077,6 @@ class AdminOrdersControllerCore extends AdminController
                     }
 
                     if (!count($this->errors)) {
-                        $this->context->currency = new Currency((int) $objCart->id_currency);
-                        $this->context->customer = new Customer((int) $objCart->id_customer);
 
                         // Set payment module details
                         $objPaymentModule = new BoOrder();
