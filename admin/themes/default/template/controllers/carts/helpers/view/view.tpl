@@ -67,7 +67,7 @@
 				{l s='Created on:'} {dateFormat date=$cart_order.date_add}
 			{else}
 				<h2>{l s='No order was created from this cart.'}</h2>
-				{if $customer->id}
+				{if $customer->id && !$hotel_products && !$standalone_products}
 					<a class="btn btn-default" href="{$link->getAdminLink('AdminOrders')|escape:'html':'UTF-8'}&amp;cart_id={$cart->id|intval}&amp;addorder"><i class="icon-shopping-cart"></i> {l s='Create an order from this cart.'}</a>
 				{/if}
 			{/if}
