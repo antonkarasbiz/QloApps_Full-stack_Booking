@@ -2964,7 +2964,7 @@ class AdminNormalProductsControllerCore extends AdminController
             $allAssociations = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($product->id);
             if (Product::SELLING_PREFERENCE_WITH_ROOM_TYPE == $product->selling_preference_type) {
                 $associatedRoomTypes = $allAssociations['room_type'];
-                $selectedRoomTypes = Tools::getValue('room_type_box', array());
+                $selectedRoomTypes = Tools::getValue('RT_tree_room_type_box', array());
 
                 // Generate list of new associations
                 $newRoomTypes = array();
@@ -3046,7 +3046,7 @@ class AdminNormalProductsControllerCore extends AdminController
             } elseif (Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE == $product->selling_preference_type) {
                 // Add room types linking
                 $associatedRoomTypes = $allAssociations['room_type'];
-                $selectedRoomTypes = Tools::getValue('room_type_box', array());
+                $selectedRoomTypes = Tools::getValue('RT_tree_room_type_box', array());
                 // Generate list of new associations
                 $newRoomTypes = array();
                 foreach ($selectedRoomTypes as $selectedRoomType) {
@@ -3861,7 +3861,8 @@ class AdminNormalProductsControllerCore extends AdminController
         $tree->setData(HotelHelper::generateTreeData([
                 'rootNode' => HotelHelper::NODE_HOTEL,
                 'leafNode' => HotelHelper::NODE_ROOM_TYPE,
-                'selectedElements' => $selectedRoomTypes
+                'selectedElements' => $selectedRoomTypes,
+                'prefix' => 'RT_tree_'
             ]))
             ->setUseCheckBox(true)
             ->setAutoSelectChildren(true)
