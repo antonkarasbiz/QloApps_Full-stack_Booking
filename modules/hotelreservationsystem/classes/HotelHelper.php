@@ -2529,7 +2529,7 @@ class HotelHelper
         $languages = Language::getLanguages(true);
         if ($is_hotel && $id_hotel) {
             $cat_id_hotel = Db::getInstance()->getValue(
-                'SELECT `id_category` FROM `'._DB_PREFIX_.'htl_branch_info` WHERE id='.$id_hotel
+                'SELECT `id_category` FROM `'._DB_PREFIX_.'htl_branch_info` WHERE id='.(int) $id_hotel
             );
             if ($cat_id_hotel) {
                 $obj_cat = new Category($cat_id_hotel);

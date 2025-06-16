@@ -748,6 +748,7 @@ class AdminModulesControllerCore extends AdminController
                     $modules_list_save = implode('|', $modules);
                 }
             } elseif (($modules = Tools::getValue($key)) && $key != 'checkAndUpdate' && $key != 'updateAll') {
+                $modules = strip_tags($modules);
                 if (strpos($modules, '|')) {
                     $modules_list_save = $modules;
                     $modules = explode('|', $modules);

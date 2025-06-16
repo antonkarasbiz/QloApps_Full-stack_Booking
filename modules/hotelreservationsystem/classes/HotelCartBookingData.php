@@ -121,7 +121,7 @@ class HotelCartBookingData extends ObjectModel
      */
     public function getCountRoomsInCart($id_cart, $guest)
     {
-        $sql = 'SELECT Count(`id`) FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_cart` = '.$id_cart.' AND `id_guest` = '.$guest.' AND `id_order` = 0';
+        $sql = 'SELECT Count(`id`) FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_cart` = '.(int) $id_cart.' AND `id_guest` = '.(int) $guest.' AND `id_order` = 0';
         $count_rooms = Db::getInstance()->getValue($sql);
 
         if ($count_rooms) {
@@ -144,8 +144,8 @@ class HotelCartBookingData extends ObjectModel
         $sql = 'SELECT cbd.id AS id_cart_book_data, cbd.id_cart, cbd.id_guest, cbd.id_product, cbd.id_room, cbd.id_hotel, cbd.quantity, cbd.date_from, cbd.date_to, ri.room_num, pl.name AS room_type
                 FROM `'._DB_PREFIX_.'htl_cart_booking_data` AS cbd
                 INNER JOIN `'._DB_PREFIX_.'htl_room_information` AS ri ON (cbd.id_room = ri.id)
-                INNER JOIN `'._DB_PREFIX_.'product_lang` AS pl ON (cbd.id_product = pl.id_product AND pl.`id_lang`='.$id_lang.')
-                WHERE cbd.id_cart = '.$id_cart.' AND cbd.id_guest = '.$id_guest;
+                INNER JOIN `'._DB_PREFIX_.'product_lang` AS pl ON (cbd.id_product = pl.id_product AND pl.`id_lang`='.(int) $id_lang.')
+                WHERE cbd.id_cart = '.(int) $id_cart.' AND cbd.id_guest = '.(int) $id_guest;
         $cart_book_data = Db::getInstance()->executeS($sql);
 
         if ($cart_book_data) {
@@ -182,10 +182,10 @@ class HotelCartBookingData extends ObjectModel
      */
     public function getOnlyCartBookingData($id_cart, $id_guest, $id_product, $id_customer = 0)
     {
-        $sql = 'SELECT * FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_cart` = '.$id_cart.' AND `id_product` = '.$id_product;
+        $sql = 'SELECT * FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_cart` = '.(int) $id_cart.' AND `id_product` = '.(int) $id_product;
 
         if ($id_customer) {
-            $sql .=  ' AND `id_customer` = '.$id_customer;
+            $sql .=  ' AND `id_customer` = '.(int) $id_customer;
         }
 
         $cart_book_data = Db::getInstance()->executeS($sql);
@@ -209,7 +209,7 @@ class HotelCartBookingData extends ObjectModel
      */
     public function getCountRoomsByIdCartIdProduct($id_cart, $id_product, $date_from, $date_to)
     {
-        $sql = 'SELECT Count(`id`) FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_cart` = '.$id_cart.' AND `id_product` = '.$id_product." AND `date_from` <= '$date_from' AND `date_to` >= '$date_to'";
+        $sql = 'SELECT Count(`id`) FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_cart` = '.(int) $id_cart.' AND `id_product` = '.(int) $id_product." AND `date_from` <= '".pSql($date_from)."' AND `date_to` >= '".pSQL($date_to)."'";
 
         $count_rooms = Db::getInstance()->getValue($sql);
 
@@ -268,7 +268,7 @@ class HotelCartBookingData extends ObjectModel
         if ($cart_id) {
             return Db::getInstance()->getRow('
                 SELECT * FROM `'._DB_PREFIX_.'htl_cart_booking_data`
-                WHERE `id_cart`='.$cart_id.' ORDER BY `date_add` DESC
+                WHERE `id_cart`='.(int) $cart_id.' ORDER BY `date_add` DESC
             ');
         }
 
@@ -284,7 +284,7 @@ class HotelCartBookingData extends ObjectModel
      */
     public function getCartCurrentDataByOrderId($id_order)
     {
-        $result = Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_order`='.$id_order);
+        $result = Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_order`='.(int) $id_order);
         if ($result) {
             return $result;
         } else {
@@ -320,13 +320,13 @@ class HotelCartBookingData extends ObjectModel
      */
     public function changeProductDataByRoomId($idRoom, $idProduct, $daysDiff, $idCart)
     {
-        $cartProductQuantity = Db::getInstance()->getValue('SELECT `quantity` FROM `'._DB_PREFIX_.'cart_product` WHERE `id_cart`='.$idCart.' AND `id_product`='.$idProduct);
+        $cartProductQuantity = Db::getInstance()->getValue('SELECT `quantity` FROM `'._DB_PREFIX_.'cart_product` WHERE `id_cart`='.(int) $idCart.' AND `id_product`='.(int) $idProduct);
         $newQuantity = $cartProductQuantity - $daysDiff;
 
         if ($newQuantity > 0) {
-            return Db::getInstance()->update('cart_product', array('quantity' => $newQuantity), '`id_cart`='.$idCart.' AND `id_product`='.$idProduct);
+            return Db::getInstance()->update('cart_product', array('quantity' => $newQuantity), '`id_cart`='.(int) $idCart.' AND `id_product`='.(int) $idProduct);
         } else {
-            return Db::getInstance()->delete('cart_product', '`id_cart`='.$idCart.' AND `id_product`='.$idProduct);
+            return Db::getInstance()->delete('cart_product', '`id_cart`='.(int) $idCart.' AND `id_product`='.(int) $idProduct);
         }
     }
 
@@ -670,7 +670,7 @@ class HotelCartBookingData extends ObjectModel
      */
     public function checkExistanceOfRoomInCurrentCart($id_room, $date_from, $date_to, $id_cart, $id_guest)
     {
-        $result = Db::getInstance()->getValue('SELECT id FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_room`='.$id_room." AND `date_from`='$date_from' AND `date_to`='$date_to' AND `id_cart`=".$id_cart.' AND `id_guest`='.$id_guest);
+        $result = Db::getInstance()->getValue('SELECT id FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_room`='.(int) $id_room." AND `date_from`='".pSQL($date_from)."' AND `date_to`='".pSQL($date_to)."' AND `id_cart`=".(int) $id_cart.' AND `id_guest`='.(int) $id_guest);
 
         if ($result) {
             return $result;
@@ -720,8 +720,8 @@ class HotelCartBookingData extends ObjectModel
      */
     public function deleteRoomDataFromOrderLine($id_cart, $id_guest, $id_product, $date_from, $date_to)
     {
-        $result = Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_cart`='.$id_cart.' AND `id_guest`='.$id_guest.' AND `id_product`='.$id_product." AND `date_from`= '$date_from' AND `date_to`= '$date_to'");
-
+        // To get the num_rm
+        Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_cart`='.(int) $id_cart.' AND `id_guest`='.(int) $id_guest.' AND `id_product`='.(int) $id_product." AND `date_from`= '".pSQL($date_from)."' AND `date_to`= '".pSQL($date_to)."'");
         $num_rm = Db::getInstance()->NumRows();
 
         $num_days = HotelHelper::getNumberOfDays($date_from, $date_to);
@@ -729,20 +729,6 @@ class HotelCartBookingData extends ObjectModel
         $qty = (int) $num_rm * (int) $num_days;
         if ($qty) {
             return $this->deleteCartBookingData($id_cart, $id_product, 0, $date_from, $date_to);
-            // $this->context = Context::getContext();
-            // $update_quantity = $this->context->cart->updateQty($qty, $id_product, null, false, 'down');
-
-            // if (is_array($result) && count($result)) {
-            //     $return = true;
-            //     foreach ($result as $row) {
-            //         $objHotelCartBookingData = new self($row['id']);
-            //         if (Validate::isLoadedObject($objHotelCartBookingData)) {
-            //             $return &= $objHotelCartBookingData->delete();
-            //         }
-            //     }
-            // }
-
-            // return $return;
         }
 
         return false;
@@ -818,7 +804,7 @@ class HotelCartBookingData extends ObjectModel
      */
     public function getCustomerIdRoomsByIdCartIdProduct($id_cart, $id_product, $date_from, $date_to)
     {
-        $rooms_ids = Db::getInstance()->executeS('SELECT `id_room` FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_cart`='.$id_cart.' AND `id_product`='.$id_product." AND `date_from`='$date_from' AND `date_to`='$date_to'");
+        $rooms_ids = Db::getInstance()->executeS('SELECT `id_room` FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_cart`='.(int) $id_cart.' AND `id_product`='.(int) $id_product." AND `date_from`='".pSQL($date_from)."' AND `date_to`='".pSQL($date_to)."'");
         if ($rooms_ids) {
             return $rooms_ids;
         }
@@ -1852,7 +1838,7 @@ class HotelCartBookingData extends ObjectModel
             } else {
                 Db::getInstance()->execute('
                     UPDATE `'._DB_PREFIX_.'cart_product`
-                    SET `quantity` = '.$new_qty.', `date_add` = NOW()
+                    SET `quantity` = '.(int) $new_qty.', `date_add` = NOW()
                     WHERE `id_product` = '.(int)$id_product.'
                     AND `id_cart` = '.(int)$id_cart.' AND `id_address_delivery` = '.(int)$cart->id_address_delivery
                 );
