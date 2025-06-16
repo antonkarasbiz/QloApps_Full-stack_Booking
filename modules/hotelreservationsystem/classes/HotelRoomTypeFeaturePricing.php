@@ -156,12 +156,12 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             $dateTo = date('Y-m-d', strtotime($featurePriceRule['date_to']));
             if ($featurePriceRule['date_selection_type'] == self::DATE_SELECTION_TYPE_SPECIFIC) {
                 $sqlWhere .= ' (rtfpr.`date_selection_type` = '.(int) self::DATE_SELECTION_TYPE_SPECIFIC.'
-                AND rtfpr.`date_from` = \''.pSQL($dateFrom).'\')';
+                    AND rtfpr.`date_from` = \''.pSQL($dateFrom).'\')';
             } else if ($featurePriceRule['date_selection_type'] == self::DATE_SELECTION_TYPE_RANGE) {
                 if ($featurePriceRule['is_special_days_exists']) {
                     $sqlWhere .= ' (rtfpr.`is_special_days_exists`=1
-                    AND rtfpr.`date_from` < \''.pSQL($dateTo).'\'
-                    AND rtfpr.`date_to` > \''.pSQL($dateFrom).'\')';
+                    AND rtfpr.`date_from` <= \''.pSQL($dateTo).'\'
+                    AND rtfpr.`date_to` >= \''.pSQL($dateFrom).'\')';
                 } else {
                     $sqlWhere .= ' (rtfpr.`date_selection_type` = '.(int) self::DATE_SELECTION_TYPE_RANGE.'
                     AND rtfpr.`is_special_days_exists`=0
