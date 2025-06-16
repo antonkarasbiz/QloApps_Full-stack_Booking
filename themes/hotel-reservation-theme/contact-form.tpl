@@ -42,7 +42,7 @@
 						<div class="htl-global-address-div col-md-8 col-sm-12">
 							{if isset($gblHtlPhone) && $gblHtlPhone }
 								<div>
-									<p class="global-address-header"><i class="icon-bed"></i> {l s='Main Branch'}</p>
+									<p class="global-address-header"><i class="icon-building"></i> {l s='Main Branch'}</p>
 									<p class="global-address-value">
 										{$gblHtlAddress}
 									</p>
