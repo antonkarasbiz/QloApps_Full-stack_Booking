@@ -1198,7 +1198,7 @@ class AdminControllerCore extends Controller
             }
         }
 
-        fputcsv($fd, $headers, ';', $text_delimiter);
+        fputcsv($fd, $headers, ';', $text_delimiter,  '\\');
         foreach ($this->_list as $i => $row) {
             $content = array();
             $path_to_image = false;
@@ -1222,7 +1222,7 @@ class AdminControllerCore extends Controller
                 }
                 $content[] = $field_value;
             }
-            fputcsv($fd, $content, ';', $text_delimiter);
+            fputcsv($fd, $content, ';', $text_delimiter,  '\\');
         }
 
         @fclose($fd);
