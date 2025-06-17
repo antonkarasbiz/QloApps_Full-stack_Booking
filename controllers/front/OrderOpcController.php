@@ -572,7 +572,7 @@ class OrderOpcControllerCore extends ParentOrderController
             $date_from = Tools::getValue('date_from');
             $date_to = Tools::getValue('date_to');
             $objCartBookingData = new HotelCartBookingData();
-            if ($cart_data_dlt = $objCartBookingData->deleteRoomDataFromOrderLine(
+            if ($objCartBookingData->deleteRoomDataFromOrderLine(
                 $this->context->cart->id,
                 $this->context->cart->id_guest,
                 $id_product,
