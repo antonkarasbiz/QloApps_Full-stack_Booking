@@ -973,7 +973,12 @@ class HotelCartBookingData extends ObjectModel
                             }
                         } else {
                             if (ServiceProductOption::productHasOptions($service['id_product'])) {
-                                if (!Validate::isLoadedObject(new ServiceProductOption($service['id_product_option']))) {
+                                if ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
+                                    && $service['id_hotel_cart_booking']
+                                ) {
+                                    // do nothing if service of type SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE is added with toom type
+                                    // then we will not check for options
+                                } elseif (!Validate::isLoadedObject(new ServiceProductOption($service['id_product_option']))) {
                                     $toRemoveService = 1;
                                 }
                             } elseif ($service['id_product_option']) {
