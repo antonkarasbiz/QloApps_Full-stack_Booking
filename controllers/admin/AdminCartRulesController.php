@@ -277,7 +277,10 @@ class AdminCartRulesControllerCore extends AdminController
             // If the reduction is associated to a specific product, then it must be part of the product restrictions
             if ((int)Tools::getValue('reduction_product') && Tools::getValue('apply_discount_to') == 'specific' && Tools::getValue('apply_discount') != 'off') {
                 $reduction_product = (int)Tools::getValue('reduction_product');
-
+                // In case the product_restriction was unchecked then remove the older products.
+                if (!Tools::getValue('product_restriction')) {
+                    $_POST['product_rule_group'] = array();
+                }
                 // First, check if it is not already part of the restrictions
                 $already_restricted = false;
                 if (is_array($rule_group_array = Tools::getValue('product_rule_group')) && count($rule_group_array) && Tools::getValue('product_restriction')) {
