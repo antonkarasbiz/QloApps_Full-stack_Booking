@@ -114,7 +114,7 @@
 
 		<div class="row">
 			<label class="col-sm-3 control-label required" for="feature_price_name" >
-				{l s='Advanced Price Rules' mod='hotelreservationsystem'}
+				{l s='Restrictions' mod='hotelreservationsystem'}
 			</label>
 			<div class="col-sm-6 col-xs-9">
 				<div class="panel">
@@ -127,7 +127,7 @@
 								{include file="../../../_partials/feature_price_rules.tpl" key=$key advancePriceRule=$rule}
 							{/foreach}
 						{else}
-							{include file="../../../_partials/feature_price_rules.tpl" key=0}
+							{include file="../../../_partials/feature_price_rules.tpl" key=0 collapse=true}
 						{/if}
 					</div>
 					<a id="add_more_dates_button" class="btn btn-default">

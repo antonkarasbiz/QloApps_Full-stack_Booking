@@ -631,6 +631,62 @@ $(document).ready(function() {
     });
 
     const dateToday = $.datepicker.formatDate('yy-mm-dd',  new Date());
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateTomorrow = $.datepicker.formatDate('yy-mm-dd', tomorrow);
+    $(document).find('.advanced_price_rule').each(function () {
+        udpateCollapseHeading($(this));
+    });
+    $(document).on('hide.bs.collapse', function(e) {
+        if ($(e.target).hasClass('advanced_price_rule_body')) {
+            let elem = $(e.target).closest('.advanced_price_rule');
+            udpateCollapseHeading(elem);
+            $(elem).find('.advance_price_rule_header_container').addClass('shown');
+        }
+    });
+
+    function udpateCollapseHeading(elem) {
+        let priceRuleHeadingText = '';
+        let rowIndex = parseInt($(elem).data('advanced_price_rule_index'));
+        let selecteDateType = $('#date_selection_type_'+rowIndex).val();
+        if (selecteDateType == date_selection_types.range.value) {
+            let dateFrom = $('#feature_plan_date_from_'+rowIndex).val();
+            let dateTo = $('#feature_plan_date_to_'+rowIndex).val();
+            priceRuleHeadingText = date_selection_types.range.title + ' ('+ dateFrom+ ' - '+ dateTo +')'
+            if (parseInt($('[name="advance_price_rule['+rowIndex+'][is_special_days_exists]"]:checked').val())) {
+                let special_days = [];
+                $('[name="advance_price_rule['+rowIndex+'][special_days][]"]').each(function(){
+                    if ($(this).prop('checked')) {
+                        special_days.push($(this).parent().text().trim());
+                    }
+                });
+
+                if (special_days.length != 0) {
+                    priceRuleHeadingText += '<br/> <span class="special_days_heading"> ('
+                    $(special_days).each(function(index, value) {
+                        priceRuleHeadingText += value;
+                        if (index != special_days.length-1) {
+                            priceRuleHeadingText += ', ';
+                        }
+                    });
+                    priceRuleHeadingText += ')</span>'
+                }
+            }
+        } else if (selecteDateType == date_selection_types.specific.value) {
+            priceRuleHeadingText = date_selection_types.specific.title;
+            let date = $('#specific_date_'+rowIndex).val();
+            priceRuleHeadingText += ' ('+ date +')'
+        }
+
+        $(elem).find('.advance_price_rule_header').html(priceRuleHeadingText);
+    }
+
+    $(document).on('shown.bs.collapse', function(e) {
+        if ($(e.target).hasClass('advanced_price_rule_body')) {
+            $(e.target).closest('.advanced_price_rule').find('.advance_price_rule_header_container').removeClass('shown');
+        }
+    });
+
     $(document).on('click', '#add_more_dates_button', function() {
         let dateSeletionOptions = $('<select>').addClass('form-control date_selection_type');
         $.each(date_selection_types, function(dateSelectionIndex, date_selection_type) {
@@ -652,43 +708,52 @@ $(document).ready(function() {
 
         let panelElem = $('<div>').addClass('panel advanced_price_rule').attr('data-advanced_price_rule_index', panelIndex);
         let idElem = $('<input>').attr('type', 'hidden').attr('name', 'advance_price_rule['+panelIndex+'][id]')
-        let headerElem = $('<div>').addClass('row advance_price_rule_header collapsed').attr({'data-toggle':"collapse", 'data-target':"#advanced_price_rule_"+panelIndex})
-            .append($('<div>').addClass('col-xs-8 col-sm-10').text(priceRuleHeadingText))
-            .append($('<div>').addClass('col-xs-1 pull-right')
-                .append($('<div>').addClass('col-xs-8')
+        let headerElem = $('<div>').addClass('row advance_price_rule_header_container advance_price_rule_collapse').attr({'data-toggle':"collapse", 'data-target':"#advanced_price_rule_"+panelIndex})
+            .append($('<div>').addClass('col-xs-8 advance_price_rule_header'))
+            .append($('<div>').addClass('col-xs-4')
+                .append($('<div>').addClass('col-xs-7'))
+                .append($('<div>').addClass('col-xs-2')
+                    .append($('<a>').addClass('btn btn-default remove_advanced_price_rule')
+                        .append($('<span>').append($('<i>').addClass('icon-trash')))))
+                .append($('<div>').addClass('col-xs-1'))
+                .append($('<div>').addClass('col-xs-2')
+                    .append($('<a>').addClass('btn btn-default')
+                        .append($('<i>').addClass('icon-caret-down')))));
+
+        let dateSelectionElem = $('<div>').addClass('form-group')
+            .append($('<label>').addClass('control-label col-sm-4 col-xs-3').attr('for', 'advance_price_rule['+panelIndex+'][date_selection_type]').text(' ' + dateSelectionTitle))
+            .append($('<div>').addClass('col-xs-5')
+                .append($(dateSeletionOptions).attr({'name': 'advance_price_rule['+panelIndex+'][date_selection_type]', 'id': 'date_selection_type_'+panelIndex})))
+            .append($('<div>').addClass('col-xs-3 advanced_price_rule_body_actions')
+                .append($('<div>').addClass('col-xs-offset-4 col-xs-4')
                     .append($('<a>').addClass('btn btn-default remove_advanced_price_rule')
                         .append($('<span>').append($('<i>').addClass('icon-trash')))))
                 .append($('<div>').addClass('col-xs-4')
-                    .append($('<i>').addClass('icon-caret-down'))
-                    .append($('<i>').addClass('icon-caret-up'))));
-
-        let dateSelectionElem = $('<div>').addClass('form-group')
-            .append($('<label>').addClass('control-label col-sm-4 col-xs-3').attr('for', 'advance_price_rule['+panelIndex+'][date_selection_type]').text(dateSelectionTitle))
-            .append($('<div>').addClass('col-xs-6')
-                .append($(dateSeletionOptions).attr({'name': 'advance_price_rule['+panelIndex+'][date_selection_type]', 'id': 'date_selection_type_'+panelIndex})));
+                    .append($('<a>').addClass('btn btn-default').attr({'data-toggle':"collapse", 'data-target':"#advanced_price_rule_"+panelIndex})
+                        .append($('<i>').addClass('icon-caret-up')))));
 
         let specificDateElem = $('<div>').addClass('form-group specific_date_type_'+panelIndex).css('display', 'none')
-            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][specific_date]').text(specificDateText))
-            .append($('<div>').addClass('col-xs-6')
+            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][specific_date]').text(' ' + specificDateText))
+            .append($('<div>').addClass('col-xs-5')
                 .append($('<input>').addClass('specific_date form-control datepicker-input')
                     .attr({type:'text', id: 'specific_date_'+panelIndex, name: 'advance_price_rule['+panelIndex+'][specific_date]', value: dateToday, readonly: 'readonly'})));
 
         let dateFromElem = $('<div>').addClass('form-group date_range_type_'+panelIndex)
-            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][date_from]').text(dateFromText))
-            .append($('<div>').addClass('col-xs-6')
+            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][date_from]').text(' ' + dateFromText))
+            .append($('<div>').addClass('col-xs-5')
                 .append($('<input>').addClass('feature_plan_date_from form-control  datepicker-input')
                     .attr({type:'text', id: 'feature_plan_date_from_'+panelIndex, name: 'advance_price_rule['+panelIndex+'][date_from]', value: dateToday, readonly: 'readonly'})));
 
         let dateToElem = $('<div>').addClass('form-group date_range_type_'+panelIndex)
-            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][date_to]').text(dateToText))
-            .append($('<div>').addClass('col-xs-6')
+            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][date_to]').text(' ' + dateToText))
+            .append($('<div>').addClass('col-xs-5')
                 .append($('<input>').addClass('feature_plan_date_to form-control  datepicker-input')
-                    .attr({type:'text', id: 'feature_plan_date_to_'+panelIndex, name: 'advance_price_rule['+panelIndex+'][date_to]', value: dateToday, readonly: 'readonly'})));
+                    .attr({type:'text', id: 'feature_plan_date_to_'+panelIndex, name: 'advance_price_rule['+panelIndex+'][date_to]', value: dateTomorrow, readonly: 'readonly'})));
 
         let specialDaysElement = $('<div>').addClass('form-group special_days_content_'+panelIndex)
             .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][is_special_days_exists]')
-                .append($('<span>').addClass('label-tooltip').attr({'data-toggle': 'tooltip', 'data-html':'true', 'title': '', 'data-original-title': specialDaysTooltipText}).text(specialDaysText)))
-            .append($('<div>').addClass('col-xs-6')
+                .append($('<span>').addClass('label-tooltip').attr({'data-toggle': 'tooltip', 'data-html':'true', 'title': '', 'data-original-title': specialDaysTooltipText}).text(' '+specialDaysText)))
+            .append($('<div>').addClass('col-xs-5')
                 .append($('<span>').addClass('switch prestashop-switch fixed-width-lg')
                     .append($('<input>').attr({'type': 'radio', 'value': 1, 'name': 'advance_price_rule['+panelIndex+'][is_special_days_exists]', 'id': 'advance_price_rule['+panelIndex+'][is_special_days_exists_on]'}).addClass('is_special_days_exists'))
                     .append($('<label>').attr({'for': 'advance_price_rule['+panelIndex+'][is_special_days_exists_on]'}).text(yesText))
@@ -698,10 +763,10 @@ $(document).ready(function() {
 
         $(weekDaysOptions).find('input[type="checkbox"]').attr('name', 'advance_price_rule['+panelIndex+'][special_days][]');
         let specialDaysCheckBoxElem = $('<div>').addClass('form-group week_days week_days_'+panelIndex)
-            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][special_days]').text(weekDaysText))
+            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][special_days]').text(' ' +weekDaysText))
             .append($('<div>').addClass('col-xs-8 checkboxes-wrap').append($(weekDaysOptions).html()))
 
-        let bodyElem = $('<div>').attr('id', 'advanced_price_rule_'+panelIndex).addClass('collapse advanced_price_rule_body')
+        let bodyElem = $('<div>').attr('id', 'advanced_price_rule_'+panelIndex).addClass('in advanced_price_rule_body')
             .append(dateSelectionElem)
             .append(specificDateElem)
             .append(dateFromElem)

@@ -128,7 +128,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         $this->cleanGroups();
         $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRule();
         if ($oldFeaturePriceRules = $objFeaturePriceRule->getRulesByIdFeaturePrice($this->id)) {
-            $objFeaturePriceRule->deleteFeaturePriceRules($oldFeaturePriceRules);
+            $oldFeaturePriceRules = array_column($oldFeaturePriceRules, 'id_feature_price_rule', 'id_feature_price_rule');
+            $objFeaturePriceRule->deleteFeaturePriceRulesById($oldFeaturePriceRules);
         }
 
         return parent::delete();
@@ -180,7 +181,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         return Db::getInstance()->executeS($sql);
     }
 
-    public function saveUpdateFeaturePrices($idFeaturePrice, $featurePriceRules)
+    public function saveFeaturePricesRules($idFeaturePrice, $featurePriceRules)
     {
         $res = true;
         $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRule();
@@ -222,7 +223,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         }
 
         if ($oldFeaturePriceRules) {
-            $res &= $objFeaturePriceRule->deleteFeaturePriceRules($oldFeaturePriceRules);
+            $res &= $objFeaturePriceRule->deleteFeaturePriceRulesById($oldFeaturePriceRules);
         }
 
         return $res;
@@ -657,7 +658,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             }
         }
 
-        return $this->saveUpdateFeaturePrices($this->id, $priceRules);
+        return $this->saveFeaturePricesRules($this->id, $priceRules);
     }
 
     public function validateExistingFeaturePrice(
@@ -865,7 +866,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         $objFeaturePricing->active = isset($params['active']) ? $params['active'] : 1;
         $objFeaturePricing->groupBox = !empty($params['groupBox']) ?  $params['groupBox'] : array_column(Group::getGroups($context->language->id), 'id_group');
         if ($objFeaturePricing->add()) {
-            $objFeaturePricing->saveUpdateFeaturePrices($objFeaturePricing->id, $params['price_rules']);
+            $objFeaturePricing->saveFeaturePricesRules($objFeaturePricing->id, $params['price_rules']);
         }
 
         return $objFeaturePricing->id;

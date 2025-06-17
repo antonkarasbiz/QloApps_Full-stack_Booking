@@ -562,7 +562,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                     $objFeaturePricing->id_product = $idRoomType;
                     $objFeaturePricing->feature_price_name = $featurePricingName[$idRoomType];
                     $objFeaturePricing->add();
-                    $objFeaturePricing->saveUpdateFeaturePrices($objFeaturePricing->id, $priceRules);
+                    $objFeaturePricing->saveFeaturePricesRules($objFeaturePricing->id, $priceRules);
                 }
 
                 Tools::redirectAdmin(self::$currentIndex.'&conf=3&token='.$this->token);
@@ -572,7 +572,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
 
             $conf = $idFeaturePrice ? 4 : 3;
             if ($objFeaturePricing->save()) {
-                $objFeaturePricing->saveUpdateFeaturePrices($objFeaturePricing->id, $priceRules);
+                $objFeaturePricing->saveFeaturePricesRules($objFeaturePricing->id, $priceRules);
                 if (Tools::isSubmit('submitAdd'.$this->table.'AndStay')) {
                     Tools::redirectAdmin(
                         self::$currentIndex.'&id_feature_price='.(int) $objFeaturePricing->id.
@@ -648,7 +648,6 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                 'fixed' => HotelRoomTypeFeaturePricing::IMPACT_TYPE_FIXED_PRICE,
             ),
             'week_days' => $this->getWeekDays(),
-            'priceRuleHeadingText' => $this->l('Price rule restriction', null, true),
             'dateSelectionTitle' => $this->l('Date Selection type', null, true),
             'specificDateText' => $this->l('Specific Date', null, true),
             'dateFromText' => $this->l('Date From', null, true),

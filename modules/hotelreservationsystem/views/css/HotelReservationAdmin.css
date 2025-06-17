@@ -507,7 +507,7 @@ p.room_cat_data
     display: flex;
 }
 .week_days .checkboxes-wrap .day-wrap {
-    min-width: 50px;
+    min-width: 45px;
 }
 .room_type_search_results_ul {
     padding: 0px;
@@ -616,23 +616,27 @@ body.adminhotelroomsbooking .ui-tooltip {
 	border: 1px solid #ddd
 }
 
-a.remove_advanced_price_rule {
-    position: absolute;
-    right: 5px;
-    top: -8px;}
 #advanced_price_rule_group .panel.advanced_price_rule {
     padding: 0px;}
-#advanced_price_rule_group .advance_price_rule_header {
+#advanced_price_rule_group .advance_price_rule_header_container {
     padding: 15px;}
-#advanced_price_rule_group .advance_price_rule_header:hover {
+#advanced_price_rule_group .advance_price_rule_header_container:hover {
     cursor: pointer;}
-.advance_price_rule_header i.icon-caret-down,
-.advance_price_rule_header.collapsed i.icon-caret-up{
+.advance_price_rule_header_container {
     display: none;}
-.advance_price_rule_header.collapsed i.icon-caret-down{
-    display: block;}
-.advanced_price_rule_body {
-    border-top: 1px solid #d3d3d3;}
+.advance_price_rule_header_container.shown{
+    align-items: center;
+    display: flex;}
+.advanced_price_rule_body .advanced_price_rule_body_actions{
+    display: none;
+}
+.advanced_price_rule_body.in .advanced_price_rule_body_actions,
+.advanced_price_rule_body.in .advanced_price_rule_body_actions{
+    display: block;
+}
+.special_days_heading{
+    font-size: 11px;
+}
 .advanced_price_rule_body .form-group:first-child {
     margin-top: 15px;}
 .error-border {

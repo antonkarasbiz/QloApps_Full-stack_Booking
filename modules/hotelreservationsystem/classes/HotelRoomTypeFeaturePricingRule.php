@@ -64,7 +64,7 @@ class HotelRoomTypeFeaturePricingRule extends ObjectModel
         return Db::getInstance()->executeS($sql);
     }
 
-    public function deleteFeaturePriceRules($featurePriceRules)
+    public function deleteFeaturePriceRulesById($featurePriceRules)
     {
         $res = true;
         if ($featurePriceRules) {
