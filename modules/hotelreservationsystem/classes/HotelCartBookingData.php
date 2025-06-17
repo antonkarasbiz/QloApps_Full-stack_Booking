@@ -953,7 +953,7 @@ class HotelCartBookingData extends ObjectModel
                 } else {
                     if (!$product->active) {
                         $toRemoveService = 1;
-                    } else {
+                    } else if ($checkServiceRoomLink) {
                         if ($product->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
                             // service with room type must have association with valid hotel cart booking
                             if (Validate::isLoadedObject($objHotelCartBooking = new HotelCartBookingData($service['id_hotel_cart_booking']))) {

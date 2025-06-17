@@ -164,7 +164,7 @@ class HotelOrderRefundRules extends ObjectModel
                         0,
                         1,
                         1,
-                        0,
+                        null,
                         null,
                         0,
                         $objHtlBooking->id
