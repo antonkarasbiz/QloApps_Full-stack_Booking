@@ -336,8 +336,38 @@ class AdminCartsControllerCore extends AdminController
         $helper->value = Tools::displayPrice($total_price, $currency);
         $kpi = $helper->generate();
         //end
+
+        // get standalone products in cart
+        $objServiceProductCartDetail = new ServiceProductCartDetail();
+        $hotelProducts = $objServiceProductCartDetail->getServiceProductsInCart(
+            $cart->id,
+            [Product::SELLING_PREFERENCE_HOTEL_STANDALONE, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE],
+            $idHotel = null,
+            0,
+            null,
+            null,
+            null,
+            null,
+            0,
+            null,
+            0,
+            null,
+            1
+        );
+
+        $standaloneProducts = $objServiceProductCartDetail->getServiceProductsInCart(
+            $cart->id,
+            [Product::SELLING_PREFERENCE_STANDALONE]
+        );
+
+        if (count($standaloneProducts)) {
+            $this->context->smarty->assign('standalone_products', $standaloneProducts);
+        }
+
         $this->tpl_view_vars = array(
             'cart_htl_data' => $cartHtlData,//by webkul hotel rooms in order data
+            'standalone_products' => $standaloneProducts,
+            'hotel_products' => $hotelProducts,
             'kpi' => $kpi,
             'products' => $products,
             'discounts' => $cart->getCartRules(),
