@@ -1788,6 +1788,9 @@ class ToolsCore
 
     public static function strpos($str, $find, $offset = 0, $encoding = 'UTF-8')
     {
+        if (is_array($str) || is_null($str)) {
+            return false;
+        }
         if (function_exists('mb_strpos')) {
             return mb_strpos($str, $find, $offset, $encoding);
         }

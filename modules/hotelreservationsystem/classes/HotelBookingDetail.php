@@ -2154,7 +2154,7 @@ class HotelBookingDetail extends ObjectModel
                                 0,
                                 0,
                                 null,
-                                0,
+                                null,
                                 null,
                                 0,
                                 $idHotelBooking

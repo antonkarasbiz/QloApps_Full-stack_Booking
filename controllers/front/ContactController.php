@@ -298,6 +298,8 @@ class ContactControllerCore extends FrontController
         $gblHtlAddress = $shopAddress;
         $gblHtlPhone = Configuration::get('PS_SHOP_PHONE');
         $gblHtlEmail = Configuration::get('PS_SHOP_EMAIL');
+        $gblHtlRegistrationNumber = Configuration::get('PS_SHOP_DETAILS');
+        $gblHtlFax = Configuration::get('PS_SHOP_FAX');
         $objHotelInfo = new HotelBranchInformation();
         if ($hotelsInfo = $objHotelInfo->hotelBranchesInfo(false, 1, 1)) {
             foreach ($hotelsInfo as &$hotel) {
@@ -333,6 +335,8 @@ class ContactControllerCore extends FrontController
                 'gblHtlEmail' => $gblHtlEmail,
                 'displayHotelMap' => $displayHotelMap,
                 'gblHtlAddress' => $gblHtlAddress,
+                'gblHtlRegistrationNumber' => $gblHtlRegistrationNumber,
+                'gblHtlFax' => $gblHtlFax,
                 'contacts' => Contact::getContacts($this->context->language->id),
                 'message' => html_entity_decode(Tools::getValue('message')),
 	            'contactKey' => $contactKey,
