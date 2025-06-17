@@ -1,7 +1,7 @@
 <?php
 return array(
 	'informations' => array(
-		'documentation' => 'https://qloapps.com/qlo-reservation-system/',
+		'documentation' => 'https://docs.qloapps.com/',
 		'documentation_upgrade' => 'https://webkul.uvdesk.com/',
 		'forum' => 'https://forums.qloapps.com/',
 		'blog' => 'https://qloapps.com/blog/',
@@ -10,7 +10,7 @@ return array(
 		'tailored_help' => 'https://webkul.uvdesk.com/',
 		'contact' => 'https://qloapps.com/contact/',
 		'services' => 'https://qloapps.com/contact/',
-		'tutorials' => 'https://qloapps.com/qlo-reservation-system/',
+		'tutorials' => 'https://docs.qloapps.com/',
 		'installation_guide' => 'https://qloapps.com/qloapps-installation-process/',
 		'install_help' => 'https://qloapps.com/install-qloapps/',
 	),
@@ -206,7 +206,7 @@ return array(
 		'Discover Your Website' => 'Khám phá trang web của bạn',
 		'Share your experience with your friends!' => 'Chia sẻ kinh nghiệm của bạn với bạn bè của bạn!',
 		'I just built an online hotel booking website with QloApps!' => 'Tôi vừa xây dựng một trang web đặt phòng khách sạn trực tuyến với QloApps!',
-		'See all the features here : https://qloapps.com/qlo-reservation-system/' => 'Xem tất cả các tính năng tại đây: https://qloapps.com/qlo-reservation-system/',
+		'See all the features here : https://docs.qloapps.com/' => 'Xem tất cả các tính năng tại đây: https://docs.qloapps.com/',
 		'Tweet' => 'tiếng riu ríu',
 		'Share' => 'Chia sẻ',
 		'Google+' => 'Google+',
