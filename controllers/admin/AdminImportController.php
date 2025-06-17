@@ -2639,14 +2639,17 @@ class AdminImportControllerCore extends AdminController
                                                 'id_product' => (int) $orderProduct['id_product'],
                                                 'id_cart' => (int) $this->context->cart->id,
                                                 'id_guest' => (int) $this->context->cart->id_guest,
-                                                'date_selection_type' => HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE,
-                                                'date_from' => date('Y-m-d', strtotime($dateFrom)),
-                                                'date_to' => date('Y-m-d', strtotime($dateTo)),
                                                 'is_special_days_exists' => 0,
                                                 'id_room' => $bookingCart['id_room'],
                                                 'impact_way' => HotelRoomTypeFeaturePricing::IMPACT_WAY_FIX_PRICE,
                                                 'impact_type' => HotelRoomTypeFeaturePricing::IMPACT_TYPE_FIXED_PRICE,
                                                 'impact_value' => $orderProduct['amount'],
+                                                'price_rules' => array(
+                                                    array(
+                                                        'date_from' => date('Y-m-d', strtotime($dateFrom)),
+                                                        'date_to' => date('Y-m-d', strtotime($dateTo)),
+                                                    )
+                                                )
                                             )
                                         );
                                     }

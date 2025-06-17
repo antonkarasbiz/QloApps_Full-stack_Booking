@@ -984,13 +984,16 @@ class AdminCartsControllerCore extends AdminController
                     'id_cart' => $id_cart,
                     'id_guest' => (int) $this->context->cookie->id_guest,
                     'id_room' => $id_room,
-                    'date_selection_type' => HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE,
-                    'date_from' => $date_from,
-                    'date_to' => $date_to,
                     'is_special_days_exists' => 0,
                     'impact_way' => HotelRoomTypeFeaturePricing::IMPACT_WAY_FIX_PRICE,
                     'impact_type' => HotelRoomTypeFeaturePricing::IMPACT_TYPE_FIXED_PRICE,
-                    'impact_value' => $price
+                    'impact_value' => $price,
+                    'price_rules' => array(
+                        array(
+                            'date_from' => $date_from,
+                            'date_to' => $date_to
+                        )
+                    )
                 )
             );
 

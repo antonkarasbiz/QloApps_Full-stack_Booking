@@ -1994,9 +1994,11 @@ class HotelBookingDetail extends ObjectModel
                         // create feature price if needed
                         if ($createFeaturePrice) {
                             $featurePriceParams['id_room'] = $roomInfo['id_room'];
-                            $featurePriceParams = array_merge(
-                                $featurePriceParams,
-                                array('date_from' => $objOldHotelBooking->date_from, 'date_to' => $objOldHotelBooking->date_to)
+                            $featurePriceParams['price_rules'] = array(
+                                array(
+                                    'date_from' => $objOldHotelBooking->date_from,
+                                    'date_to' => $objOldHotelBooking->date_to
+                                )
                             );
                             HotelRoomTypeFeaturePricing::createRoomTypeFeaturePrice($featurePriceParams);
                         }

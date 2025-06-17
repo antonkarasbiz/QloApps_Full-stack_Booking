@@ -4854,7 +4854,12 @@ class AdminOrdersControllerCore extends AdminController
                     // create feature price if needed
                     if ($createFeaturePrice) {
                         $featurePriceParams['id_room'] = $room_info['id_room'];
-                        $featurePriceParams = array_merge($featurePriceParams, array('date_from' => $date_from, 'date_to' => $date_to));
+                        $featurePriceParams['price_rules'] = array(
+                            array(
+                                'date_from' => $date_from,
+                                'date_to' => $date_to
+                            )
+                        );
                         HotelRoomTypeFeaturePricing::createRoomTypeFeaturePrice($featurePriceParams);
                     }
                 } else {
@@ -5691,8 +5696,12 @@ class AdminOrdersControllerCore extends AdminController
                 'id_product' => $id_product,
                 'id_room' => $id_room,
                 'price' => $room_unit_price,
-                'date_from' => $new_date_from,
-                'date_to' => $new_date_to
+                'price_rules' => array(
+                    array(
+                        'date_from' => $new_date_from,
+                        'date_to' => $new_date_to
+                    )
+                )
             );
             HotelRoomTypeFeaturePricing::createRoomTypeFeaturePrice($params);
 
