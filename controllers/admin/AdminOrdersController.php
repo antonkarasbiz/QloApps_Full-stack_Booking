@@ -513,7 +513,7 @@ class AdminOrdersControllerCore extends AdminController
 
                 if ($this->tabAccess['edit'] === 1) {
                     if (((int) $order->isReturnable())
-                        && !$order->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG)
+                        && !$order->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG, 0, 0)
                     ) {
                         $orderTotalPaid = $order->getTotalPaid();
                         $orderDiscounts = $order->getCartRules();
@@ -3571,7 +3571,6 @@ class AdminOrdersControllerCore extends AdminController
             'returns' => OrderReturn::getOrdersReturn($order->id_customer, $order->id),
             'refundReqBookings' => $refundReqBookings,
             'refundReqProducts' => $refundReqProducts,
-            'completeRefundRequestOrCancel' => $order->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG),
             'refundedAmount' => $refundedAmount,
             'totalDemandsPriceTI' => $totalDemandsPriceTI,
             'totalDemandsPriceTE' => $totalDemandsPriceTE,
@@ -5605,26 +5604,38 @@ class AdminOrdersControllerCore extends AdminController
      */
     public function updateOrderStatusOnOrderChange($objOrder)
     {
-        // check if new order amount is greater that old order amount and order payment is accepted
-        // then update order status to partial payment accepted
-        $currentOrderState = $objOrder->getCurrentOrderState();
-        $psOsPartialPaymentAccepted = Configuration::get('PS_OS_PARTIAL_PAYMENT_ACCEPTED');
-        if ($currentOrderState->paid == 1 && $currentOrderState->id != $psOsPartialPaymentAccepted) {
-            // calculate due amount
-            $dueAmount = $objOrder->total_paid_tax_incl - $objOrder->total_paid_real;
-            if ($dueAmount > 0) {
-                // now change order status to partial payment
-                $objOrderHistory = new OrderHistory();
-                $objOrderHistory->id_order = $objOrder->id;
-                $objOrderHistory->id_employee = (int) $this->context->employee->id;
+        // If order is completely refunded or cancelled then change the order state
+        if ($idOrderState = $objOrder->getOrderCompleteRefundStatus()) {
+            $objOrderHistory = new OrderHistory();
+            $objOrderHistory->id_order = (int)$objOrder->id;
+            $useExistingPayment = false;
+            if (!$objOrder->hasInvoice()) {
+                $useExistingPayment = true;
+            }
+            $objOrderHistory->changeIdOrderState($idOrderState, $objOrder, $useExistingPayment);
+            $objOrderHistory->add();
+        } else {
+            // check if new order amount is greater that old order amount and order payment is accepted
+            // then update order status to partial payment accepted
+            $currentOrderState = $objOrder->getCurrentOrderState();
+            $psOsPartialPaymentAccepted = Configuration::get('PS_OS_PARTIAL_PAYMENT_ACCEPTED');
+            if ($currentOrderState->paid == 1 && $currentOrderState->id != $psOsPartialPaymentAccepted) {
+                // calculate due amount
+                $dueAmount = $objOrder->total_paid_tax_incl - $objOrder->total_paid_real;
+                if ($dueAmount > 0) {
+                    // now change order status to partial payment
+                    $objOrderHistory = new OrderHistory();
+                    $objOrderHistory->id_order = $objOrder->id;
+                    $objOrderHistory->id_employee = (int) $this->context->employee->id;
 
-                $useExistingPayment = false;
-                if (!$objOrder->hasInvoice()) {
-                    $useExistingPayment = true;
+                    $useExistingPayment = false;
+                    if (!$objOrder->hasInvoice()) {
+                        $useExistingPayment = true;
+                    }
+
+                    $objOrderHistory->changeIdOrderState($psOsPartialPaymentAccepted, $objOrder, $useExistingPayment);
+                    $objOrderHistory->add();
                 }
-
-                $objOrderHistory->changeIdOrderState($psOsPartialPaymentAccepted, $objOrder, $useExistingPayment);
-                $objOrderHistory->add();
             }
         }
     }
