@@ -2290,7 +2290,10 @@ class HotelBookingDetail extends ObjectModel
 
                 // delete the booking detail
                 $objOldHotelBooking = new HotelBookingDetail($idHotelBooking);
-                $objOldHotelBooking->delete();
+                if ($objOldHotelBooking->delete()) {
+                    // delete refund request of the room if exists.
+                    OrderReturnDetail::deleteReturnDetailByIdBookingDetail($objOldHotelBooking->id_order, $idHotelBooking);
+                }
 
                 // ===============================================================
                 // END Delete Process of the old booking
