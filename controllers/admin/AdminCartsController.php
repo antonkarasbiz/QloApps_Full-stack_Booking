@@ -1411,7 +1411,7 @@ class AdminCartsControllerCore extends AdminController
                         foreach ($languages as $lang) {
                             $objServiceProduct->link_rewrite[$lang['id_lang']] = Tools::link_rewrite($name);
                         }
-                        $objServiceProduct->available_for_order = true;
+                        $objServiceProduct->available_for_order = false;
                         $objServiceProduct->show_price = true;
                         $objServiceProduct->is_virtual = true;
                         $objServiceProduct->auto_add_to_cart = $autoAdded;
@@ -1425,6 +1425,10 @@ class AdminCartsControllerCore extends AdminController
 
                         // ======= Create Service product END =========
                         if ($objServiceProduct->save()) {
+                            $objServiceProduct->updateCategories(array(
+                                Configuration::get('PS_SERVICE_CATEGORY')
+                            ));
+
                             $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
                             $objRoomTypeServiceProduct->addRoomProductLink(
                                 $objServiceProduct->id,
