@@ -6494,7 +6494,8 @@ class AdminOrdersControllerCore extends AdminController
             'invoices_collection' => $invoice_collection,
             'current_id_lang' => Context::getContext()->language->id,
             'link' => Context::getContext()->link,
-            'current_index' => self::$currentIndex
+            'current_index' => self::$currentIndex,
+            'can_edit' => ($this->tabAccess['edit'] === 1),
         ));
 
         $this->sendChangedNotification($order);
