@@ -7708,10 +7708,10 @@ class AdminOrdersControllerCore extends AdminController
                         $autoAdded = Tools::getValue('new_service_auto_added');
 
                         // adjust values for auto added services
+                        $objOrderDetail = new OrderDetail($objHotelBookingDetail->id_order_detail);
                         if ($autoAdded) {
                             $productQty = 1;
                             // check if booking room type tax rule is still exist
-                            $objOrderDetail = new OrderDetail($objHotelBookingDetail->id_order_detail);
                             if (Validate::isLoadedObject($objTaxRuleGroup = new TaxRulesGroup($objOrderDetail->id_tax_rules_group))) {
                                 $idTaxRuleGroup = $objOrderDetail->id_tax_rules_group;
                             }
