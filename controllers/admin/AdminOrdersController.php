@@ -7852,7 +7852,7 @@ class AdminOrdersControllerCore extends AdminController
                                                                 $objHotelBookingDetail->date_to,
                                                                 $objCart->id
                                                             ) / $numDays;
-                                                            $unitPriceTaxExcl = Product::getServiceProductPrice(
+                                                            $unitPriceTaxIncl = Product::getServiceProductPrice(
                                                                 (int)$product['id_product'],
                                                                 0,
                                                                 $roomHtlCartInfo['id_hotel'],
