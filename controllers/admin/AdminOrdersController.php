@@ -3019,9 +3019,13 @@ class AdminOrdersControllerCore extends AdminController
             $helper->icon = 'icon-sort-by-attributes-alt';
             $helper->color = 'color1';
             $helper->title = $this->l('Conversion Rate', null, null, false);
-            $helper->subtitle = $daysForConversionRate.' '.$this->l('days', null, null, false);
+            if ($daysForConversionRate == 1) {
+                $helper->subtitle = $daysForConversionRate.' '.$this->l('day', null, null, false);
+            } else {
+                $helper->subtitle = $daysForConversionRate.' '.$this->l('days', null, null, false);
+            }
             $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=conversion_rate';
-            $helper->tooltip = $this->l('Percentage of visits that resulted in an order/booking in given period of time.', null, null, false);
+            $helper->tooltip = sprintf($this->l('Percentage of visits that resulted in an order/booking in last %s day(s).', null, null, false), $daysForConversionRate);
             $this->kpis[] = $helper;
 
             $daysForAvgOrderVal = Configuration::get('PS_ORDER_KPI_AVG_ORDER_VALUE_NB_DAYS');
@@ -3030,9 +3034,13 @@ class AdminOrdersControllerCore extends AdminController
             $helper->icon = 'icon-money';
             $helper->color = 'color3';
             $helper->title = $this->l('Average Order Value', null, null, false);
-            $helper->subtitle = $daysForAvgOrderVal.' '.$this->l('days', null, null, false);
+            if ($daysForAvgOrderVal == 1) {
+                $helper->subtitle = $daysForAvgOrderVal.' '.$this->l('day', null, null, false);
+            } else {
+                $helper->subtitle = $daysForAvgOrderVal.' '.$this->l('days', null, null, false);
+            }
             $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=average_order_value';
-            $helper->tooltip = $this->l('Total average order value without tax in given period of time.', null, null, false);
+            $helper->tooltip = sprintf($this->l('Total average order value without tax in the last %s day(s).', null, null, false), $daysForAvgOrderVal);
             $this->kpis[] = $helper;
 
             $helper = new HelperKpi();
