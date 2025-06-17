@@ -261,7 +261,7 @@ class OrderReturnCore extends ObjectModel
                         0,
                         0,
                         null,
-                        0,
+                        null,
                         null,
                         0,
                         $bookingRow['id_htl_booking']

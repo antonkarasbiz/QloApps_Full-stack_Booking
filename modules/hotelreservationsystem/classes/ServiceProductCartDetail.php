@@ -477,7 +477,7 @@ class ServiceProductCartDetail extends ObjectModel
                 if ($quantity) {
                     $removedQuantity = $quantity;
                     $objServiceProductCartDetail->quantity -= $quantity;
-                    if ($objServiceProductCartDetail->quantity > 1) {
+                    if ($objServiceProductCartDetail->quantity > 0) {
                         $updateQunatity = $objServiceProductCartDetail->save();
                     } else {
                         $updateQunatity = $objServiceProductCartDetail->delete();

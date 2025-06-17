@@ -1,7 +1,7 @@
 <?php
 return array(
 	'informations' => array(
-		'documentation' => 'https://qloapps.com/qlo-reservation-system/',
+		'documentation' => 'https://docs.qloapps.com/',
 		'documentation_upgrade' => 'https://webkul.uvdesk.com/',
 		'forum' => 'https://forums.qloapps.com/',
 		'blog' => 'https://qloapps.com/blog/',
@@ -10,7 +10,7 @@ return array(
 		'tailored_help' => 'https://webkul.uvdesk.com/',
 		'contact' => 'https://qloapps.com/contact/',
 		'services' => 'https://qloapps.com/contact/',
-		'tutorials' => 'https://qloapps.com/qlo-reservation-system/',
+		'tutorials' => 'https://docs.qloapps.com/',
 		'installation_guide' => 'https://qloapps.com/qloapps-installation-process/',
 		'install_help' => 'https://qloapps.com/install-qloapps/',
 	),
@@ -206,7 +206,7 @@ return array(
 		'Discover Your Website' => '發現您的網站',
 		'Share your experience with your friends!' => '與您的朋友分享您的經驗！',
 		'I just built an online hotel booking website with QloApps!' => '我剛剛使用 QloApps 建立了一個線上飯店預訂網站！',
-		'See all the features here : https://qloapps.com/qlo-reservation-system/' => '在這裡查看所有功能：https://qloapps.com/qlo-reservation-system/',
+		'See all the features here : https://docs.qloapps.com/' => '在這裡查看所有功能：https://docs.qloapps.com/',
 		'Tweet' => '鳴叫',
 		'Share' => '分享',
 		'Google+' => '谷歌+',
