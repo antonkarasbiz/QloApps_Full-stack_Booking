@@ -106,6 +106,7 @@ class AdminHotelRoomModuleSettingController extends ModuleAdminController
             ),
             'date_add' => array(
                 'title' => $this->l('Date Add'),
+                'filter_key' => 'a!date_add',
                 'align' => 'center',
                 'type' => 'datetime',
             ),

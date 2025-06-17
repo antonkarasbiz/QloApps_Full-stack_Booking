@@ -108,16 +108,11 @@ class AdminSlipControllerCore extends AdminController
         parent::__construct();
 
         $this->_where = Shop::addSqlRestriction(false, 'o');
+        $this->_conf['33'] = $this->l('Voucher generated successfully');
     }
 
     public function initPageHeaderToolbar()
     {
-        $this->page_header_toolbar_btn['generate_pdf'] = array(
-            'href' => self::$currentIndex.'&token='.$this->token,
-            'desc' => $this->l('Generate PDF', null, null, false),
-            'icon' => 'process-icon-save-date'
-        );
-
         parent::initPageHeaderToolbar();
     }
 
@@ -178,6 +173,25 @@ class AdminSlipControllerCore extends AdminController
                 }
                 $this->errors[] = $this->l('No order slips were found for this period.');
             }
+        } else if (Tools::isSubmit('generateVoucher')) {
+            if (($idOrderSlip = Tools::getValue('id_order_slip'))
+                && Validate::isLoadedObject($objOrderSlip = new OrderSlip($idOrderSlip))
+            ) {
+                if ($objOrderSlip->redeem_status == OrderSlip::REDEEM_STATUS_REDEEMED) {
+                    $this->errors[] = Tools::displayError('The credit slip has already been redeemed.');
+                }
+
+                if (!count($this->errors)) {
+                    if ($objOrderSlip->generateVoucher()) {
+                        Tools::redirectAdmin(self::$currentIndex.'&token='.$this->token.'&conf=33');
+                    } else {
+                        $this->errors[] = Tools::displayError('The voucher code for this credit slip could not be generated.');
+                    }
+                }
+            } else {
+                $this->errors[] = Tools::displayError('Credit slip not found.');
+            }
+
         } else {
             return parent::postProcess();
         }
@@ -235,10 +249,7 @@ class AdminSlipControllerCore extends AdminController
 
     public function initToolbar()
     {
-        $this->toolbar_btn['save-date'] = array(
-            'href' => '#',
-            'desc' => $this->l('Generate PDF file')
-        );
+        $this->toolbar_btn = array();
     }
 
     public function printPDFIcons($id_order_slip, $tr)
@@ -267,15 +278,12 @@ class AdminSlipControllerCore extends AdminController
 
     public function displayVoucherLink($idCartRule, $row)
     {
-        if ($row['redeem_status'] == OrderSlip::REDEEM_STATUS_REDEEMED && $idCartRule) {
-            $this->context->smarty->assign(array(
-                'id_cart_rule' => (int) $idCartRule,
-            ));
+        $this->context->smarty->assign(array(
+            'id_cart_rule' => (int) $idCartRule,
+            'row' => $row
+        ));
 
-            return $this->createTemplate('_display_voucher_link.tpl')->fetch();
-        }
-
-        return '--';
+        return $this->createTemplate('_display_voucher_link.tpl')->fetch();
     }
 
     public function displayStatusChangeLink($token, $id)
@@ -317,19 +325,19 @@ class AdminSlipControllerCore extends AdminController
                     'modal_content' => $modalConfirmDelete->fetch(),
                     'modal_actions' => array(
                         array(
-                            'type' => 'button',
+                            'type' => 'link',
+                            'href' => '#',
                             'class' => 'process_update btn-primary',
                             'label' => $this->l('Change status'),
                         ),
                     ),
-
                 ));
                 $response['modalHtml'] = $tpl->fetch();
             }
         }
         $response['success'] = true;
 
-        die(Tools::jsonEncode($response));
+        $this->ajaxDie(json_encode($response));
     }
 
     public function setMedia()

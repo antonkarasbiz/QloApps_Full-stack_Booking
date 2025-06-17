@@ -162,7 +162,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         return Db::getInstance()->executeS(
             'SELECT * FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing`
             WHERE (`id_product`=0 OR `id_product`='.(int) $id_product.')
-            AND `active`=1 AND `date_from` <= \''.$date_to.'\' AND `date_to` >= \''.$date_from.'\''
+            AND `active`=1 AND `date_from` <= \''.pSQL($date_to).'\' AND `date_to` >= \''.pSQL($date_from).'\''
         );
     }
 

@@ -646,6 +646,8 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
         $footer['additional_service_price_tax_incl'] =0;
         $footer['total_convenience_fee_te'] = 0;
         $footer['total_convenience_fee_ti'] = 0;
+        $footer['service_products_price_tax_excl'] = 0;
+        $footer['service_products_price_tax_incl'] = 0;
         if ($idsOrderDetail = array_column($order_details, 'id_order_detail')) {
             $footer['room_price_tax_excl'] = $this->order->getTotalProductsWithoutTaxes(false, true, null, null, null, $idsOrderDetail) + $this->order->getTotalProductsWithoutTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE, 1, Product::PRICE_ADDITION_TYPE_WITH_ROOM, $idsOrderDetail);
             $footer['room_price_tax_incl'] = $this->order->getTotalProductsWithTaxes(false, true, null, null, null, $idsOrderDetail) + $this->order->getTotalProductsWithTaxes(false, false, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE, 1, Product::PRICE_ADDITION_TYPE_WITH_ROOM, $idsOrderDetail);
