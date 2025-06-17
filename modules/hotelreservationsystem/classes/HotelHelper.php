@@ -1094,16 +1094,26 @@ class HotelHelper
             'ru' => 'Мы предлагаем элегантные номера, изысканную кухню и внимательное обслуживание для незабываемого отдыха.',
             'es' => 'Ofrecemos habitaciones elegantes, comidas gourmet y un servicio atento para una estadía inolvidable.',
         );
-
+        $defaultDimensionUnitLang = array(
+            'en' => 'ft',
+            'nl' => 'ft',
+            'fr' => 'pi',
+            'de' => 'ft',
+            'ru' => 'фут',
+            'es' => 'ft',
+        );
         $WK_HTL_CHAIN_NAME = array();
         $WK_HTL_TAG_LINE = array();
         $WK_HTL_SHORT_DESC = array();
+        $defaultDimensionUnit = array();
         foreach ($languages as $lang) {
             if (isset($htlTagLineLang[$lang['iso_code']])) {
                 $WK_HTL_TAG_LINE[$lang['id_lang']] = $htlTagLineLang[$lang['iso_code']];
                 $WK_HTL_SHORT_DESC[$lang['id_lang']] = $htlShortDescLang[$lang['iso_code']];
                 $WK_HTL_CHAIN_NAME[$lang['id_lang']] = $homeBannerTitleLang[$lang['iso_code']];
+                $defaultDimensionUnit[$lang['id_lang']] = $defaultDimensionUnitLang[$lang['iso_code']];
             } else {
+                $defaultDimensionUnit[$lang['id_lang']] = $defaultDimensionUnitLang['en'];
                 $WK_HTL_CHAIN_NAME[$lang['id_lang']] = $homeBannerTitleLang['en'];
                 $WK_HTL_TAG_LINE[$lang['id_lang']] = $htlTagLineLang['en'];
                 $WK_HTL_SHORT_DESC[$lang['id_lang']] = $htlShortDescLang['en'];
@@ -1113,6 +1123,7 @@ class HotelHelper
         Configuration::updateValue('WK_HTL_CHAIN_NAME', $WK_HTL_CHAIN_NAME);
         Configuration::updateValue('WK_HTL_TAG_LINE', $WK_HTL_TAG_LINE);
         Configuration::updateValue('WK_HTL_SHORT_DESC', $WK_HTL_SHORT_DESC);
+        Configuration::updateValue('WK_DIMENSION_UNIT', $defaultDimensionUnit);
 
         // Search Fields
         Configuration::updateValue('PS_FRONT_SEARCH_TYPE', HotelBookingDetail::SEARCH_TYPE_OWS);
@@ -2529,7 +2540,7 @@ class HotelHelper
         $languages = Language::getLanguages(true);
         if ($is_hotel && $id_hotel) {
             $cat_id_hotel = Db::getInstance()->getValue(
-                'SELECT `id_category` FROM `'._DB_PREFIX_.'htl_branch_info` WHERE id='.$id_hotel
+                'SELECT `id_category` FROM `'._DB_PREFIX_.'htl_branch_info` WHERE id='.(int) $id_hotel
             );
             if ($cat_id_hotel) {
                 $obj_cat = new Category($cat_id_hotel);

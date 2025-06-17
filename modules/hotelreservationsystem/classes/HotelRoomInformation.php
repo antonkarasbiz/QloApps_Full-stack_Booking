@@ -179,7 +179,7 @@ class HotelRoomInformation extends ObjectModel
      */
     public function getHotelRoomInfoByProductId($id_product)
     {
-        $result = Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'htl_room_information` WHERE `id_product`='.$id_product);
+        $result = Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'htl_room_information` WHERE `id_product`='.(int) $id_product);
         if ($result) {
             return $result;
         }
@@ -206,7 +206,7 @@ class HotelRoomInformation extends ObjectModel
      */
     public function getHotelRoomInfo($id_product, $id_hotel, $is_getNum = 0)
     {
-        $sql = "SELECT * FROM `"._DB_PREFIX_."htl_room_information` WHERE `id_product` = ".$id_product." AND `id_hotel` = ".$id_hotel;
+        $sql = "SELECT * FROM `"._DB_PREFIX_."htl_room_information` WHERE `id_product` = ".(int) $id_product." AND `id_hotel` = ".(int) $id_hotel;
 
         $rm_info = Db::getInstance()->executeS($sql);
 
@@ -229,7 +229,7 @@ class HotelRoomInformation extends ObjectModel
      */
     public function getHotelRoomInfoById($id)
     {
-        $sql = "SELECT `room_num` FROM `"._DB_PREFIX_."htl_room_information` WHERE `id` = ".$id;
+        $sql = "SELECT `room_num` FROM `"._DB_PREFIX_."htl_room_information` WHERE `id` = ".(int) $id;
         $rm_num = Db::getInstance()->getValue($sql);
 
         if ($rm_num) {
@@ -275,12 +275,12 @@ class HotelRoomInformation extends ObjectModel
 
     public function getRoomTypeAvailableRoomsForDateRange($id_hotel, $id_product, $date_from, $date_to)
     {
-        return Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'htl_room_information` where `id_hotel`='.$id_hotel.' AND `id_product`='.$id_product.' AND `id` NOT IN (SELECT `id_room` from `'._DB_PREFIX_.'htl_booking_detail` where `date_from`< \''.pSQL($date_to).'\' AND `date_to`>\''.$date_from.'\' AND `id_product`='.(int) $id_product.' AND `id_hotel`='.(int) $id_hotel.')');
+        return Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'htl_room_information` where `id_hotel`='.(int) $id_hotel.' AND `id_product`='.(int) $id_product.' AND `id` NOT IN (SELECT `id_room` from `'._DB_PREFIX_.'htl_booking_detail` where `date_from`< \''.pSQL($date_to).'\' AND `date_to`>\''.pSQL($date_from).'\' AND `id_product`='.(int) $id_product.' AND `id_hotel`='.(int) $id_hotel.')');
     }
 
     public function getRoomTypeDisabledRoomsForDateRange($id_hotel, $id_product, $date_from, $date_to)
     {
-        return Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'htl_room_information` where `id_hotel`='.$id_hotel.' AND `id_product`='.$id_product.' AND `id_status`=3 AND `id` NOT IN (SELECT `id_room` from `'._DB_PREFIX_.'htl_booking_detail` where `date_from`< \''.pSQL($date_to).'\' AND `date_to`>\''.$date_from.'\' AND `id_product`='.(int) $id_product.' AND `id_hotel`='.(int) $id_hotel.')');
+        return Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'htl_room_information` where `id_hotel`='.(int) $id_hotel.' AND `id_product`='.(int) $id_product.' AND `id_status`=3 AND `id` NOT IN (SELECT `id_room` from `'._DB_PREFIX_.'htl_booking_detail` where `date_from`< \''.pSQL($date_to).'\' AND `date_to`>\''.pSQL($date_from).'\' AND `id_product`='.(int) $id_product.' AND `id_hotel`='.(int) $id_hotel.')');
     }
 
     public function getRoomTypeBookedRoomsForDateRange($id_hotel, $id_product, $date_from, $date_to)
