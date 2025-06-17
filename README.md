@@ -8,7 +8,7 @@
 
 <p align="center">
 	<a href="https://qloapps.com/download/"><img src="https://img.shields.io/badge/Download-Download%20QloApps%20-brightgreen" alt="Download"></a>
-	<a href="https://qloapps.com/qlo-reservation-system/"><img src="https://img.shields.io/badge/Documentation-Blog-yellowgreen" alt="Documentation"></a>
+	<a href="https://docs.qloapps.com/"><img src="https://img.shields.io/badge/Documentation-Blog-yellowgreen" alt="Documentation"></a>
 	<a href="https://forums.qloapps.com/"><img src="https://img.shields.io/badge/Forum-Help%2FSupport-green" alt="Forum"></a>
 	<a href="https://qloapps.com/addons/"><img src="https://img.shields.io/badge/Addons-Plugins-blueviolet" alt="Addons"></a>
 	<a href="https://qloapps.com/contact/"><img src="https://img.shields.io/badge/Contact-Get%20In%20Touch-blue" alt="Contact us"></a>
@@ -89,7 +89,7 @@ Please don't disclose security vulnerabilities publicly. If you find any securit
 ### Documentation & Demo
 
 #### QloApps Documentation
-[https://qloapps.com/qlo-reservation-system](https://qloapps.com/qlo-reservation-system)
+[https://docs.qloapps.com](https://docs.qloapps.com)
 #### QloApps Demo
 **Link** : https://demo.qloapps.com </br>
 **username** : demo@demo.com </br>

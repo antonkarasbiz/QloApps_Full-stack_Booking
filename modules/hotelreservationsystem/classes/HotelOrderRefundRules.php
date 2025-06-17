@@ -123,7 +123,7 @@ class HotelOrderRefundRules extends ObjectModel
      */
     public function checkIfRuleExistsByCancelationdays($days)
     {
-        return Db::getInstance()->getRow('SELECT * FROM `'._DB_PREFIX_.'htl_order_refund_rules` WHERE days='.$days);
+        return Db::getInstance()->getRow('SELECT * FROM `'._DB_PREFIX_.'htl_order_refund_rules` WHERE days='.(int) $days);
     }
 
     public function getBookingCancellationDetails($idOrder, $idOrderReturn = 0, $idHtlBooking = 0)
@@ -164,7 +164,7 @@ class HotelOrderRefundRules extends ObjectModel
                         0,
                         1,
                         1,
-                        0,
+                        null,
                         null,
                         0,
                         $objHtlBooking->id
