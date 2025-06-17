@@ -203,9 +203,9 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
                 $objFeaturePriceRule->date_selection_type = isset($featurePriceRule['date_selection_type']) ? $featurePriceRule['date_selection_type'] : HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE;
                 $objFeaturePriceRule->special_days = json_encode(array());
                 if ($objFeaturePriceRule->date_selection_type == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE
-                    && $featurePriceRule['is_special_days_exists']
+                    && isset($featurePriceRule['is_special_days_exists']) && $featurePriceRule['is_special_days_exists']
                 ) {
-                    $objFeaturePriceRule->is_special_days_exists = isset($featurePriceRule['is_special_days_exists']) ? $featurePriceRule['is_special_days_exists'] : 0;
+                    $objFeaturePriceRule->is_special_days_exists = $featurePriceRule['is_special_days_exists'];
                     if (isset($featurePriceRule['is_special_days_exists'])
                         && $featurePriceRule['is_special_days_exists']
                         && isset($featurePriceRule['special_days'])
