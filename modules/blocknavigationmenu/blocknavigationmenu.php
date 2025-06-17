@@ -53,11 +53,7 @@ class blocknavigationmenu extends Module
 
     public function hookDisplayTopSubSecondaryBlock($params)
     {
-        Media::addJsDef(
-            array(
-                'currentPage' => Tools::getValue('controller')
-            )
-        );
+        Media::addJsDef(array('currentPage' => $this->context->controller->php_self));
         $this->context->controller->addJS($this->_path.'/views/js/htlnevigationmenu.js');
         $this->context->controller->addCSS($this->_path.'/views/css/blocknavigation.css');
 
