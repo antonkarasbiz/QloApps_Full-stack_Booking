@@ -537,6 +537,18 @@ class AdminOrdersControllerCore extends AdminController
         return $res;
     }
 
+    public function initToolbarTitle()
+    {
+        parent::initToolbarTitle();
+        switch ($this->display) {
+            case '':
+            case 'list':
+                array_pop($this->toolbar_title);
+                $this->toolbar_title[] = $this->l('Orders');
+                break;
+        }
+    }
+
     public function ajaxProcessInitBookingDocumentsModal()
     {
         $response['hasError'] = 1;
