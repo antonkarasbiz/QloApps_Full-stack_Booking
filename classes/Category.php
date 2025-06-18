@@ -1427,7 +1427,7 @@ class CategoryCore extends ObjectModel
             '.Shop::addSqlAssociation('category', 'cp').'
             WHERE cp.`id_parent` = '.(int)$this->id_parent.'
             ORDER BY category_shop.`position` ASC')
-            ) {
+        ) {
             return false;
         }
 
@@ -1443,10 +1443,11 @@ class CategoryCore extends ObjectModel
         }
         // < and > statements rather than BETWEEN operator
         // since BETWEEN is treated differently according to databases
+        $increment = ($way ? '- 1' : '+ 1');
         $result = (Db::getInstance()->execute('
             UPDATE `'._DB_PREFIX_.'category` c '.Shop::addSqlAssociation('category', 'c').'
-            SET c.`position`= c.`position` '.($way ? '- 1' : '+ 1').',
-            category_shop.`position`= category_shop.`position` '.($way ? '- 1' : '+ 1').',
+            SET c.`position`= IF(cast(c.`position` as signed) '.$increment.' > 0, c.`position` '.$increment.', 0), ' .
+            'category_shop.`position` = IF(cast(category_shop.`position` as signed) '.$increment.' > 0, category_shop.`position` '.$increment.', 0),
             c.`date_upd` = "'.date('Y-m-d H:i:s').'"
             WHERE category_shop.`position`
             '.($way

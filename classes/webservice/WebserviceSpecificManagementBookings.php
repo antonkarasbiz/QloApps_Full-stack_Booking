@@ -1969,7 +1969,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                             0,
                             0,
                             null,
-                            0,
+                            null,
                             null,
                             0,
                             $idHotelBookingDetail
@@ -2007,7 +2007,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                         0,
                         0,
                         null,
-                        0,
+                        null,
                         null,
                         0,
                         $hotelBookingDetail['id']
@@ -2535,7 +2535,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                 0,
                 1,
                 1,
-                0,
+                null,
                 null,
                 0,
                 $idHotelBooking
@@ -2550,7 +2550,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                 0,
                 1,
                 0,
-                0,
+                null,
                 null,
                 0,
                 $idHotelBooking
@@ -2570,7 +2570,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                 0,
                 0,
                 null,
-                0,
+                null,
                 null,
                 0,
                 $idHotelBooking
