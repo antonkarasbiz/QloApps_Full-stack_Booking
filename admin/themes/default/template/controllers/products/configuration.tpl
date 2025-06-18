@@ -225,7 +225,6 @@
 			</button>
 		</div>
 	</div>
-{/if}
 
 {*Disable Dates Model*}
 <div class="modal fade" id="deactiveDatesModal" tabindex="-1" role="dialog" aria-labelledby="deactiveDatesLabel">
@@ -1886,3 +1885,4 @@
     });
 
 </script>
+{/if}

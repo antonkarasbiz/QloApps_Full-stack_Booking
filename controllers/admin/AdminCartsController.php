@@ -336,8 +336,38 @@ class AdminCartsControllerCore extends AdminController
         $helper->value = Tools::displayPrice($total_price, $currency);
         $kpi = $helper->generate();
         //end
+
+        // get standalone products in cart
+        $objServiceProductCartDetail = new ServiceProductCartDetail();
+        $hotelProducts = $objServiceProductCartDetail->getServiceProductsInCart(
+            $cart->id,
+            [Product::SELLING_PREFERENCE_HOTEL_STANDALONE, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE],
+            $idHotel = null,
+            0,
+            null,
+            null,
+            null,
+            null,
+            0,
+            null,
+            0,
+            null,
+            1
+        );
+
+        $standaloneProducts = $objServiceProductCartDetail->getServiceProductsInCart(
+            $cart->id,
+            [Product::SELLING_PREFERENCE_STANDALONE]
+        );
+
+        if (count($standaloneProducts)) {
+            $this->context->smarty->assign('standalone_products', $standaloneProducts);
+        }
+
         $this->tpl_view_vars = array(
             'cart_htl_data' => $cartHtlData,//by webkul hotel rooms in order data
+            'standalone_products' => $standaloneProducts,
+            'hotel_products' => $hotelProducts,
             'kpi' => $kpi,
             'products' => $products,
             'discounts' => $cart->getCartRules(),
@@ -449,7 +479,7 @@ class AdminCartsControllerCore extends AdminController
                 die(json_encode($errors));
             }
             if ($this->context->cart->deleteProduct($id_product, $id_product_attribute, (int)Tools::getValue('id_customization'))) {
-                echo json_encode($this->ajaxReturnVars());
+                $this->ajaxDie(json_encode($this->ajaxReturnVars()));
             }
         }
     }
@@ -563,7 +593,7 @@ class AdminCartsControllerCore extends AdminController
                 }
             }
 
-            echo json_encode(array_merge($this->ajaxReturnVars(), array('errors' => $errors)));
+            $this->ajaxDie(json_encode(array_merge($this->ajaxReturnVars(), array('errors' => $errors))));
         }
     }
 
@@ -584,7 +614,7 @@ class AdminCartsControllerCore extends AdminController
                 $this->context->cart->gift_message = $gift_message;
             }
             $this->context->cart->save();
-            echo json_encode($this->ajaxReturnVars());
+            $this->ajaxDie(json_encode($this->ajaxReturnVars()));
         }
     }
 
@@ -606,7 +636,7 @@ class AdminCartsControllerCore extends AdminController
             } elseif (Validate::isLoadedObject($message)) {
                 $message->delete();
             }
-            echo json_encode($this->ajaxReturnVars());
+            $this->ajaxDie(json_encode($this->ajaxReturnVars()));
         }
     }
 
@@ -664,7 +694,7 @@ class AdminCartsControllerCore extends AdminController
                 $this->context->cart->id_lang = (int)$lang->id;
                 $this->context->cart->save();
             }
-            echo json_encode($this->ajaxReturnVars());
+            $this->ajaxDie(json_encode($this->ajaxReturnVars()));
         }
     }
 
@@ -683,7 +713,7 @@ class AdminCartsControllerCore extends AdminController
                 $errors[] = Tools::displayError('The order cannot be renewed.');
             } else {
                 $this->context->cart = $new_cart['cart'];
-                echo json_encode($this->ajaxReturnVars());
+                $this->ajaxDie(json_encode($this->ajaxReturnVars()));
             }
         }
     }
@@ -692,7 +722,7 @@ class AdminCartsControllerCore extends AdminController
     {
         if ($this->tabAccess['edit'] === 1) {
             if ($this->context->cart->removeCartRule((int)Tools::getValue('id_cart_rule'))) {
-                echo json_encode($this->ajaxReturnVars());
+                $this->ajaxDie(json_encode($this->ajaxReturnVars()));
             }
         }
     }
@@ -723,7 +753,7 @@ class AdminCartsControllerCore extends AdminController
                 $this->context->cart->addCartRule((int)$cart_rule->id);
             }
 
-            echo json_encode($this->ajaxReturnVars());
+            $this->ajaxDie(json_encode($this->ajaxReturnVars()));
         }
     }
 
@@ -741,14 +771,14 @@ class AdminCartsControllerCore extends AdminController
                     $errors[] = Tools::displayError('Can\'t add the voucher.');
                 }
             }
-            echo json_encode(array_merge($this->ajaxReturnVars(), array('errors' => $errors)));
+            $this->ajaxDie(json_encode(array_merge($this->ajaxReturnVars(), array('errors' => $errors))));
         }
     }
 
     public function ajaxProcessUpdateAddress()
     {
         if ($this->tabAccess['edit'] === 1) {
-            echo json_encode(array('addresses' => $this->context->customer->getAddresses((int)$this->context->cart->id_lang)));
+            $this->ajaxDie(json_encode(array('addresses' => $this->context->customer->getAddresses((int)$this->context->cart->id_lang))));
         }
     }
 
@@ -769,7 +799,7 @@ class AdminCartsControllerCore extends AdminController
                 /*$this->context->cart->id_address_invoice = (int)$address_invoice->id;*/
             $this->context->cart->save();
 
-            echo json_encode($this->ajaxReturnVars());
+            $this->ajaxDie(json_encode($this->ajaxReturnVars()));
         }
     }
 
@@ -886,7 +916,7 @@ class AdminCartsControllerCore extends AdminController
             $to_return = array_merge($this->ajaxReturnVars(), array('found' => false));
         }
 
-        echo json_encode($to_return);
+        $this->ajaxDie(json_encode($to_return));
     }
 
     public function ajaxReturnVars()
@@ -952,7 +982,7 @@ class AdminCartsControllerCore extends AdminController
 
     public function displayAjaxGetSummary()
     {
-        echo json_encode($this->ajaxReturnVars());
+        $this->ajaxDie(json_encode($this->ajaxReturnVars()));
     }
 
     public function ajaxProcessUpdateProductPrice()
@@ -1154,8 +1184,8 @@ class AdminCartsControllerCore extends AdminController
             if (Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING')) {
                 // get all services
                 $objProduct = new Product();
-                $hotelServiceProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE);
-                $roomTypeServiceProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE);
+                $hotelServiceProducts = $objProduct->getServiceProducts(true, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE);
+                $roomTypeServiceProducts = $objProduct->getServiceProducts(true, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE);
                 $serviceProducts = array_merge($roomTypeServiceProducts, $hotelServiceProducts);
             } else {
                 $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
@@ -1381,7 +1411,7 @@ class AdminCartsControllerCore extends AdminController
                         foreach ($languages as $lang) {
                             $objServiceProduct->link_rewrite[$lang['id_lang']] = Tools::link_rewrite($name);
                         }
-                        $objServiceProduct->available_for_order = true;
+                        $objServiceProduct->available_for_order = false;
                         $objServiceProduct->show_price = true;
                         $objServiceProduct->is_virtual = true;
                         $objServiceProduct->auto_add_to_cart = $autoAdded;
@@ -1395,6 +1425,10 @@ class AdminCartsControllerCore extends AdminController
 
                         // ======= Create Service product END =========
                         if ($objServiceProduct->save()) {
+                            $objServiceProduct->updateCategories(array(
+                                Configuration::get('PS_SERVICE_CATEGORY')
+                            ));
+
                             $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
                             $objRoomTypeServiceProduct->addRoomProductLink(
                                 $objServiceProduct->id,
@@ -1469,8 +1503,8 @@ class AdminCartsControllerCore extends AdminController
             if (Configuration::get('PS_ALLOW_ADD_ALL_SERVICES_IN_BOOKING')) {
                 // get all services
                 $objProduct = new Product();
-                $hotelServiceProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE);
-                $roomTypeServiceProducts = $objProduct->getServiceProducts(null, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE);
+                $hotelServiceProducts = $objProduct->getServiceProducts(true, Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE);
+                $roomTypeServiceProducts = $objProduct->getServiceProducts(true, Product::SELLING_PREFERENCE_WITH_ROOM_TYPE);
                 $serviceProducts = array_merge($roomTypeServiceProducts, $hotelServiceProducts);
             } else {
                 $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
@@ -1574,21 +1608,40 @@ class AdminCartsControllerCore extends AdminController
                         $result = true;
                         $objServiceProductCartDetail = new ServiceProductCartDetail();
                         foreach ($selectedServiceProducts as $idServiceProduct => $selected) {
+                            $unitPrice = $serviceUnitPrices[$idServiceProduct];
+                            $updateServicePriceOnly = false;
+                            $quantity = 0;
+                            $operator = 'down';
                             if ($selected) {
                                 $operator = 'up';
-                            } else {
-                                $operator = 'down';
+                                if ($idServiceProductCartDetail = $objServiceProductCartDetail->alreadyExists(
+                                    $objHotelCartBookingData->id_cart,
+                                    $idServiceProduct,
+                                    $idCartBooking
+                                )) {
+                                    $objServiceProductCartDetail = new ServiceProductCartDetail($idServiceProductCartDetail);
+                                    if ($objServiceProductCartDetail->quantity > $serviceQuantities[$idServiceProduct]) {
+                                        $quantity = $objServiceProductCartDetail->quantity - $serviceQuantities[$idServiceProduct];
+                                        $operator = 'down';
+                                    } else if ($objServiceProductCartDetail->quantity < $serviceQuantities[$idServiceProduct]) {
+                                        $quantity = $serviceQuantities[$idServiceProduct] - $objServiceProductCartDetail->quantity;
+                                    } else {
+                                        // Only update the price no need to update quantity
+                                        $updateServicePriceOnly = true;
+                                    }
+                                } else {
+                                    $quantity = $serviceQuantities[$idServiceProduct];
+                                }
                             }
-                            $quantity = $serviceQuantities[$idServiceProduct];
-                            $unitPrice = $serviceUnitPrices[$idServiceProduct];
-                            if ($result &= $objServiceProductCartDetail->updateCartServiceProduct(
+
+                            if ($updateServicePriceOnly || ($result &= $objServiceProductCartDetail->updateCartServiceProduct(
                                 $objHotelCartBookingData->id_cart,
                                 $idServiceProduct,
                                 $operator,
                                 $quantity,
                                 0,
                                 $idCartBooking
-                            )) {
+                            ))) {
                                 $originalPrice = Product::getPriceStatic($idServiceProduct, false);
                                 // if price is different than the original service price then update the price
                                 if ($operator == 'up' && $originalPrice != $unitPrice) {

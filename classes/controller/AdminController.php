@@ -907,9 +907,8 @@ class AdminControllerCore extends Controller
             }
         }
 
-        if (empty($filters)) {
-            $filters = $this->context->cookie->getFamily($prefix.$this->list_id.'Filter_');
-        }
+        // To merge the older filters with the new ones, and replace if new data is added to filter.
+        $filters = array_merge($this->context->cookie->getFamily($prefix.$this->list_id.'Filter_'), $filters);
 
         foreach ($filters as $key => $value) {
             $key_org = $key;
@@ -1198,7 +1197,7 @@ class AdminControllerCore extends Controller
             }
         }
 
-        fputcsv($fd, $headers, ';', $text_delimiter);
+        fputcsv($fd, $headers, ';', $text_delimiter, escape: "");
         foreach ($this->_list as $i => $row) {
             $content = array();
             $path_to_image = false;
@@ -1222,7 +1221,7 @@ class AdminControllerCore extends Controller
                 }
                 $content[] = $field_value;
             }
-            fputcsv($fd, $content, ';', $text_delimiter);
+            fputcsv($fd, $content, ';', $text_delimiter, escape: "");
         }
 
         @fclose($fd);

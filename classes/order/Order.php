@@ -2658,25 +2658,36 @@ class OrderCore extends ObjectModel
      *
      * @return boolean: true if order has been completely refunded as per requested parameters or false
      */
-    public function hasCompletelyRefunded($action = 0, $includeCheckIn = 0)
+    public function hasCompletelyRefunded($action = 0, $includeCheckIn = 0, $mustHaveRoomsOrProducts = 1)
     {
         $res = true;
+
+        // Check if order has bookings or products for refund
+        if ($mustHaveRoomsOrProducts) {
+            $hasRoomsOrProducts = 0;
+        } else {
+            $hasRoomsOrProducts = 1;
+        }
+
         // check rooms in booking
         $objHotelBooking = new HotelBookingdetail();
         if ($orderBookings = $objHotelBooking->getOrderCurrentDataByOrderId($this->id)) {
             $res &= $this->checkList($orderBookings, $action, $includeCheckIn);
+            $hasRoomsOrProducts = 1;
         }
         // check hotel linked products
         $objServiceProductOrderDetail = new ServiceProductOrderDetail();
         if ($hotelProducts = $objServiceProductOrderDetail->getServiceProductsInOrder($this->id, 0, 0, Product::SELLING_PREFERENCE_HOTEL_STANDALONE)) {
             $res &= $this->checkList($hotelProducts, $action, false);
+            $hasRoomsOrProducts = 1;
         }
 
         if ($standaloneProducts = $objServiceProductOrderDetail->getServiceProductsInOrder($this->id, 0, 0, Product::SELLING_PREFERENCE_STANDALONE)) {
             $res &= $this->checkList($standaloneProducts, $action, false);
+            $hasRoomsOrProducts = 1;
         }
 
-        return $res;
+        return ($hasRoomsOrProducts && $res);
     }
 
     public function checkList($list, $action = 0, $includeCheckIn = 0) {
@@ -2800,7 +2811,7 @@ class OrderCore extends ObjectModel
             ) {
                 $result['errors'][] = Tools::displayError('Order status can not be set to Refunded until all bookings in the order are completely refunded.');
             } elseif ($objNewOrderState->id == Configuration::get('PS_OS_CANCELED')
-                && !$this->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_FLAG)
+                && !$this->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_FLAG, 0, 1)
             ) {
                 $result['errors'][] = Tools::displayError('Order status can not be set to Cancelled until all bookings in the order are cancelled.');
             } elseif ($objCurrentOrderState->id == Configuration::get('PS_OS_ERROR') && !($objNewOrderState->id == Configuration::get('PS_OS_ERROR'))) {

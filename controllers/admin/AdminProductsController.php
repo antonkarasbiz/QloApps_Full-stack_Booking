@@ -169,14 +169,36 @@ class AdminProductsControllerCore extends AdminController
             $_POST['productFilter_a!id_category_default'] = $id_category;
         }
 
+        $catFilterKey = $this->table.'Filter_a!id_category_default';
+        if (!Tools::getValue($catFilterKey)) {
+            $this->context->cookie->id_category_room_types_filter = false;
+        }
         if (($id_category = (int)Tools::getValue('id_category'))
-            || ($id_category = (int) Tools::getValue('productFilter_a!id_category_default'))
+            || ($id_category = (int)Tools::getValue($catFilterKey))
         ) {
             $this->id_current_category = $id_category;
             $this->context->cookie->id_category_room_types_filter = $id_category;
+            if (Tools::isSubmit('submitResetproduct')) {
+                $this->id_current_category = false;
+                $this->context->cookie->id_category_room_types_filter = false;
+            }
         } elseif ($id_category = $this->context->cookie->id_category_room_types_filter) {
             $this->id_current_category = $id_category;
+        }  else {
+            $idFilterCategory = false;
+            if (!Tools::isSubmit($catFilterKey)) {
+                $prefix = $this->getCookieFilterPrefix();
+                $idFilterCategory = $this->context->cookie->{$prefix.$catFilterKey};
+            }
+
+            if ($idFilterCategory) {
+                $this->id_current_category = $idFilterCategory;
+                $this->context->cookie->id_category_room_types_filter = $idFilterCategory;
+            } else {
+                $this->context->cookie->id_category_room_types_filter = false;
+            }
         }
+
         if ($this->id_current_category) {
             $this->_category = new Category((int)$this->id_current_category);
             $this->position_group_identifier = (int) $this->id_current_category;
@@ -639,8 +661,9 @@ class AdminProductsControllerCore extends AdminController
 
     public function getList($id_lang, $orderBy = null, $orderWay = null, $start = 0, $limit = null, $id_lang_shop = null)
     {
-        $orderByPriceFinal = (empty($orderBy) ? ($this->context->cookie->__get($this->table.'Orderby') ? $this->context->cookie->__get($this->table.'Orderby') : 'id_'.$this->table) : $orderBy);
-        $orderWayPriceFinal = (empty($orderWay) ? ($this->context->cookie->__get($this->table.'Orderway') ? $this->context->cookie->__get($this->table.'Orderby') : 'ASC') : $orderWay);
+        $prefix = $this->getCookieFilterPrefix();
+        $orderByPriceFinal = (empty($orderBy) ? ($this->context->cookie->__get($prefix.$this->table.'Orderby') ? $this->context->cookie->__get($prefix.$this->table.'Orderby') : 'id_'.$this->table) : $orderBy);
+        $orderWayPriceFinal = (empty($orderWay) ? ($this->context->cookie->__get($prefix.$this->table.'Orderway') ? $this->context->cookie->__get($prefix.$this->table.'Orderby') : 'ASC') : $orderWay);
         if ($orderByPriceFinal == 'price_final') {
             $orderBy = 'id_'.$this->table;
             $orderWay = 'ASC';
@@ -2532,9 +2555,10 @@ class AdminProductsControllerCore extends AdminController
             // If products from all categories are displayed, we don't want to use sorting by position
             if (!(int) $this->id_current_category) {
                 $this->_defaultOrderBy = $this->identifier;
-                if ($this->context->cookie->{$this->table.'Orderby'} == 'position') {
-                    unset($this->context->cookie->{$this->table.'Orderby'});
-                    unset($this->context->cookie->{$this->table.'Orderway'});
+                $prefix = $this->getCookieFilterPrefix();
+                if ($this->context->cookie->{$prefix.$this->table.'Orderby'} == 'position') {
+                    unset($this->context->cookie->{$prefix.$this->table.'Orderby'});
+                    unset($this->context->cookie->{$prefix.$this->table.'Orderway'});
                 }
             }
         }

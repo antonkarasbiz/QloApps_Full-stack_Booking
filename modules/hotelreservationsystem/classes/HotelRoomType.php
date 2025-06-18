@@ -378,7 +378,7 @@ class HotelRoomType extends ObjectModel
      */
     public static function getMaxAdults($id_hotel)
     {
-        $sql = 'SELECT MAX(adults) AS max_adult FROM '._DB_PREFIX_.'htl_room_type WHERE id_hotel='.$id_hotel;
+        $sql = 'SELECT MAX(adults) AS max_adult FROM '._DB_PREFIX_.'htl_room_type WHERE id_hotel='.(int) $id_hotel;
 
         $max_adult = Db::getInstance()->getValue($sql);
 
@@ -398,7 +398,7 @@ class HotelRoomType extends ObjectModel
      */
     public static function getMaxChild($id_hotel)
     {
-        $sql = 'SELECT MAX(children) AS max_child FROM '._DB_PREFIX_.'htl_room_type WHERE id_hotel='.$id_hotel;
+        $sql = 'SELECT MAX(children) AS max_child FROM '._DB_PREFIX_.'htl_room_type WHERE id_hotel='.(int) $id_hotel;
 
         $max_child = Db::getInstance()->getValue($sql);
 
