@@ -119,8 +119,8 @@
 			<div class="col-sm-6 col-xs-9">
 				<div class="panel">
 					<div id="advanced_price_rule_group">
-						{if isset($smarty.post.restrictions) && $smarty.post.restrictions}
-							{assign var='restrictions' value=$smarty.post.restrictions}
+						{if isset($smarty.post.restriction) && $smarty.post.restriction}
+							{assign var='restrictions' value=$smarty.post.restriction}
 						{/if}
 						{if isset($restrictions) && $restrictions}
 							{foreach $restrictions as $key => $restriction}
