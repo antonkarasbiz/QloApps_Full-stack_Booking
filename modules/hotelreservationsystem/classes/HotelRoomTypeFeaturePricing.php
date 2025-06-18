@@ -85,8 +85,8 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             'groups' => array('resource' => 'group'),
             'restrictions' => array(
                 'resource' => 'price_rule',
-                'getter' => 'getWsAdvancePriceRestriction',
-                'setter' => 'setWsAdvancePriceRestriction',
+                'getter' => 'getWsFeaturePriceRestriction',
+                'setter' => 'setWsFeaturePriceRestriction',
                 'fields' => array(
                     'id' => array(),
                     'date_from' => array(),
@@ -127,47 +127,50 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         // first call to delete all the group entries
         $this->cleanGroups();
         $objFeaturePriceRestriction = new HotelRoomTypeFeaturePricingRestriction();
-        if ($oldFeaturePriceRestrictions = $objFeaturePriceRestriction->getRestrictionsByIdFeaturePrice($this->id)) {
-            $oldFeaturePriceRestrictions = array_column($oldFeaturePriceRestrictions, 'id_feature_price_restriction', 'id_feature_price_restriction');
-            $objFeaturePriceRestriction->deleteFeaturePriceRestrictionsById($oldFeaturePriceRestrictions);
+        if ($existingFeaturePrices = $objFeaturePriceRestriction->getRestrictionsByIdFeaturePrice($this->id)) {
+            $existingFeaturePrices = array_column($existingFeaturePrices, 'id_feature_price_restriction', 'id_feature_price_restriction');
+            $objFeaturePriceRestriction->deleteFeaturePriceRestrictionsById($existingFeaturePrices);
         }
 
         return parent::delete();
     }
 
-    public function getExistingFeaturePriceRules(
+    public function getFeaturePrices(
         $idRoomType,
-        $groups,
-        $idFeaturePrice,
-        $featurePriceRules
+        $restrictions = array(),
+        $groups = array(),
+        $skipFeaturePriceId = null,
+        $active = null
     ) {
         $sql = 'SELECT *, GROUP_CONCAT(rtfpg.`id_group`) AS id_group FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing_restriction` rtfpr
             LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing` rtfp
             ON (rtfpr.`id_feature_price` = rtfp.`id_feature_price` AND rtfp.`id_product`='.(int) $idRoomType.')
             LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_group` rtfpg
-            ON (rtfp.`id_feature_price` = rtfpg.`id_feature_price` AND rtfpg.`id_group` IN ('.pSQL(implode(', ',$groups)).'))
-            WHERE  rtfpr.`id_feature_price`!='.(int) $idFeaturePrice.' AND rtfp.`active`= 1';
+            ON (rtfp.`id_feature_price` = rtfpg.`id_feature_price` '.($groups ? ' AND rtfpg.`id_group` IN ('.pSQL(implode(', ',$groups)).')' : ' ' ).')
+            WHERE 1 '.( !is_null($active) ? ' AND rtfp.`active`= '.(int) $active: ' ').' ' .(!is_null($skipFeaturePriceId) ? ' AND rtfpr.`id_feature_price`!='.(int) $skipFeaturePriceId : ' ');
         $sqlWhere = '';
-        foreach ($featurePriceRules as $featurePriceRule) {
-            if ($sqlWhere != '') {
-                $sqlWhere .= ' OR ';
-            }
+        if ($restrictions && is_array($restrictions)) {
+            foreach ($restrictions as $restriction) {
+                if ($sqlWhere != '') {
+                    $sqlWhere .= ' OR ';
+                }
 
-            $dateFrom = date('Y-m-d', strtotime($featurePriceRule['date_from']));
-            $dateTo = date('Y-m-d', strtotime($featurePriceRule['date_to']));
-            if ($featurePriceRule['date_selection_type'] == self::DATE_SELECTION_TYPE_SPECIFIC) {
-                $sqlWhere .= ' (rtfpr.`date_selection_type` = '.(int) self::DATE_SELECTION_TYPE_SPECIFIC.'
-                    AND rtfpr.`date_from` = \''.pSQL($dateFrom).'\')';
-            } else if ($featurePriceRule['date_selection_type'] == self::DATE_SELECTION_TYPE_RANGE) {
-                if ($featurePriceRule['is_special_days_exists']) {
-                    $sqlWhere .= ' (rtfpr.`is_special_days_exists`=1
-                    AND rtfpr.`date_from` <= \''.pSQL($dateTo).'\'
-                    AND rtfpr.`date_to` >= \''.pSQL($dateFrom).'\')';
-                } else {
-                    $sqlWhere .= ' (rtfpr.`date_selection_type` = '.(int) self::DATE_SELECTION_TYPE_RANGE.'
-                    AND rtfpr.`is_special_days_exists`=0
-                    AND rtfpr.`date_from` <= \''.pSQL($dateTo).'\'
-                    AND rtfpr.`date_to` >= \''.pSQL($dateFrom).'\')';
+                $dateFrom = date('Y-m-d', strtotime($restriction['date_from']));
+                $dateTo = date('Y-m-d', strtotime($restriction['date_to']));
+                if ($restriction['date_selection_type'] == self::DATE_SELECTION_TYPE_SPECIFIC) {
+                    $sqlWhere .= ' (rtfpr.`date_selection_type` = '.(int) self::DATE_SELECTION_TYPE_SPECIFIC.'
+                        AND rtfpr.`date_from` = \''.pSQL($dateFrom).'\')';
+                } else if ($restriction['date_selection_type'] == self::DATE_SELECTION_TYPE_RANGE) {
+                    if ($restriction['is_special_days_exists']) {
+                        $sqlWhere .= ' (rtfpr.`is_special_days_exists`=1
+                        AND rtfpr.`date_from` <= \''.pSQL($dateTo).'\'
+                        AND rtfpr.`date_to` >= \''.pSQL($dateFrom).'\')';
+                    } else {
+                        $sqlWhere .= ' (rtfpr.`date_selection_type` = '.(int) self::DATE_SELECTION_TYPE_RANGE.'
+                        AND rtfpr.`is_special_days_exists`=0
+                        AND rtfpr.`date_from` <= \''.pSQL($dateTo).'\'
+                        AND rtfpr.`date_to` >= \''.pSQL($dateFrom).'\')';
+                    }
                 }
             }
         }
@@ -181,19 +184,19 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         return Db::getInstance()->executeS($sql);
     }
 
-    public function saveFeaturePriceRestrictions($idFeaturePrice, $featurePriceRules)
+    public function saveFeaturePriceRestrictions($idFeaturePrice, $restrictions)
     {
         $res = true;
         $objFeaturePriceRestriction = new HotelRoomTypeFeaturePricingRestriction();
-        if ($oldFeaturePriceRestrictions = $objFeaturePriceRestriction->getRestrictionsByIdFeaturePrice($idFeaturePrice)) {
-            $oldFeaturePriceRestrictions = array_column($oldFeaturePriceRestrictions, 'id_feature_price_restriction', 'id_feature_price_restriction');
+        if ($existingFeaturePrices = $objFeaturePriceRestriction->getRestrictionsByIdFeaturePrice($idFeaturePrice)) {
+            $existingFeaturePrices = array_column($existingFeaturePrices, 'id_feature_price_restriction', 'id_feature_price_restriction');
         }
 
-        if ($featurePriceRules) {
-            foreach ($featurePriceRules as $featurePriceRule) {
-                if (isset($featurePriceRule['id']) && in_array($featurePriceRule['id'], $oldFeaturePriceRestrictions)) {
+        if ($restrictions) {
+            foreach ($restrictions as $featurePriceRule) {
+                if (isset($featurePriceRule['id']) && in_array($featurePriceRule['id'], $existingFeaturePrices)) {
                     $objFeaturePriceRestriction = new HotelRoomTypeFeaturePricingRestriction($featurePriceRule['id']);
-                    unset($oldFeaturePriceRestrictions[$featurePriceRule['id']]);
+                    unset($existingFeaturePrices[$featurePriceRule['id']]);
                 } else {
                     $objFeaturePriceRestriction = new HotelRoomTypeFeaturePricingRestriction();
                 }
@@ -222,13 +225,12 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             }
         }
 
-        if ($oldFeaturePriceRestrictions) {
-            $res &= $objFeaturePriceRestriction->deleteFeaturePriceRestrictionsById($oldFeaturePriceRestrictions);
+        if ($existingFeaturePrices) {
+            $res &= $objFeaturePriceRestriction->deleteFeaturePriceRestrictionsById($existingFeaturePrices);
         }
 
         return $res;
     }
-
 
     /**
      * [countFeaturePriceSpecialDays returns number of special days between a date range]
@@ -638,7 +640,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         return true;
     }
 
-    public function getWsAdvancePriceRestriction()
+    public function getWsFeaturePriceRestriction()
     {
         return Db::getInstance()->executeS(
             'SELECT *, id_feature_price_restriction AS `id` FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing_restriction`
@@ -647,55 +649,56 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
 
     }
 
-    public function setWsAdvancePriceRestriction($priceRules)
+    public function setWsFeaturePriceRestriction($restrictions)
     {
-        foreach ($priceRules as $ruleKey => $priceRule) {
-            if ($priceRule['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE
-                && $priceRule['is_special_days_exists']
+        foreach ($restrictions as $restrictionKey => $restriction) {
+            if ($restriction['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE
+                && $restriction['is_special_days_exists']
             ) {
-                $specialDays = json_decode($priceRule['special_days'], true);
-                $priceRules[$ruleKey]['special_days'] = $specialDays;
+                $specialDays = json_decode($restriction['special_days'], true);
+                $restrictions[$restrictionKey]['special_days'] = $specialDays;
             }
         }
 
-        return $this->saveFeaturePriceRestrictions($this->id, $priceRules);
+        return $this->saveFeaturePriceRestrictions($this->id, $restrictions);
     }
 
-    public function validateExistingFeaturePrice(
+    public function getDuplicateRestrictions(
         $roomTypeId,
-        $group,
-        $idFeaturePrice,
-        $featurePriceRules
+        $groups,
+        $skipFeaturePriceId,
+        $restrictions
     ) {
-        $duplicateRules = array();
-        if ($oldPriceRules = $this->getExistingFeaturePriceRules(
+        $duplicateRestrictions = array();
+        if ($existingFeturePrices = $this->getFeaturePrices(
             $roomTypeId,
-            $group,
-            $idFeaturePrice,
-            $featurePriceRules
+            $restrictions,
+            $groups,
+            $skipFeaturePriceId,
+            true
         )) {
-            foreach ($oldPriceRules as $oldPriceRule) {
-                foreach ($featurePriceRules as $ruleKey => $rule) {
-                    if ($rule['date_selection_type'] == $oldPriceRule['date_selection_type']) {
-                        if ($rule['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_SPECIFIC) {
-                            if (strtotime($rule['date_from']) != strtotime($oldPriceRule['date_from'])) {
+            foreach ($existingFeturePrices as $existingFeturePrice) {
+                foreach ($restrictions as $restrictionKey => $restriction) {
+                    if ($restriction['date_selection_type'] == $existingFeturePrice['date_selection_type']) {
+                        if ($restriction['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_SPECIFIC) {
+                            if (strtotime($restriction['date_from']) != strtotime($existingFeturePrice['date_from'])) {
                                 continue;
                             } else {
-                                $duplicateRules[] = $ruleKey;
+                                $duplicateRestrictions[] = $restrictionKey;
                             }
-                        } else if ($rule['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE) {
-                            if (((strtotime($oldPriceRule['date_from']) < strtotime($rule['date_from'])) && (strtotime($oldPriceRule['date_to']) <= strtotime($rule['date_from']))) || ((strtotime($oldPriceRule['date_from']) > strtotime($rule['date_from'])) && (strtotime($oldPriceRule['date_from']) >= strtotime($rule['date_to'])))) {
+                        } else if ($restriction['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE) {
+                            if (((strtotime($existingFeturePrice['date_from']) < strtotime($restriction['date_from'])) && (strtotime($existingFeturePrice['date_to']) <= strtotime($restriction['date_from']))) || ((strtotime($existingFeturePrice['date_from']) > strtotime($restriction['date_from'])) && (strtotime($existingFeturePrice['date_from']) >= strtotime($restriction['date_to'])))) {
                                 continue;
                             } else {
-                                if ($oldPriceRule['is_special_days_exists'] && $rule['is_special_days_exists']) {
-                                    if (!empty($oldPriceRule['special_days']) && !empty($rule['special_days'])) {
-                                        $existingDays = json_decode($oldPriceRule['special_days'], true);
-                                        if (array_intersect($existingDays, $rule['special_days'])) {
-                                            $duplicateRules[] = $ruleKey;
+                                if ($existingFeturePrice['is_special_days_exists'] && $restriction['is_special_days_exists']) {
+                                    if (!empty($existingFeturePrice['special_days']) && !empty($restriction['special_days'])) {
+                                        $existingDays = json_decode($existingFeturePrice['special_days'], true);
+                                        if (array_intersect($existingDays, $restriction['special_days'])) {
+                                            $duplicateRestrictions[] = $restrictionKey;
                                         }
                                     }
                                 } else {
-                                    $duplicateRules[] = $ruleKey;
+                                    $duplicateRestrictions[] = $restrictionKey;
                                 }
                             }
                         }
@@ -704,13 +707,13 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             }
         }
 
-        return $duplicateRules;
+        return $duplicateRestrictions;
     }
 
     public function validateFields($die = true, $error_return = false)
     {
         if (isset($this->webservice_validation) && $this->webservice_validation) {
-            $priceRules = array();
+            $restrictions = array();
             $idGroups = array();
             if (isset($this->associations)) {
                 foreach ($this->associations->children() as $association) {
@@ -724,7 +727,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
                                 $entry[$fieldName] = (string)$fieldValue;
                             }
 
-                            $priceRules[] = $entry;
+                            $restrictions[] = $entry;
                         }
                     } else if ($association->getName() == 'groups') {
                         $assocItems = $association->children();
@@ -745,15 +748,15 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
                 $idGroups = array_column($idGroups, 'id');
             }
 
-            if ($priceRules) {
+            if ($restrictions) {
                 $hasError = false;
                 $weekDays = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
                 // check for invalid special days
-                foreach ($priceRules as $ruleKey => $priceRule) {
-                    if ($priceRule['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE) {
-                        if ($priceRule['is_special_days_exists']) {
-                            $specialDays = json_decode($priceRule['special_days'], true);
-                            $priceRules[$ruleKey]['special_days'] = $specialDays;
+                foreach ($restrictions as $restrictionKey => $restriction) {
+                    if ($restriction['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE) {
+                        if ($restriction['is_special_days_exists']) {
+                            $specialDays = json_decode($restriction['special_days'], true);
+                            $restrictions[$restrictionKey]['special_days'] = $specialDays;
                             if (is_array($specialDays) && $specialDays) {
                                 if (count(array_diff($specialDays, $weekDays))) {
                                     $message = Tools::displayError('Invalid special days. format must match with : ["mon", "tue", "wed", "thu", "fri", "sat", "sun"].', true);
@@ -771,25 +774,25 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
 
                 if (!$hasError) {
                     // check for conflicting dates in the rules.
-                    foreach ($priceRules as $priceRuleKey => $priceRule) {
-                        foreach ($priceRules as $ruleKey => $rule) {
-                            if ($priceRuleKey != $ruleKey) {
-                                if ($rule['date_selection_type'] == $priceRule['date_selection_type']) {
-                                    if ($rule['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_SPECIFIC) {
-                                        if (strtotime($rule['date_from']) != strtotime($priceRule['date_from'])) {
+                    foreach ($restrictions as $restrictionKey => $restriction) {
+                        foreach ($restrictions as $priceRestrictionKey => $priceRestriction) {
+                            if ($priceRestrictionKey != $restrictionKey) {
+                                if ($priceRestriction['date_selection_type'] == $restriction['date_selection_type']) {
+                                    if ($priceRestriction['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_SPECIFIC) {
+                                        if (strtotime($priceRestriction['date_from']) != strtotime($restriction['date_from'])) {
                                             continue;
                                         } else {
                                             $message = Tools::displayError('You can not add conflicting dates.', true);
                                             $hasError = true;
                                             break;
                                         }
-                                    } else if ($rule['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE) {
-                                        if (((strtotime($priceRule['date_from']) < strtotime($rule['date_from'])) && (strtotime($priceRule['date_to']) <= strtotime($rule['date_from']))) || ((strtotime($priceRule['date_from']) > strtotime($rule['date_from'])) && (strtotime($priceRule['date_from']) >= strtotime($rule['date_to'])))) {
+                                    } else if ($priceRestriction['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE) {
+                                        if (((strtotime($restriction['date_from']) < strtotime($priceRestriction['date_from'])) && (strtotime($restriction['date_to']) <= strtotime($priceRestriction['date_from']))) || ((strtotime($restriction['date_from']) > strtotime($priceRestriction['date_from'])) && (strtotime($restriction['date_from']) >= strtotime($priceRestriction['date_to'])))) {
                                             continue;
                                         } else {
-                                            if ($priceRule['is_special_days_exists'] && $rule['is_special_days_exists']) {
-                                                if (!empty($priceRule['special_days']) && !empty($rule['special_days'])) {
-                                                    if (array_intersect($priceRule['special_days'], $rule['special_days'])) {
+                                            if ($restriction['is_special_days_exists'] && $priceRestriction['is_special_days_exists']) {
+                                                if (!empty($restriction['special_days']) && !empty($priceRestriction['special_days'])) {
+                                                    if (array_intersect($restriction['special_days'], $priceRestriction['special_days'])) {
                                                         $message = Tools::displayError('You can not add conflicting days for similar date ranges.', true);
                                                         $hasError = true;
                                                         break;
@@ -810,11 +813,11 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
                 }
 
                 if (!$hasError) {
-                    $hasDuplicate = $this->validateExistingFeaturePrice(
+                    $hasDuplicate = $this->getDuplicateRestrictions(
                         $this->id_product,
                         $idGroups,
                         $this->id,
-                        $priceRules
+                        $restrictions
                     );
 
                     if ($hasDuplicate) {

@@ -617,7 +617,9 @@ body.adminhotelroomsbooking .ui-tooltip {
 }
 
 #advanced_price_rule_group .panel.advanced_price_rule {
-    padding: 10px 15px;}
+    padding: 10px 0px;}
+#advanced_price_rule_group .advance_price_rule_header_container, .advanced_price_rule_body {
+    padding: 0px 20px;}
 #advanced_price_rule_group .advance_price_rule_header_container:hover {
     cursor: pointer;}
 .advance_price_rule_header_container {
@@ -625,13 +627,6 @@ body.adminhotelroomsbooking .ui-tooltip {
 .advance_price_rule_header_container.shown{
     align-items: center;
     display: flex;}
-.advanced_price_rule_body .advanced_price_rule_body_actions{
-    display: none;
-}
-.advanced_price_rule_body.in .advanced_price_rule_body_actions,
-.advanced_price_rule_body.in .advanced_price_rule_body_actions{
-    display: block;
-}
 .special_days_heading{
     font-size: 11px;
 }

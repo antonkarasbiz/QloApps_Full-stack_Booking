@@ -586,14 +586,14 @@ $(document).ready(function() {
             $(".specific_date_type_"+panelIndex).hide(200);
             $(".date_range_type_"+panelIndex).show(200);
             $(".special_days_content_"+panelIndex).show(200);
-            if (parseInt($('[name="advance_price_rule['+panelIndex+'][is_special_days_exists]"]:checked').val())) {
+            if (parseInt($('[name="restriction['+panelIndex+'][is_special_days_exists]"]:checked').val())) {
                 $('.week_days_'+panelIndex).show(200);
             }
         } else {
             $(".specific_date_type_"+panelIndex).hide(200);
             $(".date_range_type_"+panelIndex).show(200);
             $(".special_days_content_"+panelIndex).show(200);
-            if (parseInt($('[name="advance_price_rule['+panelIndex+'][is_special_days_exists]"]:checked').val())) {
+            if (parseInt($('[name="restriction['+panelIndex+'][is_special_days_exists]"]:checked').val())) {
                 $('.week_days_'+panelIndex).show(200);
             }
         }
@@ -602,7 +602,7 @@ $(document).ready(function() {
 
     $(document).on('change', '.is_special_days_exists', function() {
         let panelIndex = $(this).closest('.advanced_price_rule').data('advanced_price_rule_index');
-        if (parseInt($('[name="advance_price_rule['+panelIndex+'][is_special_days_exists]"]:checked').val())) {
+        if (parseInt($('[name="restriction['+panelIndex+'][is_special_days_exists]"]:checked').val())) {
             $('.week_days_'+panelIndex).show(200);
         } else {
             $('.week_days_'+panelIndex).hide(200);
@@ -642,6 +642,7 @@ $(document).ready(function() {
             let elem = $(e.target).closest('.advanced_price_rule');
             udpateCollapseHeading(elem);
             $(elem).find('.advance_price_rule_header_container').addClass('shown');
+            $(elem).find('.advanced_price_rule_body .advanced_price_rule_body_actions').hide();
         }
     });
 
@@ -653,9 +654,9 @@ $(document).ready(function() {
             let dateFrom = $('#feature_plan_date_from_'+rowIndex).val();
             let dateTo = $('#feature_plan_date_to_'+rowIndex).val();
             priceRuleHeadingText = date_selection_types.range.title + ' ('+ dateFrom+ ' - '+ dateTo +')'
-            if (parseInt($('[name="advance_price_rule['+rowIndex+'][is_special_days_exists]"]:checked').val())) {
+            if (parseInt($('[name="restriction['+rowIndex+'][is_special_days_exists]"]:checked').val())) {
                 let special_days = [];
-                $('[name="advance_price_rule['+rowIndex+'][special_days][]"]').each(function(){
+                $('[name="restriction['+rowIndex+'][special_days][]"]').each(function(){
                     if ($(this).prop('checked')) {
                         special_days.push($(this).parent().text().trim());
                     }
@@ -684,6 +685,7 @@ $(document).ready(function() {
     $(document).on('show.bs.collapse', function(e) {
         if ($(e.target).hasClass('advanced_price_rule_body')) {
             $(e.target).closest('.advanced_price_rule').find('.advance_price_rule_header_container').removeClass('shown');
+            $(e.target).closest('.advanced_price_rule').find('.advanced_price_rule_body .advanced_price_rule_body_actions').show();
         }
     });
 
@@ -707,7 +709,7 @@ $(document).ready(function() {
         }
 
         let panelElem = $('<div>').addClass('panel advanced_price_rule').attr('data-advanced_price_rule_index', panelIndex);
-        let idElem = $('<input>').attr('type', 'hidden').attr('name', 'advance_price_rule['+panelIndex+'][id]')
+        let idElem = $('<input>').attr('type', 'hidden').attr('name', 'restriction['+panelIndex+'][id]')
         let headerElem = $('<div>').addClass('row advance_price_rule_header_container advance_price_rule_collapse').attr({'data-toggle':"collapse", 'data-target':"#advanced_price_rule_"+panelIndex})
             .append($('<div>').addClass('col-xs-9 advance_price_rule_header'))
             .append($('<div>').addClass('col-xs-3')
@@ -719,9 +721,9 @@ $(document).ready(function() {
                         .append($('<i>').addClass('icon-caret-down')))));
 
         let dateSelectionElem = $('<div>').addClass('form-group')
-            .append($('<label>').addClass('control-label col-xs-4').attr('for', 'advance_price_rule['+panelIndex+'][date_selection_type]').text(' ' + dateSelectionTitle))
+            .append($('<label>').addClass('control-label col-xs-4').attr('for', 'restriction['+panelIndex+'][date_selection_type]').text(' ' + dateSelectionTitle))
             .append($('<div>').addClass('col-xs-5')
-                .append($(dateSeletionOptions).attr({'name': 'advance_price_rule['+panelIndex+'][date_selection_type]', 'id': 'date_selection_type_'+panelIndex})))
+                .append($(dateSeletionOptions).attr({'name': 'restriction['+panelIndex+'][date_selection_type]', 'id': 'date_selection_type_'+panelIndex})))
             .append($('<div>').addClass('col-xs-3 advanced_price_rule_body_actions')
                 .append($('<div>').addClass('col-xs-offset-7 col-xs-2')
                     .append($('<a>').addClass('btn btn-default remove_advanced_price_rule')
@@ -731,37 +733,37 @@ $(document).ready(function() {
                         .append($('<i>').addClass('icon-caret-up')))));
 
         let specificDateElem = $('<div>').addClass('form-group specific_date_type_'+panelIndex).css('display', 'none')
-            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'advance_price_rule['+panelIndex+'][specific_date]').text(' ' + specificDateText))
+            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'restriction['+panelIndex+'][specific_date]').text(' ' + specificDateText))
             .append($('<div>').addClass('col-xs-5')
                 .append($('<input>').addClass('specific_date form-control datepicker-input')
-                    .attr({type:'text', id: 'specific_date_'+panelIndex, name: 'advance_price_rule['+panelIndex+'][specific_date]', value: dateToday, readonly: 'readonly'})));
+                    .attr({type:'text', id: 'specific_date_'+panelIndex, name: 'restriction['+panelIndex+'][specific_date]', value: dateToday, readonly: 'readonly'})));
 
         let dateFromElem = $('<div>').addClass('form-group date_range_type_'+panelIndex)
-            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'advance_price_rule['+panelIndex+'][date_from]').text(' ' + dateFromText))
+            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'restriction['+panelIndex+'][date_from]').text(' ' + dateFromText))
             .append($('<div>').addClass('col-xs-5')
                 .append($('<input>').addClass('feature_plan_date_from form-control  datepicker-input')
-                    .attr({type:'text', id: 'feature_plan_date_from_'+panelIndex, name: 'advance_price_rule['+panelIndex+'][date_from]', value: dateToday, readonly: 'readonly'})));
+                    .attr({type:'text', id: 'feature_plan_date_from_'+panelIndex, name: 'restriction['+panelIndex+'][date_from]', value: dateToday, readonly: 'readonly'})));
 
         let dateToElem = $('<div>').addClass('form-group date_range_type_'+panelIndex)
-            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'advance_price_rule['+panelIndex+'][date_to]').text(' ' + dateToText))
+            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'restriction['+panelIndex+'][date_to]').text(' ' + dateToText))
             .append($('<div>').addClass('col-xs-5')
                 .append($('<input>').addClass('feature_plan_date_to form-control  datepicker-input')
-                    .attr({type:'text', id: 'feature_plan_date_to_'+panelIndex, name: 'advance_price_rule['+panelIndex+'][date_to]', value: dateTomorrow, readonly: 'readonly'})));
+                    .attr({type:'text', id: 'feature_plan_date_to_'+panelIndex, name: 'restriction['+panelIndex+'][date_to]', value: dateTomorrow, readonly: 'readonly'})));
 
         let specialDaysElement = $('<div>').addClass('form-group special_days_content_'+panelIndex)
-            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'advance_price_rule['+panelIndex+'][is_special_days_exists]')
+            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'restriction['+panelIndex+'][is_special_days_exists]')
                 .append($('<span>').addClass('label-tooltip').attr({'data-toggle': 'tooltip', 'data-html':'true', 'title': '', 'data-original-title': specialDaysTooltipText}).text(' '+specialDaysText)))
             .append($('<div>').addClass('col-xs-5')
                 .append($('<span>').addClass('switch prestashop-switch fixed-width-lg')
-                    .append($('<input>').attr({'type': 'radio', 'value': 1, 'name': 'advance_price_rule['+panelIndex+'][is_special_days_exists]', 'id': 'advance_price_rule['+panelIndex+'][is_special_days_exists_on]'}).addClass('is_special_days_exists'))
-                    .append($('<label>').attr({'for': 'advance_price_rule['+panelIndex+'][is_special_days_exists_on]'}).text(yesText))
-                    .append($('<input>').attr({'type': 'radio', 'value': 0, 'name': 'advance_price_rule['+panelIndex+'][is_special_days_exists]', 'id': 'advance_price_rule['+panelIndex+'][is_special_days_exists_off]', 'checked':'checked'}).addClass('is_special_days_exists'))
-                    .append($('<label>').attr({'for': 'advance_price_rule['+panelIndex+'][is_special_days_exists_off]'}).text(noText))
+                    .append($('<input>').attr({'type': 'radio', 'value': 1, 'name': 'restriction['+panelIndex+'][is_special_days_exists]', 'id': 'restriction['+panelIndex+'][is_special_days_exists_on]'}).addClass('is_special_days_exists'))
+                    .append($('<label>').attr({'for': 'restriction['+panelIndex+'][is_special_days_exists_on]'}).text(yesText))
+                    .append($('<input>').attr({'type': 'radio', 'value': 0, 'name': 'restriction['+panelIndex+'][is_special_days_exists]', 'id': 'restriction['+panelIndex+'][is_special_days_exists_off]', 'checked':'checked'}).addClass('is_special_days_exists'))
+                    .append($('<label>').attr({'for': 'restriction['+panelIndex+'][is_special_days_exists_off]'}).text(noText))
                     .append($('<a>').addClass('slide-button btn'))))
 
-        $(weekDaysOptions).find('input[type="checkbox"]').attr('name', 'advance_price_rule['+panelIndex+'][special_days][]');
+        $(weekDaysOptions).find('input[type="checkbox"]').attr('name', 'restriction['+panelIndex+'][special_days][]');
         let specialDaysCheckBoxElem = $('<div>').addClass('form-group week_days week_days_'+panelIndex)
-            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'advance_price_rule['+panelIndex+'][special_days]').text(' ' +weekDaysText))
+            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'restriction['+panelIndex+'][special_days]').text(' ' +weekDaysText))
             .append($('<div>').addClass('col-xs-8 checkboxes-wrap').append($(weekDaysOptions).html()))
 
         let bodyElem = $('<div>').attr('id', 'advanced_price_rule_'+panelIndex).addClass('in advanced_price_rule_body')

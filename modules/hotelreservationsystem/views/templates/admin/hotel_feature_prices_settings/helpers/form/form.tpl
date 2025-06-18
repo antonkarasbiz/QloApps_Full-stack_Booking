@@ -119,11 +119,11 @@
 			<div class="col-sm-6 col-xs-9">
 				<div class="panel">
 					<div id="advanced_price_rule_group">
-						{if isset($smarty.post.advance_price_rule) && $smarty.post.advance_price_rule}
-							{assign var='advancePriceRules' value=$smarty.post.advance_price_rule}
+						{if isset($smarty.post.restrictions) && $smarty.post.restrictions}
+							{assign var='restrictions' value=$smarty.post.restrictions}
 						{/if}
-						{if isset($advancePriceRules) && $advancePriceRules}
-							{foreach $advancePriceRules as $key => $rule}
+						{if isset($restrictions) && $restrictions}
+							{foreach $restrictions as $key => $restriction}
 								{include file="../../../_partials/feature_price_rules.tpl" key=$key advancePriceRule=$rule}
 							{/foreach}
 						{else}
