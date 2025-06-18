@@ -436,7 +436,7 @@ class ProductControllerCore extends FrontController
                             'PS_SERVICE_PRODUCT_CATEGORY_FILTER' => Configuration::get('PS_SERVICE_PRODUCT_CATEGORY_FILTER'),
                             'bed_types_info' => $bedTypes,
                             'selected_bed_types' => $selectedBedTypes,
-                            'dimension_unit' => Configuration::get('PS_DIMENSION_UNIT'),
+                            'dimension_unit' => Configuration::get('WK_DIMENSION_UNIT', $this->context->language->id),
                         )
                     );
 

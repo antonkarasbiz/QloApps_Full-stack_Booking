@@ -1,7 +1,7 @@
 <?php
 return array(
 	'informations' => array(
-		'documentation' => 'https://qloapps.com/qlo-reservation-system/',
+		'documentation' => 'https://docs.qloapps.com/',
 		'documentation_upgrade' => 'https://webkul.uvdesk.com/',
 		'forum' => 'https://forums.qloapps.com/',
 		'blog' => 'https://qloapps.com/blog/',
@@ -10,7 +10,7 @@ return array(
 		'tailored_help' => 'https://webkul.uvdesk.com/',
 		'contact' => 'https://qloapps.com/contact/',
 		'services' => 'https://qloapps.com/contact/',
-		'tutorials' => 'https://qloapps.com/qlo-reservation-system/',
+		'tutorials' => 'https://docs.qloapps.com/',
 		'installation_guide' => 'https://qloapps.com/qloapps-installation-process/',
 		'install_help' => 'https://qloapps.com/install-qloapps/',
 	),
@@ -206,7 +206,7 @@ return array(
 		'Discover Your Website' => 'Découvrez votre site Web',
 		'Share your experience with your friends!' => 'Partagez votre expérience avec vos amis !',
 		'I just built an online hotel booking website with QloApps!' => 'Je viens de créer un site de réservation d\'hôtel en ligne avec QloApps !',
-		'See all the features here : https://qloapps.com/qlo-reservation-system/' => 'Voir toutes les fonctionnalités ici : https://qloapps.com/qlo-reservation-system/',
+		'See all the features here : https://docs.qloapps.com/' => 'Voir toutes les fonctionnalités ici : https://docs.qloapps.com/',
 		'Tweet' => 'Tweeter',
 		'Share' => 'Partager',
 		'Google+' => 'Google+',

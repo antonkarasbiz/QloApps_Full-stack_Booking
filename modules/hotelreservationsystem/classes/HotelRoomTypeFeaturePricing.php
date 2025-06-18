@@ -574,7 +574,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
     /**
      * Deletes groups entries in the table. Send id_group if you want to delete entries by group i.e. when group deletes
      * @param integer $idGroup
-     * @return void
+     * @return bool
      */
     public function cleanGroups($idGroup = 0)
     {

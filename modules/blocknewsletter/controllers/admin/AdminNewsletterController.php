@@ -316,7 +316,7 @@ class AdminNewsletterController extends ModuleAdminController
 
                 $fileHandle = fopen($filePath, 'w+');
                 foreach ($subscribers as $subscriber) {
-                    fputcsv($fileHandle, $subscriber);
+                    fputcsv($fileHandle, $subscriber, ';', escape: "");
                 }
 
                 if (Tools::file_exists_cache($filePath)) {
