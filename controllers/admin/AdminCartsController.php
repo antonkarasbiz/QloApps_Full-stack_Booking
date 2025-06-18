@@ -192,7 +192,11 @@ class AdminCartsControllerCore extends AdminController
         //$helper->chart = true;
         $helper->color = 'color1';
         $helper->title = $this->l('Conversion Rate', null, null, false);
-        $helper->subtitle = $daysForConversionRate.' '.$this->l('days', null, null, false);
+        if ($daysForConversionRate == 1) {
+            $helper->subtitle = $daysForConversionRate.' '.$this->l('day', null, null, false);
+        } else {
+            $helper->subtitle = $daysForConversionRate.' '.$this->l('days', null, null, false);
+        }
         if (ConfigurationKPI::get('CONVERSION_RATE_CHART') !== false) {
             $helper->data = ConfigurationKPI::get('CONVERSION_RATE_CHART');
         }
@@ -217,7 +221,12 @@ class AdminCartsControllerCore extends AdminController
         $helper->icon = 'icon-money';
         $helper->color = 'color3';
         $helper->title = $this->l('Average Order Value', null, null, false);
-        $helper->subtitle = $daysForAvgOrderVal.' '.$this->l('days', null, null, false);
+        if ($daysForAvgOrderVal == 1) {
+            $helper->subtitle = $daysForAvgOrderVal.' '.$this->l('day', null, null, false);
+        } else {
+            $helper->subtitle = $daysForAvgOrderVal.' '.$this->l('days', null, null, false);
+        }
+
         $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=average_order_value';
         $this->kpis[] = $helper;
 
@@ -227,7 +236,11 @@ class AdminCartsControllerCore extends AdminController
         $helper->icon = 'icon-user';
         $helper->color = 'color4';
         $helper->title = $this->l('Net Profit per Visitor', null, null, false);
-        $helper->subtitle = $daysForProfitPerVisitor.' '.$this->l('days', null, null, false);
+        if ($daysForProfitPerVisitor == 1) {
+            $helper->subtitle = $daysForProfitPerVisitor.' '.$this->l('day', null, null, false);
+        } else {
+            $helper->subtitle = $daysForProfitPerVisitor.' '.$this->l('days', null, null, false);
+        }
         $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=netprofit_visit';
         $this->kpis[] = $helper;
 

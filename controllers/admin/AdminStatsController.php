@@ -778,7 +778,7 @@ class AdminStatsControllerCore extends AdminStatsTabController
             LEFT JOIN `'._DB_PREFIX_.'orders` o
             ON (o.`id_order` = hbd.`id_order`)
             WHERE hbd.`id_product` = p.`id_product` AND o.`valid` = 1
-            AND hbd.`date_to` > "'.pSQL($dateFrom).'" AND hbd.`date_from` < "'.pSQL($dateTo).'"
+            AND hbd.`date_to` >= "'.pSQL($dateFrom).'" AND hbd.`date_from` <= "'.pSQL($dateTo).'"
         ) as total_booked FROM `'._DB_PREFIX_.'product` p
         INNER JOIN `'._DB_PREFIX_.'htl_room_type` hrt
         ON (hrt.`id_product` = p.`id_product`)
@@ -811,17 +811,22 @@ class AdminStatsControllerCore extends AdminStatsTabController
         switch ($kpi) {
             case 'conversion_rate':
                 $nbDaysConversionRate = Validate::isUnsignedInt(Configuration::get('PS_KPI_CONVERSION_RATE_NB_DAYS')) ? Configuration::get('PS_KPI_CONVERSION_RATE_NB_DAYS') : 30;
-
+                if ($nbDaysConversionRate == 1) {
+                    $dateFrom = date('Y-m-d');
+                } else {
+                    $dateFrom = date('Y-m-d', strtotime('-'.($nbDaysConversionRate - 1).' day'));
+                }
+                $dateTo = date('Y-m-d');
                 $visitors = AdminStatsController::getVisits(
-                    true,
-                    date('Y-m-d', strtotime('-'.($nbDaysConversionRate + 1).' day')),
-                    date('Y-m-d', strtotime('+1 day')),
+                    false,
+                    $dateFrom,
+                    $dateTo,
                     false /*'day'*/
                 );
 
                 $orders = AdminStatsController::getOrders(
-                    date('Y-m-d', strtotime('-'.($nbDaysConversionRate + 1).' day')),
-                    date('Y-m-d', strtotime('-1 day')),
+                    $dateFrom,
+                    $dateTo,
                     false /*'day'*/,
                     $idHotels
                 );
@@ -923,7 +928,7 @@ class AdminStatsControllerCore extends AdminStatsTabController
                 break;
 
             case 'avg_msg_response_time':
-                $value = AdminStatsController::getAverageMessageResponseTime(date('Y-m-d', strtotime('-31 day')), date('Y-m-d', strtotime('-1 day')), true);
+                $value = AdminStatsController::getAverageMessageResponseTime(date('Y-m-d', strtotime('-30 day')), date('Y-m-d'), true);
 
                 if ($value <= 0) {
                     $value = '--';
@@ -937,7 +942,7 @@ class AdminStatsControllerCore extends AdminStatsTabController
                 break;
 
             case 'messages_per_thread':
-                $value = round(AdminStatsController::getMessagesPerThread(date('Y-m-d', strtotime('-31 day')), date('Y-m-d', strtotime('-1 day'))), 1);
+                $value = round(AdminStatsController::getMessagesPerThread(date('Y-m-d', strtotime('-31 day')), date('Y-m-d')), 1);
                 break;
 
             case 'enabled_languages':
@@ -980,16 +985,22 @@ class AdminStatsControllerCore extends AdminStatsTabController
                 break;
 
             case 'average_order_value':
-                $daysForAvgOrderVal = Configuration::get('PS_ORDER_KPI_AVG_ORDER_VALUE_NB_DAYS');
+                $daysForAvgOrderVal = Validate::isUnsignedInt(Configuration::get('PS_ORDER_KPI_AVG_ORDER_VALUE_NB_DAYS')) ? Configuration::get('PS_ORDER_KPI_AVG_ORDER_VALUE_NB_DAYS') : 30;
 
+                if ($daysForAvgOrderVal == 1) {
+                    $dateFrom = date('Y-m-d');
+                } else {
+                    $dateFrom = date('Y-m-d', strtotime('-'.($daysForAvgOrderVal -1).' day'));
+                }
+                $dateTo = date('Y-m-d');
                 $row = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow('
                 SELECT
                     COUNT(o.`id_order`) as orders,
                     SUM(o.`total_paid_tax_excl` / o.`conversion_rate`) as total_paid_tax_excl
                 FROM `'._DB_PREFIX_.'orders` o
                 LEFT JOIN `'._DB_PREFIX_.'order_state` os ON os.`id_order_state` = o.`current_state`
-                WHERE o.`invoice_date` BETWEEN "'.pSQL(date('Y-m-d', strtotime('-'.($daysForAvgOrderVal + 1).' day'))).' 00:00:00"
-                AND "'.pSQL(date('Y-m-d')).' 23:59:59" AND os.`logable` = 1
+                WHERE o.`invoice_date` BETWEEN "'.pSQL($dateFrom).' 00:00:00"
+                AND "'.pSQL($dateTo).' 23:59:59" AND os.`logable` = 1
                 AND (
                     EXISTS (
                         SELECT 1
@@ -1010,15 +1021,19 @@ class AdminStatsControllerCore extends AdminStatsTabController
                 break;
 
             case 'netprofit_visit':
-                $daysForProfitPerVisitor = Configuration::get('PS_ORDER_KPI_PER_VISITOR_PROFIT_NB_DAYS');
+                $daysForProfitPerVisitor = Validate::isUnsignedInt(Configuration::get('PS_ORDER_KPI_PER_VISITOR_PROFIT_NB_DAYS')) ? Configuration::get('PS_ORDER_KPI_PER_VISITOR_PROFIT_NB_DAYS') : 30;
 
-                $date_from = date('Y-m-d', strtotime('-'.($daysForProfitPerVisitor + 1).' day'));
-                $date_to = date('Y-m-d', strtotime('-1 day'));
+                if ($daysForProfitPerVisitor == 1) {
+                    $dateFrom = date('Y-m-d');
+                } else {
+                    $dateFrom = date('Y-m-d', strtotime('-'.($daysForProfitPerVisitor -1).' day'));
+                }
 
-                $total_visitors = AdminStatsController::getVisits(false, $date_from, $date_to);
-                $net_profits = AdminStatsController::getTotalSales($date_from, $date_to, false, $idHotels);
-                $net_profits -= AdminStatsController::getExpenses($date_from, $date_to, false, $idHotels);
-                $net_profits -= AdminStatsController::getPurchases($date_from, $date_to, false, $idHotels);
+                $dateTo = date('Y-m-d');
+                $total_visitors = AdminStatsController::getVisits(false, $dateFrom, $dateTo);
+                $net_profits = AdminStatsController::getTotalSales($dateFrom, $dateTo, false, $idHotels);
+                $net_profits -= AdminStatsController::getExpenses($dateFrom, $dateTo, false, $idHotels);
+                $net_profits -= AdminStatsController::getPurchases($dateFrom, $dateTo, false, $idHotels);
 
                 if ($total_visitors) {
                     $value = Tools::displayPrice($net_profits / $total_visitors, $currency);
@@ -1049,9 +1064,16 @@ class AdminStatsControllerCore extends AdminStatsTabController
             case 'best_selling_room_type':
                 $nbDaysBestSelling = Validate::isUnsignedInt(Configuration::get('PS_KPI_BEST_SELLING_ROOM_TYPE_NB_DAYS')) ? Configuration::get('PS_KPI_BEST_SELLING_ROOM_TYPE_NB_DAYS') : 30;
 
+                if ($nbDaysBestSelling == 1) {
+                    $dateFrom = date('Y-m-d');
+                } else {
+                    $dateFrom  = date('Y-m-d', strtotime('-'.($nbDaysBestSelling - 1).' day'));
+                }
+
+                $dateTo = date('Y-m-d');
                 if (!($idProduct = AdminStatsController::getBestSellingRoomType(
-                    date('Y-m-d', strtotime('-'.($nbDaysBestSelling + 1).' day')),
-                    date('Y-m-d', strtotime('-1 day')),
+                    $dateFrom,
+                    $dateTo,
                     $idHotels
                 ))) {
                     $value = $this->l('--', null, null, false);
@@ -1133,10 +1155,16 @@ class AdminStatsControllerCore extends AdminStatsTabController
 
             case 'revenue_per_available_customer':
                 $nbDaysRevPac = Configuration::get('PS_KPI_REVPAC_NB_DAYS');
+                if ($nbDaysRevPac == 1) {
+                    $dateFrom = date('Y-m-d');
+                } else {
+                    $dateFrom = date('Y-m-d', strtotime('-'.($nbDaysRevPac -1).' day'));
+                }
 
+                $dateTo = date('Y-m-d');
                 $value = AdminStatsController::getRevenuePerAvailableCustomer(
-                    date('Y-m-d', strtotime('-'.($nbDaysRevPac + 1).' day')),
-                    date('Y-m-d', strtotime('-1 day')),
+                    $dateFrom,
+                    $dateTo,
                     $idHotels
                 );
 
@@ -2116,7 +2144,12 @@ class AdminStatsControllerCore extends AdminStatsTabController
 
     public static function getTotalNewCustomers($nbDaysNewCustomers)
     {
-        $maxDateAdd = date('Y-m-d', strtotime('-'.$nbDaysNewCustomers.' day'));
+        if ($nbDaysNewCustomers == 1) {
+            $maxDateAdd = date('Y-m-d');
+        } else {
+            $maxDateAdd = date('Y-m-d', strtotime('-'.($nbDaysNewCustomers -1).' day'));
+        }
+
         $sql = 'SELECT COUNT(c.`id_customer`)
         FROM `'._DB_PREFIX_.'customer` c
         WHERE c.`date_add` >= "'.pSQL($maxDateAdd).'" AND c.`deleted` = 0';

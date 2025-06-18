@@ -414,6 +414,16 @@ class AdminOrderPreferencesControllerCore extends AdminController
             $this->errors[] = Tools::displayError('Field \'Maximum checkout offset\' is invalid.');
         }
 
+        $avgOrderValueField = $this->fields_options['general']['fields']['PS_ORDER_KPI_AVG_ORDER_VALUE_NB_DAYS'];
+        if (!Tools::getValue('PS_ORDER_KPI_AVG_ORDER_VALUE_NB_DAYS')) {
+            $this->errors[] = sprintf(Tools::displayError('field %s must be greater than 0.'), $avgOrderValueField['title']);;
+        }
+
+        $netProfitField = $this->fields_options['general']['fields']['PS_ORDER_KPI_PER_VISITOR_PROFIT_NB_DAYS'];
+        if (!Tools::getValue('PS_ORDER_KPI_PER_VISITOR_PROFIT_NB_DAYS')) {
+            $this->errors[] = sprintf(Tools::displayError('field %s must be greater than 0.'), $netProfitField['title']);;
+        }
+
         if ($minBookingOffset === '') {
             $this->errors[] = Tools::displayError('Field \'Minimum booking offset\' can not be empty.');
         } elseif ($minBookingOffset != 0 && !Validate::isUnsignedInt($minBookingOffset)) {
