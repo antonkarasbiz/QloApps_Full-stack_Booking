@@ -507,7 +507,7 @@ p.room_cat_data
     display: flex;
 }
 .week_days .checkboxes-wrap .day-wrap {
-    min-width: 50px;
+    min-width: 45px;
 }
 .room_type_search_results_ul {
     padding: 0px;
@@ -615,3 +615,23 @@ body.adminhotelroomsbooking .ui-tooltip {
 	padding: 15px;
 	border: 1px solid #ddd
 }
+
+#advanced_price_rule_group .panel.advanced_price_rule {
+    padding: 10px 0px;}
+#advanced_price_rule_group .advance_price_rule_header_container, .advanced_price_rule_body {
+    padding: 0px 20px;}
+#advanced_price_rule_group .advance_price_rule_header_container:hover {
+    cursor: pointer;}
+.advance_price_rule_header_container {
+    display: none;}
+.advance_price_rule_header_container.shown{
+    align-items: center;
+    display: flex;}
+.special_days_heading{
+    font-size: 11px;
+}
+.advanced_price_rule_body .form-group:first-child {
+    margin-top: 15px;}
+.error-border {
+    outline: rgb(210, 124, 130) solid 1px;
+    border-radius: 2px;}

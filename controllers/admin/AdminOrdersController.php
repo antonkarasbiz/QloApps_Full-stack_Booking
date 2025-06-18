@@ -4816,7 +4816,7 @@ class AdminOrdersControllerCore extends AdminController
             $featurePriceParams = array(
                 'id_cart' => $this->context->cart->id,
                 'id_guest' => $this->context->cookie->id_guest,
-                'price' => $product_informations['product_price_tax_excl'],
+                'impact_value' => $product_informations['product_price_tax_excl'],
                 'id_product' => $product->id,
             );
         }
@@ -4870,8 +4870,13 @@ class AdminOrdersControllerCore extends AdminController
                     // create feature price if needed
                     if ($createFeaturePrice) {
                         $featurePriceParams['id_room'] = $room_info['id_room'];
-                        $featurePriceParams = array_merge($featurePriceParams, array('date_from' => $date_from, 'date_to' => $date_to));
-                        HotelRoomTypeFeaturePricing::createAutoFeaturePrice($featurePriceParams);
+                        $featurePriceParams['restrictions'] = array(
+                            array(
+                                'date_from' => $date_from,
+                                'date_to' => $date_to
+                            )
+                        );
+                        HotelRoomTypeFeaturePricing::createRoomTypeFeaturePrice($featurePriceParams);
                     }
                 } else {
                     break;
@@ -5720,11 +5725,15 @@ class AdminOrdersControllerCore extends AdminController
                 'id_guest' => $cart->id_guest,
                 'id_product' => $id_product,
                 'id_room' => $id_room,
-                'price' => $room_unit_price,
-                'date_from' => $new_date_from,
-                'date_to' => $new_date_to
+                'impact_value' => $room_unit_price,
+                'restrictions' => array(
+                    array(
+                        'date_from' => $new_date_from,
+                        'date_to' => $new_date_to
+                    )
+                )
             );
-            HotelRoomTypeFeaturePricing::createAutoFeaturePrice($params);
+            HotelRoomTypeFeaturePricing::createRoomTypeFeaturePrice($params);
 
             $roomTotalPrice = HotelRoomTypeFeaturePricing::getRoomTypeTotalPrice(
                 $id_product,

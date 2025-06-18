@@ -2615,7 +2615,7 @@ class AdminImportControllerCore extends AdminController
                                 $this->context->cart->id_guest
                             );
                             $objHotelCartBookingData = new HotelCartBookingData();
-                            if ($idRooms = $objHotelCartBookingData->getCustomerIdRoomsByIdCartIdProduct(
+                            if ($bookingCartData = $objHotelCartBookingData->getCustomerIdRoomsByIdCartIdProduct(
                                 $this->context->cart->id,
                                 $orderProduct['id_product'],
                                 date('Y-m-d', strtotime($dateFrom)),
@@ -2632,28 +2632,26 @@ class AdminImportControllerCore extends AdminController
                                 $taxRateM =  $taxRate/100;
                                 if (isset($orderProduct['amount'])) {
                                     $orderProduct['amount'] = (float)$orderProduct['amount']/(1+$taxRateM);
-                                    foreach ($idRooms as $idRoom) {
-                                        $objRoomFeaturePrice = new HotelRoomTypeFeaturePricing();
-                                        $objRoomFeaturePrice->id_product = (int) $orderProduct['id_product'];
-                                        $objRoomFeaturePrice->id_cart = (int) $this->context->cart->id;
-                                        $objRoomFeaturePrice->id_guest = (int) $this->context->cart->id_guest;
-                                        foreach(Language::getLanguages(true) as $lang) {
-                                            $objRoomFeaturePrice->feature_price_name[$lang['id_lang']] = 'csvprice';
-                                        }
-
-                                        $objRoomFeaturePrice->date_selection_type = HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE;
-                                        $objRoomFeaturePrice->date_from = date('Y-m-d', strtotime($dateFrom));
-                                        $objRoomFeaturePrice->date_to = date('Y-m-d', strtotime($dateTo));
-                                        $objRoomFeaturePrice->is_special_days_exists = 0;
-                                        $objRoomFeaturePrice->id_room = $idRoom['id_room'];
-                                        $objRoomFeaturePrice->special_days = json_encode(false);
-                                        $objRoomFeaturePrice->impact_way = HotelRoomTypeFeaturePricing::IMPACT_WAY_FIX_PRICE;
-                                        $objRoomFeaturePrice->impact_type = HotelRoomTypeFeaturePricing::IMPACT_TYPE_FIXED_PRICE;
-                                        $objRoomFeaturePrice->impact_value = $orderProduct['amount'];
-                                        $objRoomFeaturePrice->active = 1;
-                                        $objRoomFeaturePrice->groupBox = array_column(Group::getGroups($this->context->language->id), 'id_group');
-                                        $objRoomFeaturePrice->add();
-                                        $featurePrices[] = $objRoomFeaturePrice->id;
+                                    foreach ($bookingCartData as $bookingCart) {
+                                        $featurePrices[] = HotelRoomTypeFeaturePricing::createRoomTypeFeaturePrice(
+                                            array(
+                                                'name' => 'csvprice',
+                                                'id_product' => (int) $orderProduct['id_product'],
+                                                'id_cart' => (int) $this->context->cart->id,
+                                                'id_guest' => (int) $this->context->cart->id_guest,
+                                                'is_special_days_exists' => 0,
+                                                'id_room' => $bookingCart['id_room'],
+                                                'impact_way' => HotelRoomTypeFeaturePricing::IMPACT_WAY_FIX_PRICE,
+                                                'impact_type' => HotelRoomTypeFeaturePricing::IMPACT_TYPE_FIXED_PRICE,
+                                                'impact_value' => $orderProduct['amount'],
+                                                'restrictions' => array(
+                                                    array(
+                                                        'date_from' => date('Y-m-d', strtotime($dateFrom)),
+                                                        'date_to' => date('Y-m-d', strtotime($dateTo)),
+                                                    )
+                                                )
+                                            )
+                                        );
                                     }
                                 }
                             }
