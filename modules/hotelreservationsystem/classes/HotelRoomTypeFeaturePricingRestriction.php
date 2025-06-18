@@ -18,7 +18,7 @@
 *  @license   https://store.webkul.com/license.html
 */
 
-class HotelRoomTypeFeaturePricingRule extends ObjectModel
+class HotelRoomTypeFeaturePricingRestriction extends ObjectModel
 {
     public $id_feature_price;
     public $date_selection_type;
@@ -29,8 +29,8 @@ class HotelRoomTypeFeaturePricingRule extends ObjectModel
     public $date_add;
     public $date_upd;
     public static $definition = array(
-        'table' => 'htl_room_type_feature_pricing_rule',
-        'primary' => 'id_feature_price_rule',
+        'table' => 'htl_room_type_feature_pricing_restriction',
+        'primary' => 'id_feature_price_restriction',
         'multilang' => false,
         'fields' => array(
             'id_feature_price' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
@@ -45,8 +45,8 @@ class HotelRoomTypeFeaturePricingRule extends ObjectModel
     );
 
     protected $webserviceParameters = array(
-        'objectsNodeName' => 'price_rules',
-        'objectNodeName' => 'price_rule',
+        'objectsNodeName' => 'restrictions',
+        'objectNodeName' => 'restriction',
         'fields' => array(
             'id_feature_price' => array(
                 'xlink_resource' => array(
@@ -56,20 +56,20 @@ class HotelRoomTypeFeaturePricingRule extends ObjectModel
         )
     );
 
-    public function getRulesByIdFeaturePrice($idFeaturePrice)
+    public function getRestrictionsByIdFeaturePrice($idFeaturePrice)
     {
-        $sql = 'SELECT *, id_feature_price_rule AS `id` FROM `'._DB_PREFIX_.$this->table.'`
+        $sql = 'SELECT *, id_feature_price_restriction AS `id` FROM `'._DB_PREFIX_.$this->table.'`
             WHERE `id_feature_price` ='.(int) $idFeaturePrice;
 
         return Db::getInstance()->executeS($sql);
     }
 
-    public function deleteFeaturePriceRulesById($featurePriceRules)
+    public function deleteFeaturePriceRestrictionsById($featurePriceRules)
     {
         $res = true;
         if ($featurePriceRules) {
             foreach ($featurePriceRules as $idFeaturePriceRules) {
-                $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRule($idFeaturePriceRules);
+                $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRestriction($idFeaturePriceRules);
                 $res &= $objFeaturePriceRule->delete();
             }
         }

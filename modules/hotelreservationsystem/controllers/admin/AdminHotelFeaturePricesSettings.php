@@ -174,13 +174,13 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
     public function processStatus()
     {
         $objFeaturePricing = $this->loadObject();
-        $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRule();
+        $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRestriction();
         if (!$objFeaturePricing->active) {
             if ($this->object->validateExistingFeaturePrice(
                 $objFeaturePricing->id_product,
                 $objFeaturePricing->getGroups($objFeaturePricing->id),
                 $objFeaturePricing->id,
-                $objFeaturePriceRule->getRulesByIdFeaturePrice($objFeaturePricing->id)
+                $objFeaturePriceRule->getRestrictionsByIdFeaturePrice($objFeaturePricing->id)
             )) {
                 $this->errors[] = $this->l('An advanced price rule already exists with overlapping conditions. Please update the existing rule to activate this one.');
                 return ;
@@ -242,8 +242,8 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
             $smartyVars['objFeaturePrice'] = $objFeaturePrice;
             $smartyVars['edit'] = 1;
 
-            $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRule();
-            if ($advancePriceRules = $objFeaturePriceRule->getRulesByIdFeaturePrice($objFeaturePrice->id)) {
+            $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRestriction();
+            if ($advancePriceRules = $objFeaturePriceRule->getRestrictionsByIdFeaturePrice($objFeaturePrice->id)) {
                 foreach ($advancePriceRules as $priceRuleKey => $advancePriceRule) {
                     if ($advancePriceRule['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_SPECIFIC) {
                         $advancePriceRules[$priceRuleKey]['specific_date'] = $advancePriceRule['date_from'];
@@ -427,7 +427,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
 
         $rowsToHighlight = [];
         if (!$priceRules) {
-            $this->errors[] = $this->l('Atleast one rule is required while creating advance price rule.');
+            $this->errors[] = $this->l('Atleast one restriction is required while creating advance price rule.');
         } else {
             foreach ($priceRules as $priceRuleKey => $priceRule) {
                 if (!$priceRule['is_special_days_exists']) {
@@ -437,31 +437,30 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                     if ($priceRule['specific_date']) {
                         $priceRules[$priceRuleKey]['date_from'] = $priceRule['specific_date'];
                         $priceRules[$priceRuleKey]['date_to'] = date('Y-m-d', strtotime("+1 day", strtotime($priceRule['specific_date'])));
-                        unset($priceRules[$priceRuleKey]['specific_date']);
                     } else {
                         $rowsToHighlight[] = $priceRuleKey;
-                        $this->errors = $this->l('Specific Date is missing for advance price rule');
+                        $this->errors = $this->l('Specific Date is missing for price rule restriction.');
                     }
                 } else if ($priceRule['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE) {
                     if ($priceRule['date_from'] == '') {
                         $rowsToHighlight[] = $priceRuleKey;
-                        $this->errors[] = $this->l('Dates are invalid in some rules');
+                        $this->errors[] = $this->l('Dates are invalid in price rule restriction.');
                     } else if ($priceRule['date_to'] == '') {
-                        $this->errors[] = $this->l('Dates are invalid in some rules');
+                        $this->errors[] = $this->l('Dates are invalid in price rule restriction');
                         $rowsToHighlight[] = $priceRuleKey;
                     }
 
                     $dateFrom = date('Y-m-d', strtotime($priceRule['date_from']));
                     $dateTo = date('Y-m-d', strtotime($priceRule['date_to']));
                     if (!Validate::isDate($dateFrom)) {
-                        $this->errors[] = $this->l('Dates are invalid in some rules');
+                        $this->errors[] = $this->l('Dates are invalid in price rule restriction');
                         $rowsToHighlight[] = $priceRuleKey;
                     }
                     if (!Validate::isDate($dateTo)) {
-                        $this->errors[] = $this->l('Dates are invalid in some rules');
+                        $this->errors[] = $this->l('Dates are invalid in price rule restriction');
                     }
                     if ($dateTo < $dateFrom) {
-                        $this->errors[] = $this->l('Dates are invalid in some rules');
+                        $this->errors[] = $this->l('Dates are invalid in price rule restriction');
                     }
                     if ($priceRule['is_special_days_exists']) {
                         if (!isset($priceRule['special_days']) || !$priceRule['special_days']) {
@@ -483,7 +482,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                     if ($priceRuleKey != $ruleKey) {
                         if ($rule['date_selection_type'] == $priceRule['date_selection_type']) {
                             if ($rule['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_SPECIFIC) {
-                                if (strtotime($rule['date_from']) != strtotime($priceRule['date_from'])) {
+                                if (strtotime($rule['specific_date']) != strtotime($priceRule['specific_date'])) {
                                     continue;
                                 } else {
                                     $this->errors[] = $this->l('Some dates are conflicting. Please check and reselect the dates.');
@@ -562,7 +561,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                     $objFeaturePricing->id_product = $idRoomType;
                     $objFeaturePricing->feature_price_name = $featurePricingName[$idRoomType];
                     $objFeaturePricing->add();
-                    $objFeaturePricing->saveFeaturePricesRules($objFeaturePricing->id, $priceRules);
+                    $objFeaturePricing->saveFeaturePriceRestrictions($objFeaturePricing->id, $priceRules);
                 }
 
                 Tools::redirectAdmin(self::$currentIndex.'&conf=3&token='.$this->token);
@@ -572,7 +571,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
 
             $conf = $idFeaturePrice ? 4 : 3;
             if ($objFeaturePricing->save()) {
-                $objFeaturePricing->saveFeaturePricesRules($objFeaturePricing->id, $priceRules);
+                $objFeaturePricing->saveFeaturePriceRestrictions($objFeaturePricing->id, $priceRules);
                 if (Tools::isSubmit('submitAdd'.$this->table.'AndStay')) {
                     Tools::redirectAdmin(
                         self::$currentIndex.'&id_feature_price='.(int) $objFeaturePricing->id.
@@ -656,7 +655,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
             'noText' => $this->l('No', null, true),
             'specialDaysText' => $this->l('Restrict to Week Days', null, true),
             'weekDaysText' => $this->l('Select Week Days', null, true),
-            'specialDaysTooltipText' => $this->l('Enable this option to restrict this rule to specific week days (for example, weekends) of the selected date range. If disabled, rule will be applicable to all week days.', null, true)
+            'specialDaysTooltipText' => $this->l('Enable this option to add restriction to specific week days (for example, weekends) of the selected date range.', null, true)
         ));
 
         $this->addCSS(_MODULE_DIR_.'hotelreservationsystem/views/css/HotelReservationAdmin.css');

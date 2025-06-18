@@ -709,49 +709,47 @@ $(document).ready(function() {
         let panelElem = $('<div>').addClass('panel advanced_price_rule').attr('data-advanced_price_rule_index', panelIndex);
         let idElem = $('<input>').attr('type', 'hidden').attr('name', 'advance_price_rule['+panelIndex+'][id]')
         let headerElem = $('<div>').addClass('row advance_price_rule_header_container advance_price_rule_collapse').attr({'data-toggle':"collapse", 'data-target':"#advanced_price_rule_"+panelIndex})
-            .append($('<div>').addClass('col-xs-8 advance_price_rule_header'))
-            .append($('<div>').addClass('col-xs-4')
-                .append($('<div>').addClass('col-xs-7'))
-                .append($('<div>').addClass('col-xs-2')
+            .append($('<div>').addClass('col-xs-9 advance_price_rule_header'))
+            .append($('<div>').addClass('col-xs-3')
+                .append($('<div>').addClass('col-xs-offset-7 col-xs-2')
                     .append($('<a>').addClass('btn btn-default remove_advanced_price_rule')
                         .append($('<span>').append($('<i>').addClass('icon-trash')))))
-                .append($('<div>').addClass('col-xs-1'))
-                .append($('<div>').addClass('col-xs-2')
+                .append($('<div>').addClass('col-xs-offset-1 col-xs-2')
                     .append($('<a>').addClass('btn btn-default')
                         .append($('<i>').addClass('icon-caret-down')))));
 
         let dateSelectionElem = $('<div>').addClass('form-group')
-            .append($('<label>').addClass('control-label col-sm-4 col-xs-3').attr('for', 'advance_price_rule['+panelIndex+'][date_selection_type]').text(' ' + dateSelectionTitle))
+            .append($('<label>').addClass('control-label col-xs-4').attr('for', 'advance_price_rule['+panelIndex+'][date_selection_type]').text(' ' + dateSelectionTitle))
             .append($('<div>').addClass('col-xs-5')
                 .append($(dateSeletionOptions).attr({'name': 'advance_price_rule['+panelIndex+'][date_selection_type]', 'id': 'date_selection_type_'+panelIndex})))
             .append($('<div>').addClass('col-xs-3 advanced_price_rule_body_actions')
-                .append($('<div>').addClass('col-xs-offset-4 col-xs-4')
+                .append($('<div>').addClass('col-xs-offset-7 col-xs-2')
                     .append($('<a>').addClass('btn btn-default remove_advanced_price_rule')
                         .append($('<span>').append($('<i>').addClass('icon-trash')))))
-                .append($('<div>').addClass('col-xs-4')
+                .append($('<div>').addClass('col-xs-offset-1 col-xs-2')
                     .append($('<a>').addClass('btn btn-default').attr({'data-toggle':"collapse", 'data-target':"#advanced_price_rule_"+panelIndex})
                         .append($('<i>').addClass('icon-caret-up')))));
 
         let specificDateElem = $('<div>').addClass('form-group specific_date_type_'+panelIndex).css('display', 'none')
-            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][specific_date]').text(' ' + specificDateText))
+            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'advance_price_rule['+panelIndex+'][specific_date]').text(' ' + specificDateText))
             .append($('<div>').addClass('col-xs-5')
                 .append($('<input>').addClass('specific_date form-control datepicker-input')
                     .attr({type:'text', id: 'specific_date_'+panelIndex, name: 'advance_price_rule['+panelIndex+'][specific_date]', value: dateToday, readonly: 'readonly'})));
 
         let dateFromElem = $('<div>').addClass('form-group date_range_type_'+panelIndex)
-            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][date_from]').text(' ' + dateFromText))
+            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'advance_price_rule['+panelIndex+'][date_from]').text(' ' + dateFromText))
             .append($('<div>').addClass('col-xs-5')
                 .append($('<input>').addClass('feature_plan_date_from form-control  datepicker-input')
                     .attr({type:'text', id: 'feature_plan_date_from_'+panelIndex, name: 'advance_price_rule['+panelIndex+'][date_from]', value: dateToday, readonly: 'readonly'})));
 
         let dateToElem = $('<div>').addClass('form-group date_range_type_'+panelIndex)
-            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][date_to]').text(' ' + dateToText))
+            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'advance_price_rule['+panelIndex+'][date_to]').text(' ' + dateToText))
             .append($('<div>').addClass('col-xs-5')
                 .append($('<input>').addClass('feature_plan_date_to form-control  datepicker-input')
                     .attr({type:'text', id: 'feature_plan_date_to_'+panelIndex, name: 'advance_price_rule['+panelIndex+'][date_to]', value: dateTomorrow, readonly: 'readonly'})));
 
         let specialDaysElement = $('<div>').addClass('form-group special_days_content_'+panelIndex)
-            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][is_special_days_exists]')
+            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'advance_price_rule['+panelIndex+'][is_special_days_exists]')
                 .append($('<span>').addClass('label-tooltip').attr({'data-toggle': 'tooltip', 'data-html':'true', 'title': '', 'data-original-title': specialDaysTooltipText}).text(' '+specialDaysText)))
             .append($('<div>').addClass('col-xs-5')
                 .append($('<span>').addClass('switch prestashop-switch fixed-width-lg')
@@ -763,7 +761,7 @@ $(document).ready(function() {
 
         $(weekDaysOptions).find('input[type="checkbox"]').attr('name', 'advance_price_rule['+panelIndex+'][special_days][]');
         let specialDaysCheckBoxElem = $('<div>').addClass('form-group week_days week_days_'+panelIndex)
-            .append($('<label>').addClass('control-label col-sm-4 col-xs-3 required').attr('for', 'advance_price_rule['+panelIndex+'][special_days]').text(' ' +weekDaysText))
+            .append($('<label>').addClass('control-label col-xs-4 required').attr('for', 'advance_price_rule['+panelIndex+'][special_days]').text(' ' +weekDaysText))
             .append($('<div>').addClass('col-xs-8 checkboxes-wrap').append($(weekDaysOptions).html()))
 
         let bodyElem = $('<div>').attr('id', 'advanced_price_rule_'+panelIndex).addClass('in advanced_price_rule_body')

@@ -1444,7 +1444,7 @@ class HotelCartBookingData extends ObjectModel
     ) {
         if ($id_cart && $id_room) {
             if ($featurePrice = Db::getInstance()->getRow('SELECT * FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing` fp
-                LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_rule` fpr
+                LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_restriction` fpr
                 ON (fpr.`id_feature_price` = fp.`id_feature_price`)
                 WHERE fp.`id_product` = '.(int) $id_product.' AND fp.`id_cart` = '.(int) $id_cart.'
                 AND fp.`id_guest` = '.(int) $id_guest.' AND fp.`id_room` = '.(int) $id_room.'
@@ -1465,7 +1465,7 @@ class HotelCartBookingData extends ObjectModel
                         'SELECT * FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing` fp'.
                         (Group::isFeatureActive() ? ' INNER JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_group` fpg
                         ON (fp.`id_feature_price` = fpg.`id_feature_price` AND fpg.`id_group` = '.(int) $id_group.')' : '').'
-                        LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_rule` fpr
+                        LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_restriction` fpr
                         ON (fpr.`id_feature_price` = fp.`id_feature_price`)
                         WHERE fp.`id_cart` = 0 AND fp.`id_product`='.(int) $id_product.' AND fp.`active`=1
                         AND fpr.`date_selection_type` = '.(int) HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_SPECIFIC.' AND fpr.`date_from` = \''.pSQL($date).'\''
@@ -1477,7 +1477,7 @@ class HotelCartBookingData extends ObjectModel
                         'SELECT * FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing` fp'.
                         (Group::isFeatureActive() ? ' INNER JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_group` fpg
                         ON (fp.`id_feature_price` = fpg.`id_feature_price` AND fpg.`id_group` = '.(int) $id_group.')' : '').'
-                        LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_rule` fpr
+                        LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_restriction` fpr
                         ON (fpr.`id_feature_price` = fp.`id_feature_price`)
                         WHERE fp.`id_cart` = 0 AND fp.`id_product`='.(int) $id_product.'
                         AND fpr.`is_special_days_exists`=1 AND fp.`active`=1 AND fpr.`date_from` <= \''.pSQL($date).'\'
@@ -1495,7 +1495,7 @@ class HotelCartBookingData extends ObjectModel
                         'SELECT * FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing` fp'.
                         (Group::isFeatureActive() ? ' INNER JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_group` fpg
                         ON (fp.`id_feature_price` = fpg.`id_feature_price` AND fpg.`id_group` = '.(int) $id_group.')' : '').'
-                        LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_rule` fpr
+                        LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_restriction` fpr
                         ON (fpr.`id_feature_price` = fp.`id_feature_price`)
                         WHERE fp.`id_cart` = 0 AND fp.`id_product`='.(int) $id_product.' AND fpr.`date_selection_type` = '.(int) HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE.'
                         AND `is_special_days_exists`=0 AND `active`=1

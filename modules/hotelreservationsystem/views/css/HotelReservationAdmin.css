@@ -618,7 +618,7 @@ body.adminhotelroomsbooking .ui-tooltip {
 
 #advanced_price_rule_group .panel.advanced_price_rule {
     padding: 0px;}
-#advanced_price_rule_group .advance_price_rule_header_container {
+#advanced_price_rule_group .advance_price_rule_header_container, .advanced_price_rule_body {
     padding: 15px;}
 #advanced_price_rule_group .advance_price_rule_header_container:hover {
     cursor: pointer;}

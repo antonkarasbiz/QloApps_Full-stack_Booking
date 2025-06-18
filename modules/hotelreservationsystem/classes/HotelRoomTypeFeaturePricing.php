@@ -83,10 +83,10 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         ),
         'associations' => array(
             'groups' => array('resource' => 'group'),
-            'price_rules' => array(
+            'restrictions' => array(
                 'resource' => 'price_rule',
-                'getter' => 'getWsAdvancePriceRule',
-                'setter' => 'setWsAdvancePriceRule',
+                'getter' => 'getWsAdvancePriceRestriction',
+                'setter' => 'setWsAdvancePriceRestriction',
                 'fields' => array(
                     'id' => array(),
                     'date_from' => array(),
@@ -126,10 +126,10 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
     {
         // first call to delete all the group entries
         $this->cleanGroups();
-        $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRule();
-        if ($oldFeaturePriceRules = $objFeaturePriceRule->getRulesByIdFeaturePrice($this->id)) {
-            $oldFeaturePriceRules = array_column($oldFeaturePriceRules, 'id_feature_price_rule', 'id_feature_price_rule');
-            $objFeaturePriceRule->deleteFeaturePriceRulesById($oldFeaturePriceRules);
+        $objFeaturePriceRestriction = new HotelRoomTypeFeaturePricingRestriction();
+        if ($oldFeaturePriceRestrictions = $objFeaturePriceRestriction->getRestrictionsByIdFeaturePrice($this->id)) {
+            $oldFeaturePriceRestrictions = array_column($oldFeaturePriceRestrictions, 'id_feature_price_restriction', 'id_feature_price_restriction');
+            $objFeaturePriceRestriction->deleteFeaturePriceRestrictionsById($oldFeaturePriceRestrictions);
         }
 
         return parent::delete();
@@ -141,7 +141,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         $idFeaturePrice,
         $featurePriceRules
     ) {
-        $sql = 'SELECT *, GROUP_CONCAT(rtfpg.`id_group`) AS id_group FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing_rule` rtfpr
+        $sql = 'SELECT *, GROUP_CONCAT(rtfpg.`id_group`) AS id_group FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing_restriction` rtfpr
             LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing` rtfp
             ON (rtfpr.`id_feature_price` = rtfp.`id_feature_price` AND rtfp.`id_product`='.(int) $idRoomType.')
             LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_group` rtfpg
@@ -181,49 +181,49 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         return Db::getInstance()->executeS($sql);
     }
 
-    public function saveFeaturePricesRules($idFeaturePrice, $featurePriceRules)
+    public function saveFeaturePriceRestrictions($idFeaturePrice, $featurePriceRules)
     {
         $res = true;
-        $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRule();
-        if ($oldFeaturePriceRules = $objFeaturePriceRule->getRulesByIdFeaturePrice($idFeaturePrice)) {
-            $oldFeaturePriceRules = array_column($oldFeaturePriceRules, 'id_feature_price_rule', 'id_feature_price_rule');
+        $objFeaturePriceRestriction = new HotelRoomTypeFeaturePricingRestriction();
+        if ($oldFeaturePriceRestrictions = $objFeaturePriceRestriction->getRestrictionsByIdFeaturePrice($idFeaturePrice)) {
+            $oldFeaturePriceRestrictions = array_column($oldFeaturePriceRestrictions, 'id_feature_price_restriction', 'id_feature_price_restriction');
         }
 
         if ($featurePriceRules) {
             foreach ($featurePriceRules as $featurePriceRule) {
-                if (isset($featurePriceRule['id']) && in_array($featurePriceRule['id'], $oldFeaturePriceRules)) {
-                    $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRule($featurePriceRule['id']);
-                    unset($oldFeaturePriceRules[$featurePriceRule['id']]);
+                if (isset($featurePriceRule['id']) && in_array($featurePriceRule['id'], $oldFeaturePriceRestrictions)) {
+                    $objFeaturePriceRestriction = new HotelRoomTypeFeaturePricingRestriction($featurePriceRule['id']);
+                    unset($oldFeaturePriceRestrictions[$featurePriceRule['id']]);
                 } else {
-                    $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRule();
+                    $objFeaturePriceRestriction = new HotelRoomTypeFeaturePricingRestriction();
                 }
 
-                $objFeaturePriceRule->id_feature_price = $idFeaturePrice;
-                $objFeaturePriceRule->date_from = $featurePriceRule['date_from'];
-                $objFeaturePriceRule->date_to = $featurePriceRule['date_to'];
-                $objFeaturePriceRule->date_selection_type = isset($featurePriceRule['date_selection_type']) ? $featurePriceRule['date_selection_type'] : HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE;
-                $objFeaturePriceRule->special_days = json_encode(array());
-                if ($objFeaturePriceRule->date_selection_type == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE
+                $objFeaturePriceRestriction->id_feature_price = $idFeaturePrice;
+                $objFeaturePriceRestriction->date_from = $featurePriceRule['date_from'];
+                $objFeaturePriceRestriction->date_to = $featurePriceRule['date_to'];
+                $objFeaturePriceRestriction->date_selection_type = isset($featurePriceRule['date_selection_type']) ? $featurePriceRule['date_selection_type'] : HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE;
+                $objFeaturePriceRestriction->special_days = json_encode(array());
+                if ($objFeaturePriceRestriction->date_selection_type == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE
                     && isset($featurePriceRule['is_special_days_exists']) && $featurePriceRule['is_special_days_exists']
                 ) {
-                    $objFeaturePriceRule->is_special_days_exists = $featurePriceRule['is_special_days_exists'];
+                    $objFeaturePriceRestriction->is_special_days_exists = $featurePriceRule['is_special_days_exists'];
                     if (isset($featurePriceRule['is_special_days_exists'])
                         && $featurePriceRule['is_special_days_exists']
                         && isset($featurePriceRule['special_days'])
                         && $featurePriceRule['special_days']
                     ) {
-                        $objFeaturePriceRule->special_days = json_encode($featurePriceRule['special_days']);
+                        $objFeaturePriceRestriction->special_days = json_encode($featurePriceRule['special_days']);
                     }
                 } else {
-                    $objFeaturePriceRule->is_special_days_exists = 0;
+                    $objFeaturePriceRestriction->is_special_days_exists = 0;
                 }
 
-                $res &= $objFeaturePriceRule->save();
+                $res &= $objFeaturePriceRestriction->save();
             }
         }
 
-        if ($oldFeaturePriceRules) {
-            $res &= $objFeaturePriceRule->deleteFeaturePriceRulesById($oldFeaturePriceRules);
+        if ($oldFeaturePriceRestrictions) {
+            $res &= $objFeaturePriceRestriction->deleteFeaturePriceRestrictionsById($oldFeaturePriceRestrictions);
         }
 
         return $res;
@@ -489,7 +489,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing` hrfp
             LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_lang` hrfpl
             ON(hrfp.`id_feature_price` = hrfpl.`id_feature_price` AND hrfpl.`id_lang` = '.(int)$idLang.')
-            LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_rule` hrfpr
+            LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_restriction` hrfpr
             ON (hrfpr.`id_feature_price` = hrfp.`id_feature_price`)
             WHERE `id_product` = '.(int)$id_product.' AND `id_cart` = '.(int)$id_cart.' AND `id_guest` = '.(int)$id_guest.' AND `id_room` = '.(int)$id_room
         );
@@ -542,7 +542,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
 
         $idfeaturePrices = Db::getInstance()->executeS(
             'SELECT hrfp.`id_feature_price`  FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing` hrfp
-            LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_rule` hrfpr
+            LEFT JOIN `'._DB_PREFIX_.'htl_room_type_feature_pricing_restriction` hrfpr
             ON (hrfpr.`id_feature_price` = hrfp.`id_feature_price`)
             WHERE 1'.
             ($id_cart ? ' AND hrfp.`id_cart` = '.(int) $id_cart : '').
@@ -638,16 +638,16 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         return true;
     }
 
-    public function getWsAdvancePriceRule()
+    public function getWsAdvancePriceRestriction()
     {
         return Db::getInstance()->executeS(
-            'SELECT *, id_feature_price_rule AS `id` FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing_rule`
+            'SELECT *, id_feature_price_restriction AS `id` FROM `'._DB_PREFIX_.'htl_room_type_feature_pricing_restriction`
             WHERE `id_feature_price` ='.(int)$this->id.' ORDER BY `id_feature_price` ASC'
         );
 
     }
 
-    public function setWsAdvancePriceRule($priceRules)
+    public function setWsAdvancePriceRestriction($priceRules)
     {
         foreach ($priceRules as $ruleKey => $priceRule) {
             if ($priceRule['date_selection_type'] == HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE
@@ -658,7 +658,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             }
         }
 
-        return $this->saveFeaturePricesRules($this->id, $priceRules);
+        return $this->saveFeaturePriceRestrictions($this->id, $priceRules);
     }
 
     public function validateExistingFeaturePrice(
@@ -714,7 +714,7 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
             $idGroups = array();
             if (isset($this->associations)) {
                 foreach ($this->associations->children() as $association) {
-                    if ($association->getName() == 'price_rules') {
+                    if ($association->getName() == 'restrictions') {
                         $assocItems = $association->children();
                         foreach ($assocItems as $assocItem) {
                             /** @var SimpleXMLElement $assocItem */
@@ -862,11 +862,11 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
         $objFeaturePricing->feature_price_name = $featurePriceName;
         $objFeaturePricing->impact_way = isset($params['impact_way']) ? $params['impact_way'] : HotelRoomTypeFeaturePricing::IMPACT_WAY_FIX_PRICE;
         $objFeaturePricing->impact_type = isset($params['impact_type']) ? $params['impact_type'] : HotelRoomTypeFeaturePricing::IMPACT_TYPE_FIXED_PRICE;
-        $objFeaturePricing->impact_value = isset($params['price']) ? $params['price'] : 0;
+        $objFeaturePricing->impact_value = isset($params['impact_value']) ? $params['impact_value'] : 0;
         $objFeaturePricing->active = isset($params['active']) ? $params['active'] : 1;
         $objFeaturePricing->groupBox = !empty($params['groupBox']) ?  $params['groupBox'] : array_column(Group::getGroups($context->language->id), 'id_group');
         if ($objFeaturePricing->add()) {
-            $objFeaturePricing->saveFeaturePricesRules($objFeaturePricing->id, $params['price_rules']);
+            $objFeaturePricing->saveFeaturePriceRestrictions($objFeaturePricing->id, $params['restrictions']);
         }
 
         return $objFeaturePricing->id;

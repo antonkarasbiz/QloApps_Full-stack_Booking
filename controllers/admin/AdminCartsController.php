@@ -1018,7 +1018,7 @@ class AdminCartsControllerCore extends AdminController
                     'impact_way' => HotelRoomTypeFeaturePricing::IMPACT_WAY_FIX_PRICE,
                     'impact_type' => HotelRoomTypeFeaturePricing::IMPACT_TYPE_FIXED_PRICE,
                     'impact_value' => $price,
-                    'price_rules' => array(
+                    'restrictions' => array(
                         array(
                             'date_from' => $date_from,
                             'date_to' => $date_to

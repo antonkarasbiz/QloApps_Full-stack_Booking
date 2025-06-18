@@ -293,8 +293,8 @@ class HotelReservationSystemDb
                 PRIMARY KEY (`id_feature_price`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
 
-            "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_room_type_feature_pricing_rule` (
-                `id_feature_price_rule` int(11) NOT NULL AUTO_INCREMENT,
+            "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_room_type_feature_pricing_restriction` (
+                `id_feature_price_restriction` int(11) NOT NULL AUTO_INCREMENT,
                 `id_feature_price` int(11) NOT NULL,
                 `is_special_days_exists` tinyint(1) NOT NULL,
                 `date_selection_type` tinyint(1) NOT NULL,
@@ -303,7 +303,7 @@ class HotelReservationSystemDb
                 `date_to` date NOT NULL,
                 `date_add` datetime NOT NULL,
                 `date_upd` datetime NOT NULL,
-                PRIMARY KEY (`id_feature_price_rule`)
+                PRIMARY KEY (`id_feature_price_restriction`)
             ) ENGINE="._MYSQL_ENGINE_." DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;",
 
             "CREATE TABLE IF NOT EXISTS `"._DB_PREFIX_."htl_room_type_feature_pricing_lang` (
@@ -590,7 +590,7 @@ class HotelReservationSystemDb
             `'._DB_PREFIX_.'htl_room_type_feature_pricing`,
             `'._DB_PREFIX_.'htl_room_type_feature_pricing_lang`,
             `'._DB_PREFIX_.'htl_room_type_feature_pricing_group`,
-            `'._DB_PREFIX_.'htl_room_type_feature_pricing_rule`,
+            `'._DB_PREFIX_.'htl_room_type_feature_pricing_restriction`,
             `'._DB_PREFIX_.'htl_room_type_global_demand`,
             `'._DB_PREFIX_.'htl_room_type_global_demand_lang`,
             `'._DB_PREFIX_.'htl_room_type_global_demand_advance_option`,

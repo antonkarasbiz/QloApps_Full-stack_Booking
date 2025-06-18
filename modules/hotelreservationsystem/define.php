@@ -32,7 +32,7 @@ require_once 'classes/HotelOrderRefundRules.php';
 require_once 'classes/HotelOrderRestrictDate.php';
 require_once 'classes/HotelHelper.php';
 require_once 'classes/HotelRoomTypeFeaturePricing.php';
-require_once 'classes/HotelRoomTypeFeaturePricingRule.php';
+require_once 'classes/HotelRoomTypeFeaturePricingRestriction.php';
 require_once 'classes/ChannelOrderPayment.php';
 
 require_once 'classes/HotelBookingDemands.php';

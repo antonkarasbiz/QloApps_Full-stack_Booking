@@ -2937,10 +2937,10 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
 
         $params['name'] = 'Api-Booking-Price';
         $params['impact_type'] = HotelRoomTypeFeaturePricing::IMPACT_TYPE_FIXED_PRICE;
-        $params['price'] /= $numDays;
+        $params['impact_value'] /= $numDays;
         $params['is_special_days_exists'] = 0;
         $params['special_days'] = json_encode(false);
-        $params['price_rules'] = array(
+        $params['restrictions'] = array(
             array(
                 'date_from' => $params['date_from'],
                 'date_to' => $params['date_to']

@@ -2644,7 +2644,7 @@ class AdminImportControllerCore extends AdminController
                                                 'impact_way' => HotelRoomTypeFeaturePricing::IMPACT_WAY_FIX_PRICE,
                                                 'impact_type' => HotelRoomTypeFeaturePricing::IMPACT_TYPE_FIXED_PRICE,
                                                 'impact_value' => $orderProduct['amount'],
-                                                'price_rules' => array(
+                                                'restrictions' => array(
                                                     array(
                                                         'date_from' => date('Y-m-d', strtotime($dateFrom)),
                                                         'date_to' => date('Y-m-d', strtotime($dateTo)),

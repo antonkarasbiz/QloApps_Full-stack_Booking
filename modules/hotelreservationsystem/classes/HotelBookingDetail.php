@@ -1955,12 +1955,10 @@ class HotelBookingDetail extends ObjectModel
                     $featurePriceParams = array(
                         'id_cart' => $context->cart->id,
                         'id_guest' => $context->cookie->id_guest,
-                        'price' => $newRoomPriceTaxExcl,
+                        'impact_value' => $newRoomPriceTaxExcl,
                         'id_product' => $idNewRoomType,
                     );
                 }
-
-                $objServiceProductCartDetail = new ServiceProductCartDetail();
 
                 $bookingParams = array(
                     'date_from' => $objOldHotelBooking->date_from,
@@ -1994,7 +1992,7 @@ class HotelBookingDetail extends ObjectModel
                         // create feature price if needed
                         if ($createFeaturePrice) {
                             $featurePriceParams['id_room'] = $roomInfo['id_room'];
-                            $featurePriceParams['price_rules'] = array(
+                            $featurePriceParams['restrictions'] = array(
                                 array(
                                     'date_from' => $objOldHotelBooking->date_from,
                                     'date_to' => $objOldHotelBooking->date_to
