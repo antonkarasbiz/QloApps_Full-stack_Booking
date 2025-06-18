@@ -2432,7 +2432,7 @@ class CartCore extends ObjectModel
                                         $array[$selectedProduct['id_room_type_hotel']]['total_price_tax_incl'] += $selectedProduct['total_price_tax_incl'];
                                     } else {
                                         $array[$selectedProduct['id_room_type_hotel']] = array(
-                                            'quantity' => $selectedProduct['quantity'],
+                                            'quantity' => 0,
                                             'id_hotel' => $selectedProduct['id_room_type_hotel'],
                                             'total_price_tax_excl' => $selectedProduct['total_price_tax_excl'],
                                             'total_price_tax_incl' => $selectedProduct['total_price_tax_incl'],
