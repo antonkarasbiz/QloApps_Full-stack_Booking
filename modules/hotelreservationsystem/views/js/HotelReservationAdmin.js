@@ -681,7 +681,7 @@ $(document).ready(function() {
         $(elem).find('.advance_price_rule_header').html(priceRuleHeadingText);
     }
 
-    $(document).on('shown.bs.collapse', function(e) {
+    $(document).on('show.bs.collapse', function(e) {
         if ($(e.target).hasClass('advanced_price_rule_body')) {
             $(e.target).closest('.advanced_price_rule').find('.advance_price_rule_header_container').removeClass('shown');
         }
