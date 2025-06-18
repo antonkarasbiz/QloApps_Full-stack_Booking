@@ -2935,9 +2935,14 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
             $numDays = 1;
         }
 
+        if ($this->context->cart->id_currency != (int)Configuration::get('PS_CURRENCY_DEFAULT')) {
+            $currency = Currency::getCurrencyInstance($this->context->cart->id_currency);
+            $params['price'] = Tools::ps_round($params['price']/$currency->conversion_rate, 6);
+        }
+
         $params['name'] = 'Api-Booking-Price';
         $params['impact_type'] = HotelRoomTypeFeaturePricing::IMPACT_TYPE_FIXED_PRICE;
-        $params['impact_value'] /= $numDays;
+        $params['impact_value'] = $params['price']/$numDays;
         $params['is_special_days_exists'] = 0;
         $params['special_days'] = json_encode(false);
         $params['restrictions'] = array(
