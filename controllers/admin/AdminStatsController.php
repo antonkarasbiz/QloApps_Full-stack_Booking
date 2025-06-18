@@ -1000,7 +1000,7 @@ class AdminStatsControllerCore extends AdminStatsTabController
                 FROM `'._DB_PREFIX_.'orders` o
                 LEFT JOIN `'._DB_PREFIX_.'order_state` os ON os.`id_order_state` = o.`current_state`
                 WHERE o.`invoice_date` BETWEEN "'.pSQL($dateFrom).' 00:00:00"
-                AND "'.pSQL($dateFrom).' 23:59:59" AND os.`logable` = 1
+                AND "'.pSQL($dateTo).' 23:59:59" AND os.`logable` = 1
                 AND (
                     EXISTS (
                         SELECT 1
