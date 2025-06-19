@@ -944,6 +944,12 @@ class AdminProductsControllerCore extends AdminController
                         $id_hotel_new = $room_type_info['id_hotel'];
                     }
 
+                    $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
+                    if ($roomTypeBedTypes = $objHotelRoomTypeBedType->getRoomTypeBedTypes($id_product_old)) {
+                        $roomTypeBedTypes = array_column($roomTypeBedTypes, 'id_bed_type');
+                        $objHotelRoomTypeBedType->updateRoomTypeBedTypes($roomTypeBedTypes, $product->id);
+                    }
+
                     if ($product->hasAttributes()) {
                         Product::updateDefaultAttribute($product->id);
                     } else {
@@ -1918,7 +1924,8 @@ class AdminProductsControllerCore extends AdminController
         $this->copyFromPost($this->object, $this->table);
         $this->object->booking_product = true;
         if ($this->object->add()) {
-
+            $objHotelRoomTypeBedType = new HotelRoomTypeBedType();
+            $objHotelRoomTypeBedType->updateRoomTypeBedTypes(Tools::getValue('id_bed_types'), $this->object->id);
             // associateroom type to hotel
             // if ($this->object->is_virtual) {
 
