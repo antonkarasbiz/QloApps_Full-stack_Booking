@@ -192,7 +192,11 @@ class AdminCartsControllerCore extends AdminController
         //$helper->chart = true;
         $helper->color = 'color1';
         $helper->title = $this->l('Conversion Rate', null, null, false);
-        $helper->subtitle = $daysForConversionRate.' '.$this->l('days', null, null, false);
+        if ($daysForConversionRate == 1) {
+            $helper->subtitle = $daysForConversionRate.' '.$this->l('day', null, null, false);
+        } else {
+            $helper->subtitle = $daysForConversionRate.' '.$this->l('days', null, null, false);
+        }
         if (ConfigurationKPI::get('CONVERSION_RATE_CHART') !== false) {
             $helper->data = ConfigurationKPI::get('CONVERSION_RATE_CHART');
         }
@@ -217,7 +221,12 @@ class AdminCartsControllerCore extends AdminController
         $helper->icon = 'icon-money';
         $helper->color = 'color3';
         $helper->title = $this->l('Average Order Value', null, null, false);
-        $helper->subtitle = $daysForAvgOrderVal.' '.$this->l('days', null, null, false);
+        if ($daysForAvgOrderVal == 1) {
+            $helper->subtitle = $daysForAvgOrderVal.' '.$this->l('day', null, null, false);
+        } else {
+            $helper->subtitle = $daysForAvgOrderVal.' '.$this->l('days', null, null, false);
+        }
+
         $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=average_order_value';
         $this->kpis[] = $helper;
 
@@ -227,7 +236,11 @@ class AdminCartsControllerCore extends AdminController
         $helper->icon = 'icon-user';
         $helper->color = 'color4';
         $helper->title = $this->l('Net Profit per Visitor', null, null, false);
-        $helper->subtitle = $daysForProfitPerVisitor.' '.$this->l('days', null, null, false);
+        if ($daysForProfitPerVisitor == 1) {
+            $helper->subtitle = $daysForProfitPerVisitor.' '.$this->l('day', null, null, false);
+        } else {
+            $helper->subtitle = $daysForProfitPerVisitor.' '.$this->l('days', null, null, false);
+        }
         $helper->source = $this->context->link->getAdminLink('AdminStats').'&ajax=1&action=getKpi&kpi=netprofit_visit';
         $this->kpis[] = $helper;
 
@@ -1008,28 +1021,25 @@ class AdminCartsControllerCore extends AdminController
 
         if ($this->tabAccess['edit'] === 1) {
             HotelRoomTypeFeaturePricing::deleteFeaturePrices($id_cart, $id_product, $id_room, $date_from, $date_to);
-            $feature_price_name = array();
-            foreach (Language::getIDs(true) as $id_lang) {
-                $feature_price_name[$id_lang] = 'Auto-generated';
-            }
+            HotelRoomTypeFeaturePricing::createRoomTypeFeaturePrice(
+                array(
+                    'id_product' => $id_product,
+                    'id_cart' => $id_cart,
+                    'id_guest' => (int) $this->context->cookie->id_guest,
+                    'id_room' => $id_room,
+                    'is_special_days_exists' => 0,
+                    'impact_way' => HotelRoomTypeFeaturePricing::IMPACT_WAY_FIX_PRICE,
+                    'impact_type' => HotelRoomTypeFeaturePricing::IMPACT_TYPE_FIXED_PRICE,
+                    'impact_value' => $price,
+                    'restrictions' => array(
+                        array(
+                            'date_from' => $date_from,
+                            'date_to' => $date_to
+                        )
+                    )
+                )
+            );
 
-            $hrt_feature_price = new HotelRoomTypeFeaturePricing();
-            $hrt_feature_price->id_product = $id_product;
-            $hrt_feature_price->id_cart = $id_cart;
-            $hrt_feature_price->id_guest = (int) $this->context->cookie->id_guest;
-            $hrt_feature_price->id_room = $id_room;
-            $hrt_feature_price->feature_price_name = $feature_price_name;
-            $hrt_feature_price->date_selection_type = HotelRoomTypeFeaturePricing::DATE_SELECTION_TYPE_RANGE;
-            $hrt_feature_price->date_from = $date_from;
-            $hrt_feature_price->date_to = $date_to;
-            $hrt_feature_price->is_special_days_exists = 0;
-            $hrt_feature_price->special_days = json_encode(false);
-            $hrt_feature_price->impact_way = HotelRoomTypeFeaturePricing::IMPACT_WAY_FIX_PRICE;
-            $hrt_feature_price->impact_type = HotelRoomTypeFeaturePricing::IMPACT_TYPE_FIXED_PRICE;
-            $hrt_feature_price->impact_value = $price;
-            $hrt_feature_price->active = 1;
-            $hrt_feature_price->groupBox = array_column(Group::getGroups($this->context->language->id), 'id_group');
-            $hrt_feature_price->add();
 
             $objHotelCartBookingData = new HotelCartBookingData();
             $bookingsInfo = $objHotelCartBookingData->getCartFormatedBookinInfoByIdCart($id_cart);

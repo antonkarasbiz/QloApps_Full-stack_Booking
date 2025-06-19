@@ -415,6 +415,11 @@ class AdminPPreferencesControllerCore extends AdminController
             $_POST['PS_DISPLAY_QTIES'] = 0;
         }
 
+        $bestSellingField = $this->fields_options['products']['fields']['PS_KPI_BEST_SELLING_ROOM_TYPE_NB_DAYS'];
+        if (!Tools::getValue('PS_KPI_BEST_SELLING_ROOM_TYPE_NB_DAYS')) {
+            $this->errors[] = sprintf(Tools::displayError('field %s must be greater than 0.'), $bestSellingField['title']);;
+        }
+
         // if advanced stock management is disabled, updates concerned tables
         if (Configuration::get('PS_ADVANCED_STOCK_MANAGEMENT') == 1 && (int)Tools::getValue('PS_ADVANCED_STOCK_MANAGEMENT') == 0) {
             $id_shop_list = Shop::getContextListShopID();
