@@ -28,6 +28,8 @@ class ServiceProductOrderDetail extends ObjectModel
     public $id_hotel;
     public $id_htl_booking_detail;
     public $id_product_option;
+    public $tax_computation_method;
+    public $id_tax_rules_group;
     public $unit_price_tax_excl;
     public $unit_price_tax_incl;
     public $total_price_tax_excl;
@@ -53,6 +55,8 @@ class ServiceProductOrderDetail extends ObjectModel
             'id_hotel' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_htl_booking_detail' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_product_option' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'tax_computation_method' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_tax_rules_group' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'unit_price_tax_excl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
             'unit_price_tax_incl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
             'total_price_tax_excl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
@@ -68,6 +72,47 @@ class ServiceProductOrderDetail extends ObjectModel
             'date_upd' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
         )
     );
+
+    public function add($autodate = true, $null_values = true)
+    {
+        if (Validate::isLoadedObject($objOrder = new Order((int)$this->id_order))
+            && Validate::isLoadedObject($objServiceProduct = new Product((int)$this->id_product))
+        ) {
+            $objAddress = new Address((int)$objOrder->id_address_tax);
+            $idRoomType = Db::getInstance()->getValue(
+                'SELECT `id_product`
+                 FROM `'._DB_PREFIX_.'htl_booking_detail`
+                WHERE `id` = '.(int)$this->id_htl_booking_detail
+            );
+
+            if ($objServiceProduct->price_addition_type == Product::PRICE_ADDITION_TYPE_WITH_ROOM && $objServiceProduct->auto_add_to_cart) {
+                if (Validate::isLoadedObject($objRoomTypeProduct = new Product((int)$idRoomType))) {
+                    $this->id_tax_rules_group = $objRoomTypeProduct->id_tax_rules_group;
+                }
+            } else {
+                $idTaxRulesGroup = Db::getInstance()->getValue(
+                    'SELECT `id_tax_rules_group` 
+                    FROM `'._DB_PREFIX_.'htl_room_type_service_product_price`
+                    WHERE `id_product` = '.(int)$this->id_product.'
+                    AND `id_element` = '.(int)$idRoomType
+                );
+
+                if ($idTaxRulesGroup === false || $idTaxRulesGroup === null) {
+                    // Use default tax rule for the service product
+                    $idTaxRulesGroup = (int)Product::getIdTaxRulesGroupByIdProduct($this->id_product, Context::getContext());
+                }
+
+                $this->id_tax_rules_group = $idTaxRulesGroup;
+            }
+
+            $taxCalculator = TaxManagerFactory::getManager($objAddress, $this->id_tax_rules_group)->getTaxCalculator();
+            $this->tax_computation_method = (int)$taxCalculator->computation_method;
+
+            return parent::add($autodate, $null_values);
+        }
+
+        return false;
+    }
 
     public function getServiceProductsInOrder(
         $idOrder,

@@ -430,6 +430,8 @@ class HotelReservationSystemDb
                 `id_hotel` int(11) NOT NULL,
                 `id_htl_booking_detail` int(11) NOT NULL,
                 `id_product_option` int(11) NOT NULL,
+                `tax_computation_method` tinyint(1) unsigned NOT NULL DEFAULT '0',
+                `id_tax_rules_group` int(11) unsigned NOT NULL DEFAULT '0',
                 `unit_price_tax_excl` decimal(20,6) NOT NULL,
                 `unit_price_tax_incl` decimal(20,6) NOT NULL,
                 `total_price_tax_excl` decimal(20,6) NOT NULL,
