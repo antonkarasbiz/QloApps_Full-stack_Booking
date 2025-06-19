@@ -310,6 +310,17 @@ class QloCleaner extends Module
                 foreach ($tables as $table) {
                     $db->execute('TRUNCATE TABLE `'._DB_PREFIX_.bqSQL($table).'`');
                 }
+
+                $objHotelBookingDocument =  new HotelBookingDocument();
+                if ($objHotelBookingDocument->documentsBaseDir && file_exists($objHotelBookingDocument->documentsBaseDir) && ($docs = scandir($objHotelBookingDocument->documentsBaseDir))) {
+                    foreach ($docs as $doc) {
+                        if ($doc != '.' && $doc != '..' && $doc != 'index.php') {
+                            if (is_dir($objHotelBookingDocument->documentsBaseDir.'/'.$doc)) {
+                                Tools::deleteDirectory($objHotelBookingDocument->documentsBaseDir.'/'.$doc, true);
+                            }
+                        }
+                    }
+                }
                 $db->execute('DELETE FROM `'._DB_PREFIX_.'address` WHERE id_customer > 0');
                 $db->execute('UPDATE `'._DB_PREFIX_.'employee` SET `id_last_order` = 0,`id_last_customer_message` = 0,`id_last_customer` = 0');
 
@@ -870,7 +881,9 @@ class QloCleaner extends Module
             'htl_booking_demands',
             'htl_booking_demands_tax',
             'service_product_order_detail',
-            'service_product_cart_detail'
+            'service_product_cart_detail',
+            'customer_guest_detail',
+            'cart_customer_guest'
         );
     }
 }
