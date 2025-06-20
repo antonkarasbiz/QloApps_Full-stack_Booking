@@ -372,23 +372,6 @@ class OrderDetailCore extends ObjectModel
      */
     public function saveTaxCalculator(Order $order, $replace = false)
     {
-        // Nothing to save
-        if ($this->tax_calculator == null) {
-            return true;
-        }
-
-        if (!($this->tax_calculator instanceof TaxCalculator)) {
-            return false;
-        }
-
-        if (count($this->tax_calculator->taxes) == 0) {
-            return true;
-        }
-
-        if ($order->total_products <= 0) {
-            return true;
-        }
-
         $shipping_tax_amount = 0;
 
         foreach ($order->getCartRules() as $cart_rule) {
