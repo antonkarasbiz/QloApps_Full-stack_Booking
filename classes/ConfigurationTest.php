@@ -188,7 +188,7 @@ class ConfigurationTestCore
     public static function test_upload_max_filesize()
     {
         $upload_max_filesize = preg_replace('/[^0-9\.-]/', '', ini_get('upload_max_filesize'));
-        if ($upload_max_filesize >= 2) {
+        if ($upload_max_filesize >= 16) {
             return true;
         }
         return false;
