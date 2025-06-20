@@ -496,6 +496,15 @@ class ProductControllerCore extends FrontController
                     $this->context->smarty->assign('error', Tools::getValue('error'));
                 }
             } else {
+                if ($this->product->allow_multiple_quantity) {
+                    if ($products = $this->context->cart->getProducts()) {
+                        $products = array_column($products, 'cart_quantity', 'id_product');
+                        if (isset($products[$this->product->id])) {
+                            $this->product->quantity -= $products[$this->product->id];
+                            $this->product->max_quantity -= $products[$this->product->id];
+                        }
+                    }
+                }
                 $this->assignServiceProductVars();
             }
 

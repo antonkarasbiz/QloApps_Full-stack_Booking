@@ -1206,13 +1206,23 @@ $(document).ready(function() {
         e.preventDefault();
         qtyfield = $(this).closest('.qty_container').find('input.service_product_qty');
         var newQuantity = parseInt(qtyfield.val()) + 1;
-        if (qtyfield.data('max_quantity') && qtyfield.data('max_quantity') < newQuantity) {
-            // if max quantity is reached
-            newQuantity = qtyfield.data('max_quantity');
-
-            showErrorMessage(max_service_product_qty_txt+' '+qtyfield.data('max_quantity'));
+        let hasStockError = false;
+        if (parseInt($('#product_page_booking_product').val()) == 0) {
+            let stockQty = parseInt($(this).closest('.qty_container').find('.stock_qty').data('stock_quantity'));
+            if (stockQty < newQuantity) {
+                showErrorMessage(out_of_stock_text);
+                newQuantity = stockQty;
+            }
         }
-        $(this).closest('.qty_container').find('.qty_count span').text(newQuantity);
+        if (!hasStockError) {
+            if (qtyfield.data('max_quantity') && qtyfield.data('max_quantity') < newQuantity) {
+                // if max quantity is reached
+                newQuantity = qtyfield.data('max_quantity');
+
+                showErrorMessage(max_service_product_qty_txt+' '+qtyfield.data('max_quantity'));
+            }
+            $(this).closest('.qty_container').find('.qty_count span').text(newQuantity);
+        }
         qtyfield.val(newQuantity);
         clearTimeout(timer);
         timer = setTimeout(function() {
