@@ -55,7 +55,7 @@
             </div>
         </div>
         {if $order->hasInvoice()}
-            <div class="row">
+            <div class="row"  style="display: none;">
                 <div class="col-sm-12">
                     <label class="control-label">{l s='Invoice'}</label>
                     <select name="discount_invoice">
