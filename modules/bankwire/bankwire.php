@@ -83,7 +83,8 @@ class Bankwire extends PaymentModule
                 'bankwire_owner' => Configuration::get('BANK_WIRE_OWNER'),
                 'bankwire_details' => nl2br(Configuration::get('BANK_WIRE_DETAILS')),
                 'bankwire_address' => nl2br(Configuration::get('BANK_WIRE_ADDRESS')),
-                'lang' => new Language($order->id_lang)
+                'lang' => new Language($order->id_lang),
+                'total_paid' => Tools::displayPrice($order->total_paid, $this->context->currency, false)
             ));
 
             return array(

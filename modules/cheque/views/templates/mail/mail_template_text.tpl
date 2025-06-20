@@ -18,6 +18,6 @@
 *}
 {l s='Here are the bank details for your check:' mod='cheque' lang=$lang}
 
-{l s='Amount:' mod='cheque' lang=$lang}  {literal}{total_paid}{/literal}
+{l s='Amount:' mod='cheque' lang=$lang} {$total_paid}
 {l s='Payable to the order of:' mod='cheque' lang=$lang} {$cheque_name}
 {l s='Please mail your check to:' mod='cheque' lang=$lang} {$cheque_address}
