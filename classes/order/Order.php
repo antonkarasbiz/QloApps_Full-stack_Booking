@@ -2561,22 +2561,38 @@ class OrderCore extends ObjectModel
                 $tax_rates[$tax->id] = $tax->rate;
             }
 
-            if (!Product::isBookingProduct($order_detail['product_id'])) {
-                $quantity = Db::getInstance()->getValue(
-                    'SELECT SUM(`quantity`) 
-                    FROM `'._DB_PREFIX_.'service_product_order_detail`
-                    WHERE `id_order_detail` = '.(int)$id_order_detail.'
-                    AND `id_tax_rules_group` > 0 '
-                );
-            }
             $totalTaxBase = Tools::processPriceRounding($unit_price_tax_excl, $quantity);
+            if (!$order_detail['is_booking_product']) {
+                $objServiceProductOrderDetail = new ServiceProductOrderDetail();
+                $serviceProductDetail = $objServiceProductOrderDetail->getServiceProductsInOrder(
+                    $order_detail['id_order'],
+                    $id_order_detail
+                );
+                if ($serviceProductDetail = $objServiceProductOrderDetail->getServiceProductsInOrder(
+                    $order_detail['id_order'],
+                    $id_order_detail
+                )) {
+                    $totals = array_reduce($serviceProductDetail, function ($carry, $item) {
+                        if (!empty($item['id_tax_rules_group'])) {
+                            $qty = isset($item['quantity']) ? $item['quantity'] : 0;
+                            $price = isset($item['unit_price_tax_excl']) ? $item['unit_price_tax_excl'] : 0;
+    
+                            $carry['quantity'] += $qty;
+                            $carry['total_price_tax_excl'] += $price;
+                        }
+                        return $carry;
+                    }, ['quantity' => 0, 'total_price_tax_excl' => 0]);
+                    $quantity = $totals['quantity'];
+                    $totalTaxBase = $totals['total_price_tax_excl'];
+                }
+            }
 
             $objServiceProductOrderDetail = new ServiceProductOrderDetail();
             $groupedTaxDetails = array();
             $additionalTaxAmounts = array();
 
             if (
-                Product::isBookingProduct($order_detail['product_id']) &&
+                $order_detail['is_booking_product'] &&
                 $autoAddedPriceExcl = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
                     $order_detail['id_order'],
                     0, 0,

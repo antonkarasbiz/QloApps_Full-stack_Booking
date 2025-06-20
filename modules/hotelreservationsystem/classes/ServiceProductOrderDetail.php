@@ -77,36 +77,40 @@ class ServiceProductOrderDetail extends ObjectModel
     {
         if (Validate::isLoadedObject($objOrder = new Order((int)$this->id_order))
             && Validate::isLoadedObject($objServiceProduct = new Product((int)$this->id_product))
+            && Validate::isLoadedObject($objOrderDetail = new OrderDetail((int)$this->id_order_detail))
         ) {
-            $objAddress = new Address((int)$objOrder->id_address_tax);
-            $idRoomType = Db::getInstance()->getValue(
-                'SELECT `id_product`
-                 FROM `'._DB_PREFIX_.'htl_booking_detail`
-                WHERE `id` = '.(int)$this->id_htl_booking_detail
-            );
+            if ($objOrderDetail->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
+                if ($this->id_htl_booking_detail
+                    && Validate::isLoadedObject($objHotelBookingDetail = new HotelBookingDetail((int)$this->id_htl_booking_detail))
+                ) {
+                    $idRoomType = $objHotelBookingDetail->id_product;
+                    $objAddress = new Address((int)$objOrder->id_address_tax);
+                    if ($objServiceProduct->auto_add_to_cart && $objServiceProduct->price_addition_type == Product::PRICE_ADDITION_TYPE_WITH_ROOM) {
+                        if (Validate::isLoadedObject($objRoomTypeProduct = new Product((int)$idRoomType))) {
+                            $this->id_tax_rules_group = $objRoomTypeProduct->id_tax_rules_group;
+                        }
+                    } else {
+                        if ($serviceProductPriceRoomInfo = RoomTypeServiceProductPrice::getProductRoomTypePriceAndTax(
+                            $this->id_product,
+                            $idRoomType,
+                            RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE
+                        )) {
+                            //Special tax rule group for the Service product accroding to Room type
+                            $this->id_tax_rules_group = $serviceProductPriceRoomInfo['id_tax_rules_group'];
+                        } else {
+                            // Use default tax rule group for the service product
+                            $this->id_tax_rules_group = $objOrderDetail->id_tax_rules_group;
+                        }
+                    }
 
-            if ($objServiceProduct->price_addition_type == Product::PRICE_ADDITION_TYPE_WITH_ROOM && $objServiceProduct->auto_add_to_cart) {
-                if (Validate::isLoadedObject($objRoomTypeProduct = new Product((int)$idRoomType))) {
-                    $this->id_tax_rules_group = $objRoomTypeProduct->id_tax_rules_group;
+                    $taxCalculator = TaxManagerFactory::getManager($objAddress, $this->id_tax_rules_group)->getTaxCalculator();
+                    $this->tax_computation_method = (int)$taxCalculator->computation_method;
                 }
             } else {
-                $idTaxRulesGroup = Db::getInstance()->getValue(
-                    'SELECT `id_tax_rules_group` 
-                    FROM `'._DB_PREFIX_.'htl_room_type_service_product_price`
-                    WHERE `id_product` = '.(int)$this->id_product.'
-                    AND `id_element` = '.(int)$idRoomType
-                );
-
-                if ($idTaxRulesGroup === false || $idTaxRulesGroup === null) {
-                    // Use default tax rule for the service product
-                    $idTaxRulesGroup = (int)Product::getIdTaxRulesGroupByIdProduct($this->id_product, Context::getContext());
-                }
-
-                $this->id_tax_rules_group = $idTaxRulesGroup;
+                // Use default tax rule group for the service product
+                $this->id_tax_rules_group = $objOrderDetail->id_tax_rules_group;
+                $this->tax_computation_method = $objOrderDetail->tax_computation_method;
             }
-
-            $taxCalculator = TaxManagerFactory::getManager($objAddress, $this->id_tax_rules_group)->getTaxCalculator();
-            $this->tax_computation_method = (int)$taxCalculator->computation_method;
 
             return parent::add($autodate, $null_values);
         }

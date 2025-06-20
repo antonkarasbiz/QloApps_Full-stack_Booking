@@ -404,7 +404,7 @@ class OrderDetailCore extends ObjectModel
         /**
          * Calculate tax rule groups for the service product based on each associated room type.
          */
-        if (!Product::isBookingProduct($this->product_id)) {
+        if (!$this->is_booking_product && $this->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
             // Get all associated room type IDs for this service product and cart
             $associatedRoomTypes = Db::getInstance()->executeS(
                 'SELECT hcbd.`id_product` 
@@ -420,22 +420,21 @@ class OrderDetailCore extends ObjectModel
                 $taxGroupInfoList = array();
 
                 foreach ($associatedRoomTypeIds as $idRoomType) {
-                    $taxGroupInfo = Db::getInstance()->getRow(
-                        'SELECT `id_element`, `id_tax_rules_group` 
-                        FROM `'._DB_PREFIX_.'htl_room_type_service_product_price`
-                        WHERE `id_product` = '.(int)$this->product_id.'
-                        AND `id_element` = '.(int)$idRoomType
-                    );
-
-                    if ($taxGroupInfo) {
-                        // Specific tax rules found
-                        $taxGroupInfoList[] = $taxGroupInfo;
-                    } else {
-                        // Use default tax rule for the service product
-                        $defaultTaxGroupId = (int)Product::getIdTaxRulesGroupByIdProduct($this->product_id, $this->context);
+                    if ($serviceProductPriceRoomInfo = RoomTypeServiceProductPrice::getProductRoomTypePriceAndTax(
+                        $this->product_id,
+                        $idRoomType,
+                        RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE
+                    )) {
+                        //Special tax rule group for the Service product accroding to Room type
                         $taxGroupInfoList[] = array(
-                            'id_element' => $idRoomType,
-                            'id_tax_rules_group' => $defaultTaxGroupId
+                            'id_room_type' => $idRoomType,
+                            'id_tax_rules_group' => $serviceProductPriceRoomInfo['id_tax_rules_group']
+                        );
+                    } else {
+                        // Use default tax rule group for the service product
+                        $taxGroupInfoList[] = array(
+                            'id_room_type' => $idRoomType,
+                            'id_tax_rules_group' => $objOrderDetail->id_tax_rules_group
                         );
                     }
                 }
@@ -446,7 +445,7 @@ class OrderDetailCore extends ObjectModel
          * Calculate service product tax separately for each room type because 
          * a service product can be attached to multiple room types with different tax rules.
          */
-        if (!Product::isBookingProduct($this->product_id) && isset($taxGroupInfoList) && $taxGroupInfoList) {
+        if (!$this->is_booking_product && isset($taxGroupInfoList) && $taxGroupInfoList) {
             $objServiceProductCartDetail = new ServiceProductCartDetail();
             // Saving tax details according to the service product tax groups for different rooms
             foreach ($taxGroupInfoList as $taxGroupInfo) {
@@ -470,15 +469,22 @@ class OrderDetailCore extends ObjectModel
                     array(),
                     null,
                     null,
-                    $taxGroupInfo['id_element'],
+                    $taxGroupInfo['id_room_type'],
                     $this->product_id
                 );
-                $serviceProduct = array_shift($serviceProductCartData);
-                $unit_price_tax_excl = $serviceProduct['unit_price_tax_excl'];
+                $total_price_tax_excl = array_reduce($serviceProductCartData, function ($totalPriceTaxExcl, $item) {
+                    return $totalPriceTaxExcl + (isset($item['total_price_tax_excl']) ? $item['total_price_tax_excl'] : 0);
+                }, 0);
+
+                $quantity = array_reduce($serviceProductCartData, function ($totalQty, $item) {
+                    return $totalQty + (isset($item['quantity']) ? $item['quantity'] : 0);
+                }, 0);
+
+                $unit_price_tax_excl = $total_price_tax_excl / $quantity;
 
                 foreach ($this->tax_calculator->getTaxesAmount($unit_price_tax_excl) as $id_tax => $amount) {
         
-                    $total_amount = Tools::processPriceRounding($amount, $serviceProduct['quantity'], $order->round_type, $order->round_mode);
+                    $total_amount = Tools::processPriceRounding($amount, $quantity, $order->round_type, $order->round_mode);
         
                     $values .= '('.(int)$this->id.','.(int)$id_tax.','.(float)$amount.','.(float)$total_amount.'),';
                 }
