@@ -2175,7 +2175,11 @@ class HotelBookingDetail extends ObjectModel
 
                 // delete cart feature prices after room addition success
                 HotelRoomTypeFeaturePricing::deleteFeaturePrices($context->cart->id);
-
+                // since only one room is added in the cart on reallocation process.
+                $idNewCartBookingData = false;
+                if (isset($objCartBookingData->id)) {
+                    $idNewCartBookingData = $objCartBookingData->id;
+                }
                 // ===============================================================
                 // END: Add Process of the old booking
                 // ===============================================================
@@ -2286,6 +2290,21 @@ class HotelBookingDetail extends ObjectModel
                     AND id_room = '.(int) $objOldHotelBooking->id_room.' AND `id_order` = '.(int) $objOldHotelBooking->id_order
                 );
                 $objCartBookingData = new HotelCartBookingData($idHotelCartBookingData);
+                if ($idNewCartBookingData) {
+                    $objServiceProductCartDetail = new ServiceProductCartDetail();
+                    if ($oldCartAdditonalServices = $objServiceProductCartDetail->getServiceProductsInCart(
+                        $objCartBookingData->id_cart,
+                        [],
+                        null,
+                        $objCartBookingData->id
+                    )) {
+                        foreach ($oldCartAdditonalServices as $service) {
+                            $objServiceProductCartDetail = new ServiceProductCartDetail($service['id_service_product_cart_detail']);
+                            $objServiceProductCartDetail->htl_cart_booking_id = (int) $idNewCartBookingData;
+                            $objServiceProductCartDetail->save();
+                        }
+                    }
+                }
                 $objCartBookingData->delete();
 
                 // delete the booking detail
