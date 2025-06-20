@@ -298,14 +298,13 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
                 if (!isset($grouped_details[$row['id_order_detail']])) {
                     $grouped_details[$row['id_order_detail']] = array(
                         'tax_rate' => 0,
-                        'total_tax_base' => 0,
+                        'total_tax_base' => $row['total_tax_base'],
                         'total_amount' => 0,
                         'id_tax' => $row['id_tax'],
                     );
                 }
 
                 $grouped_details[$row['id_order_detail']]['tax_rate'] += $row['tax_rate'];
-                $grouped_details[$row['id_order_detail']]['total_tax_base'] += $row['total_tax_base'];
                 $grouped_details[$row['id_order_detail']]['total_amount'] += $row['total_amount'];
             }
             $details = $grouped_details;

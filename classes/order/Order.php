@@ -2606,7 +2606,7 @@ class OrderCore extends ObjectModel
                 $totalTaxBase += $autoAddedPriceExcl;
             }
 
-            $taxBaseShare = $totalTaxBase / count($tax_rates);
+            $taxBaseShare = $totalTaxBase;
 
             foreach ($taxesList as $detailTax) {
                 $taxId = $detailTax['id_tax'];
