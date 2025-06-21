@@ -652,7 +652,7 @@ class OrderDetailCore extends ObjectModel
                     if ($product !== null) {
                         $this->setContext((int)$product['id_shop']);
                     }
-                    $id_tax_rules = (int)Product::getIdTaxRulesGroupByIdProduct((int)$this->specificPrice['id_product'], $this->context);
+                    $id_tax_rules = (int)Product::getIdTaxRulesGroupByIdProduct((int)$this->product_id, $this->context);
                     $tax_manager = TaxManagerFactory::getManager($this->vat_address, $id_tax_rules);
                     $this->tax_calculator = $tax_manager->getTaxCalculator();
 
