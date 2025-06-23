@@ -397,12 +397,7 @@ class AdminOrdersControllerCore extends AdminController
                 $cart_detail_data = array();
                 $cart_detail_data_obj = new HotelCartBookingData();
                 $objServiceProductCartDetail = new ServiceProductCartDetail();
-                if ($cart_detail_data = $cart_detail_data_obj->getCartFormatedBookinInfoByIdCart(
-                    (int) $id_cart,
-                    [],
-                    null,
-                    0
-                )) {
+                if ($cart_detail_data = $cart_detail_data_obj->getCartFormatedBookinInfoByIdCart((int) $id_cart)) {
                     $objRoomType = new HotelRoomType();
                     foreach ($cart_detail_data as $key => $cart_data) {
                         $cart_detail_data[$key]['room_type_info'] = $objRoomType->getRoomTypeInfoByIdProduct($cart_data['id_product']);

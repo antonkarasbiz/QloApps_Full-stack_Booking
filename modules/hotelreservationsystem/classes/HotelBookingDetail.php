@@ -2293,7 +2293,7 @@ class HotelBookingDetail extends ObjectModel
                 if ($idNewCartBookingData) {
                     $objServiceProductCartDetail = new ServiceProductCartDetail();
                     if ($oldCartAdditonalServices = $objServiceProductCartDetail->getServiceProductsInCart(
-                        $objCartBookingData->id_cart,
+                        0, // if reallocated twice the id cart will not be used as it was not changed in first reallocation.
                         [],
                         null,
                         $objCartBookingData->id

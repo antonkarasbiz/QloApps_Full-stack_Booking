@@ -140,7 +140,7 @@ class ServiceProductCartDetail extends ObjectModel
      */
     // public function getProducts(
     public function getServiceProductsInCart(
-        $idCart,
+        $idCart = 0,
         $sellingPreferenceTypes = [],
         $idHotel = null,
         $idHotelCartBooking = null,
@@ -179,7 +179,10 @@ class ServiceProductCartDetail extends ObjectModel
             $sql .= ' LEFT JOIN `'._DB_PREFIX_.'htl_branch_info_lang` hbil ON (hbil.`id` = spc.`id_hotel` AND hbil.`id_lang` = '. $language->id.')';
         }
 
-        $sql .= ' WHERE spc.`id_product`!=0 AND spc.`id_cart`='.(int) $idCart;
+        $sql .= ' WHERE spc.`id_product`!=0 ';
+        if ($idCart) {
+            $sql .= ' AND spc.`id_cart`='.(int) $idCart;
+        }
 
         if (!is_null($idProductRoomType)) {
             $sql .= ' AND hcbd.`id_product`='.(int) $idProductRoomType;
