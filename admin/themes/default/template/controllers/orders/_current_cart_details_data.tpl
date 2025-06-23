@@ -115,11 +115,7 @@
 									</td>
 								{/if}
 								<td id="cart_detail_data_unit_price_{$data.id|escape:'html':'UTF-8'}">
-									{if $data.feature_price_diff != 0}
-										{assign var=shown_room_type_price value=$data.feature_price_tax_excl}
-									{else}
-										{assign var=shown_room_type_price value=$data.product_price_tax_excl}
-									{/if}
+									{assign var=shown_room_type_price value=$data.feature_price_tax_excl}
 									<div class="input-group">
 										<input type="text" class="room_unit_price" value="{Tools::ps_round($shown_room_type_price, $smarty.const._PS_PRICE_DISPLAY_PRECISION_)|escape:'html':'UTF-8'}">
 										<span class="input-group-addon">{$currency->prefix}{$currency->suffix}</span>
