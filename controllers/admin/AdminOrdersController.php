@@ -7776,7 +7776,7 @@ class AdminOrdersControllerCore extends AdminController
                             $response['errors'][] = Tools::displayError('Invalid service name');
                         }
 
-                        if (empty($price)) {
+                        if (!isset($price)) {
                             $response['hasError'] = true;
                             $response['errors'][] = Tools::displayError('Service price is required');
                         } elseif (!Validate::isPrice($price)) {
