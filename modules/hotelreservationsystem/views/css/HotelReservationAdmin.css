@@ -472,10 +472,7 @@ p.room_cat_data
 }
 
 #pac-input {
-    background-color: #fff;
-    height: 38px;
     width: 300px;
-    font-size: 14px;
     text-overflow: ellipsis;
 }
 

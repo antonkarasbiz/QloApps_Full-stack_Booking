@@ -397,6 +397,11 @@ class AdminHotelGeneralSettingsController extends ModuleAdminController
                         'hint' => $this->l('Unique API key for Google Maps.'),
                         'type' => 'text',
                     ),
+                    'PS_MAP_ID' => array(
+                        'title' => $this->l('Google Maps Id'),
+                        'hint' => $this->l('Map Id for Google Maps.'),
+                        'type' => 'text'
+                    ),
                     'WK_GOOGLE_ACTIVE_MAP' => array(
                         'title' => $this->l('Display Google Maps For Hotel Location'),
                         'cast' => 'intval',
