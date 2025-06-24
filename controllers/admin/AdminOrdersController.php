@@ -553,7 +553,12 @@ class AdminOrdersControllerCore extends AdminController
     {
         $response['hasError'] = 1;
         if (Validate::isLoadedObject($objOrder = new Order(Tools::getValue('id_order')))) {
-            $this->context->smarty->assign('can_edit', $this->tabAccess['edit']);
+            $this->context->smarty->assign(
+                array(
+                    'can_edit' => $this->tabAccess['edit'],
+                    'current_id_lang' => $this->context->language->id,
+                )
+            );
             // set modal details
             $modal = array(
                 'modal_id' => 'booking-documents-modal',
@@ -626,6 +631,7 @@ class AdminOrdersControllerCore extends AdminController
                     'order' => $objOrder,
                     'currency' => new Currency($objOrder->id_currency),
                     'invoices_collection' => $objOrder->getInvoicesCollection(),
+                    'current_id_lang' => $this->context->language->id
                 )
             );
 
@@ -684,6 +690,7 @@ class AdminOrdersControllerCore extends AdminController
                     'payment_methods' => $payment_methods,
                     'payment_types' => $this->getPaymentsTypes(),
                     'invoices_collection' => $objOrder->getInvoicesCollection(),
+                    'current_id_lang' => $this->context->language->id,
                 )
             );
             $modal = array(
@@ -1177,6 +1184,7 @@ class AdminOrdersControllerCore extends AdminController
                     'order' => $objOrder,
                     'currency' => new Currency($objOrder->id_currency),
                     'invoices_collection' => $objOrder->getInvoicesCollection(),
+                    'current_id_lang' => $this->context->language->id,
                 )
             );
             $modal = array(
@@ -1238,6 +1246,7 @@ class AdminOrdersControllerCore extends AdminController
                 $smartyVars['currencySign'] = $objCurrency->sign;
                 $smartyVars['link'] = $this->context->link;
                 $smartyVars['invoices_collection'] = $objOrder->getInvoicesCollection();
+                $smartyVars['current_id_lang'] = $this->context->language->id;
 
                 // set context currency So that we can get prices in the order currency
                 $this->context->currency = $objCurrency;
