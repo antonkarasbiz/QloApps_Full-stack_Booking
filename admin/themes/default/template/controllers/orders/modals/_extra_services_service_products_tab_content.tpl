@@ -211,6 +211,7 @@
                     <div id="new_service_price_tax_rule_container" class="col-sm-6">
                         <label class="control-label">{l s='Tax rule'}</label>
                         <select name="new_service_price_tax_rule_group">
+                            <option value="0">{l s='No Tax'}</option>
                             {foreach from=$taxRulesGroups item=taxRuleGroup}
                                 <option value="{$taxRuleGroup.id_tax_rules_group}">{$taxRuleGroup.name}</option>
                             {/foreach}
