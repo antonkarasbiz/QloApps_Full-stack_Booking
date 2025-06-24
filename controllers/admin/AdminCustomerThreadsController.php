@@ -175,7 +175,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
             'id_order' => array(
                 'title' => $this->l('ID Order'),
                 'filter_key' => 'a!id_order',
-                'optional' => true,
+                'optional' => false,
                 'visible_default' => false,
                 'displayed' => false,
             ),
