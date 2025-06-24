@@ -882,6 +882,7 @@ class QloCleaner extends Module
             'htl_booking_demands_tax',
             'service_product_order_detail',
             'service_product_cart_detail',
+            'order_customer_guest_detail',
             'customer_guest_detail',
             'cart_customer_guest'
         );
