@@ -540,12 +540,12 @@ class AdminOrdersControllerCore extends AdminController
     public function initToolbarTitle()
     {
         parent::initToolbarTitle();
-        switch ($this->display) {
-            case '':
-            case 'list':
-                array_pop($this->toolbar_title);
-                $this->toolbar_title[] = $this->l('Orders');
-                break;
+        if ($this->display == 'add') {
+            array_pop($this->toolbar_title);
+            $this->toolbar_title[] = $this->l('Add new');
+        } elseif ($this->display != 'view') {
+            array_pop($this->toolbar_title);
+            $this->toolbar_title[] = $this->l('Orders');
         }
     }
 
