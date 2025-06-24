@@ -2869,7 +2869,7 @@ class AdminOrdersControllerCore extends AdminController
             $helper->color = 'color1';
             $helper->title = $this->l('Total Rooms');
             $helper->tooltip = $this->l('Total rooms is the number of rooms booked in this order.');
-            $helper->href = '#start_rooms';
+            $helper->href = '#start_products';
             $helper->value = $numRooms;
             $this->kpis[] = $helper;
 
