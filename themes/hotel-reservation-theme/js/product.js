@@ -1089,15 +1089,6 @@ $(document).ready(function() {
         }
         e.preventDefault();
 	});
-
-    if (typeof hotel_location == 'object'
-        && $('#room_type_map_tab .map-wrap').length
-        && typeof google == 'object'
-        && typeof google.maps == 'object'
-    ) {
-        initMap();
-    }
-
     // normal product
     $(document).on('click', '.add_roomtype_product', function(e){
         e.preventDefault();
@@ -1322,6 +1313,7 @@ function initMap() {
     const map = new google.maps.Map($('#room_type_map_tab .map-wrap').get(0), {
         zoom: 10,
         streetViewControl: false,
+        mapId: PS_MAP_ID
     });
 
     const hotelLatLng = {
@@ -1330,11 +1322,14 @@ function initMap() {
     };
 
     map.setCenter(hotelLatLng);
-
-    const marker = new google.maps.Marker({
+    let icon = document.createElement('img');
+    icon.src = PS_STORES_ICON;
+    icon.style.width = '24px';
+    icon.style.height = '24px';
+    let marker = new google.maps.marker.AdvancedMarkerElement({
         position: hotelLatLng,
         map: map,
-        icon: PS_STORES_ICON
+        content: icon,
     });
 
     const uiContent = $('#room-info-map-ui-content .hotel-info-wrap').get(0);
