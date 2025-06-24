@@ -1209,17 +1209,23 @@ $(document).ready(function() {
         let hasStockError = false;
         if (parseInt($('#product_page_booking_product').val()) == 0) {
             let stockQty = parseInt($(this).closest('.qty_container').find('.stock_qty').data('stock_quantity'));
-            if (stockQty < newQuantity) {
+            let allow_oosp = parseInt($(this).closest('.qty_container').find('.stock_qty').data('allow_oosp'));
+            if (!allow_oosp && (stockQty < newQuantity)) {
                 showErrorMessage(out_of_stock_text);
                 newQuantity = stockQty;
+                hasStockError = true;
             }
         }
         if (!hasStockError) {
             if (qtyfield.data('max_quantity') && qtyfield.data('max_quantity') < newQuantity) {
                 // if max quantity is reached
                 newQuantity = qtyfield.data('max_quantity');
+                let cartQty = parseInt(qtyfield.data('cart_quantity'));
+                if (isNaN(cartQty)) {
+                    cartQty = 0;
+                }
 
-                showErrorMessage(max_service_product_qty_txt+' '+qtyfield.data('max_quantity'));
+                showErrorMessage(max_service_product_qty_txt+' '+ (parseInt(qtyfield.data('max_quantity')) + cartQty));
             }
             $(this).closest('.qty_container').find('.qty_count span').text(newQuantity);
         }

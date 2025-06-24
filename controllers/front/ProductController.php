@@ -497,11 +497,15 @@ class ProductControllerCore extends FrontController
                 }
             } else {
                 if ($this->product->allow_multiple_quantity) {
+                    $this->product->cart_quantity = 0;
                     if ($products = $this->context->cart->getProducts()) {
                         $products = array_column($products, 'cart_quantity', 'id_product');
                         if (isset($products[$this->product->id])) {
-                            $this->product->quantity -= $products[$this->product->id];
+                            $this->product->cart_quantity = $products[$this->product->id];
                             $this->product->max_quantity -= $products[$this->product->id];
+                            if (!$this->product->isAvailableWhenOutOfStock((int) $this->product->out_of_stock)) {
+                                $this->product->quantity -= $products[$this->product->id];
+                            }
                         }
                     }
                 }

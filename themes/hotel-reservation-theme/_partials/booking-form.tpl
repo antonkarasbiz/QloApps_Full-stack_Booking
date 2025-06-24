@@ -262,8 +262,8 @@
                                         {/block} *}
 
                                             <div class="qty_container">
-                                                <input type="hidden" class="stock_qty" id="stock_qty" name="stock_qty" data-id-product="{$product->id}" data-stock_quantity="{$product->quantity}" >
-                                                <input type="hidden" class="service_product_qty" id="service_product_qty" name="service_product_qty" data-id-product="{$product->id}" data-max_quantity="{if isset($product->max_quantity)}{$product->max_quantity|escape:'html':'UTF-8'}{else}{$product->quantity}{/if}" value="{if isset($quantity)}{$quantity|intval}{else}{if $product->minimal_quantity > 1}{$product->minimal_quantity}{else}1{/if}{/if}">
+                                                <input type="hidden" class="stock_qty" id="stock_qty" name="stock_qty" data-id-product="{$product->id}" data-stock_quantity="{$product->quantity}" data-allow_oosp="{$allow_oosp}" >
+                                                <input type="hidden" class="service_product_qty" id="service_product_qty" name="service_product_qty" data-id-product="{$product->id}" data-cart_quantity="{if isset($product->cart_quantity) && $product->cart_quantity}{$product->cart_quantity}{else}0{/if}" data-max_quantity="{if isset($product->max_quantity)}{$product->max_quantity|escape:'html':'UTF-8'}{else}{$product->quantity}{/if}" value="{if isset($quantity)}{$quantity|intval}{else}{if $product->minimal_quantity > 1}{$product->minimal_quantity}{else}1{/if}{/if}">
                                                 <div class="qty_count pull-left">
                                                     <span>{if isset($quantity)}{$quantity|intval}{else}{if $product->minimal_quantity > 1}{$product->minimal_quantity}{else}1{/if}{/if}</span>
                                                 </div>
@@ -275,7 +275,7 @@
                                         <span class="clearfix"></span>
                                     </div>
                                 </div>
-                                {if !$is_out_of_stock || !$max_qty_reached}
+                                {if !$is_out_of_stock && !$max_qty_reached}
                                     <hr class="separator-hr-mg-10">
                                 {/if}
                             {else}
@@ -316,7 +316,7 @@
                                         </div>
                                     {else if $max_qty_reached}
                                         <div class="sold_out_alert">
-                                            <span>{l s='Max quantity reached!'}</span>
+                                            <span>{l s='Max. quantity reached for cart!'}</span>
                                         </div>
                                     {else}
                                         {block name='booking_form_book_now_button'}
