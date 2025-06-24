@@ -129,6 +129,20 @@ class ProductControllerCore extends FrontController
             }
         }
 
+        // if product is a service product then check type of selling preference
+        if (!$this->product->booking_product) {
+            if ($this->product->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
+                Tools::redirect($this->context->link->getPageLink('pagenotfound'));
+            } elseif ($this->product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE) {
+                // if selling preference is hotel standalone and with room type then check if product is associated to any hotel
+                $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
+                $associatedHotels = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($this->product->id);
+                if (!isset($associatedHotels['hotel']) || !$associatedHotels['hotel']) {
+                    Tools::redirect($this->context->link->getPageLink('pagenotfound'));
+                }
+            }
+        }
+
         if (!Validate::isLoadedObject($this->product)) {
             header('HTTP/1.1 404 Not Found');
             header('Status: 404 Not Found');
