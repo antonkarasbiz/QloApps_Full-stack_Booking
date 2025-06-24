@@ -78,7 +78,8 @@ class Cheque extends PaymentModule
 				'cheque_name' => Configuration::get('CHEQUE_NAME'),
 				'cheque_address' => Configuration::get('CHEQUE_ADDRESS'),
 				'cheque_address_html' => str_replace("\n", '<br />', Configuration::get('CHEQUE_ADDRESS')),
-                'lang' => new Language($order->id_lang)
+                'lang' => new Language($order->id_lang),
+                'total_paid' => Tools::displayPrice($order->total_paid, $this->context->currency, false)
 			));
 
 			return array(
