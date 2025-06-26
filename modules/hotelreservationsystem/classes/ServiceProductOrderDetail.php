@@ -90,7 +90,8 @@ class ServiceProductOrderDetail extends ObjectModel
                             $this->id_tax_rules_group = $objRoomTypeProduct->id_tax_rules_group;
                         }
                     } else {
-                        if ($serviceProductPriceRoomInfo = RoomTypeServiceProductPrice::getProductRoomTypePriceAndTax(
+                        $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
+                        if ($serviceProductPriceRoomInfo = $objRoomTypeServiceProductPrice->getProductRoomTypeLinkPriceInfo(
                             $this->id_product,
                             $idRoomType,
                             RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE

@@ -388,11 +388,14 @@ class OrderDetailCore extends ObjectModel
          * Calculate tax rule groups for the service product based on each associated room type.
          */
         if (!$this->is_booking_product && $this->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
+            if ($this->product_auto_add && $this->product_price_addition_type == Product::PRICE_ADDITION_TYPE_WITH_ROOM) {
+                return true;
+            }
             // Get all associated room type IDs for this service product and cart
             $associatedRoomTypes = Db::getInstance()->executeS(
-                'SELECT hcbd.`id_product` 
+                'SELECT hcbd.`id_product`
                 FROM `'._DB_PREFIX_.'htl_cart_booking_data` hcbd
-                INNER JOIN `'._DB_PREFIX_.'service_product_cart_detail` spcd 
+                INNER JOIN `'._DB_PREFIX_.'service_product_cart_detail` spcd
                 ON spcd.`htl_cart_booking_id` = hcbd.`id`
                 WHERE spcd.`id_product` = '.(int)$this->product_id.'
                 AND spcd.`id_cart` = '.(int)$idCart
@@ -401,9 +404,9 @@ class OrderDetailCore extends ObjectModel
             if (!empty($associatedRoomTypes)) {
                 $associatedRoomTypeIds = array_column($associatedRoomTypes, 'id_product');
                 $taxGroupInfoList = array();
-
+                $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
                 foreach ($associatedRoomTypeIds as $idRoomType) {
-                    if ($serviceProductPriceRoomInfo = RoomTypeServiceProductPrice::getProductRoomTypePriceAndTax(
+                    if ($serviceProductPriceRoomInfo = $objRoomTypeServiceProductPrice->getProductRoomTypeLinkPriceInfo(
                         $this->product_id,
                         $idRoomType,
                         RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE
@@ -417,7 +420,7 @@ class OrderDetailCore extends ObjectModel
                         // Use default tax rule group for the service product
                         $taxGroupInfoList[] = array(
                             'id_room_type' => $idRoomType,
-                            'id_tax_rules_group' => $objOrderDetail->id_tax_rules_group
+                            'id_tax_rules_group' => $this->id_tax_rules_group
                         );
                     }
                 }
