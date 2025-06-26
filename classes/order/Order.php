@@ -2564,10 +2564,6 @@ class OrderCore extends ObjectModel
             $totalTaxBase = Tools::processPriceRounding($unit_price_tax_excl, $quantity);
             if (!$order_detail['is_booking_product']) {
                 $objServiceProductOrderDetail = new ServiceProductOrderDetail();
-                $serviceProductDetail = $objServiceProductOrderDetail->getServiceProductsInOrder(
-                    $order_detail['id_order'],
-                    $id_order_detail
-                );
                 if ($serviceProductDetail = $objServiceProductOrderDetail->getServiceProductsInOrder(
                     $order_detail['id_order'],
                     $id_order_detail
@@ -2575,7 +2571,7 @@ class OrderCore extends ObjectModel
                     $totals = array_reduce($serviceProductDetail, function ($carry, $item) {
                         if (!empty($item['id_tax_rules_group'])) {
                             $qty = isset($item['quantity']) ? $item['quantity'] : 0;
-                            $price = isset($item['unit_price_tax_excl']) ? $item['unit_price_tax_excl'] : 0;
+                            $price = isset($item['total_price_tax_excl']) ? $item['total_price_tax_excl'] : 0;
     
                             $carry['quantity'] += $qty;
                             $carry['total_price_tax_excl'] += $price;
