@@ -382,7 +382,10 @@ class OrderDetailCore extends ObjectModel
         }
 
         $values = '';
-        $idCart = $order->id_cart;
+        $idCart = $this->context->cart->id ?? $order->id_cart;
+        if (empty($this->vat_address)) {
+            $this->vat_address = new Address((int)$order->id_address_tax);
+        }
 
         /**
          * Calculate tax rule groups for the service product based on each associated room type.
@@ -406,19 +409,20 @@ class OrderDetailCore extends ObjectModel
                 $taxGroupInfoList = array();
                 $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
                 foreach ($associatedRoomTypeIds as $idRoomType) {
+                    $key =  $this->product_id.'_'.$idRoomType;
                     if ($serviceProductPriceRoomInfo = $objRoomTypeServiceProductPrice->getProductRoomTypeLinkPriceInfo(
                         $this->product_id,
                         $idRoomType,
                         RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE
                     )) {
                         //Special tax rule group for the Service product accroding to Room type
-                        $taxGroupInfoList[] = array(
+                        $taxGroupInfoList[$key] = array(
                             'id_room_type' => $idRoomType,
                             'id_tax_rules_group' => $serviceProductPriceRoomInfo['id_tax_rules_group']
                         );
                     } else {
                         // Use default tax rule group for the service product
-                        $taxGroupInfoList[] = array(
+                        $taxGroupInfoList[$key] = array(
                             'id_room_type' => $idRoomType,
                             'id_tax_rules_group' => $this->id_tax_rules_group
                         );
@@ -433,6 +437,7 @@ class OrderDetailCore extends ObjectModel
          */
         if (!$this->is_booking_product && isset($taxGroupInfoList) && $taxGroupInfoList) {
             $objServiceProductCartDetail = new ServiceProductCartDetail();
+            $objServiceProductOrderDetail = new ServiceProductOrderDetail();
             // Saving tax details according to the service product tax groups for different rooms
             foreach ($taxGroupInfoList as $taxGroupInfo) {
                 $tax_manager = TaxManagerFactory::getManager($this->vat_address, (int)$taxGroupInfo['id_tax_rules_group']);
@@ -450,29 +455,46 @@ class OrderDetailCore extends ObjectModel
                     continue;
                 }
 
-                $serviceProductCartData = $objServiceProductCartDetail->getServiceProductsInCart(
-                    $idCart,
-                    array(),
-                    null,
-                    null,
-                    $taxGroupInfo['id_room_type'],
-                    $this->product_id
-                );
-                $total_price_tax_excl = array_reduce($serviceProductCartData, function ($totalPriceTaxExcl, $item) {
-                    return $totalPriceTaxExcl + (isset($item['total_price_tax_excl']) ? $item['total_price_tax_excl'] : 0);
-                }, 0);
+                if ($serviceProductData = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                        $this->id_order,
+                        $this->product_id,
+                        0,
+                        $taxGroupInfo['id_room_type'],
+                )) {
+                    $total_price_tax_excl = array_reduce($serviceProductData, function ($totalPriceTaxExcl, $item) {
+                        return $totalPriceTaxExcl + (isset($item['total_price_tax_excl']) ? $item['total_price_tax_excl'] : 0);
+                    }, 0);
 
-                $quantity = array_reduce($serviceProductCartData, function ($totalQty, $item) {
-                    return $totalQty + (isset($item['quantity']) ? $item['quantity'] : 0);
-                }, 0);
+                    $serviceProductData = array_shift($serviceProductData);
 
-                $unit_price_tax_excl = $total_price_tax_excl / $quantity;
+                    $quantity = array_reduce($serviceProductData['additional_services'], function ($totalQty, $item) {
+                        return $totalQty + (isset($item['quantity']) ? $item['quantity'] : 0);
+                    }, 0);
+                } elseif ($serviceProductData = $objServiceProductCartDetail->getServiceProductsInCart(
+                        $idCart,
+                        array(),
+                        null,
+                        null,
+                        $taxGroupInfo['id_room_type'],
+                        $this->product_id
+                )) {
+                    $total_price_tax_excl = array_reduce($serviceProductData, function ($totalPriceTaxExcl, $item) {
+                        return $totalPriceTaxExcl + (isset($item['total_price_tax_excl']) ? $item['total_price_tax_excl'] : 0);
+                    }, 0);
+    
+                    $quantity = array_reduce($serviceProductData, function ($totalQty, $item) {
+                        return $totalQty + (isset($item['quantity']) ? $item['quantity'] : 0);
+                    }, 0);
+                }
 
-                foreach ($this->tax_calculator->getTaxesAmount($unit_price_tax_excl) as $id_tax => $amount) {
-        
-                    $total_amount = Tools::processPriceRounding($amount, $quantity, $order->round_type, $order->round_mode);
-        
-                    $values .= '('.(int)$this->id.','.(int)$id_tax.','.(float)$amount.','.(float)$total_amount.'),';
+                if (isset($quantity) && isset($total_price_tax_excl)) {
+                    $unit_price_tax_excl = $total_price_tax_excl / $quantity;
+                    foreach ($this->tax_calculator->getTaxesAmount($unit_price_tax_excl) as $id_tax => $amount) {
+            
+                        $total_amount = Tools::processPriceRounding($amount, $quantity, $order->round_type, $order->round_mode);
+            
+                        $values .= '('.(int)$this->id.','.(int)$id_tax.','.(float)$amount.','.(float)$total_amount.'),';
+                    }
                 }
             }
         } else {
