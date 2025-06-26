@@ -876,20 +876,35 @@ class AdminControllerCore extends Controller
         $filters = array();
         if (isset($this->list_id)) {
             foreach ($_POST as $key => $value) {
+                if (is_array($value)) {
+                    if ($value[0] === '' && $value[1] === '') {
+                        $value = '';
+                    } else {
+                        $value = json_encode($value);
+                    }
+                }
+
                 if ($value === '') {
                     unset($this->context->cookie->{$prefix.$key});
                 } elseif (stripos($key, $this->list_id.'Filter_') === 0) {
-                    $filters[$prefix.$key] = !is_array($value) ? $value : json_encode($value);
+                    $filters[$prefix.$key] = $value;
                 } elseif (stripos($key, 'submitFilter') === 0) {
-                    $this->context->cookie->$key = !is_array($value) ? $value : json_encode($value);
+                    $this->context->cookie->$key = $value;
                 }
             }
 
             foreach ($_GET as $key => $value) {
+                if (is_array($value)) {
+                    if ($value[0] === '' && $value[1] === '') {
+                        $value = '';
+                    } else {
+                        $value = json_encode($value);
+                    }
+                }
                 if (stripos($key, $this->list_id.'Filter_') === 0) {
-                    $filters[$prefix.$key] = !is_array($value) ? $value : json_encode($value);
+                    $filters[$prefix.$key] = $value;
                 } elseif (stripos($key, 'submitFilter') === 0) {
-                    $this->context->cookie->$key = !is_array($value) ? $value : json_encode($value);
+                    $this->context->cookie->$key = $value;
                 }
                 if (stripos($key, $this->list_id.'Orderby') === 0 && Validate::isOrderBy($value)) {
                     if ($value === '' || $value == $this->_defaultOrderBy) {

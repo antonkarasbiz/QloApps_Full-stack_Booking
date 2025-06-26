@@ -432,6 +432,10 @@ var ajaxCart = {
 
                     resetRoomtypeServices();
 
+                    if (parseInt($('#product_page_booking_product').val()) == 0) {
+                        $('#service_product_qty').val(1);
+                    }
+
                     BookingForm.refresh(true);
                 }
 

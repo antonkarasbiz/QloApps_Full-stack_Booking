@@ -474,7 +474,7 @@ class CartControllerCore extends FrontController
                             $finalQuantity += $quantityInCart;
                         }
                         if ($product->max_quantity && $finalQuantity > $product->max_quantity) {
-                            $this->errors[] = Tools::displayError(sprintf('You can now add more than %d quantity for this product in the cart.', $product->max_quantity));
+                            $this->errors[] = Tools::displayError(sprintf('You cannot add more than %d quantity for this product in the cart.', $product->max_quantity));
                         }
                     } else {
                         if ($id_cart) {
@@ -517,7 +517,7 @@ class CartControllerCore extends FrontController
                                 $finalQuantity += $productCartDetail['quantity'];
                             }
                             if ($product->max_quantity && $finalQuantity > $product->max_quantity) {
-                                $this->errors[] = Tools::displayError(sprintf('You can not add more than %d quantity for this product in the cart.', $product->max_quantity));
+                                $this->errors[] = Tools::displayError(sprintf('You cannot add more than %d quantity for this product in the cart.', $product->max_quantity));
                             }
                         } elseif ($productCartDetail) {
                             $this->errors[] = Tools::displayError('You can only order one quantity for this product.');

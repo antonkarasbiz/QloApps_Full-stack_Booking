@@ -285,6 +285,7 @@ class HotelReservationSystem extends Module
         if (Tools::getValue('controller') == 'category') {
             if (($apiKey = Configuration::get('PS_API_KEY'))
                 && Configuration::get('WK_GOOGLE_ACTIVE_MAP')
+                && ($PS_MAP_ID = Configuration::get('PS_MAP_ID'))
             ) {
                 $idCategory = Tools::getValue('id_category');
                 $idHotel = HotelBranchInformation::getHotelIdByIdCategory($idCategory);
@@ -299,13 +300,14 @@ class HotelReservationSystem extends Module
                             'longitude' => $objHotel->longitude,
                             'map_input_text' => $objHotel->map_input_text,
                         ),
+                        'PS_MAP_ID' => $PS_MAP_ID,
                         'hotel_name' => $objHotel->hotel_name,
                         'PS_STORES_ICON' => $this->context->link->getMediaLink(_PS_IMG_.Configuration::get('PS_STORES_ICON')),
                     ));
 
                     $this->context->controller->addJS(
-                        'https://maps.googleapis.com/maps/api/js?key='.$apiKey.'&libraries=places&language='.
-                        $this->context->language->iso_code.'&region='.$this->context->country->iso_code
+                        'https://maps.googleapis.com/maps/api/js?key='.$apiKey.
+                        '&libraries=places,marker&loading=async&callback=initMap&language='.$this->context->language->iso_code.'&region='.$this->context->country->iso_code
                     );
                     $this->context->controller->addJS($this->getPathUri().'views/js/searchResultsMap.js');
                     $this->context->controller->addCSS($this->getPathUri().'views/css/searchResultsMap.css');
