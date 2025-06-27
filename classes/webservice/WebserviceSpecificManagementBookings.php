@@ -961,7 +961,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                 $this->updateRoomTaxRulesGroupsInOrder($objPaymentModule->currentOrder);
             }
 
-            // $this->manageOrderPrice($objPaymentModule->currentOrder, $params);
+            $this->manageOrderPrice($objPaymentModule->currentOrder, $params);
             $this->addOrderHistory($objPaymentModule->currentOrder, $objOrderState);
             $objOrder = new Order($objPaymentModule->currentOrder);
             if (isset($params['booking_date'])
