@@ -28,6 +28,8 @@ class ServiceProductOrderDetail extends ObjectModel
     public $id_hotel;
     public $id_htl_booking_detail;
     public $id_product_option;
+    public $tax_computation_method;
+    public $id_tax_rules_group;
     public $unit_price_tax_excl;
     public $unit_price_tax_incl;
     public $total_price_tax_excl;
@@ -53,6 +55,8 @@ class ServiceProductOrderDetail extends ObjectModel
             'id_hotel' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_htl_booking_detail' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_product_option' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'tax_computation_method' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_tax_rules_group' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'unit_price_tax_excl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
             'unit_price_tax_incl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
             'total_price_tax_excl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
@@ -68,6 +72,52 @@ class ServiceProductOrderDetail extends ObjectModel
             'date_upd' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
         )
     );
+
+    public function add($autodate = true, $null_values = true)
+    {
+        if (Validate::isLoadedObject($objOrder = new Order((int)$this->id_order))
+            && Validate::isLoadedObject($objServiceProduct = new Product((int)$this->id_product))
+            && Validate::isLoadedObject($objOrderDetail = new OrderDetail((int)$this->id_order_detail))
+        ) {
+            if ($objOrderDetail->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
+                if ($this->id_htl_booking_detail
+                    && Validate::isLoadedObject($objHotelBookingDetail = new HotelBookingDetail((int)$this->id_htl_booking_detail))
+                ) {
+                    $idRoomType = $objHotelBookingDetail->id_product;
+                    $objAddress = new Address((int)$objOrder->id_address_tax);
+                    if ($objServiceProduct->auto_add_to_cart && $objServiceProduct->price_addition_type == Product::PRICE_ADDITION_TYPE_WITH_ROOM) {
+                        if (Validate::isLoadedObject($objRoomTypeProduct = new Product((int)$idRoomType))) {
+                            $this->id_tax_rules_group = $objRoomTypeProduct->id_tax_rules_group;
+                        }
+                    } else {
+                        $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
+                        if ($serviceProductPriceRoomInfo = $objRoomTypeServiceProductPrice->getProductRoomTypeLinkPriceInfo(
+                            $this->id_product,
+                            $idRoomType,
+                            RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE
+                        )) {
+                            //Special tax rule group for the Service product accroding to Room type
+                            $this->id_tax_rules_group = $serviceProductPriceRoomInfo['id_tax_rules_group'];
+                        } else {
+                            // Use default tax rule group for the service product
+                            $this->id_tax_rules_group = $objOrderDetail->id_tax_rules_group;
+                        }
+                    }
+
+                    $taxCalculator = TaxManagerFactory::getManager($objAddress, $this->id_tax_rules_group)->getTaxCalculator();
+                    $this->tax_computation_method = (int)$taxCalculator->computation_method;
+                }
+            } else {
+                // Use default tax rule group for the service product
+                $this->id_tax_rules_group = $objOrderDetail->id_tax_rules_group;
+                $this->tax_computation_method = $objOrderDetail->tax_computation_method;
+            }
+
+            return parent::add($autodate, $null_values);
+        }
+
+        return false;
+    }
 
     public function getServiceProductsInOrder(
         $idOrder,
