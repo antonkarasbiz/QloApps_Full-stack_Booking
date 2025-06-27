@@ -990,7 +990,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                 $cartRule['code'] = Tools::passwdGen(8, 'NO_NUMERIC');
                 $cartRule['currency'] =  '';
                 $cartRule['value'] = $objOrder->total_paid_tax_incl - $params['price_details']['total_price_with_tax'];
-                if ($cartRule['value']) {
+                if ($cartRule['value'] && $objOrder->getInvoicesCollection()) {
                     $cartRule['value'] /= count($objOrder->getInvoicesCollection());
                 }
 
@@ -1130,7 +1130,9 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
 
         $idTax = $this->wsTaxRulesGroup[$idTaxRulesGroup]['tax'];
         $objOrderDetail = new OrderDetail($idOrderDetail);
-        $values = '('.(int)$objOrderDetail->id.','.(int)$idTax.','.(float)$objOrderDetail->unit_price_tax_incl.','.(float)$objOrderDetail->total_price_tax_incl.'),';
+        $values = '('.(int)$objOrderDetail->id.','.(int)$idTax.','.
+            (float)($objOrderDetail->unit_price_tax_incl - $objOrderDetail->unit_price_tax_excl).','.
+            (float)($objOrderDetail->total_price_tax_incl - $objOrderDetail->total_price_tax_excl).'),';
         $values = rtrim($values, ',');
         $sql = 'INSERT INTO `'._DB_PREFIX_.'order_detail_tax` (id_order_detail, id_tax, unit_amount, total_amount)
 				VALUES '.$values;
@@ -1260,12 +1262,11 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                                 $objOrder->total_paid += $priceDiffTaxIncl;
                             }
 
+                            $objServiceProductOrderDetail->save();
+                            $objOrderDetail->save();
                             if (!$isAutoAdded && isset($this->wsRequestedRoomTypes[$dateRoomJoinKey]['services'][$service['id_product']]['id_tax_rules_group'])) {
                                 $this->saveTaxCalculator($objOrderDetail->id, $this->wsRequestedRoomTypes[$dateRoomJoinKey]['services'][$service['id_product']]['id_tax_rules_group']);
                             }
-
-                            $objServiceProductOrderDetail->save();
-                            $objOrderDetail->save();
                         }
                     }
                 }
@@ -3349,11 +3350,10 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                         $isAutoAdded = true;
                     }
 
+                    $objOrderDetail->update();
                     if (!$isAutoAdded && isset($services[$product['id_product']]['id_tax_rules_group'])) {
                         $this->saveTaxCalculator($objOrderDetail->id, $services[$product['id_product']]['id_tax_rules_group']);
                     }
-
-                    $objOrderDetail->update();
                 }
             }
 
