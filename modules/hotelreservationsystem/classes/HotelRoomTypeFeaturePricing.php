@@ -389,9 +389,10 @@ class HotelRoomTypeFeaturePricing extends ObjectModel
                         1,
                         Product::PRICE_ADDITION_TYPE_WITH_ROOM
                     )) {
-                        $selectedServices = array_shift($roomServicesServices);
-                        $totalPrice['total_price_tax_incl'] += $selectedServices['total_price_tax_incl'];
-                        $totalPrice['total_price_tax_excl'] += $selectedServices['total_price_tax_excl'];
+                        foreach($roomServicesServices as $selectedService) {
+                            $totalPrice['total_price_tax_incl'] += $selectedService['total_price_tax_incl'];
+                            $totalPrice['total_price_tax_excl'] += $selectedService['total_price_tax_excl'];
+                        }
                     }
                 }
 
