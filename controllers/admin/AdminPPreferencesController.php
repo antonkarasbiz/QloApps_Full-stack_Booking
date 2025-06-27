@@ -331,80 +331,80 @@ class AdminPPreferencesControllerCore extends AdminController
                 ),
                 'submit' => array('title' => $this->l('Save'))
             ),
-            'stock' => array(
-                'title' =>    $this->l('Products stock'),
-                'fields' =>    array(
-                    'PS_ORDER_OUT_OF_STOCK' => array(
-                        'title' => $this->l('Allow ordering of out-of-stock products'),
-                        'hint' => $this->l('By default, the Add to Cart button is hidden when a product is unavailable. You can choose to have it displayed in all cases.'),
-                        'validation' => 'isBool',
-                        'cast' => 'intval',
-                        'required' => false,
-                        'type' => 'bool'
-                    ),
-                    'PS_STOCK_MANAGEMENT' => array(
-                        'title' => $this->l('Enable stock management'),
-                        'validation' => 'isBool',
-                        'cast' => 'intval',
-                        'required' => false,
-                        'type' => 'bool',
-                        'js' => array(
-                            'on' => 'onchange="stockManagementActivationAuthorization()"',
-                            'off' => 'onchange="stockManagementActivationAuthorization()"'
-                        )
-                    ),
-                    // 'PS_ADVANCED_STOCK_MANAGEMENT' => array(
-                    //     'title' => $this->l('Enable advanced stock management'),
-                    //     'hint' => $this->l('Allows you to manage physical stock, warehouses and supply orders in a new Stock menu.'),
-                    //     'validation' => 'isBool',
-                    //     'cast' => 'intval',
-                    //     'required' => false,
-                    //     'type' => 'bool',
-                    //     'visibility' => Shop::CONTEXT_ALL,
-                    //     'js' => array(
-                    //         'on' => 'onchange="advancedStockManagementActivationAuthorization()"',
-                    //         'off' => 'onchange="advancedStockManagementActivationAuthorization()"'
-                    //     )
-                    // ),
-                    // 'PS_FORCE_ASM_NEW_PRODUCT' => array(
-                    //     'title' => $this->l('New products use advanced stock management'),
-                    //     'hint' => $this->l('New products will automatically use advanced stock management and depends on stock, but no warehouse will be selected'),
-                    //     'validation' => 'isBool',
-                    //     'cast' => 'intval',
-                    //     'required' => false,
-                    //     'type' => 'bool',
-                    //     'visibility' => Shop::CONTEXT_ALL,
-                    // ),
-                    // 'PS_DEFAULT_WAREHOUSE_NEW_PRODUCT' => array(
-                    //     'title' => $this->l('Default warehouse on new products'),
-                    //     'hint' => $this->l('Automatically set a default warehouse when new product is created'),
-                    //     'type' => 'select',
-                    //     'list' => $warehouse_list,
-                    //     'identifier' => 'id_warehouse'
-                    // ),
-                    // 'PS_PACK_STOCK_TYPE' => array(
-                    //     'title' =>  $this->l('Default pack stock management'),
-                    //     'type' => 'select',
-                    //     'list' =>array(
-                    //         array(
-                    //             'pack_stock' => 0,
-                    //             'name' => $this->l('Decrement pack only.')
-                    //         ),
-                    //         array(
-                    //             'pack_stock' => 1,
-                    //             'name' => $this->l('Decrement products in pack only.')
-                    //         ),
-                    //         array(
-                    //             'pack_stock' => 2,
-                    //             'name' => $this->l('Decrement both.')
-                    //         ),
-                    //     ),
-                    //     'identifier' => 'pack_stock',
-                    // ),
-                ),
-                // 'bottom' => '<script type="text/javascript">stockManagementActivationAuthorization();advancedStockManagementActivationAuthorization();</script>',
-                'submit' => array('title' => $this->l('Save'))
-            ),
+            // 'stock' => array(
+            //     'title' =>    $this->l('Products stock'),
+            //     'fields' =>    array(
+            //         'PS_ORDER_OUT_OF_STOCK' => array(
+            //             'title' => $this->l('Allow ordering of out-of-stock products'),
+            //             'hint' => $this->l('By default, the Add to Cart button is hidden when a product is unavailable. You can choose to have it displayed in all cases.'),
+            //             'validation' => 'isBool',
+            //             'cast' => 'intval',
+            //             'required' => false,
+            //             'type' => 'bool'
+            //         ),
+            //         'PS_STOCK_MANAGEMENT' => array(
+            //             'title' => $this->l('Enable stock management'),
+            //             'validation' => 'isBool',
+            //             'cast' => 'intval',
+            //             'required' => false,
+            //             'type' => 'bool',
+            //             'js' => array(
+            //                 'on' => 'onchange="stockManagementActivationAuthorization()"',
+            //                 'off' => 'onchange="stockManagementActivationAuthorization()"'
+            //             )
+            //         ),
+            //         // 'PS_ADVANCED_STOCK_MANAGEMENT' => array(
+            //         //     'title' => $this->l('Enable advanced stock management'),
+            //         //     'hint' => $this->l('Allows you to manage physical stock, warehouses and supply orders in a new Stock menu.'),
+            //         //     'validation' => 'isBool',
+            //         //     'cast' => 'intval',
+            //         //     'required' => false,
+            //         //     'type' => 'bool',
+            //         //     'visibility' => Shop::CONTEXT_ALL,
+            //         //     'js' => array(
+            //         //         'on' => 'onchange="advancedStockManagementActivationAuthorization()"',
+            //         //         'off' => 'onchange="advancedStockManagementActivationAuthorization()"'
+            //         //     )
+            //         // ),
+            //         // 'PS_FORCE_ASM_NEW_PRODUCT' => array(
+            //         //     'title' => $this->l('New products use advanced stock management'),
+            //         //     'hint' => $this->l('New products will automatically use advanced stock management and depends on stock, but no warehouse will be selected'),
+            //         //     'validation' => 'isBool',
+            //         //     'cast' => 'intval',
+            //         //     'required' => false,
+            //         //     'type' => 'bool',
+            //         //     'visibility' => Shop::CONTEXT_ALL,
+            //         // ),
+            //         // 'PS_DEFAULT_WAREHOUSE_NEW_PRODUCT' => array(
+            //         //     'title' => $this->l('Default warehouse on new products'),
+            //         //     'hint' => $this->l('Automatically set a default warehouse when new product is created'),
+            //         //     'type' => 'select',
+            //         //     'list' => $warehouse_list,
+            //         //     'identifier' => 'id_warehouse'
+            //         // ),
+            //         // 'PS_PACK_STOCK_TYPE' => array(
+            //         //     'title' =>  $this->l('Default pack stock management'),
+            //         //     'type' => 'select',
+            //         //     'list' =>array(
+            //         //         array(
+            //         //             'pack_stock' => 0,
+            //         //             'name' => $this->l('Decrement pack only.')
+            //         //         ),
+            //         //         array(
+            //         //             'pack_stock' => 1,
+            //         //             'name' => $this->l('Decrement products in pack only.')
+            //         //         ),
+            //         //         array(
+            //         //             'pack_stock' => 2,
+            //         //             'name' => $this->l('Decrement both.')
+            //         //         ),
+            //         //     ),
+            //         //     'identifier' => 'pack_stock',
+            //         // ),
+            //     ),
+            //     // 'bottom' => '<script type="text/javascript">stockManagementActivationAuthorization();advancedStockManagementActivationAuthorization();</script>',
+            //     'submit' => array('title' => $this->l('Save'))
+            // ),
         );
     }
 
