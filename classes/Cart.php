@@ -1816,15 +1816,15 @@ class CartCore extends ObjectModel
                     if ($servicePorducts) {
                         foreach ($servicePorducts as $servicePorduct) {
                             if ($with_taxes) {
-                                $priceAdd = $servicePorduct['unit_price_tax_incl'];
+                                $priceAdd = $servicePorduct['total_price_tax_incl'];
                             } else {
-                                $priceAdd = $servicePorduct['unit_price_tax_excl'];
+                                $priceAdd = $servicePorduct['total_price_tax_excl'];
                             }
 
                             if ($ps_round_type == Order::ROUND_TOTAL) {
-                                $products_total[$id_tax_rules_group.'_'.$id_address] += Tools::processPriceRounding($priceAdd, (int)$servicePorduct['quantity']);
+                                $products_total[$id_tax_rules_group.'_'.$id_address] += $priceAdd;
                             } else {
-                                $products_total[$id_tax_rules_group] += Tools::processPriceRounding($priceAdd, (int)$servicePorduct['quantity']);
+                                $products_total[$id_tax_rules_group] += $priceAdd;
                             }
                         }
                     }

@@ -6139,7 +6139,7 @@ class AdminOrdersControllerCore extends AdminController
 
             $product_quantity = $editProductInfo['product_quantity'];
             if ($updateQty = (int)($product_quantity - $objServiceProductOrderDetail->quantity)) {
-                $this->checkStockAvailable($objOrderDetail, ($product_quantity - $objOrderDetail->product_quantity));
+                $this->checkStockAvailable($objOrderDetail, $updateQty);
 
             }
             $taxRate =  $objServiceProductOrderDetail->unit_price_tax_incl / $objServiceProductOrderDetail->unit_price_tax_excl;
@@ -6207,7 +6207,7 @@ class AdminOrdersControllerCore extends AdminController
 
             // Update product available quantity
             if ($updateQty) {
-                $result &= StockAvailable::updateQuantity($objOrderDetail->product_id, $objOrderDetail->product_attribute_id, $updateQty, $objOrder->id_shop);
+                $result &= StockAvailable::updateQuantity($objOrderDetail->product_id, $objOrderDetail->product_attribute_id, -(int)$updateQty, $objOrder->id_shop);
             }
 
             if (!$result) {
