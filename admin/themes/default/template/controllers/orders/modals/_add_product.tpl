@@ -31,7 +31,7 @@
         </div>
         <div class="add_product_fields" style="display:none;">
             {hook h='displayAdminOrderAddRoomFormFieldsBefore'}
-            <div id="standard_product_options_container" class="row">
+            <div class="row">
                 <div class="productOptions form-group col-sm-6" style="display: none;">
                     <label class="control-label">{l s='Variant'}</label>
                     <select name="add_product[product_option]" id="add_product_product_option">
@@ -57,23 +57,22 @@
                         {if !($currency->format % 2)}<div class="input-group-addon">{$currency->sign}</div>{/if}
                     </div>
                 </div>
+                {if sizeof($invoices_collection)}
+                    <div class="col-sm-6 form-group" style="display: none;">
+                        <label class="control-label">{l s='Invoice'}</label>
+                        <select class="form-control" name="add_product[invoice]" id="add_product_product_invoice" disabled="disabled">
+                            <optgroup class="existing" label="{l s='Existing'}">
+                                {foreach from=$invoices_collection item=invoice}
+                                <option value="{$invoice->id}">{$invoice->getInvoiceNumberFormatted($current_id_lang)}</option>
+                                {/foreach}
+                            </optgroup>
+                            <optgroup label="{l s='New'}">
+                                <option value="0">{l s='Create a new invoice'}</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                {/if}
             </div>
-
-            {if sizeof($invoices_collection)}
-                <div class="form-group" style="display: none;">
-                    <label class="control-label">{l s='Invoice'}</label>
-                    <select class="form-control" name="add_product[invoice]" id="add_product_product_invoice" disabled="disabled">
-                        <optgroup class="existing" label="{l s='Existing'}">
-                            {foreach from=$invoices_collection item=invoice}
-                            <option value="{$invoice->id}">{$invoice->getInvoiceNumberFormatted($current_id_lang)}</option>
-                            {/foreach}
-                        </optgroup>
-                        <optgroup label="{l s='New'}">
-                            <option value="0">{l s='Create a new invoice'}</option>
-                        </optgroup>
-                    </select>
-                </div>
-            {/if}
         </div>
         <button type="button" class="btn btn-default" id="submitAddProduct" disabled="disabled" style="display:none;"></button>
     </div>
