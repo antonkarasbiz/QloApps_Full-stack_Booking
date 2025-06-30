@@ -1677,7 +1677,6 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                                 $service['id_product'] = $this->createWsService($service, $roomType['id_room_type']);
                                 $serviceKey = $service['id_product'];
                                 $objProduct = new Product($service['id_product']);
-                                ddd($objProduct->allow_multiple_quantity);
                                 if (!isset($service['quantity']) || !$objProduct->allow_multiple_quantity) {
                                     $service['quantity'] = 1;
                                 }
