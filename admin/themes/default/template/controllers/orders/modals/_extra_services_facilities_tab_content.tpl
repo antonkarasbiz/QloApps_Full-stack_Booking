@@ -140,8 +140,9 @@
                 <thead>
                     <tr>
                         <th>{l s='Name'}</th>
-                        <th>{l s='Unit Price'}</th>
-                        <th>{l s='Total Price'}</th>
+                        <th>{l s='Unit Price (tax excl.)'}</th>
+                        <th>{l s='Total Price (tax excl.)'}</th>
+                        <th>{l s='Total Price (tax incl.)'}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -157,6 +158,7 @@
                                         {/if}
                                     </td>
                                     <td>{displayPrice price=$demand['total_price_tax_excl'] currency=$orderCurrency}</td>
+                                    <td>{displayPrice price=$demand['total_price_tax_incl'] currency=$orderCurrency}</td>
                                 </tr>
                             {/foreach}
                         {/foreach}

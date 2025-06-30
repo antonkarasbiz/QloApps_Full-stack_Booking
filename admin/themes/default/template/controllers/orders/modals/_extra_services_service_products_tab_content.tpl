@@ -251,8 +251,9 @@
 					<th>{l s='ID'}</th>
 					<th>{l s='Name'}</th>
 					<th></th>
-					<th>{l s='Unit Price'}</th>
-					<th>{l s='Total Price'}</th>
+					<th>{l s='Unit Price (tax excl.)'}</th>
+					<th>{l s='Total Price (tax excl.)'}</th>
+					<th>{l s='Total Price (tax incl.)'}</th>
 				</tr>
 			</thead>
 			</tbody>
@@ -278,6 +279,9 @@
 						</td>
 						<td>
 							{displayPrice price=$service['total_price_tax_excl'] currency=$orderCurrency}
+						</td>
+                        <td>
+							{displayPrice price=$service['total_price_tax_incl'] currency=$orderCurrency}
 						</td>
 					</tr>
 				{/foreach}
