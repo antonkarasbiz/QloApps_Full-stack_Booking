@@ -109,14 +109,18 @@
                     <tbody>
                         <tr>
                             <th>{l s='Variant' mod='blockcart'}</th>
-                            <th>{l s='Qty.' mod='blockcart'}</th>
+                            {if $product.allow_multiple_quantity}
+                                <th>{l s='Qty.' mod='blockcart'}</th>
+                            {/if}
                             <th>{l s='Price' mod='blockcart'}</th>
                             <th>&nbsp;</th>
                         </tr>
                         {foreach from=$options item=data_v}
                             <tr class="product_option_row">
                                 <td>{$data_v.option_name}</td>
-                                <td>{$data_v['quantity']}</td>
+                                {if $product.allow_multiple_quantity}
+                                    <td>{$data_v['quantity']}</td>
+                                {/if}
                                 <td>{convertPrice price=($data_v['total_price_tax_excl'])}</td>
                                 <td class="text-right"><a class="ajax_remove_product_option" href="#" id_product="{$product.id_product|intval}" id_hotel="{$data_v.id_hotel|intval}" id_product_option="{$data_v.id_product_option|intval}" title="{l s='remove this product from my cart' mod='blockcart'}">&nbsp;</a></td>
                             </tr>
