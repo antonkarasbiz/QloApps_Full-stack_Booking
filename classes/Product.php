@@ -1528,8 +1528,10 @@ class ProductCore extends ObjectModel
         $sql = 'SELECT cl.*, COUNT(DISTINCT(p.`id_product`)) as num_products
 				FROM `'._DB_PREFIX_.'product` p
 				'.Shop::addSqlAssociation('product', 'p').'
-                INNER JOIN `'._DB_PREFIX_.'htl_room_type_service_product` rsp ON (rsp.`id_product` = p.`id_product`)'
-                .Product::sqlStock('p', 0).'
+                INNER JOIN `'._DB_PREFIX_.'htl_room_type_service_product` rsp ON (rsp.`id_product` = p.`id_product`'.
+                    ($front ? ' AND product_shop.`auto_add_to_cart` = 0 AND product_shop.`show_at_front` = 1 ':'').
+                    ($active ? ' AND product_shop.`active` = 1 ' : '').')'
+                    .Product::sqlStock('p', 0).'
 				INNER JOIN `'._DB_PREFIX_.'category_lang` cl
 					ON (product_shop.`id_category_default` = cl.`id_category`
 					AND cl.`id_lang` = '.(int)$id_lang.Shop::addSqlRestrictionOnLang('cl').')
@@ -1539,10 +1541,7 @@ class ProductCore extends ObjectModel
                     )
                     AND p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_WITH_ROOM_TYPE.
                     ' || p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE.
-                    ' AND product_shop.`id_shop` = '.(int)$context->shop->id
-                    .($front ? ' AND product_shop.`auto_add_to_cart` = 0 AND product_shop.`show_at_front` = 1':'')
-                    .($active ? ' AND product_shop.`active` = 1' : '');
-
+                    ' AND product_shop.`id_shop` = '.(int)$context->shop->id;
 
             $sql .= ' GROUP BY cl.`id_category`';
 
