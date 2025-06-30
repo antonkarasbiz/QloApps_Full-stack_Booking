@@ -183,7 +183,11 @@ class ProductControllerCore extends FrontController
                         default:
                             header('HTTP/1.1 404 Not Found');
                             header('Status: 404 Not Found');
-                            $this->errors[] = Tools::displayError('This Room Type is no longer available.');
+                            if ($this->product->booking_product) {
+                                $this->errors[] = Tools::displayError('This Room Type is no longer available.');
+                            } else {
+                                $this->errors[] = Tools::displayError('This Product is no longer available.');
+                            }
                         break;
                     }
                 }
