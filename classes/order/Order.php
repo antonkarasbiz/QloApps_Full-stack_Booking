@@ -2587,23 +2587,32 @@ class OrderCore extends ObjectModel
             $groupedTaxDetails = array();
             $additionalTaxAmounts = array();
 
-            if (
-                $order_detail['is_booking_product'] &&
-                $autoAddedPriceExcl = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+            if ($order_detail['is_booking_product']
+                && ($autoAddedPriceExcl = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
                     $order_detail['id_order'],
-                    0, 0,
+                    0,
+                    0,
                     $order_detail['product_id'],
-                    0, 0, 0,
-                    true, false, true,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    1,
                     Product::PRICE_ADDITION_TYPE_WITH_ROOM
-                )
+                ))
             ) {
                 $autoAddedServiceData = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
                     $order_detail['id_order'],
-                    0, 0,
+                    0,
+                    0,
                     $order_detail['product_id'],
-                    0, 0, 0,
-                    false, false, true,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
                     Product::PRICE_ADDITION_TYPE_WITH_ROOM
                 );
 
@@ -2619,12 +2628,12 @@ class OrderCore extends ObjectModel
                 }, 0);
 
                 $firstAutoAddedService = array_shift($autoAddedServices);
-                $id_tax_rule_group = $firstAutoAddedService['id_tax_rules_group'];
+                $idTaxRuleGroup = $firstAutoAddedService['id_tax_rules_group'];
 
                 // If tax group is different from order detail, add tax info separately
-                if ($order_detail['id_tax_rules_group'] != $id_tax_rule_group) {
+                if ($order_detail['id_tax_rules_group'] != $idTaxRuleGroup) {
                     $objAddress = new Address((int)$this->id_address_tax);
-                    $autoAddedServiceTaxManager = TaxManagerFactory::getManager($objAddress, (int)$id_tax_rule_group);
+                    $autoAddedServiceTaxManager = TaxManagerFactory::getManager($objAddress, (int)$idTaxRuleGroup);
                     $autoAddedServiceTaxCalculator = $autoAddedServiceTaxManager->getTaxCalculator();
                     // Calculate tax for the total price
                     $additionalTaxAmounts = $autoAddedServiceTaxCalculator->getTaxesAmount($autoAddedPriceExcl);

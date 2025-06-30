@@ -231,7 +231,7 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
     {
         $breakdowns = array(
             'room_tax' => $this->getRoomTypeTaxesBreakdown(),
-            'service_products_tax' => $this->getServiceProductsTaxesBreakdown($this->order),
+            'service_products_tax' => $this->getServiceProductsTaxesBreakdown(),
             'shipping_tax' => $this->getShippingTaxesBreakdown(),
             'ecotax_tax' => $this->order_slip->getEcoTaxTaxesBreakdown(),
         );
