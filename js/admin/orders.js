@@ -758,33 +758,25 @@ function initRoomEvents()
 					success : function(data) {
 						if (data.result)
 						{
-							if (data.refresh)
-							{
-                                window.location.href = admin_order_tab_link + '&conf=3&vieworder&id_order=' + id_order;
-								return;
-							}
-							go = false;
+                            window.location.href = admin_order_tab_link + '&conf=3&vieworder&id_order=' + id_order;
 							//commented by webkul
 							/*updateAmounts(data.order);
 							updateInvoice(data.invoices);
 							updateDocuments(data.documents_html);
 							updateShipping(data.shipping_html);*/
 
-							// Initialize all events
-							init();
-							window.location.href = admin_order_tab_link + '&conf=3&vieworder&id_order=' + id_order;
 							//End
 							// $('.partial_refund_fields').hide();
-						}
-						else
-							jAlert(data.error);
+						} else {
+                            jAlert(data.error);
+                            $('.submitAddRoom').removeAttr('disabled');
+                            $('#submitAddRoom').removeAttr('disabled');
+                        }
 					},
 					error : function(XMLHttpRequest, textStatus, errorThrown) {
 						jAlert("Impossible to add the room to the cart.\n\ntextStatus: '" + textStatus + "'\nerrorThrown: '" + errorThrown + "'\nresponseText:\n" + XMLHttpRequest.responseText);
 					},
 					complete: function() {
-                        $('.submitAddRoom').removeAttr('disabled');
-						$('#submitAddRoom').removeAttr('disabled');
                         $(".loading_overlay").hide();
 					}
 				});
