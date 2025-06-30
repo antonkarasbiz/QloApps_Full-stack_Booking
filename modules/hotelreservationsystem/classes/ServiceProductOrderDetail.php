@@ -304,6 +304,8 @@ class ServiceProductOrderDetail extends ObjectModel
                                 'name' => $product['name'],
                                 'quantity' => $product['quantity'],
                                 'allow_multiple_quantity' => $product['product_allow_multiple_quantity'],
+                                'tax_computation_method' => $product['tax_computation_method'],
+                                'id_tax_rules_group' => $product['id_tax_rules_group'],
                                 'price_calculation_method' => $product['product_price_calculation_method'],
                                 'product_tax' => $product_tax,
                                 'product_tax_label' => $product_tax_label,

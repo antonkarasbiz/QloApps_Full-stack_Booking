@@ -650,7 +650,7 @@ class OrderInvoiceCore extends ObjectModel
                     'total_price_tax_excl' => 0,
                     'total_amount' => 0,
                     'id_tax' => $row['id_tax'],
-                    'rate' => $key,
+                    'rate' => sprintf('%.3f', $row['tax_rate']),
                 );
             }
 

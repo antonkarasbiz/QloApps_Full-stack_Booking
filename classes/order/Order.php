@@ -2598,8 +2598,53 @@ class OrderCore extends ObjectModel
                     Product::PRICE_ADDITION_TYPE_WITH_ROOM
                 )
             ) {
-                $additionalTaxAmounts = $tax_calculator->getTaxesAmount($autoAddedPriceExcl);
-                $totalTaxBase += $autoAddedPriceExcl;
+                $autoAddedServiceData = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                    $order_detail['id_order'],
+                    0, 0,
+                    $order_detail['product_id'],
+                    0, 0, 0,
+                    false, false, true,
+                    Product::PRICE_ADDITION_TYPE_WITH_ROOM
+                );
+
+                // We are getting auto added service for specific room.There will be only on htl_booking_detail but can have multiple auto added service with room.
+                // Note: All the auto added service with room  have same id_tax_rule group 
+                $autoAddedServiceData = array_shift($autoAddedServiceData);
+                $autoAddedServices = $autoAddedServiceData['additional_services'];
+
+                // Calculate total quantity of auto-added services
+                $totalAutoAddedQty = array_reduce($autoAddedServices, function ($quantity, $service) {
+                    $qty = isset($service['quantity']) ? $service['quantity'] : 0;
+                    return $quantity + $qty;
+                }, 0);
+
+                $firstAutoAddedService = array_shift($autoAddedServices);
+                $id_tax_rule_group = $firstAutoAddedService['id_tax_rules_group'];
+
+                // If tax group is different from order detail, add tax info separately
+                if ($order_detail['id_tax_rules_group'] != $id_tax_rule_group) {
+                    $objAddress = new Address((int)$this->id_address_tax);
+                    $autoAddedServiceTaxManager = TaxManagerFactory::getManager($objAddress, (int)$id_tax_rule_group);
+                    $autoAddedServiceTaxCalculator = $autoAddedServiceTaxManager->getTaxCalculator();
+                    // Calculate tax for the total price
+                    $additionalTaxAmounts = $autoAddedServiceTaxCalculator->getTaxesAmount($autoAddedPriceExcl);
+                    foreach ($additionalTaxAmounts as $taxId => $amount) {
+                        $objTax = new Tax((int)$taxId);
+                        $groupedTaxDetails[$taxId] = array(
+                            'id_order_detail' => $firstAutoAddedService['id_order_detail'],
+                            'id_tax' => $taxId,
+                            'tax_rate' => $objTax->rate,
+                            'unit_tax_base' => $autoAddedPriceExcl / $totalAutoAddedQty,
+                            'total_tax_base' => $autoAddedPriceExcl,
+                            'unit_amount' => $amount,
+                            'total_amount' => Tools::processPriceRounding($amount, $totalAutoAddedQty),
+                        );
+                    }
+                } else {
+                    // Calculate tax for the total price
+                    $additionalTaxAmounts = $tax_calculator->getTaxesAmount($autoAddedPriceExcl);
+                    $totalTaxBase += $autoAddedPriceExcl;
+                }
             }
 
             $taxBaseShare = $totalTaxBase;
