@@ -1062,7 +1062,7 @@ class CartCore extends ObjectModel
         }
 
         if (!Validate::isLoadedObject($product)) {
-            die(Tools::displayError());
+            die(Tools::displayError('Some products are not found. Please refresh the page.'));
         }
 
         if (isset(self::$_nbProducts[$this->id])) {
