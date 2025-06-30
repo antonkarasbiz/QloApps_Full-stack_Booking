@@ -1224,6 +1224,10 @@ class AdminOrdersControllerCore extends AdminController
             )) {
                 $smartyVars['ServiceProductOrderDetail'] = $objServiceProductOrderDetail;
                 $smartyVars['objProduct'] = new Product($objServiceProductOrderDetail->id_product);
+                $taxRate = 1;
+                if ($objServiceProductOrderDetail->total_price_tax_excl > 0) {
+                    $taxRate = (($objServiceProductOrderDetail->total_price_tax_incl * 100)/ $objServiceProductOrderDetail->total_price_tax_excl)-100;
+                }
                 $response['data'] = array(
                     'id_product' => $objServiceProductOrderDetail->id_product,
                     'id_product_option' => $objServiceProductOrderDetail->id_product_option,
@@ -1233,7 +1237,7 @@ class AdminOrdersControllerCore extends AdminController
                     'unit_price_tax_incl' => $objServiceProductOrderDetail->unit_price_tax_incl,
                     'total_price_tax_excl' => $objServiceProductOrderDetail->total_price_tax_excl,
                     'total_price_tax_incl' => $objServiceProductOrderDetail->total_price_tax_incl,
-                    'tax_rate' => (($objServiceProductOrderDetail->total_price_tax_incl * 100)/ $objServiceProductOrderDetail->total_price_tax_excl)-100
+                    'tax_rate' => $taxRate
                 );
 
                 $objCurrency = new Currency($objOrder->id_currency);
