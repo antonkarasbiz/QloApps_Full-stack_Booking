@@ -1041,7 +1041,7 @@ class OrderInvoiceCore extends ObjectModel
      */
     public function getRestPaid()
     {
-        return round($this->total_paid_tax_incl + $this->getSiblingTotal() - $this->getTotalPaid(), 2);
+        return Tools::ps_round($this->total_paid_tax_incl + $this->getSiblingTotal() - $this->getTotalPaid(), _PS_PRICE_COMPUTE_PRECISION_);
     }
 
     /**
