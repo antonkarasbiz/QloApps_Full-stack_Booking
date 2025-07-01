@@ -990,8 +990,8 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                 $cartRule['code'] = Tools::passwdGen(8, 'NO_NUMERIC');
                 $cartRule['currency'] =  '';
                 $cartRule['value'] = $objOrder->total_paid_tax_incl - $params['price_details']['total_price_with_tax'];
-                if ($cartRule['value'] && $objOrder->getInvoicesCollection()) {
-                    $cartRule['value'] /= count($objOrder->getInvoicesCollection());
+                if ($cartRule['value']) {
+                    $cartRule['value'] /= count($objOrder->getInvoicesCollection()) ? count($objOrder->getInvoicesCollection()) : 1;
                 }
 
                 $cartRule['type'] = self::API_CART_RULE_VALUE_TYPE_AMOUNT;
@@ -1086,7 +1086,12 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                     $objAddress = new Address((int) $objOrder->id_address_tax);
                     if (!empty($this->wsRequestedRooms[$dateRoomJoinKey]['total_tax'])) {
                         $this->wsRequestedRooms[$dateRoomJoinKey]['id_tax_rules_group'] = $this->createTaxRule(($this->wsRequestedRooms[$dateRoomJoinKey]['total_tax']/$objHotelBookingDetail->total_price_tax_excl)*100, $objAddress);
+                    } else if (isset($this->wsRequestedRooms[$dateRoomJoinKey]['total_tax'])) {
+                        $objOrderDetail->id_tax_rules_group = 0;
+                        Db::getInstance()->execute('DELETE FROM `'._DB_PREFIX_.'order_detail_tax` WHERE id_order_detail='.(int)$objOrderDetail->id);
+                        $priceWithTax = $objHotelBookingDetail->total_price_tax_excl + $this->wsRequestedRooms[$dateRoomJoinKey]['total_tax'];
                     }
+
                     if (isset($this->wsRequestedRooms[$dateRoomJoinKey]['id_tax_rules_group'])) {
                         // Getting new Tax
                         $objTaxManager = TaxManagerFactory::getManager($objAddress, $this->wsRequestedRooms[$dateRoomJoinKey]['id_tax_rules_group']);
@@ -1729,7 +1734,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                         $this->wsRequestedRoomTypes[$dateRoomJoinKey]['room'] = $room;
                         if (isset($room['id_tax_rules_group']) && Validate::isLoadedObject(new TaxRulesGroup((int) $room['id_tax_rules_group']))) {
                             $this->wsRequestedRooms[$dateRoomJoinKey]['id_tax_rules_group'] = $room['id_tax_rules_group'];
-                        } else if (!empty($room['total_tax'])) {
+                        } else if (isset($room['total_tax'])) {
                             $this->wsRequestedRooms[$dateRoomJoinKey]['total_tax'] = $room['total_tax'];
                         }
 
