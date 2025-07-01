@@ -396,7 +396,6 @@ class OrderInvoiceCore extends ObjectModel
             $breakdown[$rate]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
         }
 
-        ksort($breakdown);
         return $breakdown;
     }
 
@@ -464,7 +463,6 @@ class OrderInvoiceCore extends ObjectModel
             $breakdown[$key]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
         }
 
-        ksort($breakdown);
         return $breakdown;
     }
 
@@ -527,7 +525,6 @@ class OrderInvoiceCore extends ObjectModel
             $breakdown[$key]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
         }
 
-        ksort($breakdown);
         return $breakdown;
     }
 
@@ -596,7 +593,6 @@ class OrderInvoiceCore extends ObjectModel
             $breakdown[$key]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
         }
 
-        ksort($breakdown);
         return $breakdown;
     }
 
@@ -662,8 +658,7 @@ class OrderInvoiceCore extends ObjectModel
             $breakdown[$key]['total_price_tax_excl'] = Tools::ps_round($data['total_price_tax_excl'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
             $breakdown[$key]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
         }
-
-        ksort($breakdown);
+        
         return $breakdown;
     }
 
@@ -728,7 +723,7 @@ class OrderInvoiceCore extends ObjectModel
             $breakdown[$rate]['total_price_tax_excl'] = Tools::ps_round($data['total_price_tax_excl'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
             $breakdown[$rate]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
         }
-        ksort($breakdown);
+        
         return $breakdown;
     }
 

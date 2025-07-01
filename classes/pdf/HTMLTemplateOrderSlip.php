@@ -335,8 +335,6 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
             $breakdown[$key]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $this->order->round_mode);
         }
 
-        ksort($breakdown);
-
         return $breakdown;
     }
 

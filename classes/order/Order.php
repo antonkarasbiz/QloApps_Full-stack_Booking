@@ -2520,6 +2520,7 @@ class OrderCore extends ObjectModel
 
         $order_ecotax_tax = 0;
 
+        $objAddress = new Address((int)$this->id_address_tax);
         foreach ($order_details as $order_detail) {
             $tax_rates = array();
             $groupedTaxDetails = array();
@@ -2531,7 +2532,10 @@ class OrderCore extends ObjectModel
                 continue;
             }
 
-            $tax_calculator = OrderDetail::getTaxCalculatorStatic($id_order_detail);
+            // $tax_calculator = OrderDetail::getTaxCalculatorStatic($id_order_detail); // Commented this code used tax rul group
+            $taxManager = TaxManagerFactory::getManager($objAddress, (int)$order_detail['id_tax_rules_group']);
+            $tax_calculator = $taxManager->getTaxCalculator();
+
             $quantity = $order_detail['product_quantity'];
             $unit_price_tax_excl = $order_detail['total_price_tax_excl'] / $quantity;
 
@@ -2636,7 +2640,6 @@ class OrderCore extends ObjectModel
     
                     // If tax group is different from order detail, add tax info separately
                     if ($order_detail['id_tax_rules_group'] != $idTaxRuleGroup) {
-                        $objAddress = new Address((int)$this->id_address_tax);
                         $autoAddedServiceTaxManager = TaxManagerFactory::getManager($objAddress, (int)$idTaxRuleGroup);
                         $autoAddedServiceTaxCalculator = $autoAddedServiceTaxManager->getTaxCalculator();
                         // Calculate tax for the total price
