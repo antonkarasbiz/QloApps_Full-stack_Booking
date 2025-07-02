@@ -195,10 +195,10 @@ class AdminCustomNavigationLinkSettingController extends ModuleAdminController
         $themePages = array();
         if (Validate::isLoadedObject($objTheme = new Theme($this->context->shop->id_theme))) {
             if ($themePages = $objTheme->getMetas()) {
-                foreach ($themePages as &$page) {
+                foreach ($themePages as $themePagekey => $page) {
                     if ($page['id_meta']) {
                         if (Validate::isLoadedObject($objMeta = new Meta($page['id_meta']))) {
-                            $page['page'] = $objMeta->page;
+                            $themePages[$themePagekey]['page'] = $objMeta->page;
                         }
                     }
                 }
