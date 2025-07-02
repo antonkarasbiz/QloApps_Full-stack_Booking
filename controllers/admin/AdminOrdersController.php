@@ -4181,8 +4181,8 @@ class AdminOrdersControllerCore extends AdminController
                     $price_tax_excl = RoomTypeServiceProductPrice::getPrice($addProduct['product_id'], $idHotel, $id_product_option, false);
 
                     // convert price to order currency
-                    $price_tax_excl = Tools::ps_round(Tools::convertPrice($price_tax_excl, $currency), 2);
-                    $price_tax_incl = Tools::ps_round(Tools::convertPrice($price_tax_incl, $currency), 2);
+                    $price_tax_excl = Tools::ps_round(Tools::convertPrice($price_tax_excl, $currency), _PS_PRICE_COMPUTE_PRECISION_);
+                    $price_tax_incl = Tools::ps_round(Tools::convertPrice($price_tax_incl, $currency), _PS_PRICE_COMPUTE_PRECISION_);
 
                     $to_return = array(
                         'price_tax_incl' => $price_tax_incl,
@@ -4196,8 +4196,8 @@ class AdminOrdersControllerCore extends AdminController
                     $price_tax_excl = RoomTypeServiceProductPrice::getPrice($addProduct['product_id'], false, $id_product_option, false);
 
                     // convert price to order currency
-                    $price_tax_excl = Tools::ps_round(Tools::convertPrice($price_tax_excl, $currency), 2);
-                    $price_tax_incl = Tools::ps_round(Tools::convertPrice($price_tax_incl, $currency), 2);
+                    $price_tax_excl = Tools::ps_round(Tools::convertPrice($price_tax_excl, $currency), _PS_PRICE_COMPUTE_PRECISION_);
+                    $price_tax_incl = Tools::ps_round(Tools::convertPrice($price_tax_incl, $currency), _PS_PRICE_COMPUTE_PRECISION_);
                     $to_return = array(
                         'price_tax_incl' => $price_tax_incl,
                         'price_tax_excl' => $price_tax_excl,
