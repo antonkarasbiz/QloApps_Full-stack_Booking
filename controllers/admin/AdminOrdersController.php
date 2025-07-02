@@ -3999,8 +3999,8 @@ class AdminOrdersControllerCore extends AdminController
                     // Formatted price
                     $product['formatted_price'] = Tools::displayPrice(Tools::convertPrice($product['price_tax_incl'], $currency), $currency);
                     // Concret price
-                    $product['price_tax_incl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_incl'], $currency), 2);
-                    $product['price_tax_excl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_excl'], $currency), 2);
+                    $product['price_tax_incl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_incl'], $currency), _PS_PRICE_COMPUTE_PRECISION_);
+                    $product['price_tax_excl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_excl'], $currency), _PS_PRICE_COMPUTE_PRECISION_);
                     $productObj = new Product((int)$product['id_product'], false, (int)$this->context->language->id);
                     $combinations = array();
                     $attributes = $productObj->getAttributesGroups((int)$this->context->language->id);
@@ -4107,8 +4107,8 @@ class AdminOrdersControllerCore extends AdminController
                         }
 
                         // convert price to order currency
-                        $product['price_tax_incl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_incl'], $currency), 2);
-                        $product['price_tax_excl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_excl'], $currency), 2);
+                        $product['price_tax_incl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_incl'], $currency), _PS_PRICE_COMPUTE_PRECISION_);
+                        $product['price_tax_excl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_excl'], $currency), _PS_PRICE_COMPUTE_PRECISION_);
 
                         // Tax rate for this customer
                         if (Tools::isSubmit('id_address')) {
@@ -4863,6 +4863,11 @@ class AdminOrdersControllerCore extends AdminController
         $createFeaturePrice = $product_informations['product_price_tax_incl'] != $initial_product_price_tax_incl;
         $featurePriceParams = array();
         if ($createFeaturePrice) {
+            if ($order->id_currency != (int)Configuration::get('PS_CURRENCY_DEFAULT')) {
+                $product_informations['product_price_tax_excl'] = Tools::convertPrice($product_informations['product_price_tax_excl'], $order->id_currency, false);
+                $product_informations['product_price_tax_excl'] = Tools::ps_round($product_informations['product_price_tax_excl'], _PS_PRICE_COMPUTE_PRECISION_);
+            }
+
             $featurePriceParams = array(
                 'id_cart' => $this->context->cart->id,
                 'id_guest' => $this->context->cookie->id_guest,
@@ -5446,6 +5451,11 @@ class AdminOrdersControllerCore extends AdminController
 
                 // Creating specific price if needed
                 if ($productInformations['product_price_tax_incl'] != $initialProductPriceTI) {
+                    if ($this->context->cart->id_currency != (int)Configuration::get('PS_CURRENCY_DEFAULT')) {
+                        $productInformations['product_price_tax_excl'] = Tools::convertPrice($productInformations['product_price_tax_excl'], $this->context->cart->id_currency, false);
+                        $productInformations['product_price_tax_excl'] = Tools::ps_round($productInformations['product_price_tax_excl'], _PS_PRICE_COMPUTE_PRECISION_);
+                    }
+
                     $objSpecificPrice = new SpecificPrice();
                     $objSpecificPrice->id_shop = 0;
                     $objSpecificPrice->id_shop_group = 0;
