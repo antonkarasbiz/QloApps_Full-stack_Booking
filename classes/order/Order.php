@@ -2532,9 +2532,7 @@ class OrderCore extends ObjectModel
                 continue;
             }
 
-            // $tax_calculator = OrderDetail::getTaxCalculatorStatic($id_order_detail); // Commented this code used tax rul group
-            $taxManager = TaxManagerFactory::getManager($objAddress, (int)$order_detail['id_tax_rules_group']);
-            $tax_calculator = $taxManager->getTaxCalculator();
+            $tax_calculator = OrderDetail::getTaxCalculatorStatic($id_order_detail);
 
             $quantity = $order_detail['product_quantity'];
             $unit_price_tax_excl = $order_detail['total_price_tax_excl'] / $quantity;
@@ -2594,9 +2592,9 @@ class OrderCore extends ObjectModel
     
                 $objServiceProductOrderDetail = new ServiceProductOrderDetail();
                 $additionalTaxAmounts = array();
-    
+
                 if ($order_detail['is_booking_product']
-                    && ($autoAddedPriceExcl = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                    && ($autoAddedServiceData = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
                         $order_detail['id_order'],
                         0,
                         0,
@@ -2604,13 +2602,13 @@ class OrderCore extends ObjectModel
                         0,
                         0,
                         0,
-                        1,
+                        0,
                         0,
                         1,
                         Product::PRICE_ADDITION_TYPE_WITH_ROOM
                     ))
                 ) {
-                    $autoAddedServiceData = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                    $autoAddedPriceExcl = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
                         $order_detail['id_order'],
                         0,
                         0,
@@ -2618,7 +2616,7 @@ class OrderCore extends ObjectModel
                         0,
                         0,
                         0,
-                        0,
+                        1,
                         0,
                         1,
                         Product::PRICE_ADDITION_TYPE_WITH_ROOM
@@ -2668,28 +2666,36 @@ class OrderCore extends ObjectModel
                 // In case of Order Invoice, we need to calculate the tax base share as there are services
                 // which have different tax group with room types. So we are using order detail tax data
                 foreach ($taxesList as $detailTax) {
-                    $taxId = $detailTax['id_tax'];
-    
-                    $unitAmount = $detailTax['unit_amount'] + ($additionalTaxAmounts[$taxId] ?? 0);
-                    $totalAmount = $detailTax['total_amount'] + ($additionalTaxAmounts[$taxId] ?? 0);
-    
-                    if (!isset($groupedTaxDetails[$taxId])) {
-                        $groupedTaxDetails[$taxId] = array(
-                            'id_order_detail' => $id_order_detail,
-                            'id_tax' => $taxId,
-                            'tax_rate' => $tax_rates[$taxId],
-                            'unit_tax_base' => $unit_price_tax_excl,
-                            'total_tax_base' => $taxBaseShare,
-                            'unit_amount' => $unitAmount,
-                            'total_amount' => $totalAmount,
-                        );
-                    } else {
-                        $groupedTaxDetails[$taxId]['unit_amount'] += $unitAmount;
-                        $groupedTaxDetails[$taxId]['total_amount'] += $totalAmount;
+                    if ($detailTax['total_amount'] > 0) {
+                        $taxId = $detailTax['id_tax'];
+        
+                        $unitAmount = $detailTax['unit_amount'] + ($additionalTaxAmounts[$taxId] ?? 0);
+                        $totalAmount = $detailTax['total_amount'] + ($additionalTaxAmounts[$taxId] ?? 0);
+        
+                        if (!isset($groupedTaxDetails[$taxId])) {
+                            $groupedTaxDetails[$taxId] = array(
+                                'id_order_detail' => $id_order_detail,
+                                'id_tax' => $taxId,
+                                'tax_rate' => $tax_rates[$taxId],
+                                'unit_tax_base' => $unit_price_tax_excl,
+                                'total_tax_base' => $taxBaseShare,
+                                // When order cancelled order detail amount is set to 0 but not the order detail tax. So we check is there any amount where the tax can be applied otherwise tax is 0
+                                'unit_amount' => $taxBaseShare > 0 ? $unitAmount : 0,
+                                'total_amount' => $taxBaseShare > 0 ? $totalAmount : 0,
+                            );
+                        } else {
+                            if ($taxBaseShare > 0) {
+                                $groupedTaxDetails[$taxId]['unit_amount'] += $unitAmount;
+                                $groupedTaxDetails[$taxId]['total_amount'] += $totalAmount;
+                            }
+                        }
                     }
                 }
             } else {
                 $taxBaseShare = $totalTaxBase;
+                $taxManager = TaxManagerFactory::getManager($objAddress, (int)$order_detail['id_tax_rules_group']);
+                $tax_calculator = $taxManager->getTaxCalculator();
+
                 foreach ($tax_calculator->getTaxesAmount($unit_price_tax_excl) as $id_tax => $unit_amount) {
                     $total_tax_base = 0;
                     $total_amount = Tools::processPriceRounding($unit_amount, $quantity);
@@ -2701,12 +2707,14 @@ class OrderCore extends ObjectModel
                             'tax_rate' => $tax_rates[$id_tax],
                             'unit_tax_base' => $unit_price_tax_excl,
                             'total_tax_base' => $taxBaseShare,
-                            'unit_amount' => $unit_amount,
-                            'total_amount' => $total_amount
+                            'unit_amount' => $taxBaseShare > 0 ? $unit_amount : 0,
+                            'total_amount' => $taxBaseShare > 0 ? $total_amount : 0
                         );
                     } else {
-                        $groupedTaxDetails[$id_tax]['unit_amount'] += $unit_amount;
-                        $groupedTaxDetails[$id_tax]['total_amount'] += $total_amount;
+                        if ($taxBaseShare > 0) {
+                            $groupedTaxDetails[$id_tax]['unit_amount'] += $unit_amount;
+                            $groupedTaxDetails[$id_tax]['total_amount'] += $total_amount;
+                        }
                     }
                 }
             }
