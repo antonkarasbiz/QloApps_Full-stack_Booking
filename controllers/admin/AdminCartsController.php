@@ -1020,6 +1020,7 @@ class AdminCartsControllerCore extends AdminController
         }
 
         if ($this->tabAccess['edit'] === 1) {
+            Cache::clean('getContextualValue_*');
             HotelRoomTypeFeaturePricing::deleteFeaturePrices($id_cart, $id_product, $id_room, $date_from, $date_to);
             HotelRoomTypeFeaturePricing::createRoomTypeFeaturePrice(
                 array(
