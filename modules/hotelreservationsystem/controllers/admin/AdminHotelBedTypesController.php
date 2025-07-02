@@ -194,6 +194,10 @@ class AdminHotelBedTypesController extends ModuleAdminController
                 ) {
                     $this->errors[] = $this->l('Invalid dimension unit in ').$lang['name'];
                 }
+
+                if (!trim(Tools::getValue('WK_DIMENSION_UNIT_'.$lang['id_lang']))) {
+                    $_POST['WK_DIMENSION_UNIT_'.$lang['id_lang']] = Tools::getValue('WK_DIMENSION_UNIT_'.$defaultLangId);
+                }
             }
         }
     }
