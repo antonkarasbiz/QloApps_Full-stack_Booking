@@ -4149,6 +4149,11 @@ class AdminOrdersControllerCore extends AdminController
                                 false
                             );
                         }
+
+                        // convert price to order currency
+                        $product['price_tax_incl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_incl'], $currency), _PS_PRICE_COMPUTE_PRECISION_);
+                        $product['price_tax_excl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_excl'], $currency), _PS_PRICE_COMPUTE_PRECISION_);
+
                         // Tax rate for this customer
                         if (Tools::isSubmit('id_address')) {
                             $productObj = new Product((int)$product['id_product']);
