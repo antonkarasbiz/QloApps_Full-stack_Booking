@@ -942,196 +942,198 @@ class HotelCartBookingData extends ObjectModel
             $errors[] = $objModule->l('No booking found in the cart.', 'HotelOrderRestrictDate');
         }
 
-        // validate service products if not active, deleted or not associated to a specific room type/hotels then remove from cart
-        $objServiceProductCartDetail = new ServiceProductCartDetail();
-        $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
-        if ($serviceProducts = $objServiceProductCartDetail->getServiceProductsInCart($context->cart->id)) {
-            foreach ($serviceProducts as $service) {
-                $toRemoveService = 0;
-                if (!Validate::isLoadedObject($product = new Product($service['id_product']))) {
-                    $toRemoveService = 1;
-                } else {
-                    // check if product is active and (available for order for front office)
-                    if (!$product->active || (!$forAdminCart && !$product->available_for_order)) {
+        if (Validate::isLoadedObject($context->cart)) {
+            // validate service products if not active, deleted or not associated to a specific room type/hotels then remove from cart
+            $objServiceProductCartDetail = new ServiceProductCartDetail();
+            $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
+            if ($serviceProducts = $objServiceProductCartDetail->getServiceProductsInCart($context->cart->id)) {
+                foreach ($serviceProducts as $service) {
+                    $toRemoveService = 0;
+                    if (!Validate::isLoadedObject($product = new Product($service['id_product']))) {
                         $toRemoveService = 1;
-                    } else if ($checkServiceRoomLink) {
-                        if ($product->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
-                            // service with room type must have association with valid hotel cart booking
-                            if (Validate::isLoadedObject($objHotelCartBooking = new HotelCartBookingData($service['id_hotel_cart_booking']))) {
-                                // check if added room type is associated with valid service product
-                                $serviceAssociations = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType(
-                                    $service['id_product'],
-                                    RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE,
-                                    $objHotelCartBooking->id_product
-                                );
-                                if (!isset($serviceAssociations['room_type'])
-                                    || !in_array($objHotelCartBooking->id_product, $serviceAssociations['room_type'])
-                                ) {
+                    } else {
+                        // check if product is active and (available for order for front office)
+                        if (!$product->active || (!$forAdminCart && !$product->available_for_order)) {
+                            $toRemoveService = 1;
+                        } else if ($checkServiceRoomLink) {
+                            if ($product->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
+                                // service with room type must have association with valid hotel cart booking
+                                if (Validate::isLoadedObject($objHotelCartBooking = new HotelCartBookingData($service['id_hotel_cart_booking']))) {
+                                    // check if added room type is associated with valid service product
+                                    $serviceAssociations = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType(
+                                        $service['id_product'],
+                                        RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE,
+                                        $objHotelCartBooking->id_product
+                                    );
+                                    if (!isset($serviceAssociations['room_type'])
+                                        || !in_array($objHotelCartBooking->id_product, $serviceAssociations['room_type'])
+                                    ) {
+                                        $toRemoveService = 1;
+                                    }
+                                } else {
                                     $toRemoveService = 1;
                                 }
                             } else {
-                                $toRemoveService = 1;
-                            }
-                        } else {
-                            if (ServiceProductOption::productHasOptions($service['id_product'])) {
-                                if ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
-                                    && $service['id_hotel_cart_booking']
-                                ) {
-                                    // do nothing if service of type SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE is added with toom type
-                                    // then we will not check for options
-                                } elseif (!Validate::isLoadedObject(new ServiceProductOption($service['id_product_option']))) {
+                                if (ServiceProductOption::productHasOptions($service['id_product'])) {
+                                    if ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE
+                                        && $service['id_hotel_cart_booking']
+                                    ) {
+                                        // do nothing if service of type SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE is added with toom type
+                                        // then we will not check for options
+                                    } elseif (!Validate::isLoadedObject(new ServiceProductOption($service['id_product_option']))) {
+                                        $toRemoveService = 1;
+                                    }
+                                } elseif ($service['id_product_option']) {
                                     $toRemoveService = 1;
                                 }
-                            } elseif ($service['id_product_option']) {
-                                $toRemoveService = 1;
-                            }
 
-                            if (!$toRemoveService) {
-                                if ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE) {
-                                    // service with hotel must have association with valid hotel
-                                    if (Validate::isLoadedObject($objHotelBranch = new HotelBranchInformation($service['id_hotel']))) {
-                                        $serviceAssociations = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType(
-                                            $service['id_product'],
-                                            RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL,
-                                            $service['id_hotel']
-                                        );
-                                        if (!isset($serviceAssociations['hotel'])
-                                            || !in_array($service['id_hotel'], $serviceAssociations['hotel'])
-                                        ) {
+                                if (!$toRemoveService) {
+                                    if ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE) {
+                                        // service with hotel must have association with valid hotel
+                                        if (Validate::isLoadedObject($objHotelBranch = new HotelBranchInformation($service['id_hotel']))) {
+                                            $serviceAssociations = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType(
+                                                $service['id_product'],
+                                                RoomTypeServiceProduct::WK_ELEMENT_TYPE_HOTEL,
+                                                $service['id_hotel']
+                                            );
+                                            if (!isset($serviceAssociations['hotel'])
+                                                || !in_array($service['id_hotel'], $serviceAssociations['hotel'])
+                                            ) {
+                                                $toRemoveService = 1;
+                                            }
+                                        } else {
                                             $toRemoveService = 1;
                                         }
-                                    } else {
-                                        $toRemoveService = 1;
-                                    }
-                                } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE) {
-                                    // Standalone product must not have any association with hotel or hotel cart booking
-                                    if ($service['id_hotel'] || $service['id_hotel_cart_booking']) {
-                                        $toRemoveService = 1;
-                                    }
-                                } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE) {
-                                    // service with hotel or room type must have association with hotel or hotel cart booking
-                                    if (!$service['id_hotel'] && !$service['id_hotel_cart_booking']) {
-                                        $toRemoveService = 1;
+                                    } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_STANDALONE) {
+                                        // Standalone product must not have any association with hotel or hotel cart booking
+                                        if ($service['id_hotel'] || $service['id_hotel_cart_booking']) {
+                                            $toRemoveService = 1;
+                                        }
+                                    } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE) {
+                                        // service with hotel or room type must have association with hotel or hotel cart booking
+                                        if (!$service['id_hotel'] && !$service['id_hotel_cart_booking']) {
+                                            $toRemoveService = 1;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
 
-                if ($toRemoveService) {
-                    $objServiceProductCartDetail->removeCartServiceProduct(
-                        $context->cart->id,
-                        null,
-                        false,
-                        null,
-                        null,
-                        null,
-                        $service['id_service_product_cart_detail']
-                    );
-                }
-            }
-        }
-
-        // for admin/employee remove bookings of the back dates from cart if not allowed
-        if ($forAdminCart) {
-            if ($context->employee->isSuperAdmin()) {
-                $backOrderConfigKey = 'PS_BACKDATE_ORDER_SUPERADMIN';
-            } else {
-                $backOrderConfigKey = 'PS_BACKDATE_ORDER_EMPLOYEES';
-            }
-            if (!Configuration::get($backOrderConfigKey)) {
-                $objHotelCartBookingData = new HotelCartBookingData();
-                $objHotelCartBookingData->removeBackdateRoomsFromCart($context->cart->id);
-            }
-        }
-
-        // validate room types for restriction date
-        if ($cartProducts = $context->cart->getProducts()) {
-            $objHotelCartBookingData = new HotelCartBookingData();
-            $objHotelBookingDetail = new HotelBookingDetail();
-
-            foreach ($cartProducts as $product) {
-                if ($product['booking_product']) {
-                    if ($product['active']) {
-                        if ($cartBookingData = $objHotelCartBookingData->getOnlyCartBookingData(
+                    if ($toRemoveService) {
+                        $objServiceProductCartDetail->removeCartServiceProduct(
                             $context->cart->id,
-                            $context->cart->id_guest,
-                            $product['id_product']
-                        )) {
-                            $cartData = array();
-                            foreach ($cartBookingData as $bookingData) {
-                                $dateJoin = strtotime($bookingData['date_from']).strtotime($bookingData['date_to']);
-                                $cartData[$dateJoin]['date_from'] = $bookingData['date_from'];
-                                $cartData[$dateJoin]['date_to'] = $bookingData['date_to'];
-                                $cartData[$dateJoin]['id_hotel'] = $bookingData['id_hotel'];
-                                $cartData[$dateJoin]['id_rms'][] = $bookingData['id_room'];
-                            }
+                            null,
+                            false,
+                            null,
+                            null,
+                            null,
+                            $service['id_service_product_cart_detail']
+                        );
+                    }
+                }
+            }
 
-                            foreach ($cartData as $roomData) {
-                                if (!$forAdminCart) {
-                                    if ($maxOrderDate = HotelOrderRestrictDate::getMaxOrderDate($roomData['id_hotel'])) {
-                                        if (strtotime('-1 day', strtotime($maxOrderDate)) < strtotime($roomData['date_from'])
-                                            || strtotime($maxOrderDate) < strtotime($roomData['date_to'])
-                                        ) {
-                                            $objHotelBranchInformation = new HotelBranchInformation(
-                                                $roomData['id_hotel'],
-                                                $context->language->id
-                                            );
-                                            $errors[] = sprintf(
-                                                $objModule->l('You can not book rooms for hotel "%s" after date %s. Please remove rooms from %s - %s to proceed.', 'HotelOrderRestrictDate'),
-                                                $objHotelBranchInformation->hotel_name,
-                                                Tools::displayDate($maxOrderDate),
-                                                Tools::displayDate($roomData['date_from']),
-                                                Tools::displayDate($roomData['date_to'])
-                                            );
+            // for admin/employee remove bookings of the back dates from cart if not allowed
+            if ($forAdminCart) {
+                if ($context->employee->isSuperAdmin()) {
+                    $backOrderConfigKey = 'PS_BACKDATE_ORDER_SUPERADMIN';
+                } else {
+                    $backOrderConfigKey = 'PS_BACKDATE_ORDER_EMPLOYEES';
+                }
+                if (!Configuration::get($backOrderConfigKey)) {
+                    $objHotelCartBookingData = new HotelCartBookingData();
+                    $objHotelCartBookingData->removeBackdateRoomsFromCart($context->cart->id);
+                }
+            }
+
+            // validate room types for restriction date
+            if ($cartProducts = $context->cart->getProducts()) {
+                $objHotelCartBookingData = new HotelCartBookingData();
+                $objHotelBookingDetail = new HotelBookingDetail();
+
+                foreach ($cartProducts as $product) {
+                    if ($product['booking_product']) {
+                        if ($product['active']) {
+                            if ($cartBookingData = $objHotelCartBookingData->getOnlyCartBookingData(
+                                $context->cart->id,
+                                $context->cart->id_guest,
+                                $product['id_product']
+                            )) {
+                                $cartData = array();
+                                foreach ($cartBookingData as $bookingData) {
+                                    $dateJoin = strtotime($bookingData['date_from']).strtotime($bookingData['date_to']);
+                                    $cartData[$dateJoin]['date_from'] = $bookingData['date_from'];
+                                    $cartData[$dateJoin]['date_to'] = $bookingData['date_to'];
+                                    $cartData[$dateJoin]['id_hotel'] = $bookingData['id_hotel'];
+                                    $cartData[$dateJoin]['id_rms'][] = $bookingData['id_room'];
+                                }
+
+                                foreach ($cartData as $roomData) {
+                                    if (!$forAdminCart) {
+                                        if ($maxOrderDate = HotelOrderRestrictDate::getMaxOrderDate($roomData['id_hotel'])) {
+                                            if (strtotime('-1 day', strtotime($maxOrderDate)) < strtotime($roomData['date_from'])
+                                                || strtotime($maxOrderDate) < strtotime($roomData['date_to'])
+                                            ) {
+                                                $objHotelBranchInformation = new HotelBranchInformation(
+                                                    $roomData['id_hotel'],
+                                                    $context->language->id
+                                                );
+                                                $errors[] = sprintf(
+                                                    $objModule->l('You can not book rooms for hotel "%s" after date %s. Please remove rooms from %s - %s to proceed.', 'HotelOrderRestrictDate'),
+                                                    $objHotelBranchInformation->hotel_name,
+                                                    Tools::displayDate($maxOrderDate),
+                                                    Tools::displayDate($roomData['date_from']),
+                                                    Tools::displayDate($roomData['date_to'])
+                                                );
+                                            }
+                                        }
+
+                                        $minBookingOffset = HotelOrderRestrictDate::getMinimumBookingOffset($roomData['id_hotel']);
+                                        if ($minBookingOffset !== false) {
+                                            $minOrderDate = date('Y-m-d', strtotime('+'. ($minBookingOffset) .' days'));
+                                            if (strtotime($minOrderDate) > strtotime($roomData['date_from'])) {
+                                                $objHotelBranchInformation = new HotelBranchInformation(
+                                                    $roomData['id_hotel'],
+                                                    $context->language->id
+                                                );
+                                                $errors[] = sprintf(
+                                                    $objModule->l('You can not book rooms for hotel "%s" before date %s. Please remove rooms from %s - %s to proceed.', 'HotelOrderRestrictDate'),
+                                                    $objHotelBranchInformation->hotel_name,
+                                                    Tools::displayDate($minOrderDate),
+                                                    Tools::displayDate($roomData['date_from']),
+                                                    Tools::displayDate($roomData['date_to'])
+                                                );
+                                            }
                                         }
                                     }
 
-                                    $minBookingOffset = HotelOrderRestrictDate::getMinimumBookingOffset($roomData['id_hotel']);
-                                    if ($minBookingOffset !== false) {
-                                        $minOrderDate = date('Y-m-d', strtotime('+'. ($minBookingOffset) .' days'));
-                                        if (strtotime($minOrderDate) > strtotime($roomData['date_from'])) {
-                                            $objHotelBranchInformation = new HotelBranchInformation(
-                                                $roomData['id_hotel'],
-                                                $context->language->id
-                                            );
-                                            $errors[] = sprintf(
-                                                $objModule->l('You can not book rooms for hotel "%s" before date %s. Please remove rooms from %s - %s to proceed.', 'HotelOrderRestrictDate'),
-                                                $objHotelBranchInformation->hotel_name,
-                                                Tools::displayDate($minOrderDate),
-                                                Tools::displayDate($roomData['date_from']),
-                                                Tools::displayDate($roomData['date_to'])
-                                            );
+                                    $bookingParams = array(
+                                        'date_from' => $roomData['date_from'],
+                                        'date_to' => $roomData['date_to'],
+                                        'hotel_id' => $roomData['id_hotel'],
+                                        'id_room_type' => $product['id_product'],
+                                        'only_search_data' => 1,
+                                    );
+                                    $bookingSearchData = $objHotelBookingDetail->dataForFrontSearch($bookingParams);
+                                    $isRoomBooked = 0;
+                                    if (count($bookingSearchData['rm_data'][$product['id_product']]['data']['available']) < count($roomData['id_rms'])) {
+                                        foreach ($roomData['id_rms'] as $searchRoomData) {
+                                            if($isRoomBooked = $objHotelBookingDetail->chechRoomBooked($searchRoomData, $roomData['date_from'], $roomData['date_to'])){
+                                                break;
+                                            }
+                                        }
+                                        if ($isRoomBooked) {
+                                            $errors[] = sprintf($objModule->l('The Room "%s" has been booked by another customer from "%s" to "%s" Please remove rooms from cart to proceed', 'HotelOrderRestrictDate'), $product['name'], date('d-m-Y', strtotime($roomData['date_from'])), date('d-m-Y', strtotime($roomData['date_to'])));
+                                        } else {
+                                            $errors[] = sprintf($objModule->l('The Room "%s" is no longer available from "%s" to "%s" Please remove rooms from cart to proceed', 'HotelOrderRestrictDate'), $product['name'], date('d-m-Y', strtotime($roomData['date_from'])), date('d-m-Y', strtotime($roomData['date_to'])));
                                         }
                                     }
                                 }
-
-                                $bookingParams = array(
-                                    'date_from' => $roomData['date_from'],
-                                    'date_to' => $roomData['date_to'],
-                                    'hotel_id' => $roomData['id_hotel'],
-                                    'id_room_type' => $product['id_product'],
-                                    'only_search_data' => 1,
-                                );
-                                $bookingSearchData = $objHotelBookingDetail->dataForFrontSearch($bookingParams);
-                                $isRoomBooked = 0;
-                                if (count($bookingSearchData['rm_data'][$product['id_product']]['data']['available']) < count($roomData['id_rms'])) {
-                                    foreach ($roomData['id_rms'] as $searchRoomData) {
-                                        if($isRoomBooked = $objHotelBookingDetail->chechRoomBooked($searchRoomData, $roomData['date_from'], $roomData['date_to'])){
-                                            break;
-                                        }
-                                    }
-                                    if ($isRoomBooked) {
-                                        $errors[] = sprintf($objModule->l('The Room "%s" has been booked by another customer from "%s" to "%s" Please remove rooms from cart to proceed', 'HotelOrderRestrictDate'), $product['name'], date('d-m-Y', strtotime($roomData['date_from'])), date('d-m-Y', strtotime($roomData['date_to'])));
-                                    } else {
-                                        $errors[] = sprintf($objModule->l('The Room "%s" is no longer available from "%s" to "%s" Please remove rooms from cart to proceed', 'HotelOrderRestrictDate'), $product['name'], date('d-m-Y', strtotime($roomData['date_from'])), date('d-m-Y', strtotime($roomData['date_to'])));
-                                    }
-                                }
                             }
+                        } else {
+                            $errors[] = $objModule->l('You can not book rooms from "', 'HotelOrderRestrictDate'). $product['name'] .$objModule->l('". Please remove rooms from "', 'HotelOrderRestrictDate'). $product['name'] . $objModule->l('" from cart to proceed.', 'HotelOrderRestrictDate');
                         }
-                    } else {
-                        $errors[] = $objModule->l('You can not book rooms from "', 'HotelOrderRestrictDate'). $product['name'] .$objModule->l('". Please remove rooms from "', 'HotelOrderRestrictDate'). $product['name'] . $objModule->l('" from cart to proceed.', 'HotelOrderRestrictDate');
                     }
                 }
             }
