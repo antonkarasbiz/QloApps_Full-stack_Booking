@@ -1663,8 +1663,10 @@ class AdminCartsControllerCore extends AdminController
                                         0,
                                         1,
                                         0,
-                                        $objCart->id_customer,
-                                        $objCart->id
+                                        0,
+                                        $objCart->id,
+                                        0,
+                                        $objHotelCartBookingData->id
                                     )) {
                                         $objSpecificPrice = new SpecificPrice($specificPriceInfo['id_specific_price']);
                                     } else {
@@ -1676,12 +1678,13 @@ class AdminCartsControllerCore extends AdminController
                                     $objSpecificPrice->id_currency = $objCart->id_currency;
                                     $objSpecificPrice->id_country = 0;
                                     $objSpecificPrice->id_group = 0;
-                                    $objSpecificPrice->id_customer = $objCart->id_customer;
+                                    $objSpecificPrice->id_customer = 0;
                                     $objSpecificPrice->id_product = $idServiceProduct;
                                     $objSpecificPrice->id_product_attribute = 0;
                                     $objSpecificPrice->price = $unitPrice;
                                     $objSpecificPrice->from_quantity = 1;
                                     $objSpecificPrice->reduction = 0;
+                                    $objSpecificPrice->id_htl_cart_booking = $objHotelCartBookingData->id;
                                     $objSpecificPrice->reduction_type = 'amount';
                                     $objSpecificPrice->reduction_tax = 0;
                                     $objSpecificPrice->from = '0000-00-00 00:00:00';
