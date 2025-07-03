@@ -141,7 +141,7 @@ class RoomTypeServiceProduct extends ObjectModel
         if (Product::isBookingProduct($idProduct)) {
             $context = Context::getContext();
             $front = true;
-            if (!in_array($context->controller->controller_type, array('front', 'modulefront'))) {
+            if (isset($context->controller->controller_type) && !in_array($context->controller->controller_type, array('front', 'modulefront'))) {
                 $front = false;
             }
 
