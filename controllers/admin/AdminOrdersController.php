@@ -7418,7 +7418,15 @@ class AdminOrdersControllerCore extends AdminController
                             $priceDiffTaxExcl = $objServiceProductOrderDetail->total_price_tax_excl - $oldTotalPriceTaxExcl;
                             $priceDiffTaxIncl = $objServiceProductOrderDetail->total_price_tax_incl - $oldTotalPriceTaxIncl;
 
-                            $quantityDiff = $objServiceProductOrderDetail->quantity - $oldQuantity;
+                            if ($objOrderDetail->product_price_calculation_method == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
+                                $numDays = HotelHelper::getNumberOfDays(
+                                    $objHotelBookingDetail->date_from,
+                                    $objHotelBookingDetail->date_to
+                                );
+                                $quantityDiff = ($objServiceProductOrderDetail->quantity - $oldQuantity)*$numDays;
+                            } else {
+                                $quantityDiff = $objServiceProductOrderDetail->quantity - $oldQuantity;
+                            }
 
                             $objOrderDetail->product_quantity += $quantityDiff;
                             $objOrderDetail->total_price_tax_excl += $priceDiffTaxExcl;
@@ -8090,6 +8098,13 @@ class AdminOrdersControllerCore extends AdminController
 
                 if ($res &= $objServiceProductOrderDetail->delete()) {
                     $order = new Order($objServiceProductOrderDetail->id_order);
+                    if ($objOrderDetail->product_price_calculation_method == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
+                        $numDays = HotelHelper::getNumberOfDays(
+                            $objHotelBookingDetail->date_from,
+                            $objHotelBookingDetail->date_to
+                        );
+                        $quantity = $quantity * $numDays;
+                    }
                     if ($quantity >= $objOrderDetail->product_quantity) {
                         $objOrderDetail->delete();
                     } else {

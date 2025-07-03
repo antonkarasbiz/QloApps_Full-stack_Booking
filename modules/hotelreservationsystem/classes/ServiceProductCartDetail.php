@@ -440,6 +440,16 @@ class ServiceProductCartDetail extends ObjectModel
         }
 
         if ($objServiceProductCartDetail->save()) {
+            if ($objProduct->price_calculation_method == Product::PRICE_CALCULATION_METHOD_PER_DAY) {
+                if (Validate::isLoadedObject($objHotelCartBooking = new HotelCartBookingData($idHtlCartData))) {
+                    $numDays = HotelHelper::getNumberOfDays(
+                        $objHotelCartBooking->date_from,
+                        $objHotelCartBooking->date_to
+                    );
+                    $quantity = $objServiceProductCartDetail->quantity * $numDays;
+                }
+            }
+
             $objCart = new Cart($idCart);
             return $objCart->updateQty($quantity, $idProduct);
         }
