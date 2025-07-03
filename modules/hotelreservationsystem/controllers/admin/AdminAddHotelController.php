@@ -605,13 +605,8 @@ class AdminAddHotelController extends ModuleAdminController
             $objHotelBranch->check_in = $check_in;
             $objHotelBranch->check_out = $check_out;
             $objHotelBranch->rating = $rating;
-            if ($latitude) {
-                $objHotelBranch->latitude = Tools::ps_round($latitude, 8);
-            }
-
-            if ($longitude) {
-                $objHotelBranch->longitude = Tools::ps_round($longitude, 8);
-            }
+            $objHotelBranch->latitude = Validate::isFloat($latitude) ? Tools::ps_round($latitude, 8) : $latitude;
+            $objHotelBranch->longitude = Validate::isFloat($longitude) ? Tools::ps_round($longitude, 8) : $longitude;
             $objHotelBranch->map_formated_address = $map_formated_address;
             $objHotelBranch->map_input_text = $map_input_text;
             $objHotelBranch->save();
