@@ -699,6 +699,7 @@
 			success : function(response) {
 				updateCartLine(response.curr_booking_info, cart_row);
 				updateCartSummaryData(response.cart_info);
+				updateCartVouchers(response.cart_info.summary.discounts);
 			}
 		});
 	}
