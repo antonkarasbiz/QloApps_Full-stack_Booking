@@ -2572,7 +2572,7 @@ class OrderCore extends ObjectModel
                         if (!empty($item['id_tax_rules_group'])) {
                             $qty = isset($item['quantity']) ? $item['quantity'] : 0;
                             $price = isset($item['total_price_tax_excl']) ? $item['total_price_tax_excl'] : 0;
-
+    
                             $carry['quantity'] += $qty;
                             $carry['total_price_tax_excl'] += $price;
                         }
@@ -2633,7 +2633,7 @@ class OrderCore extends ObjectModel
 
             /*
              * This tax recalculation logic is intentionally disabled.
-             *
+             * 
              * Taxes have already been calculated and stored in the `order_detail_tax` table,
              * so there is no need to recompute them here.
              *
@@ -2665,8 +2665,8 @@ class OrderCore extends ObjectModel
 
         /*
          * The following tax adjustment logic was disabled as it is not currently in use.
-         * It was intended to handle rounding errors in tax and base amounts by spreading
-         * the discrepancy across order detail tax rows. However, this logic is not required
+         * It was intended to handle rounding errors in tax and base amounts by spreading 
+         * the discrepancy across order detail tax rows. However, this logic is not required 
          * due to updated tax calculation and breakdown handling.
          */
 
@@ -2813,7 +2813,7 @@ class OrderCore extends ObjectModel
                         $this->id,
                         0,
                         isset($product['id']) ? $product['id'] : 0,
-                        isset($product['id_service_product_order_detail']) ? $product['id_service_product_order_detail'] : 0
+                        isset($product['id_service_product_order_detail']) ? $product['id_service_product_order_detail'] : 0,
                     )) {
                         $refundDetail = reset($refundDetail);
                         if ($refundDetail['refunded']) {
