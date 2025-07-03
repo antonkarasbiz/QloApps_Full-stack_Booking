@@ -71,7 +71,6 @@ class RoomTypeServiceProductPrice extends ObjectModel
     {
         $cache_key = 'RoomTypeServiceProductPrice::getProductRoomTypePriceAndTax'.$idProduct.'_'.$idElement.'_'.$elementType;
         if (!Cache::isStored($cache_key)) {
-            $objServiceProductCartDetail = new ServiceProductCartDetail();
             $objServiceProduct = new Product((int)$idProduct);
             if ($result = Db::getInstance()->getRow('
                 SELECT spp.`price`, spp.`id_tax_rules_group`, p.`auto_add_to_cart`, p.`price_addition_type`
@@ -92,8 +91,7 @@ class RoomTypeServiceProductPrice extends ObjectModel
                 }
             } elseif ($objServiceProduct->auto_add_to_cart
                 && $elementType == RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE
-                && $objServiceProduct->price_addition_type == Product::PRICE_ADDITION_TYPE_WITH_ROOM 
-                && $objServiceProductCartDetail->alreadyExists(Context::getContext()->cart->id, $idProduct)
+                && $objServiceProduct->price_addition_type == Product::PRICE_ADDITION_TYPE_WITH_ROOM
             ) {
                 $result = array();
                 $result['auto_add_to_cart'] = 1;
