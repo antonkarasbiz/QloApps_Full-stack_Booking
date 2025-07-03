@@ -1769,9 +1769,9 @@ class CartCore extends ObjectModel
                                 $priceAdd = $servicePorduct['unit_price_tax_excl'];
                             }
                             if ($ps_round_type == Order::ROUND_TOTAL) {
-                                $products_total[$id_tax_rules_group.'_'.$id_address] += Tools::processPriceRounding($priceAdd, (int)$servicePorduct['quantity']);
+                                $products_total[$id_tax_rules_group.'_'.$id_address] += $priceAdd * (int)$servicePorduct['quantity'];
                             } else {
-                                $products_total[$id_tax_rules_group] += Tools::processPriceRounding($priceAdd, (int)$servicePorduct['quantity']);
+                                $products_total[$id_tax_rules_group] += $priceAdd * (int)$servicePorduct['quantity'];
                             }
                         }
                     }
@@ -2387,6 +2387,10 @@ class CartCore extends ObjectModel
             foreach ($packages as $id_package => $package) {
                 foreach ($package['product_list'] as $product) {
                     if ($product['booking_product']) {
+                        // Changing because when we applied advance price rule it show original product price
+                        $product['price_wt'] = $product['total_wt'] / $product['quantity'];
+                        $product['price'] = $product['total'] / $product['quantity'];
+
                         $productInfo = $objRoomType->getRoomTypeInfoByIdProduct($product['id_product']);
                         $idHotel = $productInfo['id_hotel'] ? $productInfo['id_hotel'] : 0;
 
