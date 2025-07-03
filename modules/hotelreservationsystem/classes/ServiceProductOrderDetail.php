@@ -194,7 +194,7 @@ class ServiceProductOrderDetail extends ObjectModel
         if (!$getTotalPrice) {
             $sql .= ', hbd.`id_product` as `id_room_type`, od.`product_price_calculation_method`,
             hbd.`id_room`, hbd.`adults`, hbd.`children`, hbd.`date_from`, hbd.`date_to`, hbd.`room_type_name`, p.`max_quantity`,
-            spod.`id_product` as id_product,  od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`, od.`product_auto_add`, od.`product_price_addition_type`';
+            spod.`id_product` as id_product,  od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`, od.`product_auto_add`, od.`product_price_addition_type`, IF(p.`id_product`, 0, 1) as `product_deleted`';
         }
         $sql .= ' FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
             LEFT JOIN `'._DB_PREFIX_.'service_product_order_detail` spod ON(spod.`id_htl_booking_detail` = hbd.`id`)';
@@ -280,7 +280,8 @@ class ServiceProductOrderDetail extends ObjectModel
                             'unit_price_tax_incl' => $product['unit_price_tax_incl'],
                             'product_auto_add' => $product['product_auto_add'],
                             'product_price_addition_type' => $product['product_price_addition_type'],
-                            'max_quantity' => (int) $product['max_quantity']
+                            'max_quantity' => (int) $product['max_quantity'],
+                            'product_deleted' => $product['product_deleted']
                         );
                     } else {
                         $selectedAdditionalServices[$product['id_htl_booking_detail']]['id_order'] = $product['id_order'];
@@ -313,7 +314,8 @@ class ServiceProductOrderDetail extends ObjectModel
                                 'unit_price_tax_incl' => $product['unit_price_tax_incl'],
                                 'product_auto_add' => $product['product_auto_add'],
                                 'product_price_addition_type' => $product['product_price_addition_type'],
-                                'max_quantity' => (int) $product['max_quantity']
+                                'max_quantity' => (int) $product['max_quantity'],
+                                'product_deleted' => $product['product_deleted'],
                             ),
                         );
                     }
