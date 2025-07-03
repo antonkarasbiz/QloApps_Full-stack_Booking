@@ -2669,10 +2669,11 @@ const AddProductModal = {
                                     $('#add_product_product_quantity').val(1);
                                 }
                                 if (data.options.length) {
-                                    $('#new_product .form-group.productOptions').show();
+                                    $('#new_product #add_product_product_option').empty();
                                     $.each(data.options, function() {
                                         $('<option/>').val(this.id_product_option).text(this.name).appendTo('#new_product #add_product_product_option');
                                     });
+                                    $('#new_product .form-group.productOptions').show();
                                     AddProductModal.initOptionsChange();
                                 } else {
                                     $('#new_product .form-group.productOptions').hide();
