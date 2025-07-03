@@ -3042,7 +3042,7 @@ class ProductCore extends ObjectModel
     public static function getPriceStatic($id_product, $usetax = true, $id_product_attribute = null, $decimals = 6, $divisor = null,
         $only_reduc = false, $usereduc = true, $quantity = 1, $force_associated_tax = false, $id_customer = null, $id_cart = null,
         $id_address = null, &$specific_price_output = null, $with_ecotax = true, $use_group_reduction = true, ?Context $context = null,
-        $use_customer_price = true, $id_hotel = false, $id_product_room_type = false, $id_group = null, $id_cart_booking_data = 0)
+        $use_customer_price = true, $id_hotel = false, $id_product_room_type = false, $id_group = null, $id_htl_cart_booking = 0)
     {
         if (!$context) {
             $context = Context::getContext();
@@ -3178,7 +3178,7 @@ class ProductCore extends ObjectModel
             $cart_quantity,
             $id_hotel,
             $id_product_room_type,
-            $id_cart_booking_data
+            $id_htl_cart_booking
         );
 
         return $return;
@@ -3212,7 +3212,7 @@ class ProductCore extends ObjectModel
      **/
     public static function priceCalculation($id_shop, $id_product, $id_product_attribute, $id_country, $id_state, $zipcode, $id_currency,
         $id_group, $quantity, $use_tax, $decimals, $only_reduc, $use_reduc, $with_ecotax, &$specific_price, $use_group_reduction,
-        $id_customer = 0, $use_customer_price = true, $id_cart = 0, $real_quantity = 0, $id_hotel = false, $id_product_room_type = false, $id_cart_booking_data = 0)
+        $id_customer = 0, $use_customer_price = true, $id_cart = 0, $real_quantity = 0, $id_hotel = false, $id_product_room_type = false, $id_htl_cart_booking = 0)
     {
         static $address = null;
         static $context = null;
@@ -3248,7 +3248,7 @@ class ProductCore extends ObjectModel
             '-'.(int)$quantity.'-'.(int)$id_product_attribute.
             '-'.(int)$with_ecotax.'-'.(int)$id_customer.'-'.(int)$use_group_reduction.'-'.(int)$id_cart.'-'.(int)$real_quantity.
             '-'.($only_reduc?'1':'0').'-'.($use_reduc?'1':'0').'-'.($use_tax?'1':'0').'-'.(int)$decimals.'-'.($id_hotel?(int)$id_hotel:'0')
-            .'-'.($id_product_option?(int)$id_product_option:'0'.'-'.($id_product_room_type?(int)$id_product_room_type:'0').'-'.(int)$id_cart_booking_data);
+            .'-'.($id_product_option?(int)$id_product_option:'0'.'-'.($id_product_room_type?(int)$id_product_room_type:'0').'-'.(int)$id_htl_cart_booking);
 
         // reference parameter is filled before any returns
         $specific_price = SpecificPrice::getSpecificPrice(
@@ -3262,7 +3262,7 @@ class ProductCore extends ObjectModel
             $id_customer,
             $id_cart,
             $real_quantity,
-            $id_cart_booking_data
+            $id_htl_cart_booking
         );
 
         if (isset(self::$_prices[$cache_id])) {
@@ -6862,7 +6862,7 @@ class ProductCore extends ObjectModel
                 'use_tax' => $useTax,
                 'id_cart' => $idCart,
                 'use_reduc' => $useReduc,
-                'id_cart_booking_data' => $idCartBooking
+                'id_htl_cart_booking' => $idCartBooking
             )
         );
 

@@ -1684,7 +1684,7 @@ class AdminCartsControllerCore extends AdminController
                                     $objSpecificPrice->price = $unitPrice;
                                     $objSpecificPrice->from_quantity = 1;
                                     $objSpecificPrice->reduction = 0;
-                                    $objSpecificPrice->id_cart_booking_data = $objHotelCartBookingData->id;
+                                    $objSpecificPrice->id_htl_cart_booking = $objHotelCartBookingData->id;
                                     $objSpecificPrice->reduction_type = 'amount';
                                     $objSpecificPrice->reduction_tax = 0;
                                     $objSpecificPrice->from = '0000-00-00 00:00:00';
