@@ -1888,6 +1888,7 @@ CREATE TABLE `PREFIX_specific_price` (
 	`id_country` INT UNSIGNED NOT NULL,
 	`id_group` INT UNSIGNED NOT NULL,
 	`id_customer` INT UNSIGNED NOT NULL,
+	`id_htl_cart_booking` INT UNSIGNED NOT NULL,
 	`id_product_attribute` INT UNSIGNED NOT NULL,
 	`price` DECIMAL(20, 6) NOT NULL,
 	`from_quantity` mediumint(8) UNSIGNED NOT NULL,

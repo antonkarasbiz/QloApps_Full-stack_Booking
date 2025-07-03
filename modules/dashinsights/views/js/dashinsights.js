@@ -105,7 +105,7 @@ function multibar_chart_dotw_dashinsights(widget_name, chart_details) {
         // create content for the tooltip of chart
         chart.tooltip.contentGenerator((obj, element) => {
             var tooltipContent = '<p>' + hotel_txt + ': <b>' + obj.data.key + '</b></p>';
-            tooltipContent += '<p>' + room_occupied_txt + ': <b>' + obj.data.y + '</b> (' + obj.data.percent + '%)</p>';
+            tooltipContent += '<p>' + nights_booked_txt + ': <b>' + obj.data.y + '</b> (' + obj.data.percent + '%)</p>';
 
             return getTooltipContent(obj.data.day, tooltipContent, obj.color);
         });
@@ -162,7 +162,7 @@ function multibar_chart_los_dashinsights(widget_name, chart_details) {
             var tooltipLabel = length_of_stay_txt + ': ' + obj.data.x;
 
             var tooltipContent = '<p>' + hotel_txt + ': <b>' + obj.data.key + '</b></p>';
-            tooltipContent += '<p>' + room_occupied_txt + ': <b>' + obj.data.rooms_occupied + '</b> (' + obj.data.percent + '%)</p>';
+            tooltipContent += '<p>' + room_booked_txt + ': <b>' + obj.data.rooms_occupied + '</b> (' + obj.data.percent + '%)</p>';
 
             return getTooltipContent(tooltipLabel, tooltipContent, obj.color);
         });

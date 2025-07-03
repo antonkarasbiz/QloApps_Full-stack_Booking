@@ -1224,6 +1224,10 @@ class AdminOrdersControllerCore extends AdminController
             )) {
                 $smartyVars['ServiceProductOrderDetail'] = $objServiceProductOrderDetail;
                 $smartyVars['objProduct'] = new Product($objServiceProductOrderDetail->id_product);
+                $taxRate = 1;
+                if ($objServiceProductOrderDetail->total_price_tax_excl > 0) {
+                    $taxRate = (($objServiceProductOrderDetail->total_price_tax_incl * 100)/ $objServiceProductOrderDetail->total_price_tax_excl)-100;
+                }
                 $response['data'] = array(
                     'id_product' => $objServiceProductOrderDetail->id_product,
                     'id_product_option' => $objServiceProductOrderDetail->id_product_option,
@@ -1233,7 +1237,7 @@ class AdminOrdersControllerCore extends AdminController
                     'unit_price_tax_incl' => $objServiceProductOrderDetail->unit_price_tax_incl,
                     'total_price_tax_excl' => $objServiceProductOrderDetail->total_price_tax_excl,
                     'total_price_tax_incl' => $objServiceProductOrderDetail->total_price_tax_incl,
-                    'tax_rate' => (($objServiceProductOrderDetail->total_price_tax_incl * 100)/ $objServiceProductOrderDetail->total_price_tax_excl)-100
+                    'tax_rate' => $taxRate
                 );
 
                 $objCurrency = new Currency($objOrder->id_currency);
@@ -2358,6 +2362,12 @@ class AdminOrdersControllerCore extends AdminController
                         }
                     }
 
+                    $fields = array(
+                        'unit_price_tax_excl',
+                        'unit_price_tax_incl',
+                        'total_price_tax_excl',
+                        'total_price_tax_incl',
+                    );
                     // Update order service product prices
                     $objRoomTypeServProdOrderDtl = new ServiceProductOrderDetail();
                     if ($orderServiceProducts = $objRoomTypeServProdOrderDtl->getRoomTypeServiceProducts(
@@ -2372,13 +2382,6 @@ class AdminOrdersControllerCore extends AdminController
                         null,
                         null
                     )) {
-                        $fields = array(
-                            'unit_price_tax_excl',
-                            'unit_price_tax_incl',
-                            'total_price_tax_excl',
-                            'total_price_tax_incl',
-                        );
-
                         foreach ($orderServiceProducts as $htlBokingServices) {
                             if (isset($htlBokingServices['additional_services']) && $htlBokingServices['additional_services']) {
                                 foreach ($htlBokingServices['additional_services'] as $serviceProduct) {
@@ -2396,6 +2399,37 @@ class AdminOrdersControllerCore extends AdminController
                             }
                         }
                     }
+
+                    if ($hotelProducts = $objRoomTypeServProdOrderDtl->getServiceProductsInOrder($order->id, 0, 0, Product::SELLING_PREFERENCE_HOTEL_STANDALONE)) {
+                        foreach ($hotelProducts as $serviceProduct) {
+                            $objRoomTypeServProdOrderDtl = new ServiceProductOrderDetail($serviceProduct['id_service_product_order_detail']);
+                            foreach ($fields as $field) {
+                                $objRoomTypeServProdOrderDtl->{$field} = Tools::convertPriceFull(
+                                    $objRoomTypeServProdOrderDtl->{$field},
+                                    $old_currency,
+                                    $currency
+                                );
+                            }
+
+                            $objRoomTypeServProdOrderDtl->save();
+                        }
+                    }
+
+                    if ($standaloneProducts = $objRoomTypeServProdOrderDtl->getServiceProductsInOrder($order->id, 0, 0, Product::SELLING_PREFERENCE_STANDALONE)) {
+                        foreach ($standaloneProducts as $serviceProduct) {
+                            $objRoomTypeServProdOrderDtl = new ServiceProductOrderDetail($serviceProduct['id_service_product_order_detail']);
+                            foreach ($fields as $field) {
+                                $objRoomTypeServProdOrderDtl->{$field} = Tools::convertPriceFull(
+                                    $objRoomTypeServProdOrderDtl->{$field},
+                                    $old_currency,
+                                    $currency
+                                );
+                            }
+
+                            $objRoomTypeServProdOrderDtl->save();
+                        }
+                    }
+
 
                     // update Order refund prices (order_return and order_return_detail)
                     if ($orderReturns = OrderReturn::getOrdersReturn($order->id_customer, $order->id)) {
@@ -3966,18 +4000,33 @@ class AdminOrdersControllerCore extends AdminController
                         $product['room_type_info'] = $roomTypeDetail;
                     }
 
+                    $idHotelAddress = $order->id_address_tax;
+                    // Concret price
+                    $product['price_tax_excl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_excl'], $currency), _PS_PRICE_COMPUTE_PRECISION_);
+                    $product['price_tax_incl'] = Tools::ps_round(Tools::convertPrice(Product::getPriceStatic(
+                        $product['id_product'],
+                        true,
+                        null,
+                        6,
+                        null,
+                        false,
+                        true,
+                        1,
+                        false,
+                        null,
+                        null,
+                        $idHotelAddress
+                    ), $currency), _PS_PRICE_COMPUTE_PRECISION_);
+
                     // Formatted price
                     $product['formatted_price'] = Tools::displayPrice(Tools::convertPrice($product['price_tax_incl'], $currency), $currency);
-                    // Concret price
-                    $product['price_tax_incl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_incl'], $currency), 2);
-                    $product['price_tax_excl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_excl'], $currency), 2);
                     $productObj = new Product((int)$product['id_product'], false, (int)$this->context->language->id);
                     $combinations = array();
                     $attributes = $productObj->getAttributesGroups((int)$this->context->language->id);
 
                     // Tax rate for this customer
                     if (Tools::isSubmit('id_address')) {
-                        $product['tax_rate'] = $productObj->getTaxesRate(new Address(Tools::getValue('id_address')));
+                        $product['tax_rate'] = $productObj->getTaxesRate(new Address($idHotelAddress));
                     }
 
                     $product['warehouse_list'] = array();
@@ -4057,8 +4106,10 @@ class AdminOrdersControllerCore extends AdminController
                 )) {
                     $objServiceProductOption = new ServiceProductOption();
                     foreach ($products as $key => &$product) {
+                        $idHotelAddress = Cart::getIdAddressForTaxCalculation($product['id_product'], $idHotel);
                         $product['price_tax_incl'] = RoomTypeServiceProductPrice::getPrice($product['id_product'], $idHotel, null, true);
                         $product['price_tax_excl'] = RoomTypeServiceProductPrice::getPrice($product['id_product'], $idHotel, null, false);
+
                         // if product has options then set the price of the first selected option of the product
                         if ($product['options'] = $objServiceProductOption->getProductOptions($product['id_product'])) {
                             $product['price_tax_incl'] = RoomTypeServiceProductPrice::getPrice(
@@ -4074,10 +4125,15 @@ class AdminOrdersControllerCore extends AdminController
                                 false
                             );
                         }
+
+                        // convert price to order currency
+                        $product['price_tax_incl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_incl'], $currency), _PS_PRICE_COMPUTE_PRECISION_);
+                        $product['price_tax_excl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_excl'], $currency), _PS_PRICE_COMPUTE_PRECISION_);
+
                         // Tax rate for this customer
                         if (Tools::isSubmit('id_address')) {
                             $productObj = new Product((int)$product['id_product']);
-                            $product['tax_rate'] = $productObj->getTaxesRate(new Address(Tools::getValue('id_address')));
+                            $product['tax_rate'] = $productObj->getTaxesRate(new Address($idHotelAddress));
                         }
                     }
                     if (!empty($products)) {
@@ -4095,28 +4151,74 @@ class AdminOrdersControllerCore extends AdminController
                     Product::SELLING_PREFERENCE_STANDALONE
                 )) {
                     $objServiceProductOption = new ServiceProductOption();
+                    $idAddress = 0;
+                    if (Tools::isSubmit('id_address')) {
+                        $idAddress = Tools::getValue('id_address');
+                    }
+
+                    $addressType = Configuration::get('PS_STANDARD_PRODUCT_ORDER_ADDRESS_PREFRENCE');
+                    if (Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_HOTEL == $addressType) {
+                        $idAddress = ConfigurationCore::get('WK_PRIMARY_HOTEL');
+                    } else if (Product::STANDARD_PRODUCT_ADDRESS_PREFERENCE_CUSTOM == $addressType) {
+                        $idAddress = Configuration::get('PS_STANDARD_PRODUCT_ORDER_ADDRESS_ID');
+                    }
+
                     foreach ($products as $key => &$product) {
-                        $product['price_tax_incl'] = RoomTypeServiceProductPrice::getPrice($product['id_product'], false, null, true);
-                        $product['price_tax_excl'] = RoomTypeServiceProductPrice::getPrice($product['id_product'], false, null, false);
+                        $product['price_tax_excl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_excl'], $currency), _PS_PRICE_COMPUTE_PRECISION_);
+                        $product['price_tax_incl'] = Tools::ps_round(Tools::convertPrice(Product::getPriceStatic(
+                            $product['id_product'],
+                            true,
+                            null,
+                            6,
+                            null,
+                            false,
+                            true,
+                            1,
+                            false,
+                            null,
+                            null,
+                            $idAddress
+                        ), $currency), _PS_PRICE_COMPUTE_PRECISION_);
                         // if product has options then set the price of the first selected option of the product
                         if ($product['options'] = $objServiceProductOption->getProductOptions($product['id_product'])) {
-                            $product['price_tax_incl'] = RoomTypeServiceProductPrice::getPrice(
+                            $product['price_tax_incl'] = Tools::ps_round(Tools::convertPrice(Product::getPriceStatic(
                                 $product['id_product'],
-                                $idHotel,
+                                true,
                                 $product['options'][0]['id_product_option'],
-                                true
-                            );
-                            $product['price_tax_excl'] = RoomTypeServiceProductPrice::getPrice(
+                                6,
+                                null,
+                                false,
+                                true,
+                                1,
+                                false,
+                                null,
+                                null,
+                                $idAddress
+                            ), $currency), _PS_PRICE_COMPUTE_PRECISION_);
+                            $product['price_tax_excl'] = Tools::ps_round(Tools::convertPrice(Product::getPriceStatic(
                                 $product['id_product'],
-                                $idHotel,
+                                false,
                                 $product['options'][0]['id_product_option'],
-                                false
-                            );
+                                6,
+                                null,
+                                false,
+                                true,
+                                1,
+                                false,
+                                null,
+                                null,
+                                $idAddress
+                            ), $currency), _PS_PRICE_COMPUTE_PRECISION_);
                         }
+
+                        // convert price to order currency
+                        $product['price_tax_incl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_incl'], $currency), _PS_PRICE_COMPUTE_PRECISION_);
+                        $product['price_tax_excl'] = Tools::ps_round(Tools::convertPrice($product['price_tax_excl'], $currency), _PS_PRICE_COMPUTE_PRECISION_);
+
+                        $productObj = new Product((int)$product['id_product'], false, (int)$this->context->language->id);
                         // Tax rate for this customer
                         if (Tools::isSubmit('id_address')) {
-                            $productObj = new Product((int)$product['id_product']);
-                            $product['tax_rate'] = $productObj->getTaxesRate(new Address(Tools::getValue('id_address')));
+                            $product['tax_rate'] = $productObj->getTaxesRate(new Address($idAddress));
                         }
                     }
                     if (!empty($products)) {
@@ -4138,10 +4240,16 @@ class AdminOrdersControllerCore extends AdminController
         $to_return = array('found' => false);
         if (Validate::isLoadedObject($order = new Order(Tools::getValue('id_order')))) {
             $addressTax = new Address((int)$order->id_address_tax);
+            $currency = new Currency((int)$order->id_currency);
             if ($idHotel = $addressTax->id_hotel) {
                 if ($id_product_option = $addProduct['product_option']) {
                     $price_tax_incl = RoomTypeServiceProductPrice::getPrice($addProduct['product_id'], $idHotel, $id_product_option, true);
                     $price_tax_excl = RoomTypeServiceProductPrice::getPrice($addProduct['product_id'], $idHotel, $id_product_option, false);
+
+                    // convert price to order currency
+                    $price_tax_excl = Tools::ps_round(Tools::convertPrice($price_tax_excl, $currency), _PS_PRICE_COMPUTE_PRECISION_);
+                    $price_tax_incl = Tools::ps_round(Tools::convertPrice($price_tax_incl, $currency), _PS_PRICE_COMPUTE_PRECISION_);
+
                     $to_return = array(
                         'price_tax_incl' => $price_tax_incl,
                         'price_tax_excl' => $price_tax_excl,
@@ -4152,6 +4260,10 @@ class AdminOrdersControllerCore extends AdminController
                 if ($id_product_option = $addProduct['product_option']) {
                     $price_tax_incl = RoomTypeServiceProductPrice::getPrice($addProduct['product_id'], false, $id_product_option, true);
                     $price_tax_excl = RoomTypeServiceProductPrice::getPrice($addProduct['product_id'], false, $id_product_option, false);
+
+                    // convert price to order currency
+                    $price_tax_excl = Tools::ps_round(Tools::convertPrice($price_tax_excl, $currency), _PS_PRICE_COMPUTE_PRECISION_);
+                    $price_tax_incl = Tools::ps_round(Tools::convertPrice($price_tax_incl, $currency), _PS_PRICE_COMPUTE_PRECISION_);
                     $to_return = array(
                         'price_tax_incl' => $price_tax_incl,
                         'price_tax_excl' => $price_tax_excl,
@@ -4817,6 +4929,11 @@ class AdminOrdersControllerCore extends AdminController
         $createFeaturePrice = $product_informations['product_price_tax_incl'] != $initial_product_price_tax_incl;
         $featurePriceParams = array();
         if ($createFeaturePrice) {
+            if ($order->id_currency != (int)Configuration::get('PS_CURRENCY_DEFAULT')) {
+                $product_informations['product_price_tax_excl'] = Tools::convertPrice($product_informations['product_price_tax_excl'], $order->id_currency, false);
+                $product_informations['product_price_tax_excl'] = Tools::ps_round($product_informations['product_price_tax_excl'], _PS_PRICE_COMPUTE_PRECISION_);
+            }
+
             $featurePriceParams = array(
                 'id_cart' => $this->context->cart->id,
                 'id_guest' => $this->context->cookie->id_guest,
@@ -5400,6 +5517,11 @@ class AdminOrdersControllerCore extends AdminController
 
                 // Creating specific price if needed
                 if ($productInformations['product_price_tax_incl'] != $initialProductPriceTI) {
+                    if ($this->context->cart->id_currency != (int)Configuration::get('PS_CURRENCY_DEFAULT')) {
+                        $productInformations['product_price_tax_excl'] = Tools::convertPrice($productInformations['product_price_tax_excl'], $this->context->cart->id_currency, false);
+                        $productInformations['product_price_tax_excl'] = Tools::ps_round($productInformations['product_price_tax_excl'], _PS_PRICE_COMPUTE_PRECISION_);
+                    }
+
                     $objSpecificPrice = new SpecificPrice();
                     $objSpecificPrice->id_shop = 0;
                     $objSpecificPrice->id_shop_group = 0;
@@ -6521,6 +6643,14 @@ class AdminOrdersControllerCore extends AdminController
                 }
 
             }
+
+            // set the discounts in the invoices as 0 after all the cart rules are deleted.
+            if ($order_detail->id_order_invoice != 0) {
+                $order_invoice->total_discount_tax_incl = 0;
+                $order_invoice->total_discount_tax_excl = 0;
+                $res &= $order_invoice->update();
+            }
+
             // If no rooms left in the order, Update Order total and discounts to 0
             $order->total_discounts = 0;
             $order->total_discounts_tax_incl = 0;
@@ -7173,7 +7303,7 @@ class AdminOrdersControllerCore extends AdminController
 
             $modal = array(
                 'modal_id' => 'room-extra-demands',
-                'modal_class' => 'modal-md order_detail_modal',
+                'modal_class' => 'modal-lg order_detail_modal',
                 'modal_title' => '<i class="icon icon-file-text"></i> &nbsp'.$this->l('Extra Services'),
                 'modal_content' => $this->context->smarty->fetch('controllers/orders/modals/_extra_services.tpl'),
             );

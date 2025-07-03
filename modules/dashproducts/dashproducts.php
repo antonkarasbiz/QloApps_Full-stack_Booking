@@ -191,7 +191,7 @@ class DashProducts extends Module
 			);
 			$tr[] = array(
 				'id' => 'total_paid',
-				'value' => Tools::displayPrice((float)$order['total_paid'], $currency),
+				'value' => Tools::displayPrice((float)$order['total_paid_tax_excl'], $currency),
 				'class' => 'text-left',
 				'wrapper_start' => $order['valid'] ? '<span class="badge badge-success">' : '',
 				'wrapper_end' => '<span>',
