@@ -969,7 +969,9 @@ var ajaxCart = {
                 content += '<table class="table">';
                 content += '<tbody>';
                 content += '<tr>';
-                content += '<th>' + variant_txt + '</th>';
+                if (product.allow_multiple_quantity) {
+                    content += '<th>' + variant_txt + '</th>';
+                }
                 content += '<th>' + qty_txt + '.</th>';
                 content += '<th>' + price_txt + '</th>';
                 content += '<th>&nbsp;</th>';
@@ -989,7 +991,9 @@ var ajaxCart = {
                     $.each(options, function(data_k, data_v) {
                         content += '<tr class="product_option_row">';
                         content += '<td>' + data_v.option_name + '</td>';
-                        content += '<td>' + data_v.quantity + '</td>';
+                        if (product.allow_multiple_quantity) {
+                            content += '<td>' + data_v.quantity + '</td>';
+                        }
                         content += '<td>' + formatCurrency(parseFloat(data_v.total_price_tax_excl), currency_format, currency_sign, currency_blank) + '</td>';
                         content += '<td class="text-right"><a class="ajax_remove_product_option" href="#" id_product="' + product.id_product + '" id_hotel="' + data_v.id_hotel + '" id_product_option="' + data_v.id_product_option + '" title="' + remove_rm_title + '">&nbsp;</a></td>';
                         content += '</tr>';
@@ -1054,7 +1058,9 @@ var ajaxCart = {
                     $.each(options, function(data_k, data_v) {
                         product_options_content += '<tr class="product_option_row">';
                         product_options_content += '<td>' + data_v.option_name + '</td>';
-                        product_options_content += '<td>' + data_v.quantity + '</td>';
+                        if (product.allow_multiple_quantity) {
+                            product_options_content += '<td>' + data_v.quantity + '</td>';
+                        }
                         product_options_content += '<td>' + formatCurrency(parseFloat(data_v.total_price_tax_excl), currency_format, currency_sign, currency_blank) + '</td>';
                         product_options_content += '<td class="text-right"><a class="ajax_remove_product_option" href="#" id_product="' + product.id_product + '" id_hotel="' + data_v.id_hotel + '" id_product_option="' + data_v.id_product_option + '" title="' + remove_rm_title + '">&nbsp;</a></td>';
                         product_options_content += '</tr>';
