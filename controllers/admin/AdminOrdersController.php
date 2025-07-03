@@ -397,12 +397,7 @@ class AdminOrdersControllerCore extends AdminController
                 $cart_detail_data = array();
                 $cart_detail_data_obj = new HotelCartBookingData();
                 $objServiceProductCartDetail = new ServiceProductCartDetail();
-                if ($cart_detail_data = $cart_detail_data_obj->getCartFormatedBookinInfoByIdCart(
-                    (int) $id_cart,
-                    [],
-                    null,
-                    0
-                )) {
+                if ($cart_detail_data = $cart_detail_data_obj->getCartFormatedBookinInfoByIdCart((int) $id_cart)) {
                     $objRoomType = new HotelRoomType();
                     foreach ($cart_detail_data as $key => $cart_data) {
                         $cart_detail_data[$key]['room_type_info'] = $objRoomType->getRoomTypeInfoByIdProduct($cart_data['id_product']);
@@ -540,12 +535,12 @@ class AdminOrdersControllerCore extends AdminController
     public function initToolbarTitle()
     {
         parent::initToolbarTitle();
-        switch ($this->display) {
-            case '':
-            case 'list':
-                array_pop($this->toolbar_title);
-                $this->toolbar_title[] = $this->l('Orders');
-                break;
+        if ($this->display == 'add') {
+            array_pop($this->toolbar_title);
+            $this->toolbar_title[] = $this->l('Add new');
+        } elseif ($this->display != 'view') {
+            array_pop($this->toolbar_title);
+            $this->toolbar_title[] = $this->l('Orders');
         }
     }
 
@@ -553,7 +548,12 @@ class AdminOrdersControllerCore extends AdminController
     {
         $response['hasError'] = 1;
         if (Validate::isLoadedObject($objOrder = new Order(Tools::getValue('id_order')))) {
-            $this->context->smarty->assign('can_edit', $this->tabAccess['edit']);
+            $this->context->smarty->assign(
+                array(
+                    'can_edit' => $this->tabAccess['edit'],
+                    'current_id_lang' => $this->context->language->id,
+                )
+            );
             // set modal details
             $modal = array(
                 'modal_id' => 'booking-documents-modal',
@@ -626,6 +626,7 @@ class AdminOrdersControllerCore extends AdminController
                     'order' => $objOrder,
                     'currency' => new Currency($objOrder->id_currency),
                     'invoices_collection' => $objOrder->getInvoicesCollection(),
+                    'current_id_lang' => $this->context->language->id
                 )
             );
 
@@ -684,6 +685,7 @@ class AdminOrdersControllerCore extends AdminController
                     'payment_methods' => $payment_methods,
                     'payment_types' => $this->getPaymentsTypes(),
                     'invoices_collection' => $objOrder->getInvoicesCollection(),
+                    'current_id_lang' => $this->context->language->id,
                 )
             );
             $modal = array(
@@ -1177,6 +1179,7 @@ class AdminOrdersControllerCore extends AdminController
                     'order' => $objOrder,
                     'currency' => new Currency($objOrder->id_currency),
                     'invoices_collection' => $objOrder->getInvoicesCollection(),
+                    'current_id_lang' => $this->context->language->id,
                 )
             );
             $modal = array(
@@ -1238,6 +1241,7 @@ class AdminOrdersControllerCore extends AdminController
                 $smartyVars['currencySign'] = $objCurrency->sign;
                 $smartyVars['link'] = $this->context->link;
                 $smartyVars['invoices_collection'] = $objOrder->getInvoicesCollection();
+                $smartyVars['current_id_lang'] = $this->context->language->id;
 
                 // set context currency So that we can get prices in the order currency
                 $this->context->currency = $objCurrency;
@@ -2865,7 +2869,7 @@ class AdminOrdersControllerCore extends AdminController
             $helper->color = 'color1';
             $helper->title = $this->l('Total Rooms');
             $helper->tooltip = $this->l('Total rooms is the number of rooms booked in this order.');
-            $helper->href = '#start_rooms';
+            $helper->href = '#start_products';
             $helper->value = $numRooms;
             $this->kpis[] = $helper;
 
@@ -6135,7 +6139,7 @@ class AdminOrdersControllerCore extends AdminController
 
             $product_quantity = $editProductInfo['product_quantity'];
             if ($updateQty = (int)($product_quantity - $objServiceProductOrderDetail->quantity)) {
-                $this->checkStockAvailable($objOrderDetail, ($product_quantity - $objOrderDetail->product_quantity));
+                $this->checkStockAvailable($objOrderDetail, $updateQty);
 
             }
             $taxRate =  $objServiceProductOrderDetail->unit_price_tax_incl / $objServiceProductOrderDetail->unit_price_tax_excl;
@@ -6203,7 +6207,7 @@ class AdminOrdersControllerCore extends AdminController
 
             // Update product available quantity
             if ($updateQty) {
-                $result &= StockAvailable::updateQuantity($objOrderDetail->product_id, $objOrderDetail->product_attribute_id, $updateQty, $objOrder->id_shop);
+                $result &= StockAvailable::updateQuantity($objOrderDetail->product_id, $objOrderDetail->product_attribute_id, -(int)$updateQty, $objOrder->id_shop);
             }
 
             if (!$result) {
@@ -7776,7 +7780,7 @@ class AdminOrdersControllerCore extends AdminController
                             $response['errors'][] = Tools::displayError('Invalid service name');
                         }
 
-                        if (empty($price)) {
+                        if (!isset($price)) {
                             $response['hasError'] = true;
                             $response['errors'][] = Tools::displayError('Service price is required');
                         } elseif (!Validate::isPrice($price)) {

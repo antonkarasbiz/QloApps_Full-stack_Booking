@@ -432,6 +432,10 @@ var ajaxCart = {
 
                     resetRoomtypeServices();
 
+                    if (parseInt($('#product_page_booking_product').val()) == 0) {
+                        $('#service_product_qty').val(1);
+                    }
+
                     BookingForm.refresh(true);
                 }
 
@@ -874,7 +878,7 @@ var ajaxCart = {
             content += '</div>';
             if ((parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE
                 || parseInt(product.selling_preference_type) == SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE)
-                && (typeof(hotel_wise_data) != 'undefined' && hotel_wise_data.length)
+                && (typeof(hotel_wise_data) != 'undefined' && typeof(hotel_wise_data.hotel_name) != 'undefined')
             ) {
                 content += '<div class="hotel-name">' + hotel_wise_data.hotel_name + '</div>';
             }

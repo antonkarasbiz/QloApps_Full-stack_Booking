@@ -951,7 +951,8 @@ class HotelCartBookingData extends ObjectModel
                 if (!Validate::isLoadedObject($product = new Product($service['id_product']))) {
                     $toRemoveService = 1;
                 } else {
-                    if (!$product->active) {
+                    // check if product is active and (available for order for front office)
+                    if (!$product->active || (!$forAdminCart && !$product->available_for_order)) {
                         $toRemoveService = 1;
                     } else if ($checkServiceRoomLink) {
                         if ($product->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
@@ -1579,7 +1580,13 @@ class HotelCartBookingData extends ObjectModel
                         if ($detailed) {
                             // extra demands
                             $cartHotelData[$prodKey]['extra_demands'] = $objRoomDemands->getRoomTypeDemands($product['id_product']);
-                            $cartHotelData[$prodKey]['service_products'] = $objRoomTypeServiceProduct->getServiceProductsData($product['id_product'], 1, 0, true);
+                            $cartHotelData[$prodKey]['service_products'] = $objRoomTypeServiceProduct->getServiceProductsData(
+                                $product['id_product'],
+                                1,
+                                0,
+                                true,
+                                isset($context->employee->id) ? 2 : 1
+                            );
                             // add hotel info of the room
                             if ($hotelInfo = $objHotelBranch->hotelBranchesInfo(
                                 false,

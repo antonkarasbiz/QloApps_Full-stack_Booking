@@ -1571,8 +1571,12 @@ abstract class PaymentModuleCore extends Module
                             }
                         }
                     }
-
-                    $order->updateOrderDetailTax();
+                    /**
+                     * This function is not being called because taxes are already saved correctly.
+                     * The issue lies only in displaying the tax breakdown.
+                     *
+                     * $order->updateOrderDetailTax();
+                     */
                 } else {
                     $error = Tools::displayError('Order creation failed');
                     PrestaShopLogger::addLog($error, 4, '0000002', 'Cart', intval($order->id_cart));

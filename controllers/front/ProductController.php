@@ -66,10 +66,11 @@ class ProductControllerCore extends FrontController
             $this->addJqueryPlugin('jqzoom');
         }
 
-        if (($PS_API_KEY = Configuration::get('PS_API_KEY'))) {
+        if (($PS_API_KEY = Configuration::get('PS_API_KEY'))
+            && ($PS_MAP_ID = Configuration::get('PS_MAP_ID'))
+        ) {
             $objHotelRoomType = new HotelRoomType();
-            $roomTypeInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($this->product->id);
-            if ($roomTypeInfo) {
+            if ($roomTypeInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($this->product->id)) {
                 $objHotelBranchInformation = new HotelBranchInformation($roomTypeInfo['id_hotel']);
                 if (floatval($objHotelBranchInformation->latitude) != 0
                     && floatval($objHotelBranchInformation->longitude) != 0
@@ -79,12 +80,13 @@ class ProductControllerCore extends FrontController
                             'latitude' => $objHotelBranchInformation->latitude,
                             'longitude' => $objHotelBranchInformation->longitude,
                         ),
-                        'PS_STORES_ICON' => $this->context->link->getMediaLink(_PS_IMG_.Configuration::get('PS_STORES_ICON'))
+                        'PS_STORES_ICON' => $this->context->link->getMediaLink(_PS_IMG_.Configuration::get('PS_STORES_ICON')),
+                        'PS_MAP_ID' => $PS_MAP_ID
                     ));
 
                     $this->addJS(
-                        'https://maps.googleapis.com/maps/api/js?key='.$PS_API_KEY.'&libraries=places&language='.
-                        $this->context->language->iso_code.'&region='.$this->context->country->iso_code
+                        'https://maps.googleapis.com/maps/api/js?key='.$PS_API_KEY.
+                        '&libraries=places,marker&loading=async&callback=initMap&language='.$this->context->language->iso_code.'&region='.$this->context->country->iso_code
                     );
                 }
             }
@@ -126,6 +128,20 @@ class ProductControllerCore extends FrontController
             $idHotel = (int) $hotelRoomInfo['id_hotel'];
             if (!HotelHelper::validateDateRangeForHotel($dateFrom, $dateTo, $idHotel)) {
                 Tools::redirect($this->context->link->getPageLink('pagenotfound'));
+            }
+        }
+
+        // if product is a service product then check type of selling preference
+        if (!$this->product->booking_product) {
+            if ($this->product->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
+                Tools::redirect($this->context->link->getPageLink('pagenotfound'));
+            } elseif ($this->product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE) {
+                // if selling preference is hotel standalone and with room type then check if product is associated to any hotel
+                $objRoomTypeServiceProduct = new RoomTypeServiceProduct();
+                $associatedHotels = $objRoomTypeServiceProduct->getAssociatedHotelsAndRoomType($this->product->id);
+                if (!isset($associatedHotels['hotel']) || !$associatedHotels['hotel']) {
+                    Tools::redirect($this->context->link->getPageLink('pagenotfound'));
+                }
             }
         }
 
@@ -496,6 +512,19 @@ class ProductControllerCore extends FrontController
                     $this->context->smarty->assign('error', Tools::getValue('error'));
                 }
             } else {
+                if ($this->product->allow_multiple_quantity) {
+                    $this->product->cart_quantity = 0;
+                    if ($products = $this->context->cart->getProducts()) {
+                        $products = array_column($products, 'cart_quantity', 'id_product');
+                        if (isset($products[$this->product->id])) {
+                            $this->product->cart_quantity = $products[$this->product->id];
+                            $this->product->max_quantity -= $products[$this->product->id];
+                            if (!$this->product->isAvailableWhenOutOfStock((int) $this->product->out_of_stock)) {
+                                $this->product->quantity -= $products[$this->product->id];
+                            }
+                        }
+                    }
+                }
                 $this->assignServiceProductVars();
             }
 
