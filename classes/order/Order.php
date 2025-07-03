@@ -2535,7 +2535,7 @@ class OrderCore extends ObjectModel
             $tax_calculator = OrderDetail::getTaxCalculatorStatic($id_order_detail);
 
             $quantity = $order_detail['product_quantity'];
-            $unit_price_tax_excl = $order_detail['total_price_tax_excl'] / $quantity;
+            $unit_price_tax_excl = $order_detail['unit_price_tax_excl'];
 
             /*
              * Discounted taxes are intentionally not calculated here, as we do not want to display them.
@@ -2653,6 +2653,11 @@ class OrderCore extends ObjectModel
                                 'unit_amount' => $amount,
                                 'total_amount' => Tools::processPriceRounding($amount, $totalAutoAddedQty),
                             );
+
+                            if (!isset($breakdown[$taxId])) {
+                                $breakdown[$taxId] = array('tax_amount' => 0);
+                            }
+                            $breakdown[$taxId]['tax_amount'] += Tools::processPriceRounding($amount, $totalAutoAddedQty);
                         }
                     } else {
                         // Calculate tax for the total price
@@ -2689,6 +2694,11 @@ class OrderCore extends ObjectModel
                                 $groupedTaxDetails[$taxId]['total_amount'] += $totalAmount;
                             }
                         }
+
+                        if (!isset($breakdown[$taxId])) {
+                            $breakdown[$taxId] = array('tax_amount' => 0);
+                        }
+                        $breakdown[$taxId]['tax_amount'] += $taxBaseShare > 0 ? $totalAmount : 0;
                     }
                 }
             } else {
@@ -2716,6 +2726,11 @@ class OrderCore extends ObjectModel
                             $groupedTaxDetails[$id_tax]['total_amount'] += $total_amount;
                         }
                     }
+
+                    if (!isset($breakdown[$id_tax])) {
+                        $breakdown[$id_tax] = array('tax_amount' => 0);
+                    }
+                    $breakdown[$id_tax]['tax_amount'] += $taxBaseShare > 0 ? $totalAmount : 0;
                 }
             }
 
@@ -2755,6 +2770,19 @@ class OrderCore extends ObjectModel
              * }
              */
 
+        }
+
+        if (!empty($order_detail_tax_rows)) {
+            foreach ($breakdown as $data) {
+                $actual_total_tax += Tools::ps_round($data['tax_amount'], _PS_PRICE_COMPUTE_PRECISION_, $this->round_mode);
+            }
+
+            $order_ecotax_tax = Tools::ps_round($order_ecotax_tax, _PS_PRICE_COMPUTE_PRECISION_, $this->round_mode);
+
+            $tax_rounding_error = $expected_total_tax - $actual_total_tax - $order_ecotax_tax;
+            if ($tax_rounding_error != 0) {
+                Tools::spreadAmount($tax_rounding_error, _PS_PRICE_COMPUTE_PRECISION_, $order_detail_tax_rows, 'total_amount');
+            }
         }
 
         /*

@@ -461,8 +461,8 @@ class OrderDetailCore extends ObjectModel
                         0,
                         $taxGroupInfo['id_room_type'],
                 )) {
-                    $total_price_tax_excl = array_reduce($serviceProductData, function ($totalPriceTaxExcl, $item) {
-                        return $totalPriceTaxExcl + (isset($item['total_price_tax_excl']) ? $item['total_price_tax_excl'] : 0);
+                    $unit_price_tax_excl = array_reduce($serviceProductData, function ($totalPriceTaxExcl, $item) {
+                        return $totalPriceTaxExcl + (isset($item['unit_price_tax_excl']) ? $item['unit_price_tax_excl'] : 0);
                     }, 0);
 
                     $serviceProductData = array_shift($serviceProductData);
@@ -478,8 +478,8 @@ class OrderDetailCore extends ObjectModel
                         $taxGroupInfo['id_room_type'],
                         $this->product_id
                 )) {
-                    $total_price_tax_excl = array_reduce($serviceProductData, function ($totalPriceTaxExcl, $item) {
-                        return $totalPriceTaxExcl + (isset($item['total_price_tax_excl']) ? $item['total_price_tax_excl'] : 0);
+                    $unit_price_tax_excl = array_reduce($serviceProductData, function ($totalPriceTaxExcl, $item) {
+                        return $totalPriceTaxExcl + (isset($item['unit_price_tax_excl']) ? $item['unit_price_tax_excl'] : 0);
                     }, 0);
     
                     $quantity = array_reduce($serviceProductData, function ($totalQty, $item) {
@@ -487,8 +487,7 @@ class OrderDetailCore extends ObjectModel
                     }, 0);
                 }
 
-                if (isset($quantity) && isset($total_price_tax_excl)) {
-                    $unit_price_tax_excl = $total_price_tax_excl / $quantity;
+                if (isset($quantity) && isset($unit_price_tax_excl)) {
                     foreach ($this->tax_calculator->getTaxesAmount($unit_price_tax_excl) as $id_tax => $amount) {
             
                         $total_amount = Tools::processPriceRounding($amount, $quantity, $order->round_type, $order->round_mode);
@@ -514,17 +513,16 @@ class OrderDetailCore extends ObjectModel
                 return true;
             }
             
-            $unit_price_tax_excl = $this->total_price_tax_excl / $this->product_quantity;
             /*
              * The logic for distributing discount proportionally across products is intentionally skipped, 
              * as we do not want to save taxes on discounted amounts.
              * 
-             * $ratio = $unit_price_tax_excl / $order->total_products;
+             * $ratio = $this->unit_price_tax_excl / $order->total_products;
              * $order_reduction_amount = ($order->total_discounts_tax_excl - $shipping_tax_amount) * $ratio;
-             * $discounted_price_tax_excl = $unit_price_tax_excl - $order_reduction_amount;
+             * $discounted_price_tax_excl = $this->unit_price_tax_excl - $order_reduction_amount;
              */
 
-            foreach ($this->tax_calculator->getTaxesAmount($unit_price_tax_excl) as $id_tax => $amount) {
+            foreach ($this->tax_calculator->getTaxesAmount($this->unit_price_tax_excl) as $id_tax => $amount) {
 
                 $total_amount = Tools::processPriceRounding($amount, $this->product_quantity, $order->round_type, $order->round_mode);
 
