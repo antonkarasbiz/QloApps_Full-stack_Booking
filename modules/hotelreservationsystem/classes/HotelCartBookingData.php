@@ -431,6 +431,7 @@ class HotelCartBookingData extends ObjectModel
             }
         }
         // after room is removed from cart, check if any of the appled cart rules are not being used
+        Cache::clear();
         CartRule::autoRemoveFromCart(Context::getContext());
         CartRule::autoAddToCart(Context::getContext());
 
@@ -529,6 +530,7 @@ class HotelCartBookingData extends ObjectModel
                 }
             }
             if ($res && $objCart->updateQty((int)($roomsRequired * $num_days), $id_product)) {
+                Cache::clear();
                 if ($roomsRequired == 1) {
                     return $obj_htl_cart_booking_data->id;
                 } else {
