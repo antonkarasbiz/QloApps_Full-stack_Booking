@@ -2935,7 +2935,7 @@ class OrderCore extends ObjectModel
                         $this->id,
                         0,
                         isset($product['id']) ? $product['id'] : 0,
-                        isset($product['id_service_product_order_detail']) ? $product['id_service_product_order_detail'] : 0,
+                        isset($product['id_service_product_order_detail']) ? $product['id_service_product_order_detail'] : 0
                     )) {
                         $refundDetail = reset($refundDetail);
                         if ($refundDetail['refunded']) {
