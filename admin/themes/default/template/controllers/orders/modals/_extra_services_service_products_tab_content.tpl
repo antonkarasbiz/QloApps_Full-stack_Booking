@@ -41,6 +41,7 @@
                             <th class="fixed-width-sm text-center">{l s='Quantity'}</th>
                             <th>{l s='Unit Price (tax excl.)'}</th>
                             <th>{l s='Total Price (tax excl.)'}</th>
+                            <th>{l s='Total Price (tax incl.)'}</th>
                             <th class="text-right">{l s='Action'}</th>
                         </tr>
                     </thead>
@@ -84,6 +85,7 @@
                                         </div>
                                     </td>
                                     <td>{displayPrice price=$service['total_price_tax_excl']|escape:'html':'UTF-8' currency=$orderCurrency}</td>
+                                    <td>{displayPrice price=$service['total_price_tax_incl']|escape:'html':'UTF-8' currency=$orderCurrency}</td>
                                     <td class="text-right"><a class="btn btn-danger pull-right del_room_additional_service" data-id_service_product_order_detail="{$service['id_service_product_order_detail']}" href="#"><i class="icon-trash"></i></a></td>
                                 </tr>
                             {/foreach}
@@ -251,8 +253,9 @@
 					<th>{l s='ID'}</th>
 					<th>{l s='Name'}</th>
 					<th></th>
-					<th>{l s='Unit Price'}</th>
-					<th>{l s='Total Price'}</th>
+					<th>{l s='Unit Price (tax excl.)'}</th>
+					<th>{l s='Total Price (tax excl.)'}</th>
+					<th>{l s='Total Price (tax incl.)'}</th>
 				</tr>
 			</thead>
 			</tbody>
@@ -278,6 +281,9 @@
 						</td>
 						<td>
 							{displayPrice price=$service['total_price_tax_excl'] currency=$orderCurrency}
+						</td>
+                        <td>
+							{displayPrice price=$service['total_price_tax_incl'] currency=$orderCurrency}
 						</td>
 					</tr>
 				{/foreach}
