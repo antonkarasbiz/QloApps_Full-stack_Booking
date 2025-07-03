@@ -6521,6 +6521,14 @@ class AdminOrdersControllerCore extends AdminController
                 }
 
             }
+
+            // set the discounts in the invoices as 0 after all the cart rules are deleted.
+            if ($order_detail->id_order_invoice != 0) {
+                $order_invoice->total_discount_tax_incl = 0;
+                $order_invoice->total_discount_tax_excl = 0;
+                $res &= $order_invoice->update();
+            }
+
             // If no rooms left in the order, Update Order total and discounts to 0
             $order->total_discounts = 0;
             $order->total_discounts_tax_incl = 0;
