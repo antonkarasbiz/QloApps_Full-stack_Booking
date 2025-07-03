@@ -26,7 +26,7 @@
 						<li class="active"><a href="#room_type_demands_desc" data-toggle="tab">{l s='Facilities'}</a></li>
 					{/if}
 					{if isset($roomTypeServiceProducts) && $roomTypeServiceProducts}
-						<li{if !isset($selectedRoomDemands) || !$selectedRoomDemands} class="active"{/if}><a href="#room_type_service_product_desc" data-toggle="tab">{l s='Services'}</a></li>
+						<li {if !isset($selectedRoomDemands) || !$selectedRoomDemands} class="active"{/if}><a href="#room_type_service_product_desc" data-toggle="tab">{l s='Services'}</a></li>
 					{/if}
 				</ul>
 			{/block}
@@ -113,13 +113,20 @@
 											<div id="accordion_service_{$key|escape:'html':'UTF-8'}" class=" col-sm-12 room_demand_detail accordion-section-content {if $roomCount == 1}open{/if}" {if $roomCount == 1}style="display: block;"{/if}>
 												{if isset($roomTypeServiceProducts) && $roomTypeServiceProducts}
 													{foreach $roomTypeServiceProducts as $product}
+														{if isset($cartRoom['selected_service']) && $cartRoom['selected_service'] && ($product['id_product']|array_key_exists:$cartRoom['selected_service'])}
+															{assign var='serviceSelected' value=true}
+															{$product.price_tax_incl = $cartRoom['selected_service'][$product['id_product']]['unit_price_tax_incl']}
+															{$product.price_tax_exc = $cartRoom['selected_service'][$product['id_product']]['unit_price_tax_excl']}
+														{else}
+															{assign var='serviceSelected' value=false}
+														{/if}
 														<div class="row room_demand_block">
 															<div class="col-xs-8">
 																<div class="row">
 																	<div class="col-xs-2">
 																		{if $product.available_for_order}
 																			<p class="checkbox">
-																				<input data-id_cart_booking="{$cartRoom['id']}" value="{$product['id_product']|escape:'html':'UTF-8'}" type="checkbox" class="change_room_type_service_product" {if  isset($cartRoom['selected_service']) && $cartRoom['selected_service'] && ($product['id_product']|array_key_exists:$cartRoom['selected_service'])}checked{/if} />
+																				<input data-id_cart_booking="{$cartRoom['id']}" value="{$product['id_product']|escape:'html':'UTF-8'}" type="checkbox" class="change_room_type_service_product" {if $serviceSelected}checked{/if} />
 																			</p>
 																		{/if}
 																	</div>
@@ -127,8 +134,8 @@
 																		<p>{$product['name']|escape:'html':'UTF-8'}</p>
 																		{if $product.allow_multiple_quantity}
 																			<div class="qty_container">
-																				<input type="text" class="form-control qty" id="qty_{$product.id_product}" name="room_service_product_qty_{$product.id_product}" data-id-product="{$product.id_product}" data-max_quantity="{$product.max_quantity}" value="{if  isset($cartRoom['selected_service']) && $cartRoom['selected_service'] && ($product['id_product']|array_key_exists:$cartRoom['selected_service'])}{$cartRoom['selected_service'][$product['id_product']]['quantity']}{else}1{/if}">
-																				<input type="hidden" class="qty_hidden" id="qty_{$product.id_product}_hidden" value="{if  isset($cartRoom['selected_service']) && $cartRoom['selected_service'] && ($product['id_product']|array_key_exists:$cartRoom['selected_service'])}{$cartRoom['selected_service'][$product['id_product']]['quantity']}{else}0{/if}">
+																				<input type="text" class="form-control qty" id="qty_{$product.id_product}" name="room_service_product_qty_{$product.id_product}" data-id-product="{$product.id_product}" data-max_quantity="{$product.max_quantity}" value="{if $serviceSelected}{$cartRoom['selected_service'][$product['id_product']]['quantity']}{else}1{/if}">
+																				<input type="hidden" class="qty_hidden" id="qty_{$product.id_product}_hidden" value="{if $serviceSelected}{$cartRoom['selected_service'][$product['id_product']]['quantity']}{else}0{/if}">
 																				<div class="qty_controls">
 																					<a href="#" class="qty_up"><span><i class="icon-plus"></i></span></a>
 																					<a href="#" class="qty_down"><span><i class="icon-minus"></i></span></a>
