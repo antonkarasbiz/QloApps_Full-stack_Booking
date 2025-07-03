@@ -188,7 +188,7 @@ class CartControllerCore extends FrontController
                     false,
                     false,
                     false,
-                    $idProductOption
+                    $idProductOption ? $idProductOption : null
                 );
 
             } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE
