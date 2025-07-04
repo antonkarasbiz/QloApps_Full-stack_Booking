@@ -8771,7 +8771,7 @@ class AdminOrdersControllerCore extends AdminController
                     );
                     if ($objHotelBooking->total_price_tax_excl != $newRoomTotalPrice['total_price_tax_excl']) {
                         $result['has_price_changes'] = 1;
-                        $result['price_diff'] = $newRoomTotalPrice['total_price_tax_excl'] - $objHotelBooking->total_price_tax_excl;
+                        $result['price_diff'] = Tools::ps_round((float) ($newRoomTotalPrice['total_price_tax_excl'] - $objHotelBooking->total_price_tax_excl), _PS_PRICE_COMPUTE_PRECISION_);
                     }
                 }
             } else {
