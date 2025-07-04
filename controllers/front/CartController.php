@@ -188,7 +188,7 @@ class CartControllerCore extends FrontController
                     false,
                     false,
                     false,
-                    $idProductOption
+                    $idProductOption ? $idProductOption : null
                 );
 
             } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE
@@ -501,15 +501,17 @@ class CartControllerCore extends FrontController
                     if ($id_hotel) {
                         $objServiceProductCartDetail = new ServiceProductCartDetail();
                         $productCartDetail = array();
-                        if ($cartDetail = $objServiceProductCartDetail->getServiceProductsInCart(
-                            $id_cart,
-                            [$product->selling_preference_type],
-                            $id_hotel,
-                            null,
-                            null,
-                            $this->id_product
-                        )) {
-                            $productCartDetail = array_shift($cartDetail);
+                        if ($id_cart) {
+                            if ($cartDetail = $objServiceProductCartDetail->getServiceProductsInCart(
+                                (int) $id_cart,
+                                [$product->selling_preference_type],
+                                $id_hotel,
+                                null,
+                                null,
+                                $this->id_product
+                            )) {
+                                $productCartDetail = array_shift($cartDetail);
+                            }
                         }
                         if ($product->allow_multiple_quantity) {
                             $finalQuantity = $this->qty;

@@ -28,6 +28,8 @@ class ServiceProductOrderDetail extends ObjectModel
     public $id_hotel;
     public $id_htl_booking_detail;
     public $id_product_option;
+    public $tax_computation_method;
+    public $id_tax_rules_group;
     public $unit_price_tax_excl;
     public $unit_price_tax_incl;
     public $total_price_tax_excl;
@@ -53,6 +55,8 @@ class ServiceProductOrderDetail extends ObjectModel
             'id_hotel' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_htl_booking_detail' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'id_product_option' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'tax_computation_method' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_tax_rules_group' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'unit_price_tax_excl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
             'unit_price_tax_incl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
             'total_price_tax_excl' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice', 'required' => true),
@@ -68,6 +72,52 @@ class ServiceProductOrderDetail extends ObjectModel
             'date_upd' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
         )
     );
+
+    public function add($autodate = true, $null_values = true)
+    {
+        if (Validate::isLoadedObject($objOrder = new Order((int)$this->id_order))
+            && Validate::isLoadedObject($objServiceProduct = new Product((int)$this->id_product))
+            && Validate::isLoadedObject($objOrderDetail = new OrderDetail((int)$this->id_order_detail))
+        ) {
+            if ($objOrderDetail->selling_preference_type == Product::SELLING_PREFERENCE_WITH_ROOM_TYPE) {
+                if ($this->id_htl_booking_detail
+                    && Validate::isLoadedObject($objHotelBookingDetail = new HotelBookingDetail((int)$this->id_htl_booking_detail))
+                ) {
+                    $idRoomType = $objHotelBookingDetail->id_product;
+                    $objAddress = new Address((int)$objOrder->id_address_tax);
+                    if ($objServiceProduct->auto_add_to_cart && $objServiceProduct->price_addition_type == Product::PRICE_ADDITION_TYPE_WITH_ROOM) {
+                        if (Validate::isLoadedObject($objRoomTypeProduct = new Product((int)$idRoomType))) {
+                            $this->id_tax_rules_group = $objRoomTypeProduct->id_tax_rules_group;
+                        }
+                    } else {
+                        $objRoomTypeServiceProductPrice = new RoomTypeServiceProductPrice();
+                        if ($serviceProductPriceRoomInfo = $objRoomTypeServiceProductPrice->getProductRoomTypeLinkPriceInfo(
+                            $this->id_product,
+                            $idRoomType,
+                            RoomTypeServiceProduct::WK_ELEMENT_TYPE_ROOM_TYPE
+                        )) {
+                            //Special tax rule group for the Service product accroding to Room type
+                            $this->id_tax_rules_group = $serviceProductPriceRoomInfo['id_tax_rules_group'];
+                        } else {
+                            // Use default tax rule group for the service product
+                            $this->id_tax_rules_group = $objOrderDetail->id_tax_rules_group;
+                        }
+                    }
+
+                    $taxCalculator = TaxManagerFactory::getManager($objAddress, $this->id_tax_rules_group)->getTaxCalculator();
+                    $this->tax_computation_method = (int)$taxCalculator->computation_method;
+                }
+            } else {
+                // Use default tax rule group for the service product
+                $this->id_tax_rules_group = $objOrderDetail->id_tax_rules_group;
+                $this->tax_computation_method = $objOrderDetail->tax_computation_method;
+            }
+
+            return parent::add($autodate, $null_values);
+        }
+
+        return false;
+    }
 
     public function getServiceProductsInOrder(
         $idOrder,
@@ -144,7 +194,7 @@ class ServiceProductOrderDetail extends ObjectModel
         if (!$getTotalPrice) {
             $sql .= ', hbd.`id_product` as `id_room_type`, od.`product_price_calculation_method`,
             hbd.`id_room`, hbd.`adults`, hbd.`children`, hbd.`date_from`, hbd.`date_to`, hbd.`room_type_name`, p.`max_quantity`,
-            spod.`id_product` as id_product,  od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`, od.`product_auto_add`, od.`product_price_addition_type`';
+            spod.`id_product` as id_product,  od.`product_allow_multiple_quantity`, od.`product_price_calculation_method`, od.`product_auto_add`, od.`product_price_addition_type`, IF(p.`id_product`, 0, 1) as `product_deleted`';
         }
         $sql .= ' FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
             LEFT JOIN `'._DB_PREFIX_.'service_product_order_detail` spod ON(spod.`id_htl_booking_detail` = hbd.`id`)';
@@ -223,6 +273,8 @@ class ServiceProductOrderDetail extends ObjectModel
                             'product_tax' => $product_tax,
                             'product_tax_label' => $product_tax_label,
                             'allow_multiple_quantity' => $product['product_allow_multiple_quantity'],
+                            'tax_computation_method' => $product['tax_computation_method'],
+                            'id_tax_rules_group' => $product['id_tax_rules_group'],
                             'price_calculation_method' => $product['product_price_calculation_method'],
                             'total_price_tax_excl' => $product['total_price_tax_excl'],
                             'total_price_tax_incl' => $product['total_price_tax_incl'],
@@ -230,7 +282,8 @@ class ServiceProductOrderDetail extends ObjectModel
                             'unit_price_tax_incl' => $product['unit_price_tax_incl'],
                             'product_auto_add' => $product['product_auto_add'],
                             'product_price_addition_type' => $product['product_price_addition_type'],
-                            'max_quantity' => (int) $product['max_quantity']
+                            'max_quantity' => (int) $product['max_quantity'],
+                            'product_deleted' => $product['product_deleted']
                         );
                     } else {
                         $selectedAdditionalServices[$product['id_htl_booking_detail']]['id_order'] = $product['id_order'];
@@ -254,6 +307,8 @@ class ServiceProductOrderDetail extends ObjectModel
                                 'name' => $product['name'],
                                 'quantity' => $product['quantity'],
                                 'allow_multiple_quantity' => $product['product_allow_multiple_quantity'],
+                                'tax_computation_method' => $product['tax_computation_method'],
+                                'id_tax_rules_group' => $product['id_tax_rules_group'],
                                 'price_calculation_method' => $product['product_price_calculation_method'],
                                 'product_tax' => $product_tax,
                                 'product_tax_label' => $product_tax_label,
@@ -263,7 +318,8 @@ class ServiceProductOrderDetail extends ObjectModel
                                 'unit_price_tax_incl' => $product['unit_price_tax_incl'],
                                 'product_auto_add' => $product['product_auto_add'],
                                 'product_price_addition_type' => $product['product_price_addition_type'],
-                                'max_quantity' => (int) $product['max_quantity']
+                                'max_quantity' => (int) $product['max_quantity'],
+                                'product_deleted' => $product['product_deleted'],
                             ),
                         );
                     }

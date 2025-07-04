@@ -33,6 +33,7 @@
 							<th>{l s='Name'}</th>
 							<th>{l s='Unit Price (tax excl.)'}</th>
 							<th>{l s='Total Price (tax excl.)'}</th>
+							<th>{l s='Total Price (tax incl.)'}</th>
 							<th class="text-right">{l s='Action'}</th>
 						</tr>
 					</thead>
@@ -52,6 +53,7 @@
 										</div>
 									</td>
 									<td>{displayPrice price=$demand['total_price_tax_excl'] currency=$orderCurrency}</td>
+									<td>{displayPrice price=$demand['total_price_tax_incl'] currency=$orderCurrency}</td>
 									<td class="text-right"><a class="btn btn-danger pull-right del-order-room-demand" href="#" id_booking_demand="{$demand['id_booking_demand']}"><i class="icon-trash"></i></a></td>
 								</tr>
 							{/foreach}
@@ -140,8 +142,9 @@
                 <thead>
                     <tr>
                         <th>{l s='Name'}</th>
-                        <th>{l s='Unit Price'}</th>
-                        <th>{l s='Total Price'}</th>
+                        <th>{l s='Unit Price (tax excl.)'}</th>
+                        <th>{l s='Total Price (tax excl.)'}</th>
+                        <th>{l s='Total Price (tax incl.)'}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -157,6 +160,7 @@
                                         {/if}
                                     </td>
                                     <td>{displayPrice price=$demand['total_price_tax_excl'] currency=$orderCurrency}</td>
+                                    <td>{displayPrice price=$demand['total_price_tax_incl'] currency=$orderCurrency}</td>
                                 </tr>
                             {/foreach}
                         {/foreach}

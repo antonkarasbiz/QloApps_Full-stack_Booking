@@ -1528,8 +1528,10 @@ class ProductCore extends ObjectModel
         $sql = 'SELECT cl.*, COUNT(DISTINCT(p.`id_product`)) as num_products
 				FROM `'._DB_PREFIX_.'product` p
 				'.Shop::addSqlAssociation('product', 'p').'
-                INNER JOIN `'._DB_PREFIX_.'htl_room_type_service_product` rsp ON (rsp.`id_product` = p.`id_product`)'
-                .Product::sqlStock('p', 0).'
+                INNER JOIN `'._DB_PREFIX_.'htl_room_type_service_product` rsp ON (rsp.`id_product` = p.`id_product`'.
+                    ($front ? ' AND product_shop.`auto_add_to_cart` = 0 AND product_shop.`show_at_front` = 1 ':'').
+                    ($active ? ' AND product_shop.`active` = 1 ' : '').')'
+                    .Product::sqlStock('p', 0).'
 				INNER JOIN `'._DB_PREFIX_.'category_lang` cl
 					ON (product_shop.`id_category_default` = cl.`id_category`
 					AND cl.`id_lang` = '.(int)$id_lang.Shop::addSqlRestrictionOnLang('cl').')
@@ -1539,10 +1541,7 @@ class ProductCore extends ObjectModel
                     )
                     AND p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_WITH_ROOM_TYPE.
                     ' || p.`selling_preference_type` = '.(int)self::SELLING_PREFERENCE_HOTEL_STANDALONE_AND_WITH_ROOM_TYPE.
-                    ' AND product_shop.`id_shop` = '.(int)$context->shop->id
-                    .($front ? ' AND product_shop.`auto_add_to_cart` = 0 AND product_shop.`show_at_front` = 1':'')
-                    .($active ? ' AND product_shop.`active` = 1' : '');
-
+                    ' AND product_shop.`id_shop` = '.(int)$context->shop->id;
 
             $sql .= ' GROUP BY cl.`id_category`';
 
@@ -3042,7 +3041,7 @@ class ProductCore extends ObjectModel
     public static function getPriceStatic($id_product, $usetax = true, $id_product_attribute = null, $decimals = 6, $divisor = null,
         $only_reduc = false, $usereduc = true, $quantity = 1, $force_associated_tax = false, $id_customer = null, $id_cart = null,
         $id_address = null, &$specific_price_output = null, $with_ecotax = true, $use_group_reduction = true, ?Context $context = null,
-        $use_customer_price = true, $id_hotel = false, $id_product_room_type = false, $id_group = null)
+        $use_customer_price = true, $id_hotel = false, $id_product_room_type = false, $id_group = null, $id_htl_cart_booking = 0)
     {
         if (!$context) {
             $context = Context::getContext();
@@ -3177,7 +3176,8 @@ class ProductCore extends ObjectModel
             $id_cart,
             $cart_quantity,
             $id_hotel,
-            $id_product_room_type
+            $id_product_room_type,
+            $id_htl_cart_booking
         );
 
         return $return;
@@ -3211,7 +3211,7 @@ class ProductCore extends ObjectModel
      **/
     public static function priceCalculation($id_shop, $id_product, $id_product_attribute, $id_country, $id_state, $zipcode, $id_currency,
         $id_group, $quantity, $use_tax, $decimals, $only_reduc, $use_reduc, $with_ecotax, &$specific_price, $use_group_reduction,
-        $id_customer = 0, $use_customer_price = true, $id_cart = 0, $real_quantity = 0, $id_hotel = false, $id_product_room_type = false)
+        $id_customer = 0, $use_customer_price = true, $id_cart = 0, $real_quantity = 0, $id_hotel = false, $id_product_room_type = false, $id_htl_cart_booking = 0)
     {
         static $address = null;
         static $context = null;
@@ -3246,7 +3246,8 @@ class ProductCore extends ObjectModel
         $cache_id = (int)$id_product.'-'.(int)$id_shop.'-'.(int)$id_currency.'-'.(int)$id_country.'-'.$id_state.'-'.$zipcode.'-'.(int)$id_group.
             '-'.(int)$quantity.'-'.(int)$id_product_attribute.
             '-'.(int)$with_ecotax.'-'.(int)$id_customer.'-'.(int)$use_group_reduction.'-'.(int)$id_cart.'-'.(int)$real_quantity.
-            '-'.($only_reduc?'1':'0').'-'.($use_reduc?'1':'0').'-'.($use_tax?'1':'0').'-'.(int)$decimals.'-'.($id_hotel?(int)$id_hotel:'0').'-'.($id_product_option?(int)$id_product_option:'0'.'-'.($id_product_room_type?(int)$id_product_room_type:'0'));
+            '-'.($only_reduc?'1':'0').'-'.($use_reduc?'1':'0').'-'.($use_tax?'1':'0').'-'.(int)$decimals.'-'.($id_hotel?(int)$id_hotel:'0')
+            .'-'.($id_product_option?(int)$id_product_option:'0'.'-'.($id_product_room_type?(int)$id_product_room_type:'0').'-'.(int)$id_htl_cart_booking);
 
         // reference parameter is filled before any returns
         $specific_price = SpecificPrice::getSpecificPrice(
@@ -3259,7 +3260,8 @@ class ProductCore extends ObjectModel
             $id_product_option,
             $id_customer,
             $id_cart,
-            $real_quantity
+            $real_quantity,
+            $id_htl_cart_booking
         );
 
         if (isset(self::$_prices[$cache_id])) {
@@ -6815,7 +6817,9 @@ class ProductCore extends ObjectModel
         $dateTo = null,
         $idCart = false,
         $idAddress = null,
-        $useReduc = 1
+        $useReduc = 1,
+        $idGroup = null,
+        $idCartBooking = 0
     ) {
         if ($useTax === null) {
             $useTax = Product::$_taxCalculationMethod == PS_TAX_EXC ? false : true;
@@ -6840,7 +6844,9 @@ class ProductCore extends ObjectModel
             null,
             true,
             (int)$idHotel,
-            (int)$idProductRoomType
+            (int)$idProductRoomType,
+            $idGroup,
+            $idCartBooking
         );
 
         Hook::exec('actionServiceProductPricePriceModifier',
@@ -6854,7 +6860,8 @@ class ProductCore extends ObjectModel
                 'date_to' => $dateTo,
                 'use_tax' => $useTax,
                 'id_cart' => $idCart,
-                'use_reduc' => $useReduc
+                'use_reduc' => $useReduc,
+                'id_htl_cart_booking' => $idCartBooking
             )
         );
 
