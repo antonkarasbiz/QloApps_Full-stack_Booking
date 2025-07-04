@@ -1,4 +1,5 @@
-{*
+<?php
+/**
 * NOTICE OF LICENSE
 *
 * This source file is subject to the Open Software License version 3.0
@@ -18,9 +19,14 @@
 * @author Webkul IN
 * @copyright Since 2010 Webkul
 * @license https://opensource.org/license/osl-3-0-php Open Software License version 3.0
-*}
-{l s='Here are the bank details for your check:' mod='cheque' lang=$lang}
+*/
 
-{l s='Amount:' mod='cheque' lang=$lang} {$total_paid}
-{l s='Payable to the order of:' mod='cheque' lang=$lang} {$cheque_name}
-{l s='Please mail your check to:' mod='cheque' lang=$lang} {$cheque_address}
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
+
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
+
+header('Location: ../../../');
+exit;

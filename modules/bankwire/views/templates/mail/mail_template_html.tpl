@@ -30,7 +30,7 @@
                             {l s='Here are the bank details for your transfer:' mod='bankwire' lang=$lang}
                         </p>
                         <span style="color:#777">
-                            <span style="color:#333"><strong>{l s='Amount:' mod='bankwire' lang=$lang}</strong></span> {literal}{total_paid}{/literal}<br />
+                            <span style="color:#333"><strong>{l s='Amount:' mod='bankwire' lang=$lang}</strong></span> {$total_paid}<br />
                             <span style="color:#333"><strong>{l s='Account owner:' mod='bankwire' lang=$lang}</strong></span> {$bankwire_owner}<br />
                             <span style="color:#333"><strong>{l s='Account details:' mod='bankwire' lang=$lang}</strong></span> {$bankwire_details}<br />
                             <span style="color:#333"><strong>{l s='Bank address:' mod='bankwire' lang=$lang}</strong></span> {$bankwire_address}

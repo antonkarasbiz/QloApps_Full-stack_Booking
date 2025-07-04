@@ -47,11 +47,18 @@
                                 </thead>
                                 <tbody>
                                     {foreach $serviceProducts as $product}
+                                        {if isset($selectedRoomServiceProduct['selected_service']) && $selectedRoomServiceProduct['selected_service'] && ($product['id_product']|array_key_exists:$selectedRoomServiceProduct['selected_service'])}
+                                            {assign var='serviceSelected' value=true}
+                                            {$product.price_tax_incl = $selectedRoomServiceProduct['selected_service'][$product['id_product']]['unit_price_tax_incl']}
+                                            {$product.price_tax_exc = $selectedRoomServiceProduct['selected_service'][$product['id_product']]['unit_price_tax_excl']}
+                                        {else}
+                                            {assign var='serviceSelected' value=false}
+                                        {/if}
                                         <tr class="room_demand_block">
                                             <td>
-                                                <input data-id_cart_booking="{$selectedRoomServiceProduct['id']}" value="{$product['id_product']|escape:'html':'UTF-8'}" type="checkbox" class="change_room_type_service_product" {if  isset($selectedRoomServiceProduct['selected_service']) && $selectedRoomServiceProduct['selected_service'] && ($product['id_product']|array_key_exists:$selectedRoomServiceProduct['selected_service'])}checked{/if}/>
+                                                <input data-id_cart_booking="{$selectedRoomServiceProduct['id']}" value="{$product['id_product']|escape:'html':'UTF-8'}" type="checkbox" class="change_room_type_service_product" {if $serviceSelected}checked{/if}/>
 
-                                                <input id="selected_service_product_{$product['id_product']}" type="hidden" value="{if  isset($selectedRoomServiceProduct['selected_service']) && $selectedRoomServiceProduct['selected_service'] && ($product['id_product']|array_key_exists:$selectedRoomServiceProduct['selected_service'])}1{else}0{/if}" name="selected_service_product[{$product.id_product}]"/>
+                                                <input id="selected_service_product_{$product['id_product']}" type="hidden" value="{if $serviceSelected}1{else}0{/if}" name="selected_service_product[{$product.id_product}]"/>
                                             </td>
                                             <td>
                                                 <p>{$product['name']|escape:'html':'UTF-8'}</p>
@@ -67,9 +74,9 @@
                                             <td>
                                                 {if $product.allow_multiple_quantity}
                                                     <div class="qty_container">
-                                                        <input type="number" class="form-control room_type_service_product_qty qty" id="qty_{$product.id_product}" name="service_qty[{$product.id_product}]" data-id-product="{$product.id_product}" min="1" data-max-quantity="{$product.max_quantity}" value="{if  isset($selectedRoomServiceProduct['selected_service']) && $selectedRoomServiceProduct['selected_service'] && ($product['id_product']|array_key_exists:$selectedRoomServiceProduct['selected_service'])}{$selectedRoomServiceProduct['selected_service'][$product['id_product']]['quantity']}{else}1{/if}" name="service_qty[{$product['id_product']|escape:'html':'UTF-8'}]">
+                                                        <input type="number" class="form-control room_type_service_product_qty qty" id="qty_{$product.id_product}" name="service_qty[{$product.id_product}]" data-id-product="{$product.id_product}" min="1" data-max-quantity="{$product.max_quantity}" value="{if $serviceSelected}{$selectedRoomServiceProduct['selected_service'][$product['id_product']]['quantity']}{else}1{/if}" name="service_qty[{$product['id_product']|escape:'html':'UTF-8'}]">
 
-                                                        <p style="display:{if isset($selectedRoomServiceProduct['selected_service']) && $selectedRoomServiceProduct['selected_service'] && ($product['id_product']|array_key_exists:$selectedRoomServiceProduct['selected_service']) && $selectedRoomServiceProduct['selected_service'][$product['id_product']]['quantity'] > $product.max_quantity}block{else}none{/if}; margin-top: 4px;">
+                                                        <p style="display:{if $serviceSelected && $selectedRoomServiceProduct['selected_service'][$product['id_product']]['quantity'] > $product.max_quantity}block{else}none{/if}; margin-top: 4px;">
                                                             <span class="label label-warning">{l s='Maximum allowed quantity: %s' sprintf=$product.max_quantity}</span>
                                                         </p>
                                                     </div>
@@ -150,6 +157,7 @@
                     <div id="new_service_price_tax_rule_container" class="col-sm-6">
                         <label class="control-label">{l s='Tax rule'}</label>
                         <select name="new_service_price_tax_rule_group">
+                            <option value="0">{l s='No Tax'}</option>
                             {foreach from=$taxRulesGroups item=taxRuleGroup}
                                 <option value="{$taxRuleGroup.id_tax_rules_group}">{$taxRuleGroup.name}</option>
                             {/foreach}

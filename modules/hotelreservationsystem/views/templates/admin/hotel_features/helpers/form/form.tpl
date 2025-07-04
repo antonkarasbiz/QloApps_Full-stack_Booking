@@ -22,7 +22,11 @@
 
 <div class="panel">
 	<div class="panel-heading">
-		<i class="icon-plus"></i>&nbsp {l s='Add New Features' mod='hotelreservationsystem'}
+		{if isset($edit) && $edit}
+			<i class="icon-edit"></i>&nbsp {l s='Edit Features' mod='hotelreservationsystem'}
+		{else}
+			<i class="icon-plus"></i>&nbsp {l s='Add New Features' mod='hotelreservationsystem'}
+		{/if}
 	</div>
 	<div class="panel-content">
 		<form id="{$table|escape:'htmlall':'UTF-8'}_form" class="defaultForm {$name_controller|escape:'htmlall':'UTF-8'} form-horizontal" action="{$current|escape:'htmlall':'UTF-8'}&{if !empty($submit_action)}{$submit_action|escape:'htmlall':'UTF-8'}{/if}&token={$token|escape:'htmlall':'UTF-8'}" method="post" enctype="multipart/form-data">

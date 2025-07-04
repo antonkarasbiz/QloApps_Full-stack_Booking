@@ -50,6 +50,9 @@ class Blockcart extends Module
     {
         global $errors;
 
+        // validate cart bookings before displaying cart
+        HotelCartBookingData::validateCartBookings();
+
         // Set currency
         if ((int) $params['cart']->id_currency && (int) $params['cart']->id_currency != $this->context->currency->id) {
             $currency = new Currency((int) $params['cart']->id_currency);

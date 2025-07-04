@@ -73,6 +73,24 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
         );
 
         $priorities = Configuration::get('HTL_FEATURE_PRICING_PRIORITY');
+        $hotelsArray = array();
+        $roomTypesArray = array();
+        $objHotelRoomType = new HotelRoomType();
+        if ($accsHlts = HotelBranchInformation::getProfileAccessedHotels($this->context->employee->id_profile, 1)) {
+            foreach ($accsHlts as $hotel) {
+                $addressInfo = HotelBranchInformation::getAddress($hotel['id_hotel']);
+                $hotelsArray[$hotel['id_hotel']] = $hotel['hotel_name'].', '.$addressInfo['city'];
+            }
+
+            foreach ($accsHlts as $hotel) {
+                if ($hotelRoomTypes = $objHotelRoomType->getRoomTypeByHotelId($hotel['id_hotel'], $this->context->language->id)) {
+                    foreach ($hotelRoomTypes as $room_type) {
+                        $roomTypesArray[$room_type['id_product']] = $room_type['room_type'].', '.$hotel['hotel_name'];
+                    }
+                }
+            }
+        }
+
         $this->context->smarty->assign('featurePricePriority', explode(';', $priorities));
         $this->fields_options = array('feature_price_priority' => array());
         $this->fields_list = array(
@@ -88,12 +106,19 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
             'product_name' => array(
                 'title' => $this->l('Room Type'),
                 'align' => 'center',
-                'havingFilter' => true,
+                'type' => 'select',
                 'callback' => 'getRoomTypeLink',
+                'filter_key' => 'a!id_product',
+                'list' => $roomTypesArray,
+                'class' => 'chosen',
             ),
             'hotel_name' => array(
                 'title' => $this->l('Hotel'),
                 'align' => 'center',
+                'type' => 'select',
+                'filter_key' => 'hrt!id_hotel',
+                'list' => $hotelsArray,
+                'class' => 'chosen'
             ),
             'impact_way' => array(
                 'title' => $this->l('Impact Way'),
@@ -665,5 +690,51 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
 
         $this->addCSS(_MODULE_DIR_.'hotelreservationsystem/views/css/HotelReservationAdmin.css');
         $this->addJs(_MODULE_DIR_.'hotelreservationsystem/views/js/HotelReservationAdmin.js');
+    }
+
+      public function ajaxProcessGetHotelRoomTypes()
+    {
+        $response = array('status' => false);
+
+        $idHotel = (int) Tools::getValue('id_hotel');
+        $objHotelRoomType = new HotelRoomType();
+        $hotelRoomTypes = array();
+
+        if ($idHotel > 0) {
+            if ($hotelRoomTypes = $objHotelRoomType->getRoomTypeByHotelId($idHotel, $this->context->language->id)) {
+                $objHotelBranchInformation = new HotelBranchInformation($idHotel, $this->context->language->id);
+                foreach ($hotelRoomTypes as &$hotelRoomType) {
+                    $hotelRoomType['hotel_name'] = $objHotelBranchInformation->hotel_name;
+                }
+            }
+        } else if ($allHotelRoomTypes = $objHotelRoomType->getAllRoomTypes()) {
+            $hotels = array();
+            foreach ($allHotelRoomTypes as $hotelRoomType) {
+                if (!array_key_exists($hotelRoomType['id_hotel'], $hotels)) {
+                    $hotels[$hotelRoomType['id_hotel']] = new HotelBranchInformation(
+                        $hotelRoomType['id_hotel'],
+                        $this->context->language->id
+                    );
+                }
+
+                $objProduct = new Product($hotelRoomType['id_product'], false, $this->context->language->id);
+                $hotelRoomTypes[] = array(
+                    'id_product' => $hotelRoomType['id_product'],
+                    'room_type' => $objProduct->name,
+                    'hotel_name' => $hotels[$hotelRoomType['id_hotel']]->hotel_name,
+                );
+            }
+        }
+
+        if ($hotelRoomTypes) {
+            $response['status'] = true;
+            $response['has_room_types'] = true;
+            $response['room_types_info'] = $hotelRoomTypes;
+        } else {
+            $response['has_room_types'] = false;
+            $response['status'] = true;
+        }
+
+        $this->ajaxDie(json_encode($response));
     }
 }

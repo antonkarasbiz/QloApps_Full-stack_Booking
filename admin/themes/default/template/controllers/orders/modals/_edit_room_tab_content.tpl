@@ -28,8 +28,8 @@
     <input type="hidden" name="date_from" value="{$data.date_from}" />
     <input type="hidden" name="date_to" value="{$data.date_to}" />
     <input type="hidden" name="id_order_detail" value="{$data.id_order_detail}" />
-    <input type="hidden" name="product_price_tax_excl" value="{Tools::ps_round($data.original_unit_price_tax_excl, 2)}" />
-    <input type="hidden" name="product_price_tax_incl" value="{Tools::ps_round($data.original_unit_price_tax_incl, 2)}" />
+    <input type="hidden" name="product_price_tax_excl" value="{Tools::ps_round($data.original_unit_price_tax_excl, _PS_PRICE_COMPUTE_PRECISION_)}" />
+    <input type="hidden" name="product_price_tax_incl" value="{Tools::ps_round($data.original_unit_price_tax_incl, _PS_PRICE_COMPUTE_PRECISION_)}" />
 
     {if isset($data.id_status) && ($data.id_status != HotelBookingDetail::STATUS_ALLOTED)}
         <div class="alert alert-info">

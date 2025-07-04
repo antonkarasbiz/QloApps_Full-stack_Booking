@@ -100,8 +100,16 @@ class AdminHotelFeaturesController extends ModuleAdminController
 
     public function postProcess()
     {
+        if (!$this->loadObject(true)) {
+            return;
+        }
+
         if (Tools::isSubmit('submitHtlFeatures') || Tools::isSubmit('submitHtlFeaturesAndStay')) {
-            $parentFeatureId = Tools::getValue('id');
+            $conf = 3;
+            if ($parentFeatureId = Tools::getValue('id')) {
+                $conf = 4;
+            }
+
             $pos = Tools::getValue('position');
 
             $defaultLangId = Configuration::get('PS_LANG_DEFAULT');
@@ -144,9 +152,6 @@ class AdminHotelFeaturesController extends ModuleAdminController
                             }
                         }
                     }
-                }
-
-                if (!count($this->errors)) {
                 }
             } else {
                 $this->errors[] = $this->l('Please add atleast one Child features.');
@@ -220,10 +225,10 @@ class AdminHotelFeaturesController extends ModuleAdminController
                         if (Tools::isSubmit('submitHtlFeaturesAndStay')) {
                             Tools::redirectAdmin(
                                 self::$currentIndex.'&id='.(int) $parentFeatureId.'&update'.$this->table.
-                                '&conf=4&token='.$this->token
+                                '&conf='.$conf.'&token='.$this->token
                             );
                         } else {
-                            Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
+                            Tools::redirectAdmin(self::$currentIndex.'&conf='.$conf.'&token='.$this->token);
                         }
                     } else {
                         $this->errors[] = $this->l('Some error has been occurred while saving features.');
@@ -265,10 +270,10 @@ class AdminHotelFeaturesController extends ModuleAdminController
                             if (Tools::isSubmit('submitHtlFeaturesAndStay')) {
                                 Tools::redirectAdmin(
                                     self::$currentIndex.'&id='.(int) $parentFeatureId.'&update'.$this->table.
-                                    '&conf=4&token='.$this->token
+                                    '&conf='.$conf.'&token='.$this->token
                                 );
                             } else {
-                                Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
+                                Tools::redirectAdmin(self::$currentIndex.'&conf='.$conf.'&token='.$this->token);
                             }
                         }
                     } else {
@@ -282,7 +287,10 @@ class AdminHotelFeaturesController extends ModuleAdminController
                 $this->display = 'add';
             }
         }
-        parent::postProcess();
+
+        if (empty($this->errors) || $this->ajax) {
+            parent::postProcess();
+        }
     }
 
     public function ajaxProcessDeleteFeature()

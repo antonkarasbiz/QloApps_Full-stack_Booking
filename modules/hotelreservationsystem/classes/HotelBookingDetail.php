@@ -2178,7 +2178,11 @@ class HotelBookingDetail extends ObjectModel
 
                 // delete cart feature prices after room addition success
                 HotelRoomTypeFeaturePricing::deleteFeaturePrices($context->cart->id);
-
+                // since only one room is added in the cart on reallocation process.
+                $idNewCartBookingData = false;
+                if (isset($objCartBookingData->id)) {
+                    $idNewCartBookingData = $objCartBookingData->id;
+                }
                 // ===============================================================
                 // END: Add Process of the old booking
                 // ===============================================================
@@ -2289,6 +2293,21 @@ class HotelBookingDetail extends ObjectModel
                     AND id_room = '.(int) $objOldHotelBooking->id_room.' AND `id_order` = '.(int) $objOldHotelBooking->id_order
                 );
                 $objCartBookingData = new HotelCartBookingData($idHotelCartBookingData);
+                if ($idNewCartBookingData) {
+                    $objServiceProductCartDetail = new ServiceProductCartDetail();
+                    if ($oldCartAdditonalServices = $objServiceProductCartDetail->getServiceProductsInCart(
+                        0, // if reallocated twice the id cart will not be used as it was not changed in first reallocation.
+                        [],
+                        null,
+                        $objCartBookingData->id
+                    )) {
+                        foreach ($oldCartAdditonalServices as $service) {
+                            $objServiceProductCartDetail = new ServiceProductCartDetail($service['id_service_product_cart_detail']);
+                            $objServiceProductCartDetail->htl_cart_booking_id = (int) $idNewCartBookingData;
+                            $objServiceProductCartDetail->save();
+                        }
+                    }
+                }
                 $objCartBookingData->delete();
 
                 // delete the booking detail
@@ -3437,7 +3456,7 @@ class HotelBookingDetail extends ObjectModel
                             }
 
                             $objOrderDetail->total_price_tax_excl -= (float) Tools::processPriceRounding(
-                                $objOrderDetail->total_price_tax_excl,
+                                $objServiceProductOrderDetail->total_price_tax_excl,
                                 1,
                                 $objOrder->round_type,
                                 $objOrder->round_mode
@@ -3445,14 +3464,18 @@ class HotelBookingDetail extends ObjectModel
                             $objOrderDetail->total_price_tax_excl = $objOrderDetail->total_price_tax_excl > 0 ? $objOrderDetail->total_price_tax_excl : 0;
 
                             $objOrderDetail->total_price_tax_incl -= (float) Tools::processPriceRounding(
-                                $objOrderDetail->total_price_tax_incl,
+                                $objServiceProductOrderDetail->total_price_tax_incl,
                                 1,
                                 $objOrder->round_type,
                                 $objOrder->round_mode
                             );
                             $objOrderDetail->total_price_tax_incl = $objOrderDetail->total_price_tax_incl > 0 ? $objOrderDetail->total_price_tax_incl : 0;
 
-                            $objOrderDetail->save();
+                            $objServiceProductOrderDetail->total_price_tax_excl = 0;
+                            $objServiceProductOrderDetail->total_price_tax_incl = 0;
+                            $objServiceProductOrderDetail->save();
+
+                            $objOrderDetail->updateTaxAmount($objOrder) && $objOrderDetail->save();
                         }
 
                         $objServiceProductOrderDetail->total_price_tax_excl = 0;
@@ -3521,6 +3544,16 @@ class HotelBookingDetail extends ObjectModel
                         $objOrder->total_products_wt = $objOrder->total_products_wt > 0 ? $objOrder->total_products_wt : 0;
 
                         $objOrder->save();
+
+                        // Update OrderInvoice
+                        if ($objOrder->hasInvoice()) {
+                            $objOrderInvoice = new OrderInvoice($objOrderDetail->id_order_invoice);
+                            $objOrderInvoice->total_products -= $reduction_amount['total_products_tax_excl'];
+                            $objOrderInvoice->total_products_wt -= $reduction_amount['total_products_tax_incl'];
+                            $objOrderInvoice->total_paid_tax_excl -= $reduction_amount['total_price_tax_excl'];
+                            $objOrderInvoice->total_paid_tax_incl -= $reduction_amount['total_price_tax_incl'];
+                            $objOrderInvoice->update();
+                        }
                     }
                 }
 

@@ -73,7 +73,7 @@
             </div>
         </div>
         {if count($invoices_collection) > 0}
-            <div class="form-group row">
+            <div class="form-group row" style="display: none;">
                 <div class="col-sm-6">
                     <label class="control-label">{l s='Invoice'}</label>
                     <select name="payment_invoice" id="payment_invoice">

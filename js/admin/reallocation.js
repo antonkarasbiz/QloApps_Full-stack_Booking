@@ -34,13 +34,17 @@ $(document).ready(function() {
 
     /*For reallocating rooms in the modal*/
     $(document).on('click', '#realloc_allocated_rooms', function(e){
+        $(".loading_overlay").show();
         if (RoomReallocationModal.reallocate() == false) {
+            $(".loading_overlay").hide();
             return false;
         }
     });
     /*For swaping rooms in the modal*/
     $(document).on('click', '#swap_allocated_rooms', function(){
+        $(".loading_overlay").show();
         if (RoomReallocationModal.swap() == false) {
+            $(".loading_overlay").hide();
             return false;
         }
     });

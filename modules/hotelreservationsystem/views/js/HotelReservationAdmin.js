@@ -25,16 +25,11 @@ var GoogleMapsManager = {
     defaultZoom: 10,
     map: null,
     markers: [],
-    placesService: null,
+    placeService: null,
 
     init: function(jQDiv) {
         this.mapDiv = jQDiv;
         this.geocoder = new google.maps.Geocoder();
-    },
-    setPlacesService: function() {
-        if (!this.placesService && this.map) {
-            this.placesService = new google.maps.places.PlacesService(this.map);
-        }
     },
     setDefaultLatLng: function(cb) {
         if (!this.defaultLatLng) {
@@ -67,6 +62,24 @@ var GoogleMapsManager = {
             }
         }
     },
+    fetchFields: async function(request) {
+        if (!request.placeId) return;
+        const place = new google.maps.places.Place({
+            id: request.placeId
+        });
+
+        const fieldsRequest = {
+            fields: ["displayName", "formattedAddress", "location"]
+        };
+
+        try {
+            await place.fetchFields(fieldsRequest);
+            this.placeService = place;
+            return place;
+        } catch (error) {
+            console.log(error);
+        }
+    },
     initMap: function(cb) {
         if (!this.map) {
             var that = this;
@@ -74,85 +87,26 @@ var GoogleMapsManager = {
                 that.map = new google.maps.Map($(that.mapDiv).get(0), {
                     zoom: that.defaultZoom,
                     clickableIcons: true,
+                    mapId: PS_MAP_ID
                 });
                 that.map.setCenter(that.defaultLatLng);
                 if (that.defaultLatLng && that.formattedAddress) {
                     that.addMarker(that.defaultLatLng, null, that.formattedAddress);
                 }
-                that.setPlacesService();
-
                 // register marker events
                 that.map.addListener('click', function (e) {
                     var latLng = e.latLng;
-
-                    var isInfoWindowNeeded = true;
                     // if it is a Place Of Interest (POI), event contains the property 'placeId'
                     if (Object.hasOwn(e, 'placeId')) {
-                        isInfoWindowNeeded = false;
-
-                        that.geocoder.geocode({ location: latLng }, function (results, status) {
-                            if (status == google.maps.GeocoderStatus.OK && results[0]) {
-                                var request = {
-                                    placeId: e.placeId,
-                                    fields: ['name'],
-                                };
-
-                                that.placesService.getDetails(request, function(place, status) {
-                                    if (status === google.maps.places.PlacesServiceStatus.OK) {
-                                        var content = '<div><h6>' + place.name + '</h6><p>' +
-                                        results[0].formatted_address + '</p></div>';
-
-                                        var callback = function (latLng) {
-                                            that.setFormVars({
-                                                lat: latLng.lat(),
-                                                lng: latLng.lng(),
-                                                formattedAddress: content,
-                                                inputText: $('#pac-input').val(),
-                                            });
-                                        }
-
-                                        that.addMarker(
-                                            latLng,
-                                            results[0],
-                                            null,
-                                            isInfoWindowNeeded,
-                                            callback(latLng)
-                                        );
-                                    }
-                                });
+                        that.fetchFields({ placeId: e.placeId }).then(place => {
+                            if (place && place.location) {
+                               that.addMarker(place.location, null, place.formattedAddress);
                             }
                         });
                     } else {
-                        that.geocoder.geocode({ location: latLng }, function (results, status) {
-                            if (status == google.maps.GeocoderStatus.OK && results[0]) {
-                                var request = {
-                                    placeId: results[0].place_id,
-                                    fields: ['name'],
-                                };
-
-                                that.placesService.getDetails(request, function(place, status) {
-                                    if (status === google.maps.places.PlacesServiceStatus.OK) {
-                                        var content = '<div><h6>' + place.name + '</h6><p>' +
-                                        results[0].formatted_address + '</p></div>';
-
-                                        var callback = function (latLng) {
-                                            that.setFormVars({
-                                                lat: latLng.lat(),
-                                                lng: latLng.lng(),
-                                                formattedAddress: content,
-                                                inputText: $('#pac-input').val(),
-                                            });
-                                        }
-
-                                        that.addMarker(
-                                            latLng,
-                                            results[0],
-                                            null,
-                                            isInfoWindowNeeded,
-                                            callback(latLng)
-                                        );
-                                    }
-                                });
+                        that.geocoder.geocode({ location: latLng }, function(results, status) {
+                            if (status === 'OK' && results[0]) {
+                                that.addMarker(latLng, null, results[0].formatted_address);
                             }
                         });
                     }
@@ -166,42 +120,37 @@ var GoogleMapsManager = {
                 cb();
             }
         }
-
     },
     initAutocomplete: function(jQInput, cb) {
         var that = this;
         that.initMap(function() {
             that.autocompleteInput = jQInput;
             var input = $(that.autocompleteInput).get(0);
-            that.map.controls[google.maps.ControlPosition.TOP_CENTER].push(input);
-            that.autocomplete = new google.maps.places.Autocomplete(input);
-            that.autocomplete.bindTo('bounds', that.map);
-
-            that.autocomplete.addListener('place_changed', function() {
-                that.clearAllMarkers();
-                var place = that.autocomplete.getPlace();
-
-                if (place.geometry.viewport) {
-                    that.map.fitBounds(place.geometry.viewport);
-                } else {
-                    that.map.setCenter(place.geometry.location);
-                    that.map.setZoom(18);
-                }
-                var latLng = {
-                    lat: place.geometry.location.lat(),
-                    lng: place.geometry.location.lng(),
-                };
-                that.addMarker(latLng, place);
-
-                var content = '<div><h6>' + place.name + '</h6><p>' + place.formatted_address + '</p></div>';
-                that.setFormVars({
-                    lat: latLng.lat,
-                    lng: latLng.lng,
-                    formattedAddress: content,
-                    inputText: $('#pac-input').val(),
-                });
+            that.autocomplete = new google.maps.places.PlaceAutocompleteElement({
+                locationRestriction: that.map.getBounds()
             });
 
+            that.autocomplete.id = "place-autocomplete-input";
+            input.appendChild(that.autocomplete);
+
+            that.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+            that.infoWindow = new google.maps.InfoWindow({});
+            that.autocomplete.addEventListener("gmp-select", async (event) => {
+                const place = event.placePrediction.toPlace();
+
+                await place.fetchFields({
+                    fields: ["displayName", "formattedAddress", "location", "viewport"]
+                });
+                // Fit the map to the place
+                if (place.viewport) {
+                    that.map.fitBounds(place.viewport);
+                } else {
+                    that.map.setCenter(place.location);
+                    that.map.setZoom(18);
+                }
+
+                that.addMarker(place.location, null, place.formattedAddress);
+            });
             google.maps.event.addDomListener(input, 'keydown', function (e) {
                 if (e.keyCode === 13) {
                     e.preventDefault();
@@ -216,11 +165,17 @@ var GoogleMapsManager = {
     addMarker: function(latLng, address = null, fa = null, addInfoWindow = true, cb = null) {
         var that = this;
         that.clearAllMarkers();
-        var marker = new google.maps.Marker({
+
+        let icon = document.createElement('img');
+        icon.src = PS_STORES_ICON;
+        icon.style.width = '24px';
+        icon.style.height = '24px';
+
+        var marker = new google.maps.marker.AdvancedMarkerElement({
             position: latLng,
             map: that.map,
+            content: icon,
             draggable: true,
-            icon: PS_STORES_ICON
         });
         that.markers.push(marker);
         marker.addListener('dragend', function(e) {
@@ -240,22 +195,11 @@ var GoogleMapsManager = {
                 // open info window
                 that.addInfoWindow(marker, fa);
             } else {
-                var request = {
-                    placeId: address.place_id,
-                    fields: ['name'],
-                };
-
-                that.placesService.getDetails(request, function(place, status) {
-                    if (status === google.maps.places.PlacesServiceStatus.OK) {
-                        // open info window
-                        var content = '<div><h6>' + place.name + '</h6><p>' + address.formatted_address + '</p></div>';
-                        that.addInfoWindow(marker, content);
-
-                        if(cb && typeof cb === 'function') {
-                            cb();
-                        }
-                    }
-                });
+                var content = '<div><h6>' + this.placeService.displayName + '</h6><p>' + address.formatted_address + '</p></div>';
+                that.addInfoWindow(marker, content);
+                if(cb && typeof cb === 'function') {
+                    cb();
+                }
             }
         } else {
             if(cb && typeof cb === 'function') {
@@ -290,10 +234,10 @@ var GoogleMapsManager = {
                 that.clearAllMarkers();
             });
 
-            var latLng = marker.getPosition();
+            var latLng = marker.position;
             that.setFormVars({
-                lat: latLng.lat(),
-                lng: latLng.lng(),
+                lat: latLng.lat,
+                lng: latLng.lng,
                 formattedAddress: content,
                 inputText: $('#pac-input').val(),
             });
@@ -991,8 +935,6 @@ $(document).ready(function() {
             $('input[name="min_booking_offset"]').closest('.form-group').show(200);
         }
     });
-
-    initGoogleMaps();
 });
 
 function toggleGoogleMapsFields()

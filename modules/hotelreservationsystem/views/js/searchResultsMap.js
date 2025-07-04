@@ -31,33 +31,36 @@ function initMap() {
         center: hotelLocation,
         disableDefaultUI: true,
         fullscreenControl: true,
+        mapId: PS_MAP_ID
     });
 
-    const marker = new google.maps.Marker({
-        position: hotelLocation,
+    let icon = document.createElement('img');
+    icon.src = PS_STORES_ICON;
+    icon.style.width = '24px';
+    icon.style.height = '24px';
+
+    const marker = new google.maps.marker.AdvancedMarkerElement({
         map: map,
-        title: hotel_name,
-        icon: PS_STORES_ICON
+        position: hotelLocation,
+        title: location.hotel_name,
+        content: icon,
     });
+
+    marker.query = location.query || null;
+    marker.latitude = hotelLocation.lat;
+    marker.longitude = hotelLocation.lng;
 
     marker.addListener('click', function() {
         let query = '';
-        if (hotel_location.map_input_text != '') {
-            query = hotel_location.map_input_text;
-        } else {
-            query = hotel_location.latitude + ',' + hotel_location.longitude;
+        if (this.query) {
+            query = this.query;
+        } else if (this.latitude && this.longitude) {
+            query = `${this.latitude},${this.longitude}`;
         }
 
-        window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(query), '_blank');
+        if (query) {
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
+        }
     });
 }
 
-$(document).ready(function() {
-    if (typeof hotel_location == 'object'
-        && $('#search-results-wrap .map-wrap').length
-        && typeof google == 'object'
-        && typeof google.maps == 'object'
-    ) {
-        initMap();
-    }
-});

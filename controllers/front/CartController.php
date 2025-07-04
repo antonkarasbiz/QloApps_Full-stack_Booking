@@ -188,7 +188,7 @@ class CartControllerCore extends FrontController
                     false,
                     false,
                     false,
-                    $idProductOption
+                    $idProductOption ? $idProductOption : null
                 );
 
             } elseif ($product->selling_preference_type == Product::SELLING_PREFERENCE_HOTEL_STANDALONE
@@ -474,7 +474,7 @@ class CartControllerCore extends FrontController
                             $finalQuantity += $quantityInCart;
                         }
                         if ($product->max_quantity && $finalQuantity > $product->max_quantity) {
-                            $this->errors[] = Tools::displayError(sprintf('You can now add more than %d quantity for this product in the cart.', $product->max_quantity));
+                            $this->errors[] = Tools::displayError(sprintf('You cannot add more than %d quantity for this product in the cart.', $product->max_quantity));
                         }
                     } else {
                         if ($id_cart) {
@@ -501,15 +501,17 @@ class CartControllerCore extends FrontController
                     if ($id_hotel) {
                         $objServiceProductCartDetail = new ServiceProductCartDetail();
                         $productCartDetail = array();
-                        if ($cartDetail = $objServiceProductCartDetail->getServiceProductsInCart(
-                            $id_cart,
-                            [$product->selling_preference_type],
-                            $id_hotel,
-                            null,
-                            null,
-                            $this->id_product
-                        )) {
-                            $productCartDetail = array_shift($cartDetail);
+                        if ($id_cart) {
+                            if ($cartDetail = $objServiceProductCartDetail->getServiceProductsInCart(
+                                (int) $id_cart,
+                                [$product->selling_preference_type],
+                                $id_hotel,
+                                null,
+                                null,
+                                $this->id_product
+                            )) {
+                                $productCartDetail = array_shift($cartDetail);
+                            }
                         }
                         if ($product->allow_multiple_quantity) {
                             $finalQuantity = $this->qty;
@@ -517,7 +519,7 @@ class CartControllerCore extends FrontController
                                 $finalQuantity += $productCartDetail['quantity'];
                             }
                             if ($product->max_quantity && $finalQuantity > $product->max_quantity) {
-                                $this->errors[] = Tools::displayError(sprintf('You can not add more than %d quantity for this product in the cart.', $product->max_quantity));
+                                $this->errors[] = Tools::displayError(sprintf('You cannot add more than %d quantity for this product in the cart.', $product->max_quantity));
                             }
                         } elseif ($productCartDetail) {
                             $this->errors[] = Tools::displayError('You can only order one quantity for this product.');

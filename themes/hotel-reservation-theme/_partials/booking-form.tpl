@@ -248,16 +248,25 @@
                             {/if}
                         {/block}
                         {block name='booking_form_service_product_quantity'}
+                            {assign var='is_out_of_stock' value=false}
+                            {assign var='max_qty_reached' value=false}
+                            {if (!$allow_oosp && $product->quantity <= 0) || !$product->available_for_order || (isset($restricted_country_mode) && $restricted_country_mode) || $PS_CATALOG_MODE}
+                                {assign var='is_out_of_stock' value=true}
+                            {else if $product->allow_multiple_quantity && !$product->max_quantity}
+                                {assign var='max_qty_reached' value=true}
+                            {/if}
+
                             {if $product->allow_multiple_quantity}
                                 <div class="row">
-                                    <div class="form-group col-sm-6" id="quantity_wanted_p"{if (!$allow_oosp && $product->quantity <= 0) || !$product->available_for_order || $PS_CATALOG_MODE} style="display: none;"{/if}>
+                                    <div class="form-group col-sm-6" id="quantity_wanted_p"{if $is_out_of_stock || $max_qty_reached} style="display: none;"{/if}>
                                         <label for="quantity_wanted_p">{l s='Quantity'}</label>
                                         {* {block name='quantity_field'}
                                             {include file="./quantity_field.tpl"}
                                         {/block} *}
 
                                             <div class="qty_container">
-                                                <input type="hidden" class="service_product_qty" id="service_product_qty" name="service_product_qty" data-id-product="{$product->id}" data-max_quantity="{if isset($product->max_quantity) && $product->max_quantity}{$product->max_quantity|escape:'html':'UTF-8'}{else}{$product->quantity}{/if}" value="{if isset($quantity)}{$quantity|intval}{else}{if $product->minimal_quantity > 1}{$product->minimal_quantity}{else}1{/if}{/if}">
+                                                <input type="hidden" class="stock_qty" id="stock_qty" name="stock_qty" data-id-product="{$product->id}" data-stock_quantity="{$product->quantity}" data-allow_oosp="{$allow_oosp}" >
+                                                <input type="hidden" class="service_product_qty" id="service_product_qty" name="service_product_qty" data-id-product="{$product->id}" data-cart_quantity="{if isset($product->cart_quantity) && $product->cart_quantity}{$product->cart_quantity}{else}0{/if}" data-max_quantity="{if isset($product->max_quantity)}{$product->max_quantity|escape:'html':'UTF-8'}{else}{$product->quantity}{/if}" value="{if isset($quantity)}{$quantity|intval}{else}{if $product->minimal_quantity > 1}{$product->minimal_quantity}{else}1{/if}{/if}">
                                                 <div class="qty_count pull-left">
                                                     <span>{if isset($quantity)}{$quantity|intval}{else}{if $product->minimal_quantity > 1}{$product->minimal_quantity}{else}1{/if}{/if}</span>
                                                 </div>
@@ -269,7 +278,7 @@
                                         <span class="clearfix"></span>
                                     </div>
                                 </div>
-                                {if $product->available_for_order}
+                                {if !$is_out_of_stock && !$max_qty_reached}
                                     <hr class="separator-hr-mg-10">
                                 {/if}
                             {else}
@@ -304,7 +313,14 @@
                                     {/block}
                                 </div>
                                 <div>
-                                    {if (!$allow_oosp && $product->quantity <= 0) || !$product->available_for_order || (isset($restricted_country_mode) && $restricted_country_mode) || $PS_CATALOG_MODE}
+                                   {if $is_out_of_stock}
+                                        <div class="sold_out_alert">
+                                            <span>{l s='Product is out of stock!'}</span>
+                                        </div>
+                                    {else if $max_qty_reached}
+                                        <div class="sold_out_alert">
+                                            <span>{l s='Max. quantity reached for cart!'}</span>
+                                        </div>
                                     {else}
                                         {block name='booking_form_book_now_button'}
                                                 <p id="add_to_cart" class="buttons_bottom_block no-print">

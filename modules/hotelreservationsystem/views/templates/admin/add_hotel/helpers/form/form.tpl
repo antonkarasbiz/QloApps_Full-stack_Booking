@@ -306,7 +306,7 @@
 								<input type="hidden" id="loclongitude" name="loclongitude" value="{if isset($edit)}{$hotel_info.longitude|escape:'htmlall':'UTF-8'}{/if}" />
 								<input type="hidden" id="locformatedAddr" name="locformatedAddr" value="{if isset($edit)}{$hotel_info.map_formated_address}{/if}" />
 								<input type="hidden" id="googleInputField" name="googleInputField" value="{if isset($edit)}{$hotel_info.map_input_text}{/if}" />
-								<input id="pac-input" class="controls" type="text" placeholder="{l s='Search' mod='hotelreservationsystem'}">
+								<div id="pac-input" class="controls" type="text"></div>
 								<div id="map"></div>
 							</div>
 						</div>

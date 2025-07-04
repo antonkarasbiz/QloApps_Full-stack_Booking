@@ -30,7 +30,7 @@
                             {l s='Here are the bank details for your check:' mod='cheque' lang=$lang}
                         </p>
                         <span style="color:#777">
-                            <span style="color:#333"><strong>{l s='Amount:' mod='cheque' lang=$lang}</strong></span> {literal}{total_paid}{/literal}<br />
+                            <span style="color:#333"><strong>{l s='Amount:' mod='cheque' lang=$lang}</strong></span> {$total_paid}<br />
                             <span style="color:#333"><strong>{l s='Payable to the order of:' mod='cheque' lang=$lang}</strong></span> {$cheque_name}<br />
                             <span style="color:#333"><strong>{l s='Please mail your check to:' mod='cheque' lang=$lang}</strong></span> {$cheque_address_html}
                         </span>

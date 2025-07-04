@@ -365,14 +365,13 @@ class OrderInvoiceCore extends ObjectModel
                 if (!isset($grouped_details[$row['id_order_detail']])) {
                     $grouped_details[$row['id_order_detail']] = array(
                         'tax_rate' => 0,
-                        'total_tax_base' => 0,
+                        'total_tax_base' => $row['total_tax_base'],
                         'total_amount' => 0,
                         'id_tax' => $row['id_tax'],
                     );
                 }
 
                 $grouped_details[$row['id_order_detail']]['tax_rate'] += $row['tax_rate'];
-                $grouped_details[$row['id_order_detail']]['total_tax_base'] += $row['total_tax_base'];
                 $grouped_details[$row['id_order_detail']]['total_amount'] += $row['total_amount'];
             }
             $details = $grouped_details;
@@ -397,7 +396,6 @@ class OrderInvoiceCore extends ObjectModel
             $breakdown[$rate]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
         }
 
-        ksort($breakdown);
         return $breakdown;
     }
 
@@ -430,14 +428,13 @@ class OrderInvoiceCore extends ObjectModel
                 if (!isset($grouped_details[$row['id_order_detail']])) {
                     $grouped_details[$row['id_order_detail']] = array(
                         'tax_rate' => 0,
-                        'total_tax_base' => 0,
+                        'total_tax_base' => $row['total_tax_base'],
                         'total_amount' => 0,
                         'id_tax' => $row['id_tax'],
                     );
                 }
 
                 $grouped_details[$row['id_order_detail']]['tax_rate'] += $row['tax_rate'];
-                $grouped_details[$row['id_order_detail']]['total_tax_base'] += $row['total_tax_base'];
                 $grouped_details[$row['id_order_detail']]['total_amount'] += $row['total_amount'];
             }
             $details = $grouped_details;
@@ -466,7 +463,6 @@ class OrderInvoiceCore extends ObjectModel
             $breakdown[$key]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
         }
 
-        ksort($breakdown);
         return $breakdown;
     }
 
@@ -494,14 +490,13 @@ class OrderInvoiceCore extends ObjectModel
                 if (!isset($grouped_details[$row['id_order_detail']])) {
                     $grouped_details[$row['id_order_detail']] = array(
                         'tax_rate' => 0,
-                        'total_tax_base' => 0,
+                        'total_tax_base' => $row['total_tax_base'],
                         'total_amount' => 0,
                         'id_tax' => $row['id_tax'],
                     );
                 }
 
                 $grouped_details[$row['id_order_detail']]['tax_rate'] += $row['tax_rate'];
-                $grouped_details[$row['id_order_detail']]['total_tax_base'] += $row['total_tax_base'];
                 $grouped_details[$row['id_order_detail']]['total_amount'] += $row['total_amount'];
             }
             $details = $grouped_details;
@@ -530,7 +525,6 @@ class OrderInvoiceCore extends ObjectModel
             $breakdown[$key]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
         }
 
-        ksort($breakdown);
         return $breakdown;
     }
 
@@ -563,14 +557,13 @@ class OrderInvoiceCore extends ObjectModel
                 if (!isset($grouped_details[$row['id_order_detail']])) {
                     $grouped_details[$row['id_order_detail']] = array(
                         'tax_rate' => 0,
-                        'total_tax_base' => 0,
+                        'total_tax_base' => $row['total_tax_base'],
                         'total_amount' => 0,
                         'id_tax' => $row['id_tax'],
                     );
                 }
 
                 $grouped_details[$row['id_order_detail']]['tax_rate'] += $row['tax_rate'];
-                $grouped_details[$row['id_order_detail']]['total_tax_base'] += $row['total_tax_base'];
                 $grouped_details[$row['id_order_detail']]['total_amount'] += $row['total_amount'];
             }
             $details = $grouped_details;
@@ -600,7 +593,6 @@ class OrderInvoiceCore extends ObjectModel
             $breakdown[$key]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
         }
 
-        ksort($breakdown);
         return $breakdown;
     }
 
@@ -632,14 +624,13 @@ class OrderInvoiceCore extends ObjectModel
                 if (!isset($grouped_details[$row['id_order_detail']])) {
                     $grouped_details[$row['id_order_detail']] = array(
                         'tax_rate' => 0,
-                        'total_tax_base' => 0,
+                        'total_tax_base' => $row['total_tax_base'],
                         'total_amount' => 0,
                         'id_tax' => $row['id_tax'],
                     );
                 }
 
                 $grouped_details[$row['id_order_detail']]['tax_rate'] += $row['tax_rate'];
-                $grouped_details[$row['id_order_detail']]['total_tax_base'] += $row['total_tax_base'];
                 $grouped_details[$row['id_order_detail']]['total_amount'] += $row['total_amount'];
             }
             $details = $grouped_details;
@@ -655,7 +646,7 @@ class OrderInvoiceCore extends ObjectModel
                     'total_price_tax_excl' => 0,
                     'total_amount' => 0,
                     'id_tax' => $row['id_tax'],
-                    'rate' => $key,
+                    'rate' => sprintf('%.3f', $row['tax_rate']),
                 );
             }
 
@@ -667,8 +658,7 @@ class OrderInvoiceCore extends ObjectModel
             $breakdown[$key]['total_price_tax_excl'] = Tools::ps_round($data['total_price_tax_excl'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
             $breakdown[$key]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
         }
-
-        ksort($breakdown);
+        
         return $breakdown;
     }
 
@@ -733,7 +723,7 @@ class OrderInvoiceCore extends ObjectModel
             $breakdown[$rate]['total_price_tax_excl'] = Tools::ps_round($data['total_price_tax_excl'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
             $breakdown[$rate]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $order->round_mode);
         }
-        ksort($breakdown);
+        
         return $breakdown;
     }
 
@@ -1046,7 +1036,7 @@ class OrderInvoiceCore extends ObjectModel
      */
     public function getRestPaid()
     {
-        return round($this->total_paid_tax_incl + $this->getSiblingTotal() - $this->getTotalPaid(), 2);
+        return Tools::ps_round($this->total_paid_tax_incl + $this->getSiblingTotal() - $this->getTotalPaid(), _PS_PRICE_COMPUTE_PRECISION_);
     }
 
     /**

@@ -127,7 +127,7 @@
 						{/if}
 						{if isset($restrictions) && $restrictions}
 							{foreach $restrictions as $key => $restriction}
-								{include file="../../../_partials/feature_price_rules.tpl" key=$key advancePriceRule=$rule}
+								{include file="../../../_partials/feature_price_rules.tpl" key=$key}
 							{/foreach}
 						{else}
 							{include file="../../../_partials/feature_price_rules.tpl" key=0 collapse=true}
