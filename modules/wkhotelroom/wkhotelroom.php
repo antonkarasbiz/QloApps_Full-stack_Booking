@@ -33,7 +33,7 @@ class WkHotelRoom extends Module
     {
         $this->name = 'wkhotelroom';
         $this->tab = 'front_office_features';
-        $this->version = '1.1.9';
+        $this->version = '1.2.0';
         $this->author = 'Webkul';
         $this->bootstrap = true;
         parent::__construct();
