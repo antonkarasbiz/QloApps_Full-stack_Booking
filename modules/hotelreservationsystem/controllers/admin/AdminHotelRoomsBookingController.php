@@ -207,7 +207,7 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
                             $this->errors[] = $this->l('Selected room is not available for reallocation.');
                         } elseif (!in_array($idRoomToReallocate, array_column($availableRooms, 'id_room'))) {
                             $this->errors[] = $this->l('Selected room is not available for reallocation.');
-                        } elseif (!Validate::isPrice($priceDiff)) {
+                        } elseif (!Validate::isFloat($priceDiff)) {
                             $this->errors[] = $this->l('Invalid price difference of the room types.');
                         }
                     } else {
@@ -910,7 +910,7 @@ class AdminHotelRoomsBookingController extends ModuleAdminController
 
                     if ($objHotelBooking->total_price_tax_excl != $newRoomTotalPrice['total_price_tax_excl']) {
                         $result['has_price_changes'] = 1;
-                        $result['price_diff'] = $newRoomTotalPrice['total_price_tax_excl'] - $objHotelBooking->total_price_tax_excl;
+                        $result['price_diff'] = Tools::ps_round((float)($newRoomTotalPrice['total_price_tax_excl'] - $objHotelBooking->total_price_tax_excl), _PS_PRICE_COMPUTE_PRECISION_);
                     }
                 }
             } else {

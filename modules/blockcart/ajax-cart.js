@@ -1300,13 +1300,13 @@ var ajaxCart = {
         $('.ajax_block_cart_total').attr('total_cart_price', jsonData.totalToPay);
 
         $('.ajax_block_room_total').text(jsonData.room_total_format);
-        if (jsonData.room_total) {
+        if (jsonData.room_total || jsonData.last_added_product.booking_product) {
             $('.ajax_block_room_total').parent().show();
         } else {
             $('.ajax_block_room_total').parent().hide();
         }
         $('.ajax_block_product_total').text(jsonData.normal_products_total_format);
-        if (jsonData.normal_products_total) {
+        if (jsonData.normal_products_total || !jsonData.last_added_product.booking_product) {
             $('.ajax_block_product_total').parent().show();
         } else {
             $('.ajax_block_product_total').parent().hide();

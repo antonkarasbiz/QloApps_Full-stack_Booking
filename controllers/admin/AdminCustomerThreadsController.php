@@ -433,7 +433,6 @@ class AdminCustomerThreadsControllerCore extends AdminController
         }
 
         if ($id_customer_thread = (int)Tools::getValue('id_customer_thread')) {
-            $ct = new CustomerThread($id_customer_thread);
             if (($id_contact = (int)Tools::getValue('id_contact'))) {
                 Db::getInstance()->execute('
 					UPDATE '._DB_PREFIX_.'customer_thread
@@ -448,6 +447,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
 					WHERE id_customer_thread = '.(int)$id_customer_thread.' LIMIT 1
 				');
             }
+            $ct = new CustomerThread($id_customer_thread);
             if ($id_employee = (int) Tools::getValue('id_employee_forward')) {
                 $messages = Db::getInstance()->getRow('
 					SELECT ct.*, cm.*, cl.name subject, CONCAT(e.firstname, \' \', e.lastname) employee_name,
