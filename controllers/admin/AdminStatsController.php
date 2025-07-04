@@ -1678,7 +1678,7 @@ class AdminStatsControllerCore extends AdminStatsTabController
 
     public static function getDistinctRoomBookingsCount($dateFrom = false, $dateTo = false, $idHotel = null, $roomBookingStatus = null)
     {
-        $sql = 'SELECT COUNT(DISTINCT hbd.`id_room`)
+        $sql = 'SELECT COUNT(DISTINCT hbd.`id_room`) AS num_rooms
         FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
         LEFT JOIN `'._DB_PREFIX_.'htl_room_information` hri
         ON (hri.`id` = hbd.`id_room`)
@@ -2438,7 +2438,7 @@ class AdminStatsControllerCore extends AdminStatsTabController
         $cacheKey = 'AdminStats::getOccupiedRoomsForDayOfTheWeek'.'_'.(int) $dow.(int) strtotime($dateFrom).
         (int) strtotime($dateTo).(!is_array($idHotel) ? (int) $idHotel : implode('_', $idHotel));
         if (!Cache::isStored($cacheKey) || !$useCache) {
-            $sql = 'SELECT SUM((full_weeks) + IF('.(int) $dow.' = dow_date_from || ('.(int) $dow.' > dow_date_from AND (dow_date_from + los - 1) > '.(int) $dow.') || (dow_date_from > '.(int) $dow.' AND ((dow_date_from + los - 1) - 7) >= '.(int) $dow.'), 1, 0)) AS total_occupied
+            $sql = 'SELECT SUM((full_weeks) + IF('.(int) $dow.' = dow_date_from OR ('.(int) $dow.' > dow_date_from AND (dow_date_from + los - 1) >= '.(int) $dow.') OR (dow_date_from > '.(int) $dow.' AND ((dow_date_from + los - 1) - 7) >= '.(int) $dow.'), 1, 0)) AS total_occupied
             FROM (
                 SELECT DAYOFWEEK(`date_from_final`) AS dow_date_from,
                 DAYOFWEEK(`date_to_final`) AS dow_date_to,

@@ -108,27 +108,34 @@
                                 </td>
                                 <td class="product_action">
                                     {* edit/delete controls *}
-                                    <div class="btn-group">
-                                        {* <button type="button" class="btn btn-default delete_product_line">
+                                     {if isset($refundReqProducts) && $refundReqProducts && $product.id_service_product_order_detail|in_array:$refundReqProducts && $product.is_cancelled}
+                                        <button href="#" class="btn btn-default delete_product_line">
                                             <i class="icon-trash"></i>
                                             {l s='Delete'}
-                                        </button> *}
-                                        <button type="button" class="btn btn-default edit_product_change_link" data-product_line_data="{$product|json_encode|escape}">
-                                            <i class="icon-pencil"></i>
-                                            {l s='Edit'}
                                         </button>
-                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                            <span class="caret"></span>
-                                        </button>
-                                        <ul class="dropdown-menu" role="menu">
-                                            <li>
-                                                <a href="#" class="delete_product_line">
-                                                    <i class="icon-trash"></i>
-                                                    {l s='Delete'}
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                    {else}
+                                        <div class="btn-group">
+                                            {* <button type="button" class="btn btn-default delete_product_line">
+                                                <i class="icon-trash"></i>
+                                                {l s='Delete'}
+                                            </button> *}
+                                            <button type="button" class="btn btn-default edit_product_change_link" data-product_line_data="{$product|json_encode|escape}">
+                                                <i class="icon-pencil"></i>
+                                                {l s='Edit'}
+                                            </button>
+                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu" role="menu">
+                                                <li>
+                                                    <a href="#" class="delete_product_line">
+                                                        <i class="icon-trash"></i>
+                                                        {l s='Delete'}
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    {/if}
                                     {* Update controls *}
                                     {* <button type="button" class="btn btn-default submitProductChange" style="display: none;">
                                         <i class="icon-ok"></i>

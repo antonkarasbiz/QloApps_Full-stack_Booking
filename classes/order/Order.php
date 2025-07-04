@@ -2520,63 +2520,261 @@ class OrderCore extends ObjectModel
 
         $order_ecotax_tax = 0;
 
-        $tax_rates = array();
-
+        $objAddress = new Address((int)$this->id_address_tax);
         foreach ($order_details as $order_detail) {
+            $tax_rates = array();
+            $groupedTaxDetails = array();
             $id_order_detail = $order_detail['id_order_detail'];
+            $id_order_slip = $order_detail['id_order_slip'] ?? 0; // Only in case of order slip
+
+            $taxesList = OrderDetail::getTaxListStatic($id_order_detail);
+            if (!$taxesList) {
+                continue;
+            }
+
             $tax_calculator = OrderDetail::getTaxCalculatorStatic($id_order_detail);
 
-            // TODO: probably need to make an ecotax tax breakdown here instead,
-            // but it seems unlikely there will be different tax rates applied to the
-            // ecotax in the same order in the real world
-            $unit_ecotax_tax = $order_detail['ecotax'] * $order_detail['ecotax_tax_rate'] / 100.0;
-            $order_ecotax_tax += $order_detail['product_quantity'] * $unit_ecotax_tax;
-
-            $discount_ratio = 0;
-
-            if ($this->total_products > 0) {
-                $discount_ratio = ($order_detail['unit_price_tax_excl'] + $order_detail['ecotax']) / $this->total_products;
-            }
-
-            // share of global discount
-            $discounted_price_tax_excl = $order_detail['unit_price_tax_excl'] - $discount_ratio * $order_discount_tax_excl;
-            // specific discount
-            if (!empty($product_specific_discounts[$order_detail['product_id']])) {
-                $discounted_price_tax_excl -= $product_specific_discounts[$order_detail['product_id']];
-            }
-
             $quantity = $order_detail['product_quantity'];
+            $unit_price_tax_excl = $order_detail['unit_price_tax_excl'];
+
+            /*
+             * Discounted taxes are intentionally not calculated here, as we do not want to display them.
+             *
+             * TODO: Consider implementing a proper ecotax breakdown if needed in future.
+             * However, it is unlikely that different tax rates would apply to ecotax within the same order.
+             *
+             *
+             * $unit_ecotax_tax = $order_detail['ecotax'] * $order_detail['ecotax_tax_rate'] / 100.0;
+             * $order_ecotax_tax += $order_detail['product_quantity'] * $unit_ecotax_tax;
+             *
+             * $discount_ratio = 0;
+             * if ($this->total_products > 0) {
+             *     $discount_ratio = ($order_detail['unit_price_tax_excl'] + $order_detail['ecotax']) / $this->total_products;
+             * }
+             *
+             * // Apply share of global discount
+             * $discounted_price_tax_excl = $order_detail['unit_price_tax_excl'] - $discount_ratio * $order_discount_tax_excl;
+             *
+             * // Apply specific product-level discount
+             * if (!empty($product_specific_discounts[$order_detail['product_id']])) {
+             *     $discounted_price_tax_excl -= $product_specific_discounts[$order_detail['product_id']];
+             * }
+             */
 
             foreach ($tax_calculator->taxes as $tax) {
                 $tax_rates[$tax->id] = $tax->rate;
             }
-            foreach ($tax_calculator->getTaxesAmount($discounted_price_tax_excl) as $id_tax => $unit_amount) {
-                $total_tax_base = 0;
-                $total_tax_base = Tools::processPriceRounding($discounted_price_tax_excl, $quantity);
-                $total_amount = Tools::processPriceRounding($unit_amount, $quantity);
 
-                if (!isset($breakdown[$id_tax])) {
-                    $breakdown[$id_tax] = array('tax_base' => 0, 'tax_amount' => 0);
+            $totalTaxBase = Tools::processPriceRounding($unit_price_tax_excl, $quantity);
+
+            // Note: Only calculate in case of Order Invoice
+            if (!$id_order_slip) {
+                if (!$order_detail['is_booking_product']) {
+                    $objServiceProductOrderDetail = new ServiceProductOrderDetail();
+                    if ($serviceProductDetail = $objServiceProductOrderDetail->getServiceProductsInOrder(
+                        $order_detail['id_order'],
+                        $id_order_detail
+                    )) {
+                        $totals = array_reduce($serviceProductDetail, function ($carry, $item) {
+                            if (!empty($item['id_tax_rules_group'])) {
+                                $qty = isset($item['quantity']) ? $item['quantity'] : 0;
+                                $price = isset($item['total_price_tax_excl']) ? $item['total_price_tax_excl'] : 0;
+        
+                                $carry['quantity'] += $qty;
+                                $carry['total_price_tax_excl'] += $price;
+                            }
+                            return $carry;
+                        }, ['quantity' => 0, 'total_price_tax_excl' => 0]);
+                        $quantity = $totals['quantity'];
+                        $totalTaxBase = $totals['total_price_tax_excl'];
+                    }
+                }
+    
+                $objServiceProductOrderDetail = new ServiceProductOrderDetail();
+                $additionalTaxAmounts = array();
+
+                if ($order_detail['is_booking_product']
+                    && ($autoAddedServiceData = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                        $order_detail['id_order'],
+                        0,
+                        0,
+                        $order_detail['product_id'],
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        Product::PRICE_ADDITION_TYPE_WITH_ROOM
+                    ))
+                ) {
+                    $autoAddedPriceExcl = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                        $order_detail['id_order'],
+                        0,
+                        0,
+                        $order_detail['product_id'],
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                        1,
+                        Product::PRICE_ADDITION_TYPE_WITH_ROOM
+                    );
+    
+                    // We are getting auto added service for specific room.There will be only on htl_booking_detail but can have multiple auto added service with room.
+                    // Note: All the auto added service with room  have same id_tax_rule group 
+                    $autoAddedServiceData = array_shift($autoAddedServiceData);
+                    $autoAddedServices = $autoAddedServiceData['additional_services'];
+    
+                    // Calculate total quantity of auto-added services
+                    $totalAutoAddedQty = array_reduce($autoAddedServices, function ($quantity, $service) {
+                        $qty = isset($service['quantity']) ? $service['quantity'] : 0;
+                        return $quantity + $qty;
+                    }, 0);
+    
+                    $firstAutoAddedService = array_shift($autoAddedServices);
+                    $idTaxRuleGroup = $firstAutoAddedService['id_tax_rules_group'];
+    
+                    // If tax group is different from order detail, add tax info separately
+                    if ($order_detail['id_tax_rules_group'] != $idTaxRuleGroup) {
+                        $autoAddedServiceTaxManager = TaxManagerFactory::getManager($objAddress, (int)$idTaxRuleGroup);
+                        $autoAddedServiceTaxCalculator = $autoAddedServiceTaxManager->getTaxCalculator();
+                        // Calculate tax for the total price
+                        $additionalTaxAmounts = $autoAddedServiceTaxCalculator->getTaxesAmount($autoAddedPriceExcl);
+                        foreach ($additionalTaxAmounts as $taxId => $amount) {
+                            $objTax = new Tax((int)$taxId);
+                            $groupedTaxDetails[$taxId] = array(
+                                'id_order_detail' => $firstAutoAddedService['id_order_detail'],
+                                'id_tax' => $taxId,
+                                'tax_rate' => $objTax->rate,
+                                'unit_tax_base' => $autoAddedPriceExcl / $totalAutoAddedQty,
+                                'total_tax_base' => $autoAddedPriceExcl,
+                                'unit_amount' => $amount,
+                                'total_amount' => Tools::processPriceRounding($amount, $totalAutoAddedQty),
+                            );
+
+                            if (!isset($breakdown[$taxId])) {
+                                $breakdown[$taxId] = array('tax_amount' => 0);
+                            }
+                            $breakdown[$taxId]['tax_amount'] += Tools::processPriceRounding($amount, $totalAutoAddedQty);
+                        }
+                    } else {
+                        // Calculate tax for the total price
+                        $additionalTaxAmounts = $tax_calculator->getTaxesAmount($autoAddedPriceExcl);
+                        $totalTaxBase += $autoAddedPriceExcl;
+                    }
                 }
 
-                $breakdown[$id_tax]['tax_base'] += $total_tax_base;
-                $breakdown[$id_tax]['tax_amount'] += $total_amount;
+                $taxBaseShare = $totalTaxBase;
 
-                $order_detail_tax_rows[] = array(
-                    'id_order_detail' => $id_order_detail,
-                    'id_tax' => $id_tax,
-                    'tax_rate' => $tax_rates[$id_tax],
-                    'unit_tax_base' => $discounted_price_tax_excl,
-                    'total_tax_base' => $total_tax_base,
-                    'unit_amount' => $unit_amount,
-                    'total_amount' => $total_amount
-                );
+                // In case of Order Invoice, we need to calculate the tax base share as there are services
+                // which have different tax group with room types. So we are using order detail tax data
+                foreach ($taxesList as $detailTax) {
+                    if ($detailTax['total_amount'] > 0) {
+                        $taxId = $detailTax['id_tax'];
+        
+                        $unitAmount = $detailTax['unit_amount'] + ($additionalTaxAmounts[$taxId] ?? 0);
+                        $totalAmount = $detailTax['total_amount'] + ($additionalTaxAmounts[$taxId] ?? 0);
+        
+                        if (!isset($groupedTaxDetails[$taxId])) {
+                            $groupedTaxDetails[$taxId] = array(
+                                'id_order_detail' => $id_order_detail,
+                                'id_tax' => $taxId,
+                                'tax_rate' => $tax_rates[$taxId],
+                                'unit_tax_base' => $unit_price_tax_excl,
+                                'total_tax_base' => $taxBaseShare,
+                                // When order cancelled order detail amount is set to 0 but not the order detail tax. So we check is there any amount where the tax can be applied otherwise tax is 0
+                                'unit_amount' => $taxBaseShare > 0 ? $unitAmount : 0,
+                                'total_amount' => $taxBaseShare > 0 ? $totalAmount : 0,
+                            );
+                        } else {
+                            if ($taxBaseShare > 0) {
+                                $groupedTaxDetails[$taxId]['unit_amount'] += $unitAmount;
+                                $groupedTaxDetails[$taxId]['total_amount'] += $totalAmount;
+                            }
+                        }
+
+                        if (!isset($breakdown[$taxId])) {
+                            $breakdown[$taxId] = array('tax_amount' => 0);
+                        }
+                        $breakdown[$taxId]['tax_amount'] += $taxBaseShare > 0 ? $totalAmount : 0;
+                    }
+                }
+            } else {
+                $taxBaseShare = $totalTaxBase;
+                $taxManager = TaxManagerFactory::getManager($objAddress, (int)$order_detail['id_tax_rules_group']);
+                $tax_calculator = $taxManager->getTaxCalculator();
+
+                foreach ($tax_calculator->getTaxesAmount($unit_price_tax_excl) as $id_tax => $unit_amount) {
+                    $total_tax_base = 0;
+                    $total_amount = Tools::processPriceRounding($unit_amount, $quantity);
+                
+                    if (!isset($groupedTaxDetails[$id_tax])) {
+                        $groupedTaxDetails[$id_tax] = array(
+                            'id_order_detail' => $id_order_detail,
+                            'id_tax' => $id_tax,
+                            'tax_rate' => $tax_rates[$id_tax],
+                            'unit_tax_base' => $unit_price_tax_excl,
+                            'total_tax_base' => $taxBaseShare,
+                            'unit_amount' => $taxBaseShare > 0 ? $unit_amount : 0,
+                            'total_amount' => $taxBaseShare > 0 ? $total_amount : 0
+                        );
+                    } else {
+                        if ($taxBaseShare > 0) {
+                            $groupedTaxDetails[$id_tax]['unit_amount'] += $unit_amount;
+                            $groupedTaxDetails[$id_tax]['total_amount'] += $total_amount;
+                        }
+                    }
+
+                    if (!isset($breakdown[$id_tax])) {
+                        $breakdown[$id_tax] = array('tax_amount' => 0);
+                    }
+                    $breakdown[$id_tax]['tax_amount'] += $taxBaseShare > 0 ? $totalAmount : 0;
+                }
             }
+
+            if (!empty($groupedTaxDetails)) {
+                foreach ($groupedTaxDetails as $item) {
+                    $order_detail_tax_rows[] = $item;
+                }
+            }
+
+            /*
+             * This tax recalculation logic is intentionally disabled.
+             * 
+             * Taxes have already been calculated and stored in the `order_detail_tax` table,
+             * so there is no need to recompute them here.
+             *
+             * foreach ($tax_calculator->getTaxesAmount($discounted_price_tax_excl) as $id_tax => $unit_amount) {
+             *     $total_tax_base = 0;
+             *     $total_tax_base = Tools::processPriceRounding($discounted_price_tax_excl, $quantity);
+             *     $total_amount = Tools::processPriceRounding($unit_amount, $quantity);
+             *
+             *     if (!isset($breakdown[$id_tax])) {
+             *         $breakdown[$id_tax] = array('tax_base' => 0, 'tax_amount' => 0);
+             *     }
+             *
+             *     $breakdown[$id_tax]['tax_base'] += $total_tax_base;
+             *     $breakdown[$id_tax]['tax_amount'] += $total_amount;
+             *
+             *     $order_detail_tax_rows[] = array(
+             *         'id_order_detail' => $id_order_detail,
+             *         'id_tax' => $id_tax,
+             *         'tax_rate' => $tax_rates[$id_tax],
+             *         'unit_tax_base' => $discounted_price_tax_excl,
+             *         'total_tax_base' => $total_tax_base,
+             *         'unit_amount' => $unit_amount,
+             *         'total_amount' => $total_amount
+             *     );
+             * }
+             */
+
         }
+
         if (!empty($order_detail_tax_rows)) {
             foreach ($breakdown as $data) {
                 $actual_total_tax += Tools::ps_round($data['tax_amount'], _PS_PRICE_COMPUTE_PRECISION_, $this->round_mode);
-                $actual_total_base += Tools::ps_round($data['tax_base'], _PS_PRICE_COMPUTE_PRECISION_, $this->round_mode);
             }
 
             $order_ecotax_tax = Tools::ps_round($order_ecotax_tax, _PS_PRICE_COMPUTE_PRECISION_, $this->round_mode);
@@ -2585,13 +2783,33 @@ class OrderCore extends ObjectModel
             if ($tax_rounding_error != 0) {
                 Tools::spreadAmount($tax_rounding_error, _PS_PRICE_COMPUTE_PRECISION_, $order_detail_tax_rows, 'total_amount');
             }
-
-            $base_rounding_error = $expected_total_base - $actual_total_base;
-            if ($base_rounding_error != 0) {
-                Tools::spreadAmount($base_rounding_error, _PS_PRICE_COMPUTE_PRECISION_, $order_detail_tax_rows, 'total_tax_base');
-            }
         }
 
+        /*
+         * The following tax adjustment logic was disabled as it is not currently in use.
+         * It was intended to handle rounding errors in tax and base amounts by spreading 
+         * the discrepancy across order detail tax rows. However, this logic is not required 
+         * due to updated tax calculation and breakdown handling.
+         */
+
+        // if (!empty($order_detail_tax_rows)) {
+        //     foreach ($breakdown as $data) {
+        //         $actual_total_tax += Tools::ps_round($data['tax_amount'], _PS_PRICE_COMPUTE_PRECISION_, $this->round_mode);
+        //         $actual_total_base += Tools::ps_round($data['tax_base'], _PS_PRICE_COMPUTE_PRECISION_, $this->round_mode);
+        //     }
+
+        //     $order_ecotax_tax = Tools::ps_round($order_ecotax_tax, _PS_PRICE_COMPUTE_PRECISION_, $this->round_mode);
+
+        //     $tax_rounding_error = $expected_total_tax - $actual_total_tax - $order_ecotax_tax;
+        //     if ($tax_rounding_error != 0) {
+        //         Tools::spreadAmount($tax_rounding_error, _PS_PRICE_COMPUTE_PRECISION_, $order_detail_tax_rows, 'total_amount');
+        //     }
+
+        //     $base_rounding_error = $expected_total_base - $actual_total_base;
+        //     if ($base_rounding_error != 0) {
+        //         Tools::spreadAmount($base_rounding_error, _PS_PRICE_COMPUTE_PRECISION_, $order_detail_tax_rows, 'total_tax_base');
+        //     }
+        // }
         return $order_detail_tax_rows;
     }
 
@@ -2717,7 +2935,7 @@ class OrderCore extends ObjectModel
                         $this->id,
                         0,
                         isset($product['id']) ? $product['id'] : 0,
-                        isset($product['id_service_product_order_detail']) ? $product['id_service_product_order_detail'] : 0,
+                        isset($product['id_service_product_order_detail']) ? $product['id_service_product_order_detail'] : 0
                     )) {
                         $refundDetail = reset($refundDetail);
                         if ($refundDetail['refunded']) {

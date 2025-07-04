@@ -231,10 +231,11 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
     {
         $breakdowns = array(
             'room_tax' => $this->getRoomTypeTaxesBreakdown(),
+            'service_products_tax' => $this->getServiceProductsTaxesBreakdown(),
             'shipping_tax' => $this->getShippingTaxesBreakdown(),
             'ecotax_tax' => $this->order_slip->getEcoTaxTaxesBreakdown(),
         );
-
+        
         foreach ($breakdowns as $type => $bd) {
             if (empty($bd)) {
                 unset($breakdowns[$type]);
@@ -298,14 +299,13 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
                 if (!isset($grouped_details[$row['id_order_detail']])) {
                     $grouped_details[$row['id_order_detail']] = array(
                         'tax_rate' => 0,
-                        'total_tax_base' => 0,
+                        'total_tax_base' => $row['total_tax_base'],
                         'total_amount' => 0,
                         'id_tax' => $row['id_tax'],
                     );
                 }
 
                 $grouped_details[$row['id_order_detail']]['tax_rate'] += $row['tax_rate'];
-                $grouped_details[$row['id_order_detail']]['total_tax_base'] += $row['total_tax_base'];
                 $grouped_details[$row['id_order_detail']]['total_amount'] += $row['total_amount'];
             }
             $details = $grouped_details;
@@ -335,8 +335,68 @@ class HTMLTemplateOrderSlipCore extends HTMLTemplateInvoice
             $breakdown[$key]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $this->order->round_mode);
         }
 
-        ksort($breakdown);
+        return $breakdown;
+    }
 
+    public function getServiceProductsTaxesBreakdown()
+    {
+        $sum_composite_taxes = !$this->useOneAfterAnotherTaxComputationMethod();
+
+        // $breakdown will be an array with tax rates as keys and at least the columns:
+        // 	- 'total_price_tax_excl'
+        // 	- 'total_amount'
+        $breakdown = array();
+        $order_detail = array_filter($this->order->products, function($v) {
+            return (!$v['is_booking_product'] && (
+                $v['selling_preference_type'] == Product::SELLING_PREFERENCE_STANDALONE
+                || $v['selling_preference_type'] == Product::SELLING_PREFERENCE_HOTEL_STANDALONE
+            ));
+        });
+
+        $details = $this->order->getProductTaxesDetails($order_detail, false);
+
+        if ($sum_composite_taxes) {
+            $grouped_details = array();
+            foreach ($details as $row) {
+                if (!isset($grouped_details[$row['id_order_detail']])) {
+                    $grouped_details[$row['id_order_detail']] = array(
+                        'tax_rate' => 0,
+                        'total_tax_base' => $row['total_tax_base'],
+                        'total_amount' => 0,
+                        'id_tax' => $row['id_tax'],
+                    );
+                }
+
+                $grouped_details[$row['id_order_detail']]['tax_rate'] += $row['tax_rate'];
+                $grouped_details[$row['id_order_detail']]['total_amount'] += $row['total_amount'];
+            }
+            $details = $grouped_details;
+        }
+        foreach ($details as $row) {
+            if (!$sum_composite_taxes) {
+                $key = $row['id_tax'];
+            } else {
+                $key = sprintf('%.3f', $row['tax_rate']);
+            }
+            if (!isset($breakdown[$key])) {
+                $breakdown[$key] = array(
+                    'total_price_tax_excl' => 0,
+                    'total_amount' => 0,
+                    'id_tax' => $row['id_tax'],
+                    'rate' => sprintf('%.3f', $row['tax_rate']),
+                );
+            }
+
+            $breakdown[$key]['total_price_tax_excl'] += $row['total_tax_base'];
+            $breakdown[$key]['total_amount'] += $row['total_amount'];
+        }
+
+        foreach ($breakdown as $key => $data) {
+            $breakdown[$key]['total_price_tax_excl'] = Tools::ps_round($data['total_price_tax_excl'], _PS_PRICE_COMPUTE_PRECISION_, $this->order->round_mode);
+            $breakdown[$key]['total_amount'] = Tools::ps_round($data['total_amount'], _PS_PRICE_COMPUTE_PRECISION_, $this->order->round_mode);
+        }
+
+        ksort($breakdown);
         return $breakdown;
     }
 
