@@ -6171,6 +6171,7 @@ class AdminOrdersControllerCore extends AdminController
                                 $objOrderDetail->product_quantity += ($newProductQuantity - $oldProductQuantity);
 
                                 $objOrderDetail->save();
+                                $this->context->cart = new Cart($objServiceProductOrderDetail->id_cart);
                                 $objOrderDetail->updateTaxAmount($order);
 
                                 if (isset($order_invoice)) {
@@ -7728,6 +7729,7 @@ class AdminOrdersControllerCore extends AdminController
                                 $specific_price->id_customer = $order->id_customer;
                                 $specific_price->id_product = $service['id'];
                                 $specific_price->id_product_attribute = 0;
+                                $specific_price->id_htl_cart_booking = $roomHtlCartInfo['id'];
                                 $specific_price->price = $service['price'];
                                 $specific_price->from_quantity = 1;
                                 $specific_price->reduction = 0;
@@ -7770,7 +7772,11 @@ class AdminOrdersControllerCore extends AdminController
                                         1,
                                         $objHotelBookingDetail->date_from,
                                         $objHotelBookingDetail->date_to,
-                                        $cart->id
+                                        $cart->id,
+                                        null,
+                                        1,
+                                        null,
+                                        $roomHtlCartInfo['id']
                                     ) / $numDays;
                                     $unitPriceTaxIncl = Product::getServiceProductPrice(
                                         (int) $product['id_product'],
@@ -7781,7 +7787,11 @@ class AdminOrdersControllerCore extends AdminController
                                         1,
                                         $objHotelBookingDetail->date_from,
                                         $objHotelBookingDetail->date_to,
-                                        $cart->id
+                                        $cart->id,
+                                        null,
+                                        1,
+                                        null,
+                                        $roomHtlCartInfo['id']
                                     ) / $numDays;
 
                                     $totalPriceChangeTaxExcl += $totalPriceTaxExcl = Tools::processPriceRounding(

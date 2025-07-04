@@ -432,7 +432,7 @@ class OrderDetailCore extends ObjectModel
         }
 
         /**
-         * Calculate service product tax separately for each room type because 
+         * Calculate service product tax separately for each room type because
          * a service product can be attached to multiple room types with different tax rules.
          */
         if (!$this->is_booking_product && isset($taxGroupInfoList) && $taxGroupInfoList) {
@@ -457,8 +457,8 @@ class OrderDetailCore extends ObjectModel
                         $numDays = 1;
                     }
 
-                    $unit_price_tax_excl = array_reduce($serviceProductData['additional_services'], function ($totalPriceTaxExcl, $item) {
-                        return $totalPriceTaxExcl + (isset($item['unit_price_tax_excl']) ? $item['unit_price_tax_excl'] : 0);
+                    $unit_price_tax_excl = array_reduce($serviceProductData['additional_services'], function ($unitPriceTaxExcl, $item) {
+                        return $unitPriceTaxExcl + (isset($item['unit_price_tax_excl']) ? $item['unit_price_tax_excl'] : 0);
                     }, 0);
 
                     $quantity = array_reduce($serviceProductData['additional_services'], function ($totalQty, $item) {
@@ -471,15 +471,15 @@ class OrderDetailCore extends ObjectModel
                     $tax_manager = TaxManagerFactory::getManager($this->vat_address, (int)$firstServiceProduct['id_tax_rules_group']);
                     $this->tax_calculator = $tax_manager->getTaxCalculator();
                 } elseif ($serviceProductData = $objServiceProductCartDetail->getServiceProductsInCart(
-                        $idCart,
-                        array(),
-                        null,
-                        null,
-                        $taxGroupInfo['id_room_type'],
-                        $this->product_id
+                    $idCart,
+                    array(),
+                    null,
+                    null,
+                    $taxGroupInfo['id_room_type'],
+                    $this->product_id
                 )) {
-                    $unit_price_tax_excl = array_reduce($serviceProductData, function ($totalPriceTaxExcl, $item) {
-                        return $totalPriceTaxExcl + (isset($item['unit_price_tax_excl']) ? $item['unit_price_tax_excl'] : 0);
+                    $unit_price_tax_excl = array_reduce($serviceProductData, function ($unitPriceTaxExcl, $item) {
+                        return $unitPriceTaxExcl + (isset($item['unit_price_tax_excl']) ? $item['unit_price_tax_excl'] : 0);
                     }, 0);
 
                     $quantity = array_reduce($serviceProductData, function ($totalQty, $item) {
@@ -494,7 +494,6 @@ class OrderDetailCore extends ObjectModel
                     ) {
                         $numDays = 1;
                     }
-
 
                     $quantity = $quantity * $numDays;
                 }
@@ -538,7 +537,7 @@ class OrderDetailCore extends ObjectModel
             }
 
             /*
-             * The logic for distributing discount proportionally across products is intentionally skipped, 
+             * The logic for distributing discount proportionally across products is intentionally skipped,
              * as we do not want to save taxes on discounted amounts.
              *
              * $ratio = $this->unit_price_tax_excl / $order->total_products;
