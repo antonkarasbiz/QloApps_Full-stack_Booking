@@ -1417,8 +1417,8 @@ class AdminControllerCore extends Controller
                     } elseif ($this->postImage($object->id) && !count($this->errors) && $this->_redirect) {
                         $parent_id = (int)Tools::getValue('id_parent', 1);
                         // Specific back redirect
-                        if ($back = Tools::getValue('back')) {
-                            $this->redirect_after = urldecode($back).'&conf=4';
+                        if (($back = Tools::secureReferrer(Tools::getValue('back'))) && $back != __PS_BASE_URI__) {
+                                $this->redirect_after=urldecode($back).'&conf=4';
                         }
                         // Specific scene feature
                         // @todo change stay_here submit name (not clear for redirect to scene ... )
