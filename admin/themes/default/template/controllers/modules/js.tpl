@@ -65,6 +65,28 @@
 		document.location.href=currentIndex+'&token='+token+'&'+action+'='+module_list.substring(1, module_list.length);
 	}
 
+	// Module bulk enable/disable
+	function update_modules_activation_bulk(action)
+	{
+		var modules = document.getElementsByName('modules');
+		var module_list = '';
+		var type = 'enabled';
+
+		for (var i = 0; i < modules.length; i++)
+		{
+			if (modules[i].checked == true)
+			{
+				module_list += '|'+modules[i].value;
+			}
+		}
+		if(action=='bulkDisable'){
+			type = 'disabled';
+		}
+
+		document.location.href=currentIndex+'&token='+token+'&bulkEnable=1&type='+type+'&modules='+module_list.substring(1, module_list.length);
+	}
+
+
 	$('document').ready( function() {
 		// ScrollTo
 		if (anchor != '')

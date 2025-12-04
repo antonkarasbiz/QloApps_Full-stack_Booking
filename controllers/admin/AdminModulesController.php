@@ -1066,6 +1066,49 @@ class AdminModulesControllerCore extends AdminController
         }
     }
 
+    public function postProcessBulkEnable()
+    {
+        if ($this->tabAccess['edit'] === 1) {
+
+            $modules = Tools::getValue('modules');
+            $module_status = Tools::getValue('type');
+
+            if (!empty($modules)) {
+
+                $modules = strip_tags($modules);
+                $modules = explode('|', $modules);
+
+                if (!is_array($modules)) {
+                    $modules = (array)$modules;
+                }
+                if (is_array($modules)) {
+                    foreach ($modules as $module_name) {
+                        $module = Module::getInstanceByName($module_name);
+                        if (Validate::isLoadedObject($module)) {
+                            if (!$module->getPermission('configure')) {
+                                $this->errors[] = Tools::displayError('You do not have the permission to use this module ') . ': ' . $module->displayName;
+                            } else {
+                                if($module_status == 'enabled') {
+                                    $module->enable();
+                                } else {
+                                    $module->disable();
+                                }
+                            }
+                        } else {
+                            $this->errors[] = Tools::displayError('Cannot load the module\'s object ') . ': ' . $module_name;
+                        }
+                    }
+                    if(!count($this->errors)) {
+                        Configuration::updateValue('PS_SHOW_ENABLED_MODULES_' . (int)$this->id_employee, $module_status);
+                        Tools::redirectAdmin($this->getCurrentUrl('bulkEnable'));
+                    }
+                }
+            }
+        } else {
+            $this->errors[] = Tools::displayError('You do not have permission to add this.');
+        }
+    }
+
     protected function getModulesByInstallation($tab_modules_list = null)
     {
         // $all_modules = Module::getModulesOnDisk(true, $this->logged_on_addons, $this->id_employee);
@@ -1129,7 +1172,7 @@ class AdminModulesControllerCore extends AdminController
 
         // Execute filter or callback methods
         $filter_methods = array('filterModules', 'resetFilterModules', 'filterCategory', 'unfilterCategory');
-        $callback_methods = array('reset', 'download', 'enable', 'delete', 'enable_device', 'disable_device');
+        $callback_methods = array('reset', 'download', 'enable', 'delete', 'enable_device', 'disable_device', 'bulkEnable');
         $post_process_methods_list = array_merge((array)$filter_methods, (array)$callback_methods);
         foreach ($post_process_methods_list as $ppm) {
             if (Tools::isSubmit($ppm)) {

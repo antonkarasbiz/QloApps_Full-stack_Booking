@@ -191,11 +191,18 @@
 		</button>
 		<ul class="dropdown-menu">
 			<li>
-			 	<a href="#" onclick="modules_management('install')">
-					<i class="icon-plus-sign-alt"></i>&nbsp;
-					{l s='Install the selection'}
+				<a href="#" onclick="update_modules_activation_bulk('bulkEnable')">
+					<i class="icon-power-off text-success"></i>&nbsp;
+					{l s='Enable selection'}
 				</a>
 			</li>
+			<li>
+				<a href="#" onclick="update_modules_activation_bulk('bulkDisable')">
+					<i class="icon-power-off text-danger"></i>&nbsp;
+					{l s='Disable selection'}
+				</a>
+			</li>
+			<li class="divider"></li>
 			<li>
 				<a href="#" onclick="modules_management('uninstall')">
 					<i class="icon-minus-sign-alt"></i>&nbsp;
