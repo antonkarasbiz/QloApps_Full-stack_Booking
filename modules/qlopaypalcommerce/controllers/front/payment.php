@@ -123,7 +123,7 @@ class QloPaypalCommercePaymentModuleFrontController extends ModuleFrontControlle
                             $paypalOrderID = $returnData['data']['id'];
 
                             // Save order data
-                            $this->saveOrderData($returnData);
+                            $transaction_id = $this->saveOrderData($returnData);
                             if ($paypalOrderID) {
                                 $currency = $this->context->currency;
                                 $total = (float)$cart->getOrderTotal(true, Cart::BOTH);
@@ -144,6 +144,7 @@ class QloPaypalCommercePaymentModuleFrontController extends ModuleFrontControlle
                                     $orderStatus = Configuration::get('PS_OS_AWAITING_PAYMENT');
                                 }
 
+                                $extraVars['transaction_id'] = $transaction_id;
                                 // create order for the payment
                                 $this->module->validateOrder(
                                     $cart->id,
@@ -151,7 +152,7 @@ class QloPaypalCommercePaymentModuleFrontController extends ModuleFrontControlle
                                     $total,
                                     $this->module->l('PayPal Checkout', 'payment'),
                                     null,
-                                    null,
+                                    $extraVars,
                                     (int)$currency->id,
                                     false,
                                     $customer->secure_key
@@ -226,6 +227,7 @@ class QloPaypalCommercePaymentModuleFrontController extends ModuleFrontControlle
     // Save order data
     private function saveOrderData($orderData)
     {
+        $transaction_id = '-';
         if ($orderData) {
             $purchaseUnits = $orderData['data']['purchase_units'];
             foreach ($purchaseUnits as $purchase) {
@@ -264,11 +266,9 @@ class QloPaypalCommercePaymentModuleFrontController extends ModuleFrontControlle
                 $orderObj->order_date = date('Y-m-d H:i:s');
                 $orderObj->save();
             }
-
-            return true;
         }
 
-        return false;
+        return $transaction_id;
     }
 
     // Create order data to send to PayPal
