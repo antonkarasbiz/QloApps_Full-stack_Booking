@@ -59,6 +59,17 @@ class QloDuitkuPaymentCallBackModuleFrontController extends ModuleFrontControlle
                 $this->context->currency = new Currency($id_currency);
 
                 $objDuitkuTransaction = new QdpDuitkuTransaction();
+
+                $res = $objDuitkuTransaction->checkExists($reference);
+                $this->module->logger->log('Fetch transaction', FileLogger::DEBUG);
+                $this->module->logger->log($res, FileLogger::DEBUG);
+
+                if (is_array($res) && !empty($res['id_duitku_payment_transaction'])) {
+                    $objDuitkuTransaction = new QdpDuitkuTransaction((int)$res['id_duitku_payment_transaction']);
+                } else {
+                    $objDuitkuTransaction = new QdpDuitkuTransaction();
+                }
+
                 $objDuitkuTransaction->id_transaction = $reference;
                 $objDuitkuTransaction->environment = Configuration::get('QDP_DUITKU_PAYMENT_ENVIRONMENT');
                 $objDuitkuTransaction->id_cart = (int) $idCart;
@@ -90,15 +101,7 @@ class QloDuitkuPaymentCallBackModuleFrontController extends ModuleFrontControlle
 
                 $objDuitkuTransaction->status = $transactionStatus;
 
-                $res = $objDuitkuTransaction->checkExists($objDuitkuTransaction->id_transaction);
-                if (!$res) {
-                    $this->module->logger->log('Saving transaction', FileLogger::DEBUG);
-                    $objDuitkuTransaction->save();
-                } else {
-                    $this->module->logger->log('Updating transaction', FileLogger::DEBUG);
-                    $objDuitkuTransaction->id = $res['id_duitku_payment_transaction'];
-                    $objDuitkuTransaction->update();
-                }
+                $objDuitkuTransaction->save();
 
                 $extraVars = array();
 
@@ -113,7 +116,7 @@ class QloDuitkuPaymentCallBackModuleFrontController extends ModuleFrontControlle
                         while (1) {
                             sleep(1);
 
-                            if ($objCart->OrderExists() == true) {
+                            if ($objCart->OrderExists()) {
                                 $objDuitkuTransaction->removeCartLock($idCart);
                                 $allOrders = Order::getAllOrdersByCartId($idCart);
                                 $this->module->logger->log('Orders.', FileLogger::INFO);
