@@ -184,11 +184,11 @@ class StatsRegistrations extends ModuleGraph
     {
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($this->query.$this->getDate());
         foreach ($result as $row) {
-            $days = (int)Tools::substr($row['date_add'], 0, 4);
-            if (!isset($this->_values[$days])) {
-                $this->_values[$days] = 0;
+            $year = (int)Tools::substr($row['date_add'], 0, 4);
+            if (!isset($this->_values[$year])) {
+                $this->_values[$year] = 0;
             }
-            $this->_values[$days]++;
+            $this->_values[$year]++;
         }
     }
 
