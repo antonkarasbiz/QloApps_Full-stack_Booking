@@ -2591,6 +2591,21 @@ class HotelBookingDetail extends ObjectModel
         return Db::getInstance()->executeS($sql);
     }
 
+    public function getActiveRoomsCountByOrder($id_order)
+    {
+        $sql = 'SELECT COUNT(*)
+                FROM `'._DB_PREFIX_.'htl_booking_detail`
+                WHERE `id_order` = '.(int)$id_order.'
+                AND `is_refunded` = 0
+                AND `is_back_order` = 0
+                AND `id_status` IN ('
+                    .HotelBookingDetail::STATUS_CHECKED_IN.','.
+                    HotelBookingDetail::STATUS_ALLOTED.'
+                )';
+
+        return (int) Db::getInstance()->getValue($sql);
+    }
+
     public function updateHotelCartHotelOrderOnOrderEdit(
         $idOrder,
         $idRoom,
