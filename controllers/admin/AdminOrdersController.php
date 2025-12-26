@@ -3593,7 +3593,7 @@ class AdminOrdersControllerCore extends AdminController
 
             $messages = array_merge($customerMessages, $messages);
             usort($messages, function ($a, $b) {
-                return strtotime($a['date_add']) < strtotime($b['date_add']);
+                return (strtotime($a['date_add']) < strtotime($b['date_add'])) ? 1 : -1;
             });
         }
 
