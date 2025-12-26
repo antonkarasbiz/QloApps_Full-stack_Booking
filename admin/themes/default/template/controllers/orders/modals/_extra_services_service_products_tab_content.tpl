@@ -279,9 +279,7 @@
 						</td>
                         <td class="text-center">
                             {if isset($service['allow_multiple_quantity']) && $service['allow_multiple_quantity']}
-                                <div class="qty_container">
-                                    <input type="number" class="form-control qty" min="1"  value="{$service['quantity']|escape:'html':'UTF-8'}" disabled="disabled"/>
-                                </div>
+                                {$service['quantity']}
                             {else}
                                 {l s='--'}
                             {/if}
