@@ -3111,7 +3111,7 @@ class AdminProductsControllerCore extends AdminController
                 $this->displayWarning($this->l('You must save the room type in this shop before managing hotel configuration.'));
             }
         } else {
-            $this->displayWarning($this->l('You must save this room type before managing hotel configuration.'));
+            $this->displayWarning($this->l('You must save this room type before managing rooms.'));
         }
 
         $this->tpl_form_vars['custom_form'] = $data->fetch();
