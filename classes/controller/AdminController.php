@@ -876,13 +876,9 @@ class AdminControllerCore extends Controller
         $filters = array();
         if (isset($this->list_id)) {
             foreach ($_POST as $key => $value) {
-                // only process the filter fields.
-                if (stripos($key, $this->list_id.'Filter_') !== 0) {
-                    continue;
-                }
 
                 if (is_array($value)) {
-                    if ($value[0] === '' && $value[1] === '') {
+                    if (isset($value[0], $value[1]) && $value[0] === '' && $value[1] === '') {
                         $value = '';
                     } else {
                         $value = json_encode($value);
@@ -899,13 +895,9 @@ class AdminControllerCore extends Controller
             }
 
             foreach ($_GET as $key => $value) {
-                // only process the filter fields.
-                if (stripos($key, $this->list_id.'Filter_') !== 0) {
-                    continue;
-                }
 
                 if (is_array($value)) {
-                    if ($value[0] === '' && $value[1] === '') {
+                    if (isset($value[0], $value[1]) && $value[0] === '' && $value[1] === '') {
                         $value = '';
                     } else {
                         $value = json_encode($value);
