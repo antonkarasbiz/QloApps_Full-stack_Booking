@@ -2023,6 +2023,14 @@ class AdminProductsControllerCore extends AdminController
         if (($error = $this->object->validateFieldsLang(false, true)) !== true) {
             $this->errors[] = $error;
         }
+        if(!count($this->errors)){
+        $objHotelRoomType = new HotelRoomType();
+        $roomTypeInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($this->object->id);
+        $objHotelBranchInformation = new HotelBranchInformation((int)$roomTypeInfo['id_hotel']);
+        if(!$objHotelBranchInformation->active){
+            $this->errors[] = $this->l('Enable the hotel first to update status.');
+            }
+        }
 
         if (count($this->errors)) {
             return false;
