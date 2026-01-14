@@ -147,7 +147,7 @@ var QhrReviewImages = {
         reader.readAsDataURL(file);
     },
     removeFile: function(iInput, iFile) {
-        var input = $('.images-field input.input-images').get(iInput);
+        var input = $('.images-field input.input-images').eq(iInput);
         var files = $(input).get(0).files;
         var dataTransfer = new DataTransfer();
         $(files).each(function(iiFile, file) {
@@ -155,7 +155,10 @@ var QhrReviewImages = {
                 dataTransfer.items.add(file);
             }
         });
-        input.files = dataTransfer.files;
+        input.get(0).files = dataTransfer.files;
+        if (input.get(0).files.length === 0) {
+            input.remove();
+        }
     },
     resetPreviews: function() {
         $('.previews-wrap').html('');
