@@ -29,6 +29,11 @@
  */
 class AdminPerformanceControllerCore extends AdminController
 {
+    public const DEBUG_MODE_SUCCEEDED = 0;
+    public const DEBUG_MODE_ERROR_NO_READ_ACCESS = 1;
+    public const DEBUG_MODE_ERROR_NO_WRITE_ACCESS = 2;
+    public const DEBUG_MODE_ERROR_NO_DEFINITION_FOUND = 3;
+
     public function __construct()
     {
         $this->bootstrap = true;
@@ -171,6 +176,24 @@ class AdminPerformanceControllerCore extends AdminController
                 ),
                 array(
                     'type' => 'switch',
+                    'label' => $this->l('Debug mode'),
+                    'name' => 'debug_mode',
+                    'class' => 't',
+                    'is_bool' => true,
+                    'values' => array(
+                        array(
+                            'value' => 1,
+                            'label' => $this->l('Enabled')
+                        ),
+                        array(
+                            'value' => 0,
+                            'label' => $this->l('Disabled')
+                        )
+                    ),
+                    'hint' => $this->l('Enable or disable debug mode. Debug mode will enable extended error reporting.')
+                ),
+                array(
+                    'type' => 'switch',
                     'label' => $this->l('Disable all overrides'),
                     'name' => 'overrides',
                     'class' => 't',
@@ -196,6 +219,7 @@ class AdminPerformanceControllerCore extends AdminController
         );
 
         $this->fields_value['native_module'] = Configuration::get('PS_DISABLE_NON_NATIVE_MODULE');
+        $this->fields_value['debug_mode'] = _PS_MODE_DEV_;
         $this->fields_value['overrides'] = Configuration::get('PS_DISABLE_OVERRIDES');
     }
 
@@ -885,6 +909,14 @@ class AdminPerformanceControllerCore extends AdminController
         if (Tools::isSubmit('submitAddconfiguration')) {
             Configuration::updateGlobalValue('PS_DISABLE_NON_NATIVE_MODULE', (int)Tools::getValue('native_module'));
             Configuration::updateGlobalValue('PS_DISABLE_OVERRIDES', (int)Tools::getValue('overrides'));
+
+            $debugValue = ((int) Tools::getValue('debug_mode') === (int)1) ? 'true' : 'false';
+            $result = $this->changePsModeDevValue($debugValue);
+
+            if ($result !== self::DEBUG_MODE_SUCCEEDED) {
+                $this->errors[] = $this->l('Unable to update debug mode. Please check file permissions.');
+            }
+
             Tools::generateIndex();
         }
 
@@ -892,6 +924,42 @@ class AdminPerformanceControllerCore extends AdminController
             Hook::exec('action'.get_class($this).ucfirst($this->action).'After', array('controller' => $this, 'return' => ''));
             Tools::redirectAdmin(self::$currentIndex.'&token='.Tools::getValue('token').'&conf=4');
         }
+    }
+
+    public function changePsModeDevValue($value)
+    {
+        if ($this->isDefinesReadable()) {
+            return $this->updateDebugModeValueInMainFile($value);
+        }
+
+        return self::DEBUG_MODE_ERROR_NO_READ_ACCESS;
+    }
+
+    public function isDefinesReadable()
+    {
+        return is_readable(_PS_ROOT_DIR_ . '/config/defines.inc.php');
+    }
+
+    public function updateDebugModeValueInMainFile($value)
+    {
+        $filename = _PS_ROOT_DIR_ . '/config/defines.inc.php';
+        $cleanedFileContent = php_strip_whitespace($filename);
+        $fileContent = Tools::file_get_contents($filename);
+
+        if (!preg_match('/define\(\'_PS_MODE_DEV_\', ([a-zA-Z]+)\);/Ui', $cleanedFileContent)) {
+            return self::DEBUG_MODE_ERROR_NO_DEFINITION_FOUND;
+        }
+
+        $fileContent = preg_replace('/define\(\'_PS_MODE_DEV_\', ([a-zA-Z]+)\);/Ui', 'define(\'_PS_MODE_DEV_\', ' . $value . ');', $fileContent);
+        if (!@file_put_contents($filename, $fileContent)) {
+            return self::DEBUG_MODE_ERROR_NO_WRITE_ACCESS;
+        }
+
+        if (function_exists('opcache_invalidate')) {
+            @opcache_invalidate($filename);
+        }
+
+        return self::DEBUG_MODE_SUCCEEDED;
     }
 
     public function displayAjaxTestServer()
