@@ -139,7 +139,7 @@
 			<div class="col-sm-5">
 				<select name="id_hotel" id="hotel_place" class="form-control chosen">
 					{foreach from=$htl_info item=htl_dtl}
-						<option value="{$htl_dtl['id']}" >{$htl_dtl['hotel_name']}</option>
+						<option value="{$htl_dtl['id_hotel']}" >{$htl_dtl['hotel_name']}</option>
 					{/foreach}
 				</select>
 				<p class="help-block">{l s='Hotel once assigned cannot be reassigned'}</p>
