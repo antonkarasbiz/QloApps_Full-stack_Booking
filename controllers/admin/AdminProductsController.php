@@ -3064,7 +3064,7 @@ class AdminProductsControllerCore extends AdminController
         if ($obj->id) {
             if ($this->product_exists_in_shop) {
                 $objHotelInfo = new HotelBranchInformation();
-                $hotelInfo = $objHotelInfo->hotelsNameAndId();
+                $hotelInfo = HotelBranchInformation::getProfileAccessedHotels($this->context->employee->id_profile, 1);
                 if ($hotelInfo) {
                     $objRoomInfo = new HotelRoomInformation();
                     $roomStatus = $objRoomInfo->getAllRoomStatus();
