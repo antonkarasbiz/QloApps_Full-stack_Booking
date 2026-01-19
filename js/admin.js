@@ -168,15 +168,6 @@ function updateFriendlyURLByName()
 	$('#friendly-url_' + id_language).html($('#link_rewrite_' + id_language).val());
 }
 
-function updateFriendlyURL()
-{
-	var link = $('#link_rewrite_' + id_language);
-	if (link[0])
-	{
-		$('#friendly-url_' + id_language).text(str2url($('#link_rewrite_' + id_language).val(), 'UTF-8'));
-	}
-}
-
 function updateLinkRewrite()
 {
 	$('#name_' + id_language).val($.trim($('#name_' + id_language).val()));

@@ -401,6 +401,16 @@
 							{/foreach}
 						</div>
 					</div>
+					{include file="controllers/products/seo_preview.tpl"
+						languages = $languages
+						preview_link = $rewrite_url|default:''
+						inputs = [
+    						'meta_title' => $meta_title_info,
+    						'meta_description' => $meta_description_info,
+    						'link_rewrite' => $link_rewrite_info,
+							'meta_keywords' => $meta_keywords_info
+						]
+					}
 					{hook h='displayAdminAddHotelFormSeoTabAfter' id_hotel=$hook_arg_id_hotel}
 				</div>
 				<div class="tab-pane" id="hotel-images">

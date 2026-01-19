@@ -91,16 +91,11 @@
 			<button type="button" class="btn btn-default" id="generate-friendly-url" onmousedown="updateFriendlyURLByName();"><i class="icon-random"></i> {l s='Generate'}</button>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col-lg-9 col-lg-offset-3">
-			{foreach from=$languages item=language}
-			<div class="alert alert-warning translatable-field lang-{$language.id_lang}">
-				<i class="icon-link"></i> {l s='The product link will look like this:'}<br/>
-				<strong>{if isset($rewritten_links[$language.id_lang][0])}{$rewritten_links[$language.id_lang][0]|escape:'html':'UTF-8'}{/if}<span id="friendly-url_{$language.id_lang}">{if isset($product->id)}{$product->link_rewrite[$language.id_lang]|escape:'html':'UTF-8'}{/if}</span>{if isset($rewritten_links[$language.id_lang][1])}{$rewritten_links[$language.id_lang][1]|escape:'html':'UTF-8'}{/if}</strong>
-			</div>
-			{/foreach}
-		</div>
-	</div>
+	{include file="controllers/products/seo_preview.tpl"
+    	languages = $languages
+   		preview_link = $rewritten_links|default:''
+   		inputs = ['meta_title'=>$product->meta_title ,'meta_description' => $product->meta_description,'link_rewrite' => $product->link_rewrite]
+	}
 	<div class="panel-footer">
 		<a href="{$link->getAdminLink('AdminNormalProducts')|escape:'html':'UTF-8'}{if isset($smarty.request.page) && $smarty.request.page > 1}&amp;submitFilterproduct={$smarty.request.page|intval}{/if}" class="btn btn-default"><i class="process-icon-cancel"></i> {l s='Cancel'}</a>
 		<button type="submit" name="submitAddproduct" class="btn btn-default pull-right" disabled="disabled"><i class="process-icon-loading"></i> {l s='Save'}</button>

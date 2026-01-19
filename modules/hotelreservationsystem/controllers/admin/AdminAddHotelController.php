@@ -209,7 +209,21 @@ class AdminAddHotelController extends ModuleAdminController
         } else {
             $idCountry = Tools::getValue('hotel_country');
         }
-
+        //Rewrite Url
+        if (Configuration::get('PS_REWRITING_SETTINGS')) {
+            $objHotelInfo = new HotelBranchInformation((int) Tools::getValue('id'));
+            $idHotelCategory = (int) $objHotelInfo->id_category;
+            $smartyVars['rewrite_url'] = [];
+            if (!empty($smartyVars['languages'])) {
+                foreach ($smartyVars['languages'] as $lang) {
+                    $idLang = (int) $lang['id_lang'];
+                    $category = new Category($idHotelCategory, $idLang);
+                    $fullUrl = $this->context->link->getCategoryLink($category, null, $idLang);
+                    $trimmedUrl = preg_replace('/(\/\d+-).*/', '$1', $fullUrl);
+                    $smartyVars['rewrite_url'][$idLang] = $trimmedUrl;
+                }
+            }
+        }
         // manage state option
         $stateOptions = null;
         if ($idCountry) {
