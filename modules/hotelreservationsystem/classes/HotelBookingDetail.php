@@ -3781,4 +3781,128 @@ class HotelBookingDetail extends ObjectModel
 
         return parent::add($auto_date, $null_values);
     }
+       //Datewise Booking Data
+    public function getDateWiseBooking($dateFrom, $dateTo, $idHotel)
+    {
+        $objBookingDetail = new HotelBookingDetail();
+        if ($dateFrom == $dateTo) {
+            $dateTo = date('Y-m-d', strtotime($dateTo . ' +1 day'));
+        }
+        $bookingParams = [
+            'date_from'       => $dateFrom,
+            'date_to'         => $dateTo,
+            'search_available'=> 1,
+            'search_partial'  => 1,
+            'search_booked'   => 1,
+            'search_unavai'   => 1,
+            'hotel_id'        => $idHotel,
+        ];
+        $bookingData      = $objBookingDetail->getBookingData($bookingParams);
+        $bookedDates      = [];
+        $unavailableDates = [];
+        if (!empty($bookingData['rm_data'])) {
+            foreach ($bookingData['rm_data'] as $key => $roomType) {
+                // get all rooms of room type
+                $rooms = HotelRoomInformation::getHotelRoomsInfo(
+                    $bookingParams['hotel_id'],
+                    $roomType['id_product']
+                );
+                foreach ($rooms ?: [] as $room) {
+                    $bookingData['rm_data'][$key]['all_rooms'][$room['id']] = [
+                        'id_room'  => $room['id'],
+                        'room_num' => $room['room_num'],
+                    ];
+                }
+                // booked rooms date mapping
+                foreach ($roomType['data']['booked'] ?: [] as $bookedRoom) {
+                    foreach ($bookedRoom['detail'] as $detail) {
+                        for (
+                            $d = date('Y-m-d', strtotime($detail['date_from']));
+                            $d < date('Y-m-d', strtotime($detail['date_to']));
+                            $d = date('Y-m-d', strtotime('+1 day', strtotime($d)))
+                        ) {
+                            $bookedDates[$d][$roomType['id_product']][$bookedRoom['id_room']] =
+                                $bookedRoom['id_room'];
+                        }
+                    }
+                }
+                // unavailable rooms date mapping
+                foreach ($roomType['data']['unavailable'] ?: [] as $unavailableRoom) {
+                    foreach ($unavailableRoom['detail'] as $detail) {
+                        for (
+                            $d = date('Y-m-d', strtotime($detail['date_from']));
+                            $d < date('Y-m-d', strtotime($detail['date_to']));
+                            $d = date('Y-m-d', strtotime('+1 day', strtotime($d)))
+                        ) {
+                            $unavailableDates[$d][$roomType['id_product']][$unavailableRoom['id_room']] =
+                                $unavailableRoom['id_room'];
+                        }
+                    }
+                }
+            }
+        }
+        $response = [
+            'data'  => [],
+            'stats' => [
+                'total_rooms'  => 0,
+                'available'    => 0,
+                'booked'       => 0,
+                'unavailable'  => 0,
+            ],
+        ];
+        for (
+            $currentDate = date('Y-m-d', strtotime($dateFrom));
+            $currentDate < date('Y-m-d', strtotime($dateTo));
+            $currentDate = date('Y-m-d', strtotime('+1 day', strtotime($currentDate)))
+        ) {
+            $nextDate = date('Y-m-d', strtotime('+1 day', strtotime($currentDate)));
+
+            $dateWiseInfo = [
+                'id_hotel'  => $idHotel,
+                'date_from' => $currentDate,
+                'date_to'   => $nextDate,
+                'room_types'=> [],
+            ];
+            foreach ($bookingData['rm_data'] ?: [] as $roomType) {
+                $allRooms = $roomType['all_rooms'] ?: [];
+                // available initially all rooms
+                $available = $allRooms;
+                $booked    = [];
+                $unavai    = [];
+                // remove booked
+                if (!empty($bookedDates[$currentDate][$roomType['id_product']])) {
+                    $booked = array_intersect_key(
+                        $allRooms,
+                        $bookedDates[$currentDate][$roomType['id_product']]
+                    );
+                    $available = array_diff_key($available, $booked);
+                }
+                // remov unavailable
+                if (!empty($unavailableDates[$currentDate][$roomType['id_product']])) {
+                    $unavai = array_intersect_key(
+                        $allRooms,
+                        $unavailableDates[$currentDate][$roomType['id_product']]
+                    );
+                    $available = array_diff_key($available, $unavai);
+                }
+                $response['stats']['available']   += count($available);
+                $response['stats']['booked']      += count($booked);
+                $response['stats']['unavailable'] += count($unavai);
+                $response['stats']['total_rooms'] += count($allRooms);
+
+                $dateWiseInfo['room_types'][] = [
+                    'id_room_type' => $roomType['id_product'],
+                    'name'         => $roomType['name'],
+                    'rooms'        => [
+                        'available'   => $available,
+                        'booked'      => $booked,
+                        'unavailable' => $unavai,
+                    ],
+                ];
+            }
+            $response['data'][] = $dateWiseInfo;
+        }
+
+        return$response;
+    }
 }
