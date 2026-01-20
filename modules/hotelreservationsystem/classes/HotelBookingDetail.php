@@ -1815,7 +1815,7 @@ class HotelBookingDetail extends ObjectModel
                 $context = Context::getContext();
                 foreach ($avail_rooms as $roomInfo) {
                     $objProduct = new Product($roomInfo['id_product'], false, $context->language->id);
-                    if($objProduct->active){
+                    if(Validate::isLoadedObject($objProduct) && $objProduct->active){
                         $availableRoomTypes[$roomInfo['id_product']]['id_product'] = $roomInfo['id_product'];
                         $availableRoomTypes[$roomInfo['id_product']]['room_type_name'] = $objProduct->name;
                         $availableRoomTypes[$roomInfo['id_product']]['rooms'][] = $roomInfo;
