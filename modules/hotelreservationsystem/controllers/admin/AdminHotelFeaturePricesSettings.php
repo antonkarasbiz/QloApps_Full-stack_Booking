@@ -219,6 +219,56 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
 
     }
 
+    public function processBulkEnableSelection()
+    {
+        if (!is_array($this->boxes) || empty($this->boxes)) {
+            return parent::processBulkEnableSelection();
+        }
+
+        $objFeaturePriceRule = new HotelRoomTypeFeaturePricingRestriction();
+        $result = true;
+
+        foreach ($this->boxes as $id) {
+            $objFeaturePricing = new $this->className((int)$id);
+
+            if ($objFeaturePricing->active) {
+                continue;
+            }
+
+            if (
+                $objFeaturePricing->getDuplicateRestrictions(
+                    $objFeaturePricing->id_product,
+                    $objFeaturePricing->getGroups($objFeaturePricing->id),
+                    $objFeaturePricing->id,
+                    $objFeaturePriceRule->getRestrictionsByIdFeaturePrice($objFeaturePricing->id),
+                )
+            ) {
+                $this->errors[] = sprintf(
+                    $this->l('Advanced price rule ID %d: Another advanced price rule with similar conditions already exists. Please update the existing rule before enabling this one.'),
+                    (int) $id
+                );
+                return;
+            }
+
+            $objFeaturePricing->setFieldsToUpdate(array('active' => true));
+            $objFeaturePricing->active = 1;
+            $isUpdated = (bool) $objFeaturePricing->update();
+            $result &= $isUpdated;
+
+            if (!$isUpdated) {
+                $this->errors[] = sprintf($this->l('Can\'t update #%d status.'), (int) $id);
+            }
+        }
+
+        if ($result) {
+            $this->redirect_after = self::$currentIndex.'&conf=5&token='.$this->token;
+        } else {
+            $this->errors[] = $this->l('An error occurred while updating the status.');
+        }
+
+        return $result;
+    }
+
     public function initToolbar()
     {
         parent::initToolbar();
