@@ -1814,10 +1814,12 @@ class HotelBookingDetail extends ObjectModel
                 $availableRoomTypes = array();
                 $context = Context::getContext();
                 foreach ($avail_rooms as $roomInfo) {
-                    $availableRoomTypes[$roomInfo['id_product']]['id_product'] = $roomInfo['id_product'];
                     $objProduct = new Product($roomInfo['id_product'], false, $context->language->id);
-                    $availableRoomTypes[$roomInfo['id_product']]['room_type_name'] = $objProduct->name;
-                    $availableRoomTypes[$roomInfo['id_product']]['rooms'][] = $roomInfo;
+                    if($objProduct->active){
+                        $availableRoomTypes[$roomInfo['id_product']]['id_product'] = $roomInfo['id_product'];
+                        $availableRoomTypes[$roomInfo['id_product']]['room_type_name'] = $objProduct->name;
+                        $availableRoomTypes[$roomInfo['id_product']]['rooms'][] = $roomInfo;
+                    }
                 }
 
                 return $availableRoomTypes;
