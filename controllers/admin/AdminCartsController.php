@@ -644,6 +644,7 @@ class AdminCartsControllerCore extends AdminController
                     $message->message = $message_content;
                     $message->id_cart = (int)$this->context->cart->id;
                     $message->id_customer = (int)$this->context->cart->id_customer;
+                    $message->private = 1;
                     $message->save();
                 }
             } elseif (Validate::isLoadedObject($message)) {

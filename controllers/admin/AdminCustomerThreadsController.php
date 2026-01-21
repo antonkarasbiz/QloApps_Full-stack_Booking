@@ -90,6 +90,14 @@ class AdminCustomerThreadsControllerCore extends AdminController
                 'align' => 'center',
                 'class' => 'fixed-width-xs'
             ),
+            'id_order' => array(
+                'title' => $this->l('ID Order'),
+                'filter_key' => 'a!id_order',
+                'align' => 'center',
+                'optional' => true,
+                'callback' => 'getOrderLink',
+                'visible_default' => true,
+            ),
             'customer' => array(
                 'title' => $this->l('Customer'),
                 'filter_key' => 'customer',
@@ -171,13 +179,6 @@ class AdminCustomerThreadsControllerCore extends AdminController
                 'havingFilter' => true,
                 'type' => 'datetime',
                 'optional' => true,
-            ),
-            'id_order' => array(
-                'title' => $this->l('ID Order'),
-                'filter_key' => 'a!id_order',
-                'optional' => false,
-                'visible_default' => false,
-                'displayed' => false,
             ),
         );
 
@@ -345,6 +346,14 @@ class AdminCustomerThreadsControllerCore extends AdminController
         }
 
         return $customer;
+    }
+    public function getOrderLink($order, $tr)
+    {
+        if ($tr['id_order']) {
+            return '<a href="'.$this->context->link->getAdminLink('AdminOrders').'&vieworder&id_order='.$tr['id_order'].'">'.'#'.$order.'</a>';
+        }else{
+            return '--';
+        }
     }
 
     public function setMedia()
