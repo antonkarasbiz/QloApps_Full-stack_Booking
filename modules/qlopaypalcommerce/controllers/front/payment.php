@@ -227,7 +227,7 @@ class QloPaypalCommercePaymentModuleFrontController extends ModuleFrontControlle
     // Save order data
     private function saveOrderData($orderData)
     {
-        $transaction_id = '-';
+        $transaction_id = '';
         if ($orderData) {
             $purchaseUnits = $orderData['data']['purchase_units'];
             foreach ($purchaseUnits as $purchase) {
