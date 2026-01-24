@@ -156,7 +156,7 @@ class AdminPaypalCommerceTransactionController extends ModuleAdminController
                     $smartyVars['ppstatusDetailMsg'] = $objPPOrder->ppStatusDetail[$response['data']['purchase_units'][0]['payments']['captures'][0]['status_details']['reason']];
                 }
             }
-
+            $smartyVars['transaction_url'] = $this->context->link->getAdminLink('AdminPaypalCommerceTransaction',Tools::getAdminTokenLite('AdminPaypalCommerceTransaction')).'&viewwk_paypal_commerce_order&id_paypal_commerce_order=' . (int)$idTrans;
             $smartyVars['transaction_data'] = $transactionData;
             $smartyVars['refund_data'] = $refundData;
             $smartyVars['refunded_amount'] = $totalRefundedFormatted;
