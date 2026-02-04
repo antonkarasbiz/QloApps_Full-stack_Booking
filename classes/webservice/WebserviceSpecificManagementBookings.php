@@ -158,6 +158,40 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
         )
     );
 
+    public $allowedFilters = array(
+        'id_hotel'    => 'o.id_hotel',
+        'id_customer' => 'o.id_customer',
+        'id_order'    => 'o.id_order',
+        'id_order_status' => 'o.current_state',
+        'reference'   => 'o.reference',
+        'check_in'    => 'hbd.check_in',
+        'check_out'   => 'hbd.check_out',
+        'date_from'     => 'hbd.date_from',
+        'date_to'   => 'hbd.date_to',
+        'room_type'   => 'hbd.id_product',
+        'total_price_tax_excl' => 'hbd.total_price_tax_excl',
+        'total_price_tax_incl' => 'hbd.total_price_tax_incl',
+        'total_paid_amount' => 'hbd.total_paid_amount',
+        'is_refunded' => 'hbd.is_refunded',
+        'room_num'   => 'hbd.room_num',
+        'hotel_name' => 'hbd.hotel_name',
+        'state'   => 'hbd.state',
+        'country' => 'hbd.country',
+        'zipcode' => 'hbd.zipcode',
+        'phone'   => 'hbd.phone',
+        'email'   => 'hbd.email',
+        'check_in_time' => 'hbd.check_in_time',
+        'check_out_time' => 'hbd.check_out_time',
+        'id_room' => 'hbd.id_room',
+        'booking_type' => 'hbd.booking_type',
+        'id_cart'=>'o.id_cart',
+        'id_currency'=>'o.id_currency',
+        'date_add'=> 'o.date_add',
+        'date_upd'=> 'o.date_upd',
+    );
+
+    public $resourceConfiguration;
+
     /**
      * @param WebserviceOutputBuilderCore $obj
      * @return WebserviceSpecificManagementInterface
@@ -301,19 +335,21 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
 
                     $this->renderResponse();
                 } else {
+                    $this->getBookingsList();
+                    $this->renderResponse();
                     // @todo: add filters for the booking webservice
                     // $filters = $this->manageFilters();
-                    $this->output .= $this->objOutput->getObjectRender()->renderNodeHeader('bookings', array());
-                    $bookings = Db::getInstance()->executeS('SELECT `id_order` FROM `'._DB_PREFIX_.'orders` WHERE 1');
-                    foreach ($bookings as $booking) {
-                        $more_attr = array(
-                            'xlink_resource' => $this->wsObject->wsUrl.$this->wsObject->urlSegment[0].'/'.$booking['id_order'],
-                            'id' => (int) $booking['id_order']
-                        );
-                        $this->output .= $this->objOutput->getObjectRender()->renderNodeHeader('booking', array('objectsNodeName' => 'bookings'), $more_attr, false);
-                    }
-                    $this->output .= $this->objOutput->getObjectRender()->renderNodeFooter('bookings', array());
-                    $this->output = $this->objOutput->getObjectRender()->overrideContent($this->output);
+                    // $this->output .= $this->objOutput->getObjectRender()->renderNodeHeader('bookings', array());
+                    // $bookings = Db::getInstance()->executeS('SELECT `id_order` FROM `'._DB_PREFIX_.'orders` WHERE 1');
+                    // foreach ($bookings as $booking) {
+                    //     $more_attr = array(
+                    //         'xlink_resource' => $this->wsObject->wsUrl.$this->wsObject->urlSegment[0].'/'.$booking['id_order'],
+                    //         'id' => (int) $booking['id_order']
+                    //     );
+                    //     $this->output .= $this->objOutput->getObjectRender()->renderNodeHeader('booking', array('objectsNodeName' => 'bookings'), $more_attr, false);
+                    // }
+                    // $this->output .= $this->objOutput->getObjectRender()->renderNodeFooter('bookings', array());
+                    // $this->output = $this->objOutput->getObjectRender()->overrideContent($this->output);
                 }
 
             break;
@@ -3539,6 +3575,136 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
 
     }
 
+
+    private function manageBookingFilter($filters) 
+    {
+        $ret = '';
+        $allowedFilters = $this->allowedFilters;
+        foreach ($filters as $field => $raw) {
+            if (!array_key_exists($field, $allowedFilters)) {
+                $this->wsObject->setErrorDidYouMean(400, 'This filter does not exist', $field, array_keys($allowedFilters), 32);
+                return false;
+            }
+            preg_match('/^(.*)\[(.*)\](.*)$/', $raw, $matches);
+            if (count($matches) > 1) {
+                if ($matches[1] == '%' || $matches[3] == '%') {
+                    $ret .= ' AND '.$allowedFilters[$field].' LIKE "'.pSQL($matches[1].$matches[2].$matches[3])."\"\n";
+                } elseif ($matches[1] == '' && $matches[3] == '') {
+                    if (strpos($matches[2], '|') > 0) {
+                        $values = explode('|', $matches[2]);
+                        $ret .= ' AND '.$allowedFilters[$field].' IN (' . implode(',', $values) . ')';
+                    } elseif (preg_match('/^([\d\.:\-\s]+),([\d\.:\-\s]+)$/', $matches[2], $matches3)) {
+                        unset($matches3[0]);
+                        if (count($matches3) > 0) {
+                            sort($matches3);
+                            $ret .= ' AND '.$allowedFilters[$field].' BETWEEN "'.pSQL($matches3[0]).'" AND "'.pSQL($matches3[1])."\"\n";
+                        }
+                    } else {
+                        $ret .= ' AND '.$allowedFilters[$field].'="'.pSQL($matches[2]).'"'."\n";
+                    }
+                } elseif ($matches[1] == '>') {
+                    $ret .= ' AND '.$allowedFilters[$field].' > "'.pSQL($matches[2])."\"\n";
+                } elseif ($matches[1] == '<') {
+                    $ret .= ' AND '.$allowedFilters[$field].' < "'.pSQL($matches[2])."\"\n";
+                } elseif ($matches[1] == '!') {
+                    $multiple_values = explode('|', $matches[2]);
+                    foreach ($multiple_values as $value) {
+                        $ret .= ' AND '.$allowedFilters[$field].' != "'.pSQL($value)."\"\n";
+                    }
+                }
+            } else {
+                $ret .= ' AND '.$allowedFilters[$field].' '.(Validate::isFloat(pSQL($raw)) ? 'LIKE' : '=').' "'.pSQL($raw)."\"\n";
+            }
+        }
+    
+        return $ret;
+    }
+
+    private function manageBookingOrderBySort($sorts)
+    {   
+        $sql_sort = '';
+        if(isset($sorts) && $sorts){
+            preg_match('#^\[(.*)\]$#Ui', $sorts, $matches);
+            if (count($matches) > 1) {
+                $sorts = explode(',', $matches[1]);
+            } else {
+                $sorts = array($sorts);
+            }
+            $sql_sort .= ' ORDER BY ';
+
+            foreach($sorts as $key => $sort){
+                $delimiterPosition = strrpos($sort, '_');
+                if ($delimiterPosition !== false) {
+                    $fieldName = substr($sort, 0, $delimiterPosition);
+                    $direction = strtoupper(substr($sort, $delimiterPosition + 1));
+                }
+                if ($delimiterPosition === false || !in_array($direction, array('ASC', 'DESC'))) {
+                    $this->wsObject->setError(400, 'The "sort" value has to be formed as this example: "field_ASC" or \'[field_1_DESC,field_2_ASC,field_3_ASC,...]\' ("field" has to be an available field)', 37);
+                    return false;
+                }
+                $sql_sort .= $fieldName.' '.$direction;// ORDER BY `field` ASC|DESC
+            }
+        }
+        return $sql_sort;
+    }
+
+    public function getBookingsList()
+    {
+        $selectColumns = ['hbd.id'];
+        $fragments = $this->wsObject->urlFragments;
+        if (!empty($fragments['display'])) {
+            if ($fragments['display'] === 'full') {
+                $selectColumns = ['o.*', 'hbd.*'];
+            } elseif ($fragments['display'] !== 'full') {
+                $selectColumns = [];
+                $displayColumn = array_map('trim', explode(',', trim($fragments['display'], '[]')));
+                foreach ($displayColumn as $key => $column) {
+                    if(array_key_exists($column,$this->allowedFilters)){
+                        $selectColumns[] = $this->allowedFilters[$column];
+                    }else{
+                        $selectColumns[] = $column;
+                    }
+                }
+                if (empty($selectColumns)) {
+                    $selectColumns = ['o.id_order'];
+                }
+            }
+        }
+
+        $whereSql = '';
+        $limitSql = '';
+        $orderSql = '';
+        if (!empty($fragments['filter']) && is_array($fragments['filter'])) {
+            $whereSql = $this->manageBookingFilter($fragments['filter']);
+        }
+        if (!empty($fragments['sort'])) {
+            $orderSql = $this->manageBookingOrderBySort($fragments['sort']);
+        }
+        if (isset($fragments['limit'])) {
+            $limitArgs = explode(',', $fragments['limit']);
+            if(count($limitArgs) != 2) {
+                $this->wsObject->setError(400, 'The "limit" value has to be formed as this example: "5,25" or "10"', 39);
+            }
+            $limitSql = ' LIMIT ' . (int) $limitArgs[0] . ', ' . (int) $limitArgs[1];
+        }
+        $sql = '
+            SELECT ' . implode(', ', $selectColumns) . '
+            FROM ' . _DB_PREFIX_ . 'orders o
+            INNER JOIN ' . _DB_PREFIX_ . 'htl_booking_detail hbd
+                ON o.id_order = hbd.id_order
+            WHERE 1
+            ' . $whereSql . '
+            ' . $orderSql . '
+            ' . $limitSql;
+
+        try {
+            $this->output['bookings'] = Db::getInstance()->executeS($sql);
+        } catch (\Throwable $th) {
+            $this->wsObject->setError(400, $th->getMessage(), 39);
+        }
+    }
+
+
     /**
      * Used to get the booking details for the  GET, POST and PUT request.
      */
@@ -3706,7 +3872,6 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                     $roomTypeInfo[$dateJoin]['rooms'][] = $roomInfo;
                 }
             }
-
             $params['associations']['room_types'] = array_values($roomTypeInfo);
             $this->output['booking'] = $params;
         }
