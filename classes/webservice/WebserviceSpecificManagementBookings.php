@@ -3808,27 +3808,39 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                     $resultData[$orderId] = $params;
                 }
             }
+            
+            if ($fragments['display'] === 'full') {
+                $responseData = [];
+                foreach ($resultData as $order) {
+                    if (isset($order['associations']['room_types'])) {
+                        $order['associations']['room_types'] = array_values(
+                            $order['associations']['room_types']
+                        );
+                    }
 
-            foreach ($resultData as &$order) {
-                if(isset($order['associations']['room_types'])){
-                    $order['associations']['room_types'] = array_values($order['associations']['room_types']);
-                }else{
-                    $more_attr = array(
-                        'xlink_resource' => $this->wsObject->wsUrl.$this->wsObject->urlSegment[0].'/'.$booking['id_order'],
-                        'id' => (int) $order['id_order']
-                    );
-                    $this->output .= $this->objOutput->getObjectRender()->renderNodeHeader('booking', array('objectsNodeName' => 'bookings'), $more_attr, false);
+                    $responseData[] = $order;
                 }
+
+                $this->output['bookings'] = $responseData;
+                return;
+            }
+            $this->output .= $this->objOutput->getObjectRender()
+                ->renderNodeHeader('bookings', []);
+
+            foreach ($resultData as $order) {
+                $more_attr = array( 
+                    'xlink_resource' => $this->wsObject->wsUrl.$this->wsObject->urlSegment[0].'/'.$order['id_order'], 
+                    'id' => (int) $order['id_order'] 
+                ); 
+                $this->output .= $this->objOutput->getObjectRender()->renderNodeHeader('booking', array('objectsNodeName' => 'bookings'), $more_attr, false);
             }
 
-        if($fragments['display'] === 'full'){
-            $resultData = array_values($resultData);
-            $this->output['bookings'] = $resultData;
-        } else{
-            $this->output .= $this->objOutput->getObjectRender()->renderNodeFooter('bookings', array());
-            $this->output = $this->objOutput->getObjectRender()->overrideContent($this->output);
-        }      
+            $this->output .= $this->objOutput->getObjectRender()
+                ->renderNodeFooter('bookings', []);
 
+            $this->output = $this->objOutput->getObjectRender()
+                ->overrideContent($this->output);
+   
 
         } catch (\Throwable $th) {
             $this->wsObject->setError(400, $th->getMessage(), 39);
