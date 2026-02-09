@@ -3645,9 +3645,10 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                 $selectColumns = array(
                     'o.`id_order`','o.`id_currency`', 'o.`source`','o.`date_add`','o.`id_lang`','o.`current_state`','o.`total_paid_real`','o.`total_paid_tax_incl`','o.`total_paid_tax_excl`',
                     'hbd.`id_product`','hbd.`date_from`','hbd.`date_to`','hbd.`total_price_tax_incl`','hbd.`total_price_tax_excl`','hbd.`id_room`','hbd.`id`','hbd.`adults`','hbd.`children`','hbd.`id_hotel`','hbd.`room_type_name`',
-                    'c.`firstname`','c.`lastname`','c.`email`','c.`phone`','c.`id_default_group`',
+                    'c.`id_customer`','c.`firstname`','c.`lastname`','c.`email`','c.`phone`','c.`id_default_group`',
                     'CONCAT(c.`firstname`, " ", c.`lastname`) AS `customer`',
-                    'crncy.`iso_code`'
+                    'crncy.`iso_code`',
+                    'ocr.`id_order_invoice`', 'ocr.`name` as cart_rule_name', 'ocr.`value` as cart_rule_value', '`ocr`.`id_cart_rule`',
                 );
             }
         }
@@ -3683,11 +3684,14 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                 ON o.id_order = opd.id_order
             LEFT JOIN ' . _DB_PREFIX_ . 'order_payment op
                 ON opd.id_order_payment = op.id_order_payment
+            LEFT JOIN ' . _DB_PREFIX_ . 'order_cart_rule ocr
+                ON o.id_order = ocr.id_order
             WHERE 1
             ' . $whereSql . '
             ' . $orderSql . '
             ' . $limitSql;
         try {
+           /// ddd($sql);
             $results = Db::getInstance()->executeS($sql);
             $objServiceProductOrderDetail = new ServiceProductOrderDetail();
             $objOrder = new Order();
@@ -3695,7 +3699,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
 
             foreach ($results as $result) {
                 $orderId = (int) $result['id_order'];
-                if($fragments['display'] === 'full'){
+                if( isset($fragments['display']) && $fragments['display'] === 'full'){
                     if (!isset($resultData[$orderId])) {
                         $params = array();
                         $params['id_order'] = $orderId;
@@ -3723,6 +3727,12 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                             )
                         );
 
+                        $params['associations']['cart_rules'] = array(
+                            'code' => $result['cart_rule_name'],
+                            'value' => Tools::ps_round($result['cart_rule_value'], _PS_PRICE_COMPUTE_PRECISION_),
+                            'id_order_invoice' => $result['id_order_invoice'],
+                        );
+                        
                         $params['associations']['remarks'] = array();
                         if ($customerMessages = Message::getMessagesByOrderId($orderId)) {
                             foreach ($customerMessages as $customerMessage) {
@@ -3761,9 +3771,13 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                     $roomInfo['adults'] = (int) $result['adults'];
                     $roomInfo['child'] = (int) $result['children'];
                     $roomInfo['unit_price_without_tax'] = Tools::ps_round($result['total_price_tax_excl'], _PS_PRICE_COMPUTE_PRECISION_);
-                    $roomInfo['total_tax'] = Tools::ps_round(($result['total_price_tax_incl'] - $orderData['total_price_tax_excl']), _PS_PRICE_COMPUTE_PRECISION_);
+                    $roomInfo['total_tax'] = Tools::ps_round(($result['total_price_tax_incl'] - $result['total_price_tax_excl']), _PS_PRICE_COMPUTE_PRECISION_);
                     if(isset($roomInfo['services'])) {
                         unset($roomInfo['services']);
+                    }
+                    
+                    if (Group::getPriceDisplayMethod($result['id_default_group']) == PS_TAX_INC) {
+                        $useTax = 1;
                     }
 
                     if ($additionalServices = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
@@ -3809,7 +3823,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                 }
             }
             
-            if ($fragments['display'] === 'full') {
+            if (isset($fragments['display']) && $fragments['display'] === 'full') {
                 $responseData = [];
                 foreach ($resultData as $order) {
                     if (isset($order['associations']['room_types'])) {
