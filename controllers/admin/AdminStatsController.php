@@ -1383,22 +1383,22 @@ class AdminStatsControllerCore extends AdminStatsTabController
         return Db::getInstance()->getValue($sql);
     }
 
-    public static function getOccupancyData($dateFrom, $dateTo, $idsHotel = false)
+    public static function getOccupancyData($dateFrom, $dateTo, $idHotel = false)
     {
         $objHotelBookingDetail = new HotelBookingDetail();
         $objHotelBranchInformation = new HotelBranchInformation();
-        $allHotels = $objHotelBranchInformation->getAllHotels();
+        $context = Context::getContext();
+        $idsHotel = $objHotelBranchInformation->getProfileAccessedHotels($context->employee->id_profile, 1, 1);
         $occupancyData = array('count_total' => 0, 'count_occupied' => 0, 'count_available' => 0, 'count_unavailable' => 0);
-        if($idsHotel == 0){
+        if(!$idHotel){
             $dataStats = [
             'num_unavail'=> 0,
             'num_booked'=> 0,
             'num_avail'=> 0,
             'total_rooms'=> 0,
              ];
-            foreach ($allHotels as $hotel) {
-                $idhotel = (int) $hotel['id'];
-                $bookingData = $objHotelBookingDetail->getDateWiseBooking($dateFrom , $dateTo , $idhotel);
+            foreach ($idsHotel ?:[] as $idHotel) {
+                $bookingData = $objHotelBookingDetail->getDateWiseBooking($dateFrom , $dateTo , $idHotel);
                 $dataStats['num_avail'] += $bookingData['stats']['available'];
                 $dataStats['num_unavail'] += $bookingData['stats']['unavailable'];
                 $dataStats['num_booked'] += $bookingData['stats']['booked'];
@@ -1410,7 +1410,7 @@ class AdminStatsControllerCore extends AdminStatsTabController
             $occupancyData['count_total'] =  $dataStats['total_rooms'];
         }
         else{
-            $bookingData = $objHotelBookingDetail->getDateWiseBooking($dateFrom , $dateTo , $idsHotel);
+            $bookingData = $objHotelBookingDetail->getDateWiseBooking($dateFrom , $dateTo , $idHotel);
             $occupancyData['count_available'] = $bookingData['stats']['available'];
             $occupancyData['count_occupied'] = $bookingData['stats']['booked'];
             $occupancyData['count_unavailable'] = $bookingData['stats']['unavailable'];

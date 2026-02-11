@@ -3785,57 +3785,70 @@ class HotelBookingDetail extends ObjectModel
     public function getDateWiseBooking($dateFrom, $dateTo, $idHotel)
     {
         $objBookingDetail = new HotelBookingDetail();
+        // if same date selected, extend by 1 day
         if ($dateFrom == $dateTo) {
             $dateTo = date('Y-m-d', strtotime($dateTo . ' +1 day'));
         }
+
         $bookingParams = [
-            'date_from'       => $dateFrom,
-            'date_to'         => $dateTo,
-            'search_available'=> 1,
-            'search_partial'  => 1,
-            'search_booked'   => 1,
-            'search_unavai'   => 1,
-            'hotel_id'        => $idHotel,
+            'date_from'        => $dateFrom,
+            'date_to'          => $dateTo,
+            'search_available' => 1,
+            'search_partial'   => 1,
+            'search_booked'    => 1,
+            'search_unavai'    => 1,
+            'hotel_id'         => $idHotel,
         ];
-        $bookingData      = $objBookingDetail->getBookingData($bookingParams);
-        $bookedDates      = [];
-        $unavailableDates = [];
+        $bookingData = $objBookingDetail->getBookingData($bookingParams);
+
+        $bookedDates                = [];
+        $partialUnavailableDates    = [];
+        $permanentUnavailableDates  = [];
+
         if (!empty($bookingData['rm_data'])) {
             foreach ($bookingData['rm_data'] as $key => $roomType) {
-                // get all rooms of room type
-                $rooms = HotelRoomInformation::getHotelRoomsInfo(
-                    $bookingParams['hotel_id'],
-                    $roomType['id_product']
-                );
+                $roomTypeId = $roomType['id_product'];
+                // Get all rooms of this room type
+
+                $rooms = HotelRoomInformation::getHotelRoomsInfo($idHotel, $roomTypeId);
+                $bookingData['rm_data'][$key]['all_rooms'] = [];
                 foreach ($rooms ?: [] as $room) {
                     $bookingData['rm_data'][$key]['all_rooms'][$room['id']] = [
                         'id_room'  => $room['id'],
                         'room_num' => $room['room_num'],
                     ];
                 }
-                // booked rooms date mapping
-                foreach ($roomType['data']['booked'] ?: [] as $bookedRoom) {
-                    foreach ($bookedRoom['detail'] as $detail) {
-                        for (
-                            $d = date('Y-m-d', strtotime($detail['date_from']));
-                            $d < date('Y-m-d', strtotime($detail['date_to']));
-                            $d = date('Y-m-d', strtotime('+1 day', strtotime($d)))
-                        ) {
-                            $bookedDates[$d][$roomType['id_product']][$bookedRoom['id_room']] =
+
+                //booked rooms
+                foreach ($roomType['data']['booked'] ?: []  as $bookedRoom) {
+                    foreach ($bookedRoom['detail'] ?: [] as $detail) {
+                        $start = date('Y-m-d', strtotime($detail['date_from']));
+                        $end   = date('Y-m-d', strtotime($detail['date_to']));
+                        for ($d = $start; $d < $end; $d = date('Y-m-d', strtotime('+1 day', strtotime($d)))) {
+                            $bookedDates[$d][$roomTypeId][$bookedRoom['id_room']] =
                                 $bookedRoom['id_room'];
                         }
                     }
                 }
-                // unavailable rooms date mapping
+
+                // unavailable rooms
                 foreach ($roomType['data']['unavailable'] ?: [] as $unavailableRoom) {
-                    foreach ($unavailableRoom['detail'] as $detail) {
-                        for (
-                            $d = date('Y-m-d', strtotime($detail['date_from']));
-                            $d < date('Y-m-d', strtotime($detail['date_to']));
-                            $d = date('Y-m-d', strtotime('+1 day', strtotime($d)))
-                        ) {
-                            $unavailableDates[$d][$roomType['id_product']][$unavailableRoom['id_room']] =
-                                $unavailableRoom['id_room'];
+                    foreach ($unavailableRoom['detail'] ?: [] as $detail) {
+                        // permanent unavailable rooms
+                        if (empty($detail['date_from']) && empty($detail['date_to'])) {
+                            for ( $d = date('Y-m-d', strtotime($dateFrom)); $d < date('Y-m-d', strtotime($dateTo)); $d = date('Y-m-d', strtotime('+1 day', strtotime($d)))
+                            ) {
+                                $permanentUnavailableDates[$d][$roomTypeId][$unavailableRoom['id_room']] =
+                                    $unavailableRoom['id_room'];
+                            }
+                        } else {
+                            //partial unavailable rooms
+                            $start = date('Y-m-d', strtotime($detail['date_from']));
+                            $end   = date('Y-m-d', strtotime($detail['date_to']));
+                            for ($d = $start; $d < $end; $d = date('Y-m-d', strtotime('+1 day', strtotime($d)))) {
+                                $partialUnavailableDates[$d][$roomTypeId][$unavailableRoom['id_room']] =
+                                    $unavailableRoom['id_room'];
+                            }
                         }
                     }
                 }
@@ -3844,10 +3857,12 @@ class HotelBookingDetail extends ObjectModel
         $response = [
             'data'  => [],
             'stats' => [
-                'total_rooms'  => 0,
-                'available'    => 0,
-                'booked'       => 0,
-                'unavailable'  => 0,
+                'total_rooms'           => 0,
+                'available'             => 0,
+                'booked'                => 0,
+                'unavailable'           => 0,
+                'partial_unavailable'   => 0,
+                'permanent_unavailable' => 0,
             ],
         ];
         for (
@@ -3855,6 +3870,7 @@ class HotelBookingDetail extends ObjectModel
             $currentDate < date('Y-m-d', strtotime($dateTo));
             $currentDate = date('Y-m-d', strtotime('+1 day', strtotime($currentDate)))
         ) {
+
             $nextDate = date('Y-m-d', strtotime('+1 day', strtotime($currentDate)));
 
             $dateWiseInfo = [
@@ -3863,46 +3879,59 @@ class HotelBookingDetail extends ObjectModel
                 'date_to'   => $nextDate,
                 'room_types'=> [],
             ];
+
             foreach ($bookingData['rm_data'] ?: [] as $roomType) {
-                $allRooms = $roomType['all_rooms'] ?: [];
-                // available initially all rooms
+                $roomTypeId = $roomType['id_product'];
+                $allRooms   = $roomType['all_rooms'] ?: [];
                 $available = $allRooms;
                 $booked    = [];
-                $unavai    = [];
-                // remove booked
-                if (!empty($bookedDates[$currentDate][$roomType['id_product']])) {
+                $partial   = [];
+                $permanent = [];
+                //remove booked
+                if (!empty($bookedDates[$currentDate][$roomTypeId])) {
+
                     $booked = array_intersect_key(
                         $allRooms,
-                        $bookedDates[$currentDate][$roomType['id_product']]
+                        $bookedDates[$currentDate][$roomTypeId]
                     );
+
                     $available = array_diff_key($available, $booked);
                 }
-                // remov unavailable
-                if (!empty($unavailableDates[$currentDate][$roomType['id_product']])) {
-                    $unavai = array_intersect_key(
+                //permanent unavailbale
+                if (!empty($permanentUnavailableDates[$currentDate][$roomTypeId])) {
+                    $permanent = array_intersect_key(
                         $allRooms,
-                        $unavailableDates[$currentDate][$roomType['id_product']]
+                        $permanentUnavailableDates[$currentDate][$roomTypeId]
                     );
-                    $available = array_diff_key($available, $unavai);
+                    $available = array_diff_key($available, $permanent);
                 }
-                $response['stats']['available']   += count($available);
-                $response['stats']['booked']      += count($booked);
-                $response['stats']['unavailable'] += count($unavai);
-                $response['stats']['total_rooms'] += count($allRooms);
-
+                //partial unavailbale
+                if (!empty($partialUnavailableDates[$currentDate][$roomTypeId])) {
+                    $partial = array_intersect_key(
+                        $allRooms,
+                        $partialUnavailableDates[$currentDate][$roomTypeId]
+                    );
+                    $available = array_diff_key($available, $partial);
+                }
+                $response['stats']['total_rooms']           += count($allRooms);
+                $response['stats']['available']             += count($available);
+                $response['stats']['booked']                += count($booked);
+                $response['stats']['partial_unavailable']   += count($partial);
+                $response['stats']['permanent_unavailable'] += count($permanent);
+                $response['stats']['unavailable']           += count($partial) + count($permanent);
                 $dateWiseInfo['room_types'][] = [
-                    'id_room_type' => $roomType['id_product'],
+                    'id_room_type' => $roomTypeId,
                     'name'         => $roomType['name'],
                     'rooms'        => [
-                        'available'   => $available,
-                        'booked'      => $booked,
-                        'unavailable' => $unavai,
+                        'available'             => $available,
+                        'booked'                => $booked,
+                        'partial_unavailable'   => $partial,
+                        'permanent_unavailable' => $permanent,
                     ],
                 ];
             }
             $response['data'][] = $dateWiseInfo;
         }
-
-        return$response;
+        return $response;
     }
 }
