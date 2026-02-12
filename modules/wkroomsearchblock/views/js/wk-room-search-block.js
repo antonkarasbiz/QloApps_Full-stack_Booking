@@ -926,6 +926,7 @@ $(document).ready(function() {
         $('#hotel_location, #id_hotel_button_chosen, #guest_occupancy').focus(function () {
             setBookingSearchPositions();
         });
+
         // after chosen has been initialized
         $('select#id_hotel_button').on('chosen:ready', function() {
             $('#id_hotel_button_chosen .chosen-search input').focus(function () {
@@ -976,6 +977,7 @@ function setGuestOccupancy()
 function setBookingSearchPositions() {
     // calculate available spaces
     let searchForm = $('#search_hotel_block_form');
+
     let inputFieldsAndDropdowns = [
         { input: $('#hotel_location'), dropdown: $('.location_search_results_ul')},
         { input: $('.hotel-selector-wrap'), dropdown: $('#id_hotel_button_chosen .chosen-drop')},
