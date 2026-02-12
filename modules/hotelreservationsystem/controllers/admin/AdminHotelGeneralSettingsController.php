@@ -378,13 +378,12 @@ class AdminHotelGeneralSettingsController extends ModuleAdminController
                         'hint' => $this->l('Enter the age of the guest,  which that guest will be considered as child.'),
                         'class' => 'fixed-width-xxl',
                     ),
-                    'WK_GLOBAL_MAX_CHILD_IN_ROOM' => array(
-                        'title' => $this->l('Maximum children allowed in a room'),
+                    'QLO_GLOBAL_MAX_INFANT_AGE' => array(
+                        'title' => $this->l('Consider guest as Infant below age'),
                         'type' => 'text',
                         'required' => true,
                         'validation' => 'isUnsignedInt',
-                        'hint' => $this->l('Enter number of the child allowed in a room.'),
-                        'desc' => $this->l('Set as 0 if you do not want to limit children in a room.'),
+                        'hint' => $this->l('Enter number of the infant age.'),
                         'class' => 'fixed-width-xxl',
                     ),
                 ),
@@ -531,13 +530,25 @@ class AdminHotelGeneralSettingsController extends ModuleAdminController
             // Validation for the occupancy settings
             // max age of infant after which guest will considered as child // below 18
             $globalChildMaxAge = Tools::getValue('WK_GLOBAL_CHILD_MAX_AGE');
-            $globalMaxChildInRoom = Tools::getValue('WK_GLOBAL_MAX_CHILD_IN_ROOM');
+            $globalInfantAge = Tools::getValue('QLO_GLOBAL_MAX_INFANT_AGE');
+
             if (!Validate::isUnsignedInt($globalChildMaxAge)) {
                 $this->errors[] = $this->l('Invalid value for "Consider guest as child below age".');
             } else if ($globalChildMaxAge <= 0) {
                 $this->errors[] = $this->l('The value for "Consider guest as child below age" must be at least 1.');
             }
 
+            if ($globalInfantAge) {
+                if (!Validate::isUnsignedInt($globalInfantAge)) {
+                    $this->context->controller->errors[] = $this->l('Invalid infant age');
+                } elseif ($globalInfantAge >= Configuration::get('WK_GLOBAL_CHILD_MAX_AGE')) {
+                    $this->context->controller->errors[] = sprintf($this->l('The infant age cannot be greater than the Global child age (%s years)'), Configuration::get('WK_GLOBAL_CHILD_MAX_AGE'));
+                } else {
+                    Configuration::updateValue('QLO_GLOBAL_MAX_INFANT_AGE', $globalInfantAge);
+                }
+            } else {
+                $this->context->controller->errors[] = $this->l('Infant age is required');
+            }
             // End occupancy fields validation
 
             if (!$hotelNameSearchThreshold && $hotelNameSearchThreshold !== '0') {
