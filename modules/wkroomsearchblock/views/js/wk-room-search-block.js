@@ -925,19 +925,16 @@ $(document).ready(function() {
     if (page_name == 'index') {
         $('#hotel_location, #id_hotel_button_chosen, #guest_occupancy').focus(function () {
             setBookingSearchPositions();
-            console.log('11111');
         });
         // after chosen has been initialized
         $('select#id_hotel_button').on('chosen:ready', function() {
             $('#id_hotel_button_chosen .chosen-search input').focus(function () {
                 setBookingSearchPositions();
-            console.log('2222');
             });
         });
 
         $('#daterange_value').click(function () {
             setBookingSearchPositions();
-            console.log('3333');
         });
     }
 });
@@ -978,7 +975,6 @@ function setGuestOccupancy()
 // position dropdowns
 function setBookingSearchPositions() {
     // calculate available spaces
-    console.log("Aradhana");
     let searchForm = $('#search_hotel_block_form');
     let inputFieldsAndDropdowns = [
         { input: $('#hotel_location'), dropdown: $('.location_search_results_ul')},
@@ -1009,8 +1005,7 @@ function setBookingSearchPositions() {
             positionClass = 'top';
         }
     }
-    console.log(positionClass);
-    console.log(inputFieldsAndDropdowns);
+
     // position dropdowns
     $(inputFieldsAndDropdowns).each(function (i, inputFieldAndDropdown) {
         inputFieldAndDropdown.dropdown.removeClass('top bottom').addClass(positionClass);

@@ -115,96 +115,33 @@ class AdminSlipControllerCore extends AdminController
 
     public function initPageHeaderToolbar()
     {
-        if (empty($this->display)) {
-            $this->page_header_toolbar_btn['new_credit_slip'] = array(
-                'href' => self::$currentIndex . '&add' . $this->table . '&token=' . $this->token,
-                'desc' => $this->l('Add new credit slip', null, null, false),
-                'icon' => 'process-icon-new'
-            );
-        }
-
         parent::initPageHeaderToolbar();
     }
 
     public function renderForm()
     {
-        if ($this->display == 'add') {
-            $order = new Order();
-            $orderList = $order->getOrdersWithInformations();
-            foreach ($orderList as &$order) {
-                $order['order_label'] = $order['reference'] . ' #' . (int) $order['id_order'];
-            }
-            unset($order);
-
-            $this->fields_form = array(
-                'legend' => array(
-                    'title' => $this->l('Credit slip'),
-                    'icon' => 'icon-print'
+        $this->fields_form = array(
+            'legend' => array(
+                'title' => $this->l('Print a PDF'),
+                'icon' => 'icon-print'
+            ),
+            'input' => array(
+                array(
+                    'type' => 'date',
+                    'label' => $this->l('From'),
+                    'name' => 'date_from',
+                    'maxlength' => 10,
+                    'required' => true,
+                    'hint' => $this->l('Format: 2011-12-31 (inclusive).')
                 ),
-                'description' => $this->l('Kindly check the credit slip again before saving it, as it cannot be changed once created.'),
-                'input' => array(
-                    array(
-                        'type' => 'select',
-                        'label' => $this->l('Order id'),
-                        'name' => 'id_order',
-                        'required' => true,
-                        'hint' => $this->l('Select id order'),
-                        'class' => 'chosen',
-                        'options' => array(
-                            'query' => $orderList,
-                            'id' => 'id_order',
-                            'name' => 'order_label'
-                        )
-                    ),
-                    array(
-                        'type' => 'select',
-                        'label' => $this->l('Booking Detail'),
-                        'name' => 'id_booking_detail',
-                        'required' => true,
-                        'options' => array(
-                            'query' => array(),
-                            'id' => 'id',
-                            'name' => 'booking_label'
-                        )
-                    ),
-                    array(
-                        'type' => 'text',
-                        'label' => $this->l('Amount of credit slip'),
-                        'hint' => $this->l('Enter the amount of the credit slip for the customer'),
-                        'name' => 'credit_slip_amount',
-                        'required' => true,
-                        'col' => 2,
-                        'suffix' => $this->context->currency->sign,
-                    ),
-                ),
-                'submit' => array(
-                    'title' => $this->l('Save'),
-                    'name' => 'submitCreditSlip',
+                array(
+                    'type' => 'date',
+                    'label' => $this->l('To'),
+                    'name' => 'date_to',
+                    'maxlength' => 10,
+                    'required' => true,
+                    'hint' => $this->l('Format: 2012-12-31 (inclusive).')
                 )
-            );
-        } else {
-            $this->fields_form = array(
-                'legend' => array(
-                    'title' => $this->l('Print a PDF'),
-                    'icon' => 'icon-print'
-                ),
-                'input' => array(
-                    array(
-                        'type' => 'date',
-                        'label' => $this->l('From'),
-                        'name' => 'date_from',
-                        'maxlength' => 10,
-                        'required' => true,
-                        'hint' => $this->l('Format: 2011-12-31 (inclusive).')
-                    ),
-                    array(
-                        'type' => 'date',
-                        'label' => $this->l('To'),
-                        'name' => 'date_to',
-                        'maxlength' => 10,
-                        'required' => true,
-                        'hint' => $this->l('Format: 2012-12-31 (inclusive).')
-                    )
             ),
             'submit' => array(
                 'title' => $this->l('Generate PDF file'),
@@ -212,7 +149,6 @@ class AdminSlipControllerCore extends AdminController
                 'icon' => 'process-icon-download-alt'
             )
         );
-        }
 
         $this->fields_value = array(
             'date_from' => date('Y-m-d'),
@@ -225,67 +161,7 @@ class AdminSlipControllerCore extends AdminController
 
     public function postProcess()
     {
-        if (Tools::getValue('submitCreditSlip')) {
-            if (empty(trim(Tools::getValue('credit_slip_amount')))) {
-                $this->errors[] = $this->l('Amount is required for the generate credit slip');
-            }
-            if (!count($this->errors)) {
-                $objOrder = new Order(Tools::getValue('id_order'));
-                $creditAmount = Tools::getValue('credit_slip_amount');
-                $idBookingDetail = Tools::getValue('id_booking_detail');
-                $customer = new Customer($objOrder->id_customer);
-                $bookingList = array();
-                $objHotelBookingDetail = new HotelBookingDetail($idBookingDetail);
-
-                if ($idHtlBooking = $objHotelBookingDetail->id) {
-                    $numDays = HotelHelper::getNumberOfDays(
-                        $objHotelBookingDetail->date_from,
-                        $objHotelBookingDetail->date_to
-                    );
-
-                    $idOrderDetail = $objHotelBookingDetail->id_order_detail;
-
-                    $bookingList = array(
-                        array(
-                            'id_htl_booking' => $idHtlBooking,
-                            'id_order_detail' => $idOrderDetail,
-                            'quantity' => $numDays,
-                            'num_days' => $numDays,
-                            'unit_price' => (float) $creditAmount / $numDays,
-                            'amount' => (float) $creditAmount,
-                        )
-                    );
-                }
-
-                if (!$idCreditSlip = OrderSlip::create($objOrder, $bookingList, 0, $creditAmount, $creditAmount, 0 , OrderSlip::MANUAL_CREDIT_SLIP_TYPE)) {
-                    $this->errors[] = $this->l('A credit slip cannot be generated. ');
-                } else {
-
-                    Hook::exec('actionOrderSlipAdd', array('order' => $objOrder, 'bookingList' => $bookingList));
-
-                    $params['{credit_slip_url}'] = $this->context->link->getPageLink('order-slip', true);
-
-                    @Mail::Send(
-                        (int)$objOrder->id_lang,
-                        'credit_slip',
-                        Mail::l('New credit slip generated for you', (int)$objOrder->id_lang),
-                        $params,
-                        $customer->email,
-                        $customer->firstname.' '.$customer->lastname,
-                        null,
-                        null,
-                        null,
-                        null,
-                        _PS_MAIL_DIR_,
-                        true,
-                        (int)$objOrder->id_shop
-                    );
-                }
-                Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token . '&conf=3');
-            } else {
-                return parent::postProcess();
-            }
-        } else if (Tools::getValue('submitAddorder_slip')) {
+        if (Tools::getValue('submitAddorder_slip')) {
             if (!Validate::isDate(Tools::getValue('date_from'))) {
                 $this->errors[] = $this->l('Invalid "From" date');
             }
@@ -360,13 +236,9 @@ class AdminSlipControllerCore extends AdminController
         $this->initTabModuleList();
         $this->initToolbar();
         $this->initPageHeaderToolbar();
-        if ($this->display != "add") {
         $this->content .= $this->renderList();
-        }
         $this->content .= $this->renderForm();
-        if ($this->display != "add") {
         $this->content .= $this->renderOptions();
-        }
 
         $this->context->smarty->assign(array(
             'content' => $this->content,
@@ -470,27 +342,12 @@ class AdminSlipControllerCore extends AdminController
         $this->ajaxDie(json_encode($response));
     }
 
-    public function ajaxProcessGetBookingDetails()
-    {
-        $idOrder = (int) Tools::getValue('id_order');
-        $objOrder = new Order($idOrder);
-        $currency = Currency::getCurrency((int)$objOrder->id_currency);
-        $objHotelBookingDetail = new HotelBookingDetail();
-        $bookingDetails = $objHotelBookingDetail->getBookingDataByOrderId($idOrder);
-
-        die(Tools::jsonEncode(array(
-            'bookings' => $bookingDetails,
-            'currency' => $currency
-        )));
-    }
-
     public function setMedia()
     {
         parent::setMedia();
         Media::addJsDef(
             array(
                 'admin_order_slip_tab_link' => $this->context->link->getAdminLink('AdminSlip'),
-                'ajax_booking_url' => $this->context->link->getAdminLink('AdminSlip', true),
             )
         );
         $this->addJS(_PS_JS_DIR_.'admin/slips.js');

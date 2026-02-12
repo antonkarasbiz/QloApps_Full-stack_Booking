@@ -103,49 +103,4 @@ $(document).ready(function() {
             });
         });
     }
-
-    $('select[name="id_order"]').on('change', function () {
-
-        var idOrder = $(this).val();
-
-        if (!idOrder) return;
-
-        $.ajax({
-            url: ajax_booking_url,
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                ajax: 1,
-                action: 'GetBookingDetails',
-                id_order: idOrder
-            },
-            success: function (response) {
-
-                var $bookingSelect = $('select[name="id_booking_detail"]');
-                $bookingSelect.empty();
-
-                if (response.bookings.length > 0) {
-                    $.each(response.bookings, function (index, booking) {
-                        $bookingSelect.append(
-                            $('<option>', {
-                                value: booking.id,
-                                text: booking.room_type_name
-                            })
-                        );
-                    });
-                }
-
-                var currencySign = response.currency.sign;
-
-                $('#credit_slip_amount')
-                    .closest('.input-group')
-                    .find('.input-group-addon, .input-group-text')
-                    .text(currencySign);
-            }
-        });
-    });
-
-    if ($('select[name="id_order"]').val()) {
-        $('select[name="id_order"]').trigger('change');
-    }
 });
