@@ -1800,22 +1800,7 @@ class AdminOrdersControllerCore extends AdminController
                     if (!count($this->errors)) {
                         //check if a thread already exist
                         $id_customer_thread = CustomerThread::getIdCustomerThreadByEmailAndIdOrder($customer->email, $order->id);
-                        if(!$id_customer_thread && !Tools::getValue('visibility')){
-                        $message = new Message();
-                        if ($message_content = Tools::getValue('message')) {
-                            if (Validate::isMessage($message_content)) {
-                                $message->message = $message_content;
-                                $message->id_cart = (int)$this->context->cart->id;
-                                $message->id_customer = (int)$this->context->cart->id_customer;
-                                 $message->id_order = (int)$order->id;
-                                $message->private = 1;
-                                if($message->save()){
-                                    Tools::redirectAdmin(self::$currentIndex.'&id_order='.$order->id.'&vieworder&conf=11'.'&token='.$this->token);
-                                }
-                            }
-                        }
-                        }else{
-                            if (!$id_customer_thread) {
+                        if (!$id_customer_thread) {
                             $customer_thread = new CustomerThread();
                             $customer_thread->id_contact = (int)Configuration::get('PS_MAIL_EMAIL_MESSAGE');
                             $customer_thread->id_customer = (int)$order->id_customer;
@@ -1873,7 +1858,6 @@ class AdminOrdersControllerCore extends AdminController
                             );
                         }
                         $this->errors[] = Tools::displayError('An error occurred while sending an email to the customer.');
-                        }
                     }
                 }
             } else {
