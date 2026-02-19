@@ -1833,7 +1833,6 @@ class AdminOrdersControllerCore extends AdminController
                         } else {
                             $customer_thread = new CustomerThread((int)$id_customer_thread);
                         }
-
                         $customer_message = new CustomerMessage();
                         $customer_message->id_customer_thread = $customer_thread->id;
                         $customer_message->id_employee = (int)$this->context->employee->id;
@@ -1857,7 +1856,7 @@ class AdminOrdersControllerCore extends AdminController
                                 '{order_name}' => $order->getUniqReference(),
                                 '{message}' => $message
                             );
-                            if (@Mail::Send(
+                            Mail::Send(
                                 (int)$order->id_lang,
                                 'order_merchant_comment',
                                 Mail::l('New message regarding your booking', (int)$order->id_lang),
@@ -1871,9 +1870,7 @@ class AdminOrdersControllerCore extends AdminController
                                 _PS_MAIL_DIR_,
                                 true,
                                 (int)$order->id_shop
-                            )) {
-                                Tools::redirectAdmin(self::$currentIndex.'&id_order='.$order->id.'&vieworder&conf=11'.'&token='.$this->token);
-                            }
+                            );
                         }
                         $this->errors[] = Tools::displayError('An error occurred while sending an email to the customer.');
                         }

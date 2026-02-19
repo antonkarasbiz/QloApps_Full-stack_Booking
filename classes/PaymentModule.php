@@ -704,9 +704,10 @@ abstract class PaymentModuleCore extends Module
 
                     // Specify order id for message
                     $old_message = Message::getMessageByCartId((int)$this->context->cart->id);
-                    if ($old_message && $old_message['private']) {
+                    if ($old_message && !$old_message['private']) {
                         $update_message = new Message((int)$old_message['id_message']);
                         $update_message->id_order = (int)$order->id;
+                        $update_message->private = !Tools::getValue('visibility');
                         $update_message->update();
                         if (Tools::getValue('visibility')) {
                         // Add this message in the customer thread
@@ -725,7 +726,7 @@ abstract class PaymentModuleCore extends Module
                         $customer_message->id_customer_thread = $customer_thread->id;
                         $customer_message->id_employee = 0;
                         $customer_message->message = $update_message->message;
-                        $customer_message->private = !Tools::getValue('visibility');
+                        $customer_message->private = 0;
                         if (!$customer_message->add()) {
                             $this->errors[] = Tools::displayError('An error occurred while saving message');
                             }

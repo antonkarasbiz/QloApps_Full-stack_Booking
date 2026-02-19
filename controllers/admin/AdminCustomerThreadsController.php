@@ -985,6 +985,7 @@ class AdminCustomerThreadsControllerCore extends AdminController
             'count_ok' => isset($orders_ok) ? count($orders_ok) : false,
             'PS_CUSTOMER_SERVICE_SIGNATURE' => str_replace('\r\n', "\n", Configuration::get('PS_CUSTOMER_SERVICE_SIGNATURE', (int)$thread->id_lang)),
             'timeline_items' => $timeline_items,
+            'can_edit' => $this->tabAccess['edit'],
         );
 
         return parent::renderView();
