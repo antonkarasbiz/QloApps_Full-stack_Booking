@@ -212,7 +212,19 @@
                                 {/block}
                             {else}
                                 <div class="sold_out_alert">
-                                    <span>{l s='All rooms sold out!'}</span>
+                                    {if isset($los_restriction_failed) && $los_restriction_failed}
+                                        <span>
+                                            {if isset($los_failed_type) && $los_failed_type == 'min'}
+                                                {l s='At least %d nights required.' sprintf=[$los_min_days]}
+                                            {elseif isset($los_failed_type) && $los_failed_type == 'max'}
+                                                {l s='Up to %d nights allowed.' sprintf=[$los_max_days]}
+                                            {else}
+                                                {l s='LOS is not match'}
+                                            {/if}
+                                        </span>
+                                    {else}
+                                        <span>{l s='All rooms sold out!'}</span>
+                                    {/if}
                                 </div>
                             {/if}
                         {/if}

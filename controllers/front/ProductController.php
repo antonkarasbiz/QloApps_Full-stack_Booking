@@ -675,6 +675,7 @@ class ProductControllerCore extends FrontController
             'id_room_type' => $idProduct,
             'id_cart' => $idCart,
             'id_guest' => $idGuest,
+            'search_unavai' => 1, // Need to search unavailable rooms to check LOS restriction
         );
         if (Configuration::get('PS_FRONT_ROOM_UNIT_SELECTION_TYPE') == HotelBookingDetail::PS_ROOM_UNIT_SELECTION_TYPE_OCCUPANCY) {
             $bookingParams['occupancy'] = $occupancy;
@@ -693,9 +694,40 @@ class ProductControllerCore extends FrontController
         }
 
         $totalAvailableRooms = 0;
+        $losRestrictionFailed = false;
+        $losMinDays = 0;
+        $losMaxDays = 0;
+        $losFailedType = ''; // 'min' or 'max' to indicate which restriction failed
         if ($hotelRoomData = $objBookingDetail->dataForFrontSearch($bookingParams)) {
             $totalAvailableRooms = $hotelRoomData['stats']['num_avail'];
             $quantity = ($quantity > $totalAvailableRooms) ? $totalAvailableRooms : $quantity;
+            
+            // Check if rooms are unavailable due to LOS restriction
+            if ($totalAvailableRooms <= 0 && isset($hotelRoomData['rm_data'][$idProduct]['data']['unavailable'])) {
+                foreach ($hotelRoomData['rm_data'][$idProduct]['data']['unavailable'] as $unavailableRoom) {
+                    if (isset($unavailableRoom['detail'])) {
+                        foreach ($unavailableRoom['detail'] as $detail) {
+                            if (isset($detail['id_status']) && $detail['id_status'] == HotelRoomInformation::STATUS_SEARCH_LOS_UNSATISFIED) {
+                                $losRestrictionFailed = true;
+                                // Get LOS restrictions for the room type
+                                $objRoomTypeRestrictionDateRange = new HotelRoomTypeRestrictionDateRange();
+                                $losRestriction = $objRoomTypeRestrictionDateRange->getRoomTypeLengthOfStay($idProduct, $dateFrom);
+                                if ($losRestriction) {
+                                    $losMinDays = isset($losRestriction['min_los']) ? $losRestriction['min_los'] : 0;
+                                    $losMaxDays = isset($losRestriction['max_los']) ? $losRestriction['max_los'] : 0;
+                                    // Determine which restriction failed
+                                    if ($losMinDays > 0 && $numDays < $losMinDays) {
+                                        $losFailedType = 'min';
+                                    } elseif ($losMaxDays > 0 && $numDays > $losMaxDays) {
+                                        $losFailedType = 'max';
+                                    }
+                                }
+                                break 2;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // calculate room type price first
@@ -863,6 +895,10 @@ class ProductControllerCore extends FrontController
         $smartyVars['num_days'] = $numDays;
         $smartyVars['warning_count'] = $warningCount;
         $smartyVars['total_available_rooms'] = $totalAvailableRooms;
+        $smartyVars['los_restriction_failed'] = $losRestrictionFailed;
+        $smartyVars['los_min_days'] = $losMinDays;
+        $smartyVars['los_max_days'] = $losMaxDays;
+        $smartyVars['los_failed_type'] = $losFailedType;
         $smartyVars['has_room_type_demands'] = $roomTypeDemands ? true : false; // whether to show price breakup
         $smartyVars['rooms_price'] = $totalRoomPrice;
         $smartyVars['demands_price_per_room'] = $demandsPricePerRoom;
