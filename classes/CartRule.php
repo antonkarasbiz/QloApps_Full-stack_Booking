@@ -1478,7 +1478,7 @@ class CartRuleCore extends ObjectModel
     public static function isFeatureActive()
     {
         static $is_feature_active = null;
-        if ($is_feature_active === null) {
+        if ($is_feature_active === null || $is_feature_active === false) {
             $is_feature_active = (bool)Configuration::get('PS_CART_RULE_FEATURE_ACTIVE');
         }
         return $is_feature_active;
