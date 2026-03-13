@@ -102,7 +102,7 @@ class EmployeeCore extends ObjectModel
             'firstname' =>                    array('type' => self::TYPE_STRING, 'validate' => 'isName', 'required' => true, 'size' => 32),
             'email' =>                        array('type' => self::TYPE_STRING, 'validate' => 'isEmail', 'required' => true, 'size' => 128),
             'id_lang' =>                    array('type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => true),
-            'passwd' =>                    array('type' => self::TYPE_STRING, 'validate' => 'isPasswdAdmin', 'required' => true, 'size' => 32),
+            'passwd' =>                    array('type' => self::TYPE_STRING, 'validate' => 'isPasswdAdmin', 'required' => true, 'size' => 60),
             'last_passwd_gen' =>            array('type' => self::TYPE_STRING),
             'active' =>                    array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'optin' =>                        array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
@@ -273,7 +273,7 @@ class EmployeeCore extends ObjectModel
      */
     public function getByEmail($email, $passwd = null, $active_only = true)
     {
-        if (!Validate::isEmail($email) || ($passwd != null && !Validate::isPasswd($passwd))) {
+        if (!Validate::isEmail($email) || ($passwd != null && !Validate::isHashedPassword($passwd))) {
             die(Tools::displayError());
         }
 
@@ -281,10 +281,16 @@ class EmployeeCore extends ObjectModel
 		SELECT *
 		FROM `'._DB_PREFIX_.'employee`
 		WHERE `email` = \''.pSQL($email).'\'
-		'.($active_only ? ' AND `active` = 1' : '')
-        .($passwd !== null ? ' AND `passwd` = \''.Tools::encrypt($passwd).'\'' : ''));
+		'.($active_only ? ' AND `active` = 1' : ''));
         if (!$result) {
             return false;
+        }
+
+        if ($passwd !== null) {
+            $crypto = new Hashing();
+            if (!$crypto->checkHash($passwd, $result['passwd'])) {
+                return false;
+            }
         }
         $this->id = $result['id_employee'];
         $this->id_profile = $result['id_profile'];
@@ -292,6 +298,11 @@ class EmployeeCore extends ObjectModel
             if (property_exists($this, $key)) {
                 $this->{$key} = $value;
             }
+        }
+
+        if ($passwd !== null && !$crypto->isFirstHash($passwd, $result['passwd'])) {
+            $this->passwd = $crypto->hash($passwd);
+            $this->update();
         }
         return $this;
     }
@@ -316,7 +327,7 @@ class EmployeeCore extends ObjectModel
      */
     public static function checkPassword($id_employee, $passwd)
     {
-        if (!Validate::isUnsignedId($id_employee) || !Validate::isPasswd($passwd, 8)) {
+        if (!Validate::isUnsignedId($id_employee) || !Validate::isHashedPassword($passwd, 8)) {
             die(Tools::displayError());
         }
 
@@ -364,19 +375,20 @@ class EmployeeCore extends ObjectModel
     // validate and set password for the employee
     public function setWsPasswd($passwd)
     {
+        $crypto = new Hashing();
         if ($this->id != 0) {
             if ($this->passwd != $passwd) {
-                if (!Validate::isPasswd($passwd, Validate::ADMIN_PASSWORD_LENGTH)) {
+                if (!Validate::isHashedPassword($passwd, Validate::ADMIN_PASSWORD_LENGTH)) {
                     WebserviceRequest::getInstance()->setError(400, 'The password must be at least '.Validate::ADMIN_PASSWORD_LENGTH.' characters long.', 134);
                 } else {
-                    $this->passwd = Tools::encrypt($passwd);
+                    $this->passwd = $crypto->hash($passwd);
                 }
             }
         } else {
-            if (!Validate::isPasswd($passwd, Validate::ADMIN_PASSWORD_LENGTH)) {
+            if (!Validate::isHashedPassword($passwd, Validate::ADMIN_PASSWORD_LENGTH)) {
                 WebserviceRequest::getInstance()->setError(400, 'The password must be at least '.Validate::ADMIN_PASSWORD_LENGTH.' characters long.', 134);
             } else {
-                $this->passwd = Tools::encrypt($passwd);
+                $this->passwd = $crypto->hash($passwd);
             }
         }
 

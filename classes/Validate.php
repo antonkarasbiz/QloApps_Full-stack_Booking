@@ -89,6 +89,19 @@ class ValidateCore
     }
 
     /**
+     * Check for password hash validity (legacy MD5 or bcrypt), or plaintext password.
+     *
+     * @param string $hash
+     * @return bool Validity is ok or not
+     */
+    public static function isHashedPassword($hashedPasswd)
+    {
+        return self::isPasswd($hashedPasswd)
+            || Tools::strlen($hashedPasswd) == 32
+            || Tools::strlen($hashedPasswd) == 60;
+    }
+
+    /**
      * Check for SHA1 string validity
      *
      * @param string $sha1 SHA1 string to validate
