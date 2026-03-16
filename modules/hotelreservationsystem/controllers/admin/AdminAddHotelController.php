@@ -921,6 +921,7 @@ class AdminAddHotelController extends ModuleAdminController
     public function ajaxProcessChangeCoverImage()
     {
         $idImage = Tools::getValue('id_image');
+        $response = array('status' => false);
         if ($idImage) {
             $idHotel = Tools::getValue('id_hotel');
             if ($coverImg = HotelImage::getCover($idHotel)) {
@@ -932,17 +933,15 @@ class AdminAddHotelController extends ModuleAdminController
             $objHtlImage = new HotelImage((int) $idImage);
             $objHtlImage->cover = 1;
             if ($objHtlImage->update()) {
-                die(true);
-            } else {
-                die(false);
+                $response['status'] = true;
             }
-        } else {
-            die(false);
         }
+        $this->ajaxDie(json_encode($response));
     }
 
     public function ajaxProcessDeleteHotelImage()
     {
+        $response = array('status' => false);
         if ($idImage = Tools::getValue('id_image')) {
             if ($idHotel = Tools::getValue('id_hotel')) {
                 if (Validate::isLoadedObject($objHtlImage = new HotelImage((int) $idImage))) {
@@ -955,12 +954,12 @@ class AdminAddHotelController extends ModuleAdminController
                                 $objHtlImage->save();
                             }
                         }
-                        die(true);
+                        $response['status'] = true;
                     }
                 }
             }
         }
-        die(false);
+        $this->ajaxDie(json_encode($response));
     }
 
     public function ajaxProcessUpdateSlidesPosition()
