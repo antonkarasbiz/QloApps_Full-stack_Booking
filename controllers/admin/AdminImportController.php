@@ -3223,11 +3223,13 @@ class AdminImportControllerCore extends AdminController
 
     public function utf8EncodeArray($array)
     {
-        return is_array($array)
-            ? array_map(function ($item) {
+        if (is_array($array)) {
+            return array_map(function ($item) {
                 return mb_convert_encoding($item, 'UTF-8', 'ISO-8859-1');
-            }, $array)
-            : mb_convert_encoding($array, 'UTF-8', 'ISO-8859-1');
+            }, $array);
+        }
+
+        return mb_convert_encoding($array, 'UTF-8', 'ISO-8859-1');
     }
 
     protected function getNbrColumn($handle, $glue)
