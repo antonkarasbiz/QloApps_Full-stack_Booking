@@ -230,6 +230,11 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
 
         foreach ($this->boxes as $id) {
             $objFeaturePricing = new $this->className((int)$id);
+            if (!Validate::isLoadedObject($objFeaturePricing)) {
+                $this->errors[] = sprintf($this->l('Invalid advanced price rule ID %d.'), (int) $id);
+                $result = false;
+                continue;
+            }
 
             if ($objFeaturePricing->active) {
                 continue;
@@ -247,13 +252,13 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                     $this->l('Advanced price rule ID %d: Another advanced price rule with similar conditions already exists. Please update the existing rule before enabling this one.'),
                     (int) $id
                 );
-                return;
+                continue;
             }
 
             $objFeaturePricing->setFieldsToUpdate(array('active' => true));
             $objFeaturePricing->active = 1;
             $isUpdated = (bool) $objFeaturePricing->update();
-            $result &= $isUpdated;
+            $result = $result && $isUpdated;
 
             if (!$isUpdated) {
                 $this->errors[] = sprintf($this->l('Can\'t update #%d status.'), (int) $id);
