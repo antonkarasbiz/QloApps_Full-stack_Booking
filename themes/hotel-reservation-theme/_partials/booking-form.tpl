@@ -214,12 +214,10 @@
                                 <div class="sold_out_alert">
                                     {if isset($los_restriction_failed) && $los_restriction_failed}
                                         <span>
-                                            {if isset($los_failed_type) && $los_failed_type == 'min'}
+                                            {if isset($los_min_failed) && $los_min_failed}
                                                 {l s='At least %d nights required.' sprintf=[$los_min_days]}
-                                            {elseif isset($los_failed_type) && $los_failed_type == 'max'}
-                                                {l s='Up to %d nights allowed.' sprintf=[$los_max_days]}
-                                            {else}
-                                                {l s='Length of stay does not match the restrictions.'}
+                                            {elseif isset($los_max_failed) && $los_max_failed}
+                                                {l s='Maximum stay allowed is %d nights.' sprintf=[$los_max_days]}
                                             {/if}
                                         </span>
                                     {else}
