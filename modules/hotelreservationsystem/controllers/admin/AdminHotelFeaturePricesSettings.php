@@ -252,7 +252,7 @@ class AdminHotelFeaturePricesSettingsController extends ModuleAdminController
                     $this->l('Advanced price rule ID %d: Another advanced price rule with similar conditions already exists. Please update the existing rule before enabling this one.'),
                     (int) $id
                 );
-                continue;
+                return;
             }
 
             $objFeaturePricing->setFieldsToUpdate(array('active' => true));
