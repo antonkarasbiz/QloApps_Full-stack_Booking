@@ -219,7 +219,7 @@
                                             {elseif isset($los_failed_type) && $los_failed_type == 'max'}
                                                 {l s='Up to %d nights allowed.' sprintf=[$los_max_days]}
                                             {else}
-                                                {l s='LOS is not match'}
+                                                {l s='Length of stay does not match the restrictions.'}
                                             {/if}
                                         </span>
                                     {else}
