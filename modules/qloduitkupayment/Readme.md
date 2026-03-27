@@ -3,10 +3,7 @@
 https://store.webkul.com/support.html
 
 ### Store link:
-
-
-### Explore Modules:
-
+https://store.webkul.com/qloapps-duitku-payment-3848.html
 
 ### Explore Addons:
 https://qloapps.com/addons/

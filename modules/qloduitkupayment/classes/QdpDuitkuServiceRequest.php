@@ -94,7 +94,7 @@ class QdpDuitkuServiceRequest
 
     private static function getApiUrl($endpoint)
     {
-        $environment = Configuration::get('QDP_DUITKU_PAYMENT_ENVIRONMENT');
+        $environment = (int) Configuration::get('QDP_DUITKU_PAYMENT_ENVIRONMENT');
 
         if ($environment === QdpDuitkuTransaction::QDP_DUITKU_ENVIRONMENT_SANDBOX) {
             return QdpDuitkuTransaction::QDP_DUITKU_HOST_SANDBOX_URL . $endpoint;

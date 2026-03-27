@@ -52,7 +52,6 @@ $(document).ready(function() {
             },
             success: function(jsonResponse) {
                 $(".duitku_loading_overlay").hide();
-                console.log(jsonResponse);
                 if (jsonResponse.status) {
                     window.location.href = jsonResponse.response.paymentUrl;
                 } else {
