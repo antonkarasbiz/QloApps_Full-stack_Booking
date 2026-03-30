@@ -231,9 +231,7 @@ abstract class CacheCore
             if ($ttl < 0) {
                 $ttl = 0;
             }
-            if(!is_array($this->keys)){
-                 $this->keys = [];
-            }
+
             $this->keys[$key] = ($ttl == 0) ? 0 : time() + $ttl;
             $this->_writeKeys();
             return true;
