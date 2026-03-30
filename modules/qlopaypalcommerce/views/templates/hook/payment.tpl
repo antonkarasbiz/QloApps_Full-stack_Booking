@@ -46,18 +46,14 @@
         function initPaypalIfReady() {
             if (rendered) return;
 
-            if (
-                typeof mp_pp_enabled !== "undefined" &&
-                mp_pp_enabled &&
-                $("#paypal-button-container").length
-            ) {
+            if (!rendered && $("#paypal-button-container").length) {
                 rendered = true;
                 $("#wkPaypalBtn").addClass("active");
                 $(".pp-btn-block").show();
                 renderPayPalButton();
             }
         }
-        initPaypalIfReady();
+
         const observer = new MutationObserver(() => initPaypalIfReady());
         observer.observe(document.body, { childList: true, subtree: true });
         const checkRendered = setInterval(() => {
