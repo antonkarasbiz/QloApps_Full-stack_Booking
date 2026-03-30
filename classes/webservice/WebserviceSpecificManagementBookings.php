@@ -159,7 +159,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
     );
 
     public $allowedFilters = array(
-        'id_property' => 'o.id_hotel',
+        'id_property' => 'hbd.id_hotel',
         'customer' => 'customer',
         'id_order' => 'o.id_order',
         'booking_status' => 'hbd.id_status',
@@ -169,7 +169,6 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
         'checkin_date' => 'hbd.date_from',
         'checkout_date' => 'hbd.date_to',
         'id_room_type' => 'hbd.id_product',
-        'number_of_rooms' => 'hbd.num_rooms',
         'payment_type' => 'op.payment_type',
         'payment_method' => 'op.payment_method',
     );
@@ -322,19 +321,6 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
                 } else {
                     $this->getBookingsList();
                     $this->renderResponse();
-                    // @todo: add filters for the booking webservice
-                    // $filters = $this->manageFilters();
-                    // $this->output .= $this->objOutput->getObjectRender()->renderNodeHeader('bookings', array());
-                    // $bookings = Db::getInstance()->executeS('SELECT `id_order` FROM `'._DB_PREFIX_.'orders` WHERE 1');
-                    // foreach ($bookings as $booking) {
-                    //     $more_attr = array(
-                    //         'xlink_resource' => $this->wsObject->wsUrl.$this->wsObject->urlSegment[0].'/'.$booking['id_order'],
-                    //         'id' => (int) $booking['id_order']
-                    //     );
-                    //     $this->output .= $this->objOutput->getObjectRender()->renderNodeHeader('booking', array('objectsNodeName' => 'bookings'), $more_attr, false);
-                    // }
-                    // $this->output .= $this->objOutput->getObjectRender()->renderNodeFooter('bookings', array());
-                    // $this->output = $this->objOutput->getObjectRender()->overrideContent($this->output);
                 }
 
             break;
@@ -3609,31 +3595,48 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
     }
 
     private function manageBookingOrderBySort($sorts)
-    {   
-        $sql_sort = '';
-        if(isset($sorts) && $sorts){
-            preg_match('#^\[(.*)\]$#Ui', $sorts, $matches);
-            if (count($matches) > 1) {
-                $sorts = explode(',', $matches[1]);
-            } else {
-                $sorts = array($sorts);
-            }
-            $sql_sort .= ' ORDER BY ';
+    {
+        $sqlSort = '';
 
-            foreach($sorts as $key => $sort){
+        if ($sorts) {
+            preg_match('#^\[(.*)\]$#Ui', $sorts, $matches);
+            $sorts = count($matches) > 1 ? explode(',', $matches[1]) : array($sorts);
+
+            $sqlSort .= ' ORDER BY ';
+
+            foreach ($sorts as $sort) {
                 $delimiterPosition = strrpos($sort, '_');
-                if ($delimiterPosition !== false) {
-                    $fieldName = substr($sort, 0, $delimiterPosition);
-                    $direction = strtoupper(substr($sort, $delimiterPosition + 1));
-                }
-                if ($delimiterPosition === false || !in_array($direction, array('ASC', 'DESC'))) {
-                    $this->wsObject->setError(400, 'The "sort" value has to be formed as this example: "field_ASC" or \'[field_1_DESC,field_2_ASC,field_3_ASC,...]\' ("field" has to be an available field)', 37);
+                if ($delimiterPosition === false) {
+                    $this->wsObject->setError(400, 'The "sort" value has to be formed as this example: "field_ASC" or \'[field_1_DESC,field_2_ASC]\'', 37);
                     return false;
                 }
-                $sql_sort .= $fieldName.' '.$direction;// ORDER BY `field` ASC|DESC
+
+                $fieldName = substr($sort, 0, $delimiterPosition);
+                $direction = strtoupper(substr($sort, $delimiterPosition + 1));
+
+                if (!in_array($direction, array('ASC', 'DESC'))) {
+                    $this->wsObject->setError(400, 'The "sort" value has to be formed as this example: "field_ASC" or \'[field_1_DESC,field_2_ASC]\'', 37);
+                    return false;
+                }
+
+                if (!array_key_exists($fieldName, $this->allowedFilters)) {
+                    $this->wsObject->setErrorDidYouMean(
+                        400,
+                        'This sort field does not exist',
+                        $fieldName,
+                        array_keys($this->allowedFilters),
+                        38
+                    );
+                    return false;
+                }
+
+                $sqlSort .= $this->allowedFilters[$fieldName].' '.$direction.', ';
             }
+
+            $sqlSort = rtrim($sqlSort, ', ');
         }
-        return $sql_sort;
+
+        return $sqlSort;
     }
 
     public function getBookingsList()
@@ -3691,7 +3694,7 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
             ' . $orderSql . '
             ' . $limitSql;
         try {
-           /// ddd($sql);
+
             $results = Db::getInstance()->executeS($sql);
             $objServiceProductOrderDetail = new ServiceProductOrderDetail();
             $objOrder = new Order();
