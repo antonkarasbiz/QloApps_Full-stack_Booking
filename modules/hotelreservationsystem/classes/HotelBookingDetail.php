@@ -1778,54 +1778,53 @@ class HotelBookingDetail extends ObjectModel
     public function getAvailableRoomsForReallocation($date_from, $date_to, $id_room_type, $hotel_id, $room_types_to_upgrade = 0)
     {
         $context = Context::getContext();
-        if (isset($context->cookie->id_cart)) {
-            $current_admin_cart_id = $context->cookie->id_cart;
-        }
-        $exclude_ids = 'SELECT `id_room` FROM `'._DB_PREFIX_.'htl_booking_detail`
-            WHERE `date_from` < \''.pSQL($date_to).'\' AND `date_to` > \''.pSQL($date_from).'\'
-            AND `is_refunded`=0 AND `is_back_order`=0
-            UNION
-            SELECT hri.`id` AS id_room
-            FROM `'._DB_PREFIX_.'htl_room_information` AS hri
-            INNER JOIN `'._DB_PREFIX_.'htl_room_disable_dates` AS hrdd ON (hrdd.`id_room_type` = hri.`id_product` AND hrdd.`id_room` = hri.`id`)
-            WHERE hri.`id_hotel`='.(int)$hotel_id.($id_room_type ? ' AND `id_product` = '.(int)$id_room_type : '').'
-            AND hri.`id_status` = '. HotelRoomInformation::STATUS_TEMPORARY_INACTIVE .'
-            AND (hrdd.`date_from` <= \''.pSql($date_to).'\' AND hrdd.`date_to` >= \''.pSql($date_from).'\')';
+        $availRooms = array();
+        $bookingParams = array(
+            'date_from' => $date_from,
+            'date_to' => $date_to,
+            'hotel_id' => $hotel_id,
+            'id_room_type' => $id_room_type,
+            'search_available' => 1,
+            'search_partial' => 0,
+            'search_booked' => 0,
+            'search_unavai' => 0,
+            'only_search_data' => 1,
+            'id_cart' => isset($context->cookie->id_cart) ? (int) $context->cookie->id_cart : 0,
+            'id_guest' => isset($context->cookie->id_guest) ? (int) $context->cookie->id_guest : 0,
+        );
 
-        if (isset($current_admin_cart_id) && $current_admin_cart_id) {
-            $sql = 'SELECT `id` AS `id_room`, `id_product`, `id_hotel`, `room_num`, `comment` AS `room_comment`
-            FROM `'._DB_PREFIX_.'htl_room_information`
-            WHERE `id_hotel`='.(int)$hotel_id.($id_room_type ? ' AND `id_product` = '.(int)$id_room_type : '').'
-            AND (id_status = '. HotelRoomInformation::STATUS_ACTIVE .' or id_status = '. HotelRoomInformation::STATUS_TEMPORARY_INACTIVE .')
-            AND `id` NOT IN ('.$exclude_ids.')
-            AND `id` NOT IN (SELECT `id_room` FROM `'._DB_PREFIX_.'htl_cart_booking_data` WHERE `id_cart`='.
-            (int)$current_admin_cart_id.')';
-        } else {
-            $sql = 'SELECT `id` AS `id_room`, `id_product`, `id_hotel`, `room_num`, `comment` AS `room_comment`
-            FROM `'._DB_PREFIX_.'htl_room_information`
-            WHERE `id_hotel`='.(int)$hotel_id.($id_room_type ? ' AND `id_product` = '.(int)$id_room_type : '').'
-            AND (id_status = '. HotelRoomInformation::STATUS_ACTIVE .' or id_status = '. HotelRoomInformation::STATUS_TEMPORARY_INACTIVE .')
-            AND `id` NOT IN ('.$exclude_ids.')';
-        }
+        $searchRoomsInfo = $this->getBookingData($bookingParams);
 
-        if ($avail_rooms = Db::getInstance()->executeS($sql)) {
-            // if requested for room type upgrade options also then get room type upgrade options
-            if ($room_types_to_upgrade) {
-                $availableRoomTypes = array();
-                $context = Context::getContext();
-                foreach ($avail_rooms as $roomInfo) {
-                    $objProduct = new Product($roomInfo['id_product'], false, $context->language->id);
-                    if(Validate::isLoadedObject($objProduct) && $objProduct->active){
-                        $availableRoomTypes[$roomInfo['id_product']]['id_product'] = $roomInfo['id_product'];
-                        $availableRoomTypes[$roomInfo['id_product']]['room_type_name'] = $objProduct->name;
-                        $availableRoomTypes[$roomInfo['id_product']]['rooms'][] = $roomInfo;
-                    }
+        if (isset($searchRoomsInfo['rm_data']) && is_array($searchRoomsInfo['rm_data'])) {
+            foreach ($searchRoomsInfo['rm_data'] as $idProduct => $roomTypeInfo) {
+                foreach($roomTypeInfo['data']['available'] as $availableRoom) {
+                    $availRooms[] = array(
+                        'id_room' => $availableRoom['id_room'],
+                        'id_product' => $availableRoom['id_product'],
+                        'id_hotel' => $availableRoom['id_hotel'],
+                        'room_num' => $availableRoom['room_num'],
+                        'room_comment' => $availableRoom['room_comment'],
+                    );
                 }
-
-                return $availableRoomTypes;
             }
 
-            return $avail_rooms;
+            if ($availRooms) {
+            // if requested for room type upgrade options also then get room type upgrade options
+                if ($room_types_to_upgrade) {
+                    $availableRoomTypes = array();
+                        foreach ($availRooms as $roomInfo) {
+                            $objProduct = new Product($roomInfo['id_product'], false, $context->language->id);
+                            $availableRoomTypes[$roomInfo['id_product']]['id_product'] = $roomInfo['id_product'];
+                            $availableRoomTypes[$roomInfo['id_product']]['room_type_name'] = $objProduct->name;
+                            $availableRoomTypes[$roomInfo['id_product']]['rooms'][] = $roomInfo;
+                        }
+
+                    return $availableRoomTypes;
+                }
+
+                return $availRooms;
+            }
+
         }
 
         return false;
