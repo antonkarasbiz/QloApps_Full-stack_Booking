@@ -3224,9 +3224,21 @@ class AdminImportControllerCore extends AdminController
     public function utf8EncodeArray($array)
     {
         if (is_array($array)) {
-            return array_map(function ($item) {
-                return mb_convert_encoding($item, 'UTF-8', 'ISO-8859-1');
+            return array_map(function ($value) {
+                if (is_array($value)) {
+                    return $this->utf8EncodeArray($value);
+                }
+
+                if (!is_string($value)) {
+                    return $value;
+                }
+
+                return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
             }, $array);
+        }
+
+        if (!is_string($array)) {
+            return $array;
         }
 
         return mb_convert_encoding($array, 'UTF-8', 'ISO-8859-1');
