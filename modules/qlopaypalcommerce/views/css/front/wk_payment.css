@@ -52,12 +52,8 @@ p.payment_module a#wkPaypalBtn {
 
 .pp-btn-block {
     text-align: center;
-    padding: 20px 0;
+    padding: 20px 15px;
     background: #fbfbfb;
     border-radius: 3px;
     border: 1px solid #d6d4d4;
-}
-
-#paypal-button-container{
-    padding: 0px 15px;
 }

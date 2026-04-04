@@ -26,7 +26,7 @@
         <p class="payment_module">
             <a id="wkPaypalBtn" style="cursor:pointer;" href="javascript:void(0);"
                 title="{l s='PayPal Checkout' mod='qlopaypalcommerce'}">
-                {l s='PayPal Checkout' mod='qlopaypalcommerce'}
+                {l s='PayPal Checkout' mod='qlopaypalcommerce'} <span>{l s='(Pay with PayPal Account or Cards)' mod='qlopaypalcommerce'}</span>
             </a>
         <div class="pp-btn-block" style="display:none;">
             <div id="paypal-button-container"></div>
@@ -42,27 +42,6 @@
 <script>
     $(document).ready(function() {
         var rendered = false;
-
-        function initPaypalIfReady() {
-            if (rendered) return;
-
-            if (!rendered && $("#paypal-button-container").length) {
-                rendered = true;
-                $("#wkPaypalBtn").addClass("active");
-                $(".pp-btn-block").show();
-                renderPayPalButton();
-            }
-        }
-
-        const observer = new MutationObserver(() => initPaypalIfReady());
-        observer.observe(document.body, { childList: true, subtree: true });
-        const checkRendered = setInterval(() => {
-            if (rendered) {
-                observer.disconnect();
-                clearInterval(checkRendered);
-            }
-        }, 500);
-
 
         $('#wkPaypalBtn').on('click', function() {
             $(this).toggleClass("active");
