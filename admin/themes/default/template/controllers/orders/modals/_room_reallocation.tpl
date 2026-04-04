@@ -98,7 +98,7 @@
                 <div class="row form-group">
                     <div class="col-sm-12">
                     <label class="control-label">{l s='Remark'}</label>
-                        <textarea class="form-control room_remark" type="text" name="message" value="" maxlength="250"></textarea>
+                        <textarea class="form-control room_remark" name="message" maxlength="250"></textarea>
                     </div>
                 </div>
 
@@ -148,7 +148,7 @@
                 <div class="row form-group">
                     <div class="col-sm-12">
                      <label class="control-label">{l s='Remark'}</label>
-                        <textarea class="form-control room_remark" type="text" name="message" value="" maxlength="250"></textarea>
+                        <textarea class="form-control room_remark" name="message" maxlength="250"></textarea>
                     </div>
                  </div>
 

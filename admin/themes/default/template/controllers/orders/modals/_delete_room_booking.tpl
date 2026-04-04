@@ -20,13 +20,14 @@
 * @license https://opensource.org/license/osl-3-0-php Open Software License version 3.0
 *}
 <div class="modal-body">
-    <input type="hidden" name="id_product" value="{$id_product}">
-    <input type="hidden" name="id_order_detail" value="{$id_order_detail}">
-    <input type="hidden" name="id_hotel" value="{$id_hotel}">
-    <input type="hidden" name="id_room" value="{$id_room}">
-    <input type="hidden" name="id_htl_booking" value="{$id_htl_booking}">
-    <input type="hidden" name="date_from" value="{$date_from}">
-    <input type="hidden" name="date_to" value="{$date_to}">
+    <input type="hidden" name="id_product" value="{$id_product|intval}">
+    <input type="hidden" name="id_order_detail" value="{$id_order_detail|intval}">
+    <input type="hidden" name="id_hotel" value="{$id_hotel|intval}">
+    <input type="hidden" name="id_room" value="{$id_room|intval}">
+    <input type="hidden" name="id_htl_booking" value="{$id_htl_booking|intval}">
+    <input type="hidden" name="id_order" value="{$id_order|intval}">
+    <input type="hidden" name="date_from" value="{$date_from|escape:'html':'UTF-8'}">
+    <input type="hidden" name="date_to" value="{$date_to|escape:'html':'UTF-8'}">
     <div class="form-group">
         <div class="form-group" id="remarkGroup">
             <label class="control-label" for="room_remark">
@@ -38,7 +39,7 @@
     </div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-default btn-close" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-default btn-close" data-dismiss="modal">{l s='Close'}</button>
     <button type="button" id="submitRoomDelete" class="btn btn-danger">
         <i class="icon icon-trash"></i>&nbsp;{l s="Delete Room"}
     </button>

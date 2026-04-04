@@ -1276,36 +1276,63 @@ class AdminOrdersControllerCore extends AdminController
 
     public function ajaxProcessInitDeleteRoomBookingModal()
     {
+        if ($this->tabAccess['edit'] !== 1) {
+            die(Tools::jsonEncode(array(
+                'hasError' => 1,
+                'error' => Tools::displayError('You do not have permission to edit this order.')
+            )));
+        }
+
         // set modal details
         $response['hasError'] = 1;
-        if ($id_order = Tools::getValue('id_order')
-            && ($idProduct = Tools::getValue('id_product'))
-            && ($idOrderDetail = Tools::getValue('id_order_detail'))
-            && ($idRoom = Tools::getValue('id_room'))
-            && ($dateFrom = Tools::getValue('date_from'))
-            && ($dateTo = Tools::getValue('date_to'))
-            && ($idHtlBooking = Tools::getValue('id_htl_booking'))
-            && ($idHotel = Tools::getValue('id_hotel'))
+        $id_order = (int) Tools::getValue('id_order');
+        $idProduct = (int) Tools::getValue('id_product');
+        $idOrderDetail = (int) Tools::getValue('id_order_detail');
+        $idRoom = (int) Tools::getValue('id_room');
+        $idHtlBooking = (int) Tools::getValue('id_htl_booking');
+        $idHotel = (int) Tools::getValue('id_hotel');
+        $dateFrom = (string) Tools::getValue('date_from');
+        $dateTo = (string) Tools::getValue('date_to');
+
+        if ($id_order
+            && $idProduct
+            && $idOrderDetail
+            && $idRoom
+            && $idHtlBooking
+            && $idHotel
+            && $dateFrom
+            && $dateTo
         ) {
-                $smartyVars['id_product'] = $idProduct;
-                $smartyVars['id_order_detail'] = $idOrderDetail;
-                $smartyVars['id_room'] = $idRoom;
-                $smartyVars['date_from'] = $dateFrom;
-                $smartyVars['date_to'] = $dateTo;
-                $smartyVars['id_htl_booking'] = $idHtlBooking;
-                $smartyVars['id_hotel'] = $idHotel;
-                $smartyVars['id_order'] = $id_order;
-                $this->context->smarty->assign($smartyVars);
-                $modal = array(
-                    'modal_id' => 'delete-room-booking-modal',
-                    'modal_class' => 'modal-md order_detail_modal',
-                    'modal_title' => '<i class="icon icon-bed"></i> &nbsp'.$this->l('Delete Room'),
-                    'modal_content' => $this->context->smarty->fetch('controllers/orders/modals/_delete_room_booking.tpl'),
-                );
-                $this->context->smarty->assign($modal);
-                $response['hasError'] = 0;
-                $response['modalHtml'] = $this->context->smarty->fetch('modal.tpl');
+            if (!Validate::isDate($dateFrom) || !Validate::isDate($dateTo)) {
+                die(Tools::jsonEncode(array(
+                    'hasError' => 1,
+                    'error' => Tools::displayError('Invalid date range.')
+                )));
             }
+
+            $smartyVars = array(
+                'id_product' => $idProduct,
+                'id_order_detail' => $idOrderDetail,
+                'id_room' => $idRoom,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+                'id_htl_booking' => $idHtlBooking,
+                'id_hotel' => $idHotel,
+                'id_order' => $id_order,
+            );
+            $this->context->smarty->assign($smartyVars);
+            $modal = array(
+                'modal_id' => 'delete-room-booking-modal',
+                'modal_class' => 'modal-md order_detail_modal',
+                'modal_title' => '<i class="icon icon-bed"></i> &nbsp'.$this->l('Delete Room'),
+                'modal_content' => $this->context->smarty->fetch('controllers/orders/modals/_delete_room_booking.tpl'),
+            );
+            $this->context->smarty->assign($modal);
+            $response['hasError'] = 0;
+            $response['modalHtml'] = $this->context->smarty->fetch('modal.tpl');
+        } else {
+            $response['error'] = Tools::displayError('Invalid data.');
+        }
         die(Tools::jsonEncode($response));
     }
 
@@ -1591,18 +1618,19 @@ class AdminOrdersControllerCore extends AdminController
 
                 if (!count($this->errors)) {
                     // Finally, reallocate the room
-                    if ($objBookingDetail->reallocateBooking($idHtlBookingFrom, $idRoomToReallocate, $priceDiff)) {
-                        $message = new Message();
-                        if ($message_content = Tools::getValue('message')) {
-                            if (Validate::isMessage($message_content)) {
-                                $message->message = $message_content;
-                                $message->id_cart = (int)$this->context->cart->id;
-                                $message->id_customer = (int)$this->context->cart->id_customer;
-                                $message->id_order = (int)$idOrder;
-                                $message->private = 1;
-                                $message->save();
-                            }
-                        }
+	                    if ($objBookingDetail->reallocateBooking($idHtlBookingFrom, $idRoomToReallocate, $priceDiff)) {
+	                        $message = new Message();
+	                        if ($message_content = Tools::getValue('message')) {
+	                            if (Validate::isMessage($message_content)) {
+	                                $order = new Order((int) $idOrder);
+	                                $message->message = $message_content;
+	                                $message->id_cart = (int) $order->id_cart;
+	                                $message->id_customer = (int) $order->id_customer;
+	                                $message->id_order = (int)$idOrder;
+	                                $message->private = 1;
+	                                $message->save();
+	                            }
+	                        }
                         Tools::redirectAdmin(self::$currentIndex.'&id_order='.(int) $idOrder.'&vieworder&conf=52&token='.$this->token);
                     } else {
                         $this->errors[] = $this->l('Some error occured. Please try again.');
@@ -1644,18 +1672,19 @@ class AdminOrdersControllerCore extends AdminController
 
                 if (!count($this->errors)) {
                     $objBookingDetail = new HotelBookingDetail();
-                    if ($objBookingDetail->swapBooking($idHtlBookingFrom, $idHtlBookingToSwap)) {
-                        $message = new Message();
-                        if ($message_content = Tools::getValue('message')) {
-                            if (Validate::isMessage($message_content)) {
-                                $message->message = $message_content;
-                                $message->id_cart = (int)$this->context->cart->id;
-                                $message->id_customer = (int)$this->context->cart->id_customer;
-                                $message->id_order = (int)$idOrder;
-                                $message->private = 1;
-                                $message->save();
-                            }
-                        }
+	                    if ($objBookingDetail->swapBooking($idHtlBookingFrom, $idHtlBookingToSwap)) {
+	                        $message = new Message();
+	                        if ($message_content = Tools::getValue('message')) {
+	                            if (Validate::isMessage($message_content)) {
+	                                $order = new Order((int) $idOrder);
+	                                $message->message = $message_content;
+	                                $message->id_cart = (int) $order->id_cart;
+	                                $message->id_customer = (int) $order->id_customer;
+	                                $message->id_order = (int)$idOrder;
+	                                $message->private = 1;
+	                                $message->save();
+	                            }
+	                        }
                         Tools::redirectAdmin(self::$currentIndex.'&id_order='.(int)$idOrder.'&vieworder&conf=53&token='.$this->token);
                     } else {
                         $this->errors[] = $this->l('Some error occured. Please try again.');
@@ -6436,7 +6465,7 @@ class AdminOrdersControllerCore extends AdminController
     public function ajaxProcessDeleteRoomLine()
     {
         // Check tab access is allowed to edit
-        if (!$this->tabAccess['edit'] === 1) {
+        if ($this->tabAccess['edit'] !== 1) {
             die(json_encode(array(
                 'result' => false,
                 'error' => Tools::displayError('You do not have permission to edit this order.')
@@ -6720,8 +6749,8 @@ class AdminOrdersControllerCore extends AdminController
             if ($message_content = Tools::getValue('message')) {
                 if (Validate::isMessage($message_content)) {
                     $message->message = $message_content;
-                    $message->id_cart = (int)$this->context->cart->id;
-                    $message->id_customer = (int)$this->context->cart->id_customer;
+                    $message->id_cart = (int) $objBookingDetail->id_cart;
+                    $message->id_customer = (int) $order->id_customer;
                     $message->id_order = (int)$order->id;
                     $message->private = 1;
                     $message->save();
