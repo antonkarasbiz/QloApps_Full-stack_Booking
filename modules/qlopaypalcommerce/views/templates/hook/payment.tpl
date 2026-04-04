@@ -24,12 +24,12 @@
 <div class="row">
     <div class="col-xs-12 col-md-12">
         <p class="payment_module">
-            <a id="wkPaypalBtn" style="cursor:pointer;" href="javascript:void(0);"
+            <a id="qlo_paypal_btn" style="cursor:pointer;" href="javascript:void(0);"
                 title="{l s='PayPal Checkout' mod='qlopaypalcommerce'}">
                 {l s='PayPal Checkout' mod='qlopaypalcommerce'} <span>{l s='(Pay with PayPal Account or Cards)' mod='qlopaypalcommerce'}</span>
             </a>
-        <div class="pp-btn-block" style="display:none;">
-            <div id="paypal-button-container"></div>
+        <div class="qlo_paypal_methods_wrapper" style="display:none;">
+            <div id="qlo_paypal_container"></div>
             <div id="wk-overlay" style="display:none;">
                 <div class="wk-spinner"></div><br />
                 {l s='Please wait...' mod='qlopaypalcommerce'}
@@ -43,14 +43,14 @@
     $(document).ready(function() {
         var rendered = false;
 
-        $('#wkPaypalBtn').on('click', function() {
+        $('#qlo_paypal_btn').on('click', function() {
             $(this).toggleClass("active");
             if (!rendered) {
                 rendered = true;
-                $(".pp-btn-block").slideDown();
+                $(".qlo_paypal_methods_wrapper").slideDown();
                 renderPayPalButton();
             } else {
-                $(".pp-btn-block").slideToggle();
+                $(".qlo_paypal_methods_wrapper").slideToggle();
             }
 
         });
@@ -103,7 +103,6 @@
                     } else if (details.details[0].issue === 'INSTRUMENT_DECLINED') {
                         return actions.restart();
                     } else {
-                        console.log(details);
                         window.location.replace(error_order + '?err_name=' + details.details[0]
                             .issue +
                             '&err_msg=' + details.details[0].description);
@@ -119,12 +118,11 @@
                 submitForm(url, postData);
             },
             onError: function(error) {
-                console.log(error.data.details[0].issue + ' : ' + error.data.details[0].description);
                 window.location.replace(error_order + '?err_name=' + error.data.details[0].issue +
                     '&err_msg=' +
                     error.data.details[0].description);
             }
-        }).render('#paypal-button-container');
+        }).render('#qlo_paypal_container');
     }
 
 

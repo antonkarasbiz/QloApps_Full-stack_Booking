@@ -46,11 +46,11 @@
     0% {transform: rotate(0deg);}
     100% {transform: rotate(360deg);}}
 
-p.payment_module a#wkPaypalBtn {
+p.payment_module a#qlo_paypal_btn {
     background: url(../../img/paypal-payment-icon.png) 15px 8px no-repeat #fbfbfb;
 }
 
-.pp-btn-block {
+.qlo_paypal_methods_wrapper {
     text-align: center;
     padding: 20px 15px;
     background: #fbfbfb;
