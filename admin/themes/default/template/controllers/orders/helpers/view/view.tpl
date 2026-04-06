@@ -269,9 +269,14 @@
                                             <input type="hidden" name="id_order" value="{$order->id}" />
                                         </div>
                                         <div class="col-lg-3">
-                                            <button type="submit" name="submitState" class="btn btn-primary">
-                                                {l s='Update status'}
-                                            </button>
+                                            <div class="btn-group">
+                                                <button type="submit" name="submitState" class="btn btn-primary">
+                                                    {l s='Update status'}
+                                                </button>
+                                                <button type="button" id="order_status_disable_info" class="btn btn-default" data-toggle="modal" data-target="#orderStatusDisableReasonModal" title="{l s='Why are some statuses disabled?'}" aria-label="{l s='Why are some statuses disabled?'}">
+                                                    <i class="icon-info-circle"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </form>
@@ -1302,7 +1307,30 @@
             {/if}
         </div>
     </div>
-
+    {* Css for handling order disable status modal *}
+    <style type="text/css">
+        #order-status-disable-reason-body p { margin: 0 0 15px; }
+        #order-status-disable-reason-body p:last-child { margin-bottom: 0; }
+    </style>
+    <div class="modal fade" id="orderStatusDisableReasonModal" tabindex="-1" role="dialog" aria-labelledby="orderStatusDisableReasonModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{l s='Close'}"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="orderStatusDisableReasonModalLabel">{l s='Disabled status conditions'}</h4>
+                </div>
+                <div class="modal-body" id="order-status-disable-reason-body">
+                    <p><strong>{l s='Current status:'}</strong> {l s='The current order status cannot be selected again.'}</p>
+                    <p><strong>{l s='Refund status:'}</strong> {l s='Disabled when total paid amount is 0 and no discount is applied.'}</p>
+                    <p><strong>{l s='Cancelled status:'}</strong> {l s='Disabled when refunded rooms exist, or discounts are applied, or paid amount is greater than 0.'}</p>
+                    <p><strong>{l s='Overbooking statuses:'}</strong> {l s='Disabled when the order has no overbooked rooms.'}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{l s='Close'}</button>
+                </div>
+            </div>
+        </div>
+    </div>
     {strip}
         {addJsDefL name=no_rm_avail_txt}{l s='No room available.' js=1}{/addJsDefL}
         {addJsDefL name=no_realloc_rm_avail_txt}{l s='No room available for reallocation.' js=1}{/addJsDefL}
