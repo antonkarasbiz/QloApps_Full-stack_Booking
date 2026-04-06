@@ -1885,7 +1885,7 @@ class AdminOrdersControllerCore extends AdminController
                                 (int)$order->id_shop
                             );
                         }
-                        $this->errors[] = Tools::displayError('An error occurred while sending an email to the customer.');
+                        Tools::dieOrLog(Tools::displayError('An error occurred while sending an email to the customer.'),false);
                     }
                 }
             } else {

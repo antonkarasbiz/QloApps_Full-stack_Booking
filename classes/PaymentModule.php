@@ -525,7 +525,7 @@ abstract class PaymentModuleCore extends Module
                             $msg->id_cart = (int)$id_cart;
                             $msg->id_customer = (int)($order->id_customer);
                             $msg->id_order = (int)$order->id;
-                            $msg->private = 1;
+                            $msg->private = 0;
                             $msg->add();
                         }
                     }
