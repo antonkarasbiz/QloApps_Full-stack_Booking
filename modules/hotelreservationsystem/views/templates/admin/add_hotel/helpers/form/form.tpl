@@ -408,7 +408,9 @@
     						'meta_title' => $meta_title_info,
     						'meta_description' => $meta_description_info,
     						'link_rewrite' => $link_rewrite_info,
-							'meta_keywords' => $meta_keywords_info
+							'meta_keywords' => $meta_keywords_info,
+							'name' => $hotel_info.hotel_name,
+							'description_short' => $hotel_info.short_description
 						]
 					}
 					{hook h='displayAdminAddHotelFormSeoTabAfter' id_hotel=$hook_arg_id_hotel}
