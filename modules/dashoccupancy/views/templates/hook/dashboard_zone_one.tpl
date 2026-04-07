@@ -24,7 +24,7 @@
 	<header class="panel-heading">
 		<i class="icon-bar-chart"></i>
 		<span>{l s='Occupancy' mod='dashoccupancy'}&nbsp;</span>
-        &nbsp;<i class="icon-info-circle label-tooltip" data-toggle="tooltip" data-original-title="{l s='Occupancy information will be displayed for the selected date range.' mod='dashoccupancy'}"></i>
+        &nbsp;<i class="icon-info-circle label-tooltip" data-toggle="tooltip" data-original-title="{l s='Displays the total number of nights (occupied, available, and unavailable) for the selected date range.' mod='dashoccupancy'}"></i>
 		<span class="panel-heading-action">
 			<a class="list-toolbar-btn" href="javascript:void(0);" title="Refresh" onclick="refreshDashboard('dashoccupancy'); return false;">
 				<i class="process-icon-refresh"></i>
@@ -34,7 +34,7 @@
 	<div class="row text-center avil-chart-head">
 		<div class="col-md-4 col-xs-4">
 			<div class="row">
-				<div class="col-md-11 label-tooltip col-lg-11 avail-pie-label-container" style="background: #A569DF;"  data-toggle="tooltip" data-original-title="{l s='The total number of room nights booked for the selected date range out of total available room nights.' mod='dashoccupancy'}">
+				<div class="col-md-11 label-tooltip col-lg-11 avail-pie-label-container" style="background: #A569DF;"  data-toggle="tooltip" data-original-title="{l s='The total number of booked room nights in the selected date range out of total available room nights.' mod='dashoccupancy'}">
 					<div class="">
 						<p class="avail-pie-text">
 							{l s='Occupied' mod='dashoccupancy'}
@@ -50,7 +50,7 @@
 		</div>
 		<div class="col-md-4 col-xs-4">
 			<div class="row">
-				<div class="col-md-11 col-lg-11 avail-pie-label-container label-tooltip" style="background: #56CE56;" data-toggle="tooltip" data-original-title="{l s='The total number of room nights available for booking for the selected date range.' mod='dashoccupancy'}">
+				<div class="col-md-11 col-lg-11 avail-pie-label-container label-tooltip" style="background: #56CE56;" data-toggle="tooltip" data-original-title="{l s='The total number of available room nights in the selected date range.' mod='dashoccupancy'}">
 					<div class="">
 						<p class="avail-pie-text">
 							{l s='Available' mod='dashoccupancy'}
@@ -66,7 +66,7 @@
 		</div>
 		<div class="col-md-4 col-xs-4">
 			<div class="row">
-				<div class="col-md-11 col-lg-11 avail-pie-label-container label-tooltip" style="background: #FF655C;" data-toggle="tooltip" data-original-title="{l s='The total number of room nights unavailable for booking for the selected date range.' mod='dashoccupancy'}">
+				<div class="col-md-11 col-lg-11 avail-pie-label-container label-tooltip" style="background: #FF655C;" data-toggle="tooltip" data-original-title="{l s='The total number of unavailable room nights in the selected date range out of total available room nights.' mod='dashoccupancy'}">
 					<div class="">
 						<p class="avail-pie-text">
 							{l s='Unavailable' mod='dashoccupancy'}

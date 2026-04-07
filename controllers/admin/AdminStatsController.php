@@ -1383,39 +1383,108 @@ class AdminStatsControllerCore extends AdminStatsTabController
         return Db::getInstance()->getValue($sql);
     }
 
-    public static function getOccupancyData($dateFrom, $dateTo, $idHotel = false)
+    public static function getOccupancyData($dateFrom, $dateTo, $idsHotel = false)
     {
-        $objHotelBookingDetail = new HotelBookingDetail();
-        $objHotelBranchInformation = new HotelBranchInformation();
-        $context = Context::getContext();
-        $idsHotel = $objHotelBranchInformation->getProfileAccessedHotels($context->employee->id_profile, 1, 1);
-        $occupancyData = array('count_total' => 0, 'count_occupied' => 0, 'count_available' => 0, 'count_unavailable' => 0);
-        if(!$idHotel){
-            $dataStats = [
-            'num_unavail'=> 0,
-            'num_booked'=> 0,
-            'num_avail'=> 0,
-            'total_rooms'=> 0,
-             ];
-            foreach ($idsHotel ?:[] as $idHotel) {
-                $bookingData = $objHotelBookingDetail->getDateWiseBooking($dateFrom , $dateTo , $idHotel);
-                $dataStats['num_avail'] += $bookingData['stats']['available'];
-                $dataStats['num_unavail'] += $bookingData['stats']['unavailable'];
-                $dataStats['num_booked'] += $bookingData['stats']['booked'];
-                $dataStats['total_rooms'] += $bookingData['stats']['total_rooms'];
-            }
-            $occupancyData['count_available'] = $dataStats['num_avail'];
-            $occupancyData['count_occupied'] = $dataStats['num_booked'];
-            $occupancyData['count_unavailable'] = $dataStats['num_unavail'];
-            $occupancyData['count_total'] =  $dataStats['total_rooms'];
+        if ($dateFrom == $dateTo) {
+            $dateTo = date('Y-m-d', strtotime('+1 day', strtotime($dateTo)));
         }
-        else{
-            $bookingData = $objHotelBookingDetail->getDateWiseBooking($dateFrom , $dateTo , $idHotel);
-            $occupancyData['count_available'] = $bookingData['stats']['available'];
-            $occupancyData['count_occupied'] = $bookingData['stats']['booked'];
-            $occupancyData['count_unavailable'] = $bookingData['stats']['unavailable'];
-            $occupancyData['count_total'] =  $bookingData['stats']['total_rooms'];
-            }
+
+        try {
+            $dtFrom = new DateTime($dateFrom);
+            $dtTo = new DateTime($dateTo);
+            $numNights = (int)$dtFrom->diff($dtTo)->days;
+        } catch (Exception $e) {
+            $tsFrom = strtotime((string)$dateFrom);
+            $tsTo = strtotime((string)$dateTo);
+            $numNights = ($tsFrom && $tsTo) ? (int)(($tsTo - $tsFrom) / 86400) : 1;
+        }
+        if ($numNights <= 0) {
+            $numNights = 1;
+        }
+
+        $occupancyData = array('count_total' => 0, 'count_occupied' => 0, 'count_available' => 0, 'count_unavailable' => 0);
+
+        $countRooms = (int)self::getTotalRooms($idsHotel, true);
+        $countTotal = $countRooms * $numNights;
+        $occupancyData['count_total'] = (int)$countTotal;
+
+        // Occupied are booked room-nights (non-refunded) in the date range.
+        $countOccupied = (int)Db::getInstance()->getValue(
+            'SELECT IFNULL(SUM(
+                GREATEST(
+                    0,
+                    DATEDIFF(
+                        LEAST(
+                            IF(hbd.`id_status` = '.(int)HotelBookingDetail::STATUS_CHECKED_OUT.',
+                                DATE_FORMAT(hbd.`check_out`, "%Y-%m-%d"),
+                                hbd.`date_to`
+                            ),
+                            "'.pSQL($dateTo).'"
+                        ),
+                        GREATEST(hbd.`date_from`, "'.pSQL($dateFrom).'")
+                    )
+                )
+            ), 0)
+            FROM `'._DB_PREFIX_.'htl_booking_detail` hbd
+            LEFT JOIN `'._DB_PREFIX_.'htl_room_information` hri
+                ON (hri.`id` = hbd.`id_room`)
+            LEFT JOIN `'._DB_PREFIX_.'product` p
+                ON (p.`id_product` = hri.`id_product`)
+            WHERE p.`active` = 1
+            AND p.`booking_product` = 1
+            AND hbd.`is_refunded` = 0
+            AND hbd.`date_from` < "'.pSQL($dateTo).'"
+            AND IF(hbd.`id_status` = '.(int)HotelBookingDetail::STATUS_CHECKED_OUT.',
+                DATE_FORMAT(hbd.`check_out`, "%Y-%m-%d"),
+                hbd.`date_to`
+            ) > "'.pSQL($dateFrom).'"'.
+            HotelBranchInformation::addHotelRestriction($idsHotel, 'hbd')
+        );
+        $occupancyData['count_occupied'] = $countOccupied;
+
+        // Unavailable are:
+        // - inactive rooms (unavailable for all nights in the range)
+        // - temporarily inactive rooms for overlapping disabled date ranges (night-wise)
+        $countInactiveRooms = (int)Db::getInstance()->getValue(
+            'SELECT IFNULL(COUNT(hri.`id`), 0)
+            FROM `'._DB_PREFIX_.'htl_room_information` hri
+            LEFT JOIN `'._DB_PREFIX_.'product` p
+                ON (p.`id_product` = hri.`id_product`)
+            WHERE hri.`id_status` = '.(int)HotelRoomInformation::STATUS_INACTIVE.'
+            AND p.`active` = 1
+            AND p.`booking_product` = 1'.
+            (!is_null($idsHotel) ? HotelBranchInformation::addHotelRestriction($idsHotel, 'hri') : '')
+        );
+
+        $countTemporarilyInactiveNights = (int)Db::getInstance()->getValue(
+            'SELECT IFNULL(SUM(
+                GREATEST(
+                    0,
+                    DATEDIFF(
+                        LEAST(hrdd.`date_to`, "'.pSQL($dateTo).'"),
+                        GREATEST(hrdd.`date_from`, "'.pSQL($dateFrom).'")
+                    )
+                )
+            ), 0)
+            FROM `'._DB_PREFIX_.'htl_room_information` hri
+            INNER JOIN `'._DB_PREFIX_.'htl_room_disable_dates` hrdd
+                ON (hrdd.`id_room` = hri.`id`)
+            LEFT JOIN `'._DB_PREFIX_.'product` p
+                ON (p.`id_product` = hri.`id_product`)
+            WHERE hri.`id_status` = '.(int)HotelRoomInformation::STATUS_TEMPORARY_INACTIVE.'
+            AND hrdd.`date_from` < "'.pSQL($dateTo).'"
+            AND hrdd.`date_to` > "'.pSQL($dateFrom).'"
+            AND p.`active` = 1
+            AND p.`booking_product` = 1'.
+            (!is_null($idsHotel) ? HotelBranchInformation::addHotelRestriction($idsHotel, 'hri') : '')
+        );
+
+        $countUnavailable = ($countInactiveRooms * $numNights) + $countTemporarilyInactiveNights;
+        $occupancyData['count_unavailable'] = (int)$countUnavailable;
+
+        $countAvailable = (int)$occupancyData['count_total'] - (int)$occupancyData['count_occupied'] - (int)$occupancyData['count_unavailable'];
+        $occupancyData['count_available'] = $countAvailable > 0 ? $countAvailable : 0;
+
         return $occupancyData;
     }
 
