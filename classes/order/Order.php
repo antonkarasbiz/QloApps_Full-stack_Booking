@@ -1874,6 +1874,16 @@ class OrderCore extends ObjectModel
         $order_payment->amount = $amount_paid;
         $order_payment->date_add = ($date ? $date : null);
 
+        $number = Configuration::get('PS_PAYMENT_RECEIPTS_START_NUMBER', null, null, $this->id_shop);
+        // If payment start number has been set, you clean the value of this configuration
+        if ($number) {
+            Configuration::updateValue('PS_PAYMENT_RECEIPTS_START_NUMBER', false, false, null, $this->id_shop);
+        }else{
+            $number = Order::getLastPaymentNumber() + 1;
+        }
+
+        $order_payment->number = $number;
+
         // Add time to the date if needed
         if ($order_payment->date_add != null && preg_match('/^[0-9]+-[0-9]+-[0-9]+$/', $order_payment->date_add)) {
             $order_payment->date_add .= ' '.date('H:i:s');
@@ -1934,6 +1944,17 @@ class OrderCore extends ObjectModel
         }
         return false;
     }
+
+    public static function getLastPaymentNumber()
+    {
+        $sql = 'SELECT MAX(`number`) FROM `'._DB_PREFIX_.'order_payment`';
+        if (Configuration::get('PS_PAYMENT_RECEIPTS_RESET')) {
+            $sql .= ' WHERE DATE_FORMAT(`date_add`, "%Y") = '.(int)date('Y');
+        }
+        return Db::getInstance()->getValue($sql);
+    }
+
+
 
     /**
      * Returns the correct product taxes breakdown.

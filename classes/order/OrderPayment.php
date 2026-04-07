@@ -32,6 +32,7 @@ class OrderPaymentCore extends ObjectModel
 
     public $order_reference;
     public $id_currency;
+    public $number;
     public $amount;
     public $payment_method;
     public $payment_type;
@@ -52,6 +53,7 @@ class OrderPaymentCore extends ObjectModel
         'fields' => array(
             'order_reference' =>    array('type' => self::TYPE_STRING, 'validate' => 'isAnything', 'size' => 9),
             'id_currency' =>        array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
+            'number' =>            array('type' => self::TYPE_STRING, 'validate' => 'isAnything', 'size' => 254),
             'amount' =>            array('type' => self::TYPE_FLOAT, 'validate' => 'isNegativePrice', 'required' => true),
             'payment_method' =>    array('type' => self::TYPE_STRING, 'validate' => 'isGenericName'),
             'payment_type' =>        array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
@@ -158,5 +160,27 @@ class OrderPaymentCore extends ObjectModel
     public function getAverageConversionRate($order_reference, $idCurrency)
     {
         return Db::getInstance()->getValue('SELECT (SUM(`amount` * `conversion_rate`) / SUM(`amount`)) FROM `'._DB_PREFIX_.'order_payment` WHERE `order_reference` = \''.pSQL($order_reference).'\' AND `id_currency` = '.(int)$idCurrency);
+    }
+
+    public static function getTransactionDetailByOrderid($id_order)
+    {
+        return ObjectModel::hydrateCollection('OrderPayment', Db::getInstance()->executeS('
+            SELECT DISTINCT op.*
+            FROM `'._DB_PREFIX_.'order_payment` op
+            INNER JOIN `'._DB_PREFIX_.'order_payment_detail` opd ON (opd.`id_order_payment` = op.`id_order_payment`)
+            WHERE opd.`id_order` = '.(int) $id_order.'
+            ORDER BY op.`date_add` ASC, op.`id_order_payment` ASC
+        '));
+    }
+
+    public function getPaymentReceiptNumberFormated($id_lang, $id_shop = null)
+    {
+        $format = '%1$s%2$06d';
+
+        if (Configuration::get('PS_PAYMENT_RECEIPTS_USE_YEAR')) {
+            $format = '%1$s%2$06d/%3$s';
+        }
+
+        return sprintf($format, Configuration::get('PS_PAYMENT_RECEIPTS_PREFIX', (int)$id_lang, null, (int)$id_shop), $this->number, date('Y', strtotime($this->date_add)));
     }
 }

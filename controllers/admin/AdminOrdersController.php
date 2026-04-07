@@ -3676,6 +3676,7 @@ class AdminOrdersControllerCore extends AdminController
             'payment_methods' => $payment_methods,
             'payment_types' => $this->getPaymentsTypes(),
             'invoice_management_active' => Configuration::get('PS_INVOICE', null, null, $order->id_shop),
+            'receipt_management_active' => Configuration::get('PS_PAYMENT_RECEIPTS', null, null, $order->id_shop),
             'display_warehouse' => (int)Configuration::get('PS_ADVANCED_STOCK_MANAGEMENT'),
             'HOOK_CONTENT_ORDER' => Hook::exec(
                 'displayAdminOrderContentOrder',
