@@ -20,15 +20,18 @@
 * @license https://opensource.org/license/osl-3-0-php Open Software License version 3.0
 *}
 {if $languages}
-    <label class="seo-label">
-        <span class="label-tooltip" data-toggle="tooltip" title="{l s='Preview how this page may appear in search results.'}">
-            {l s='SEO Preview'}
-        </span>
-    </label>
-    {foreach from=$languages item=language}
-        {assign var=id_lang value=$language.id_lang}
-        <div class="panel lang-{$id_lang} translatable-field lang-{$id_lang} wk_text_field_all wk_text_field_{$id_lang}"
-            data-lang-id="{$id_lang}" {if isset($currentLang) && $currentLang.id_lang != $id_lang}style="display:none;" {/if}>
+    <div class="form-group seo-preview-group">
+        <div class="col-lg-1"></div>
+        <label class="control-label col-lg-2 seo-label">
+            <span class="label-tooltip" data-toggle="tooltip" title="{l s='Preview how this page may appear in search results.'}">
+                {l s='SEO Preview'}
+            </span>
+        </label>
+        <div class="col-lg-8">
+            {foreach from=$languages item=language}
+                {assign var=id_lang value=$language.id_lang}
+                <div class="panel seo-preview-panel lang-{$id_lang} translatable-field lang-{$id_lang} wk_text_field_all wk_text_field_{$id_lang}"
+                    data-lang-id="{$id_lang}" {if isset($currentLang) && $currentLang.id_lang != $id_lang}style="display:none;" {/if}>
             {assign var=seoPreviewTitleDefault value=''}
             {assign var=seoPreviewDescriptionDefault value=''}
             {if isset($inputs.name[$id_lang]) && $inputs.name[$id_lang]|trim}
@@ -110,13 +113,12 @@
                     {/if}
                 </div>
             {/if}
+                </div>
+            {/foreach}
+            <div class="help-block seo-preview-note">
+                {l s='Leaving Meta title or Meta description blank will use the default values in the preview (Name and Short Description).'}
+            </div>
         </div>
-    {/foreach}
-    <div class="alert alert-info seo-preview-note">
-        <p>
-            <b>{l s='Note'}</b>:
-            {l s='Leaving Meta title or Meta description blank will use the default values in the preview (Name and Short Description).' }
-        </p>
     </div>
     {addJsDef languages=$languages}
     <script>
@@ -289,7 +291,7 @@
     .preview-extension {
         color: inherit;
     }
-    .seo-preview-note {
-        margin-top: 10px;
+    .seo-preview-panel {
+        margin-bottom: 0 !important;
     }
 </style>
