@@ -94,7 +94,7 @@
 			<button type="button" class="btn btn-default" id="generate-friendly-url" onmousedown="updateFriendlyURLByName();"><i class="icon-random"></i> {l s='Generate'}</button>
 		</div>
 	</div>
-	{include file="controllers/products/seo_preview.tpl"
+	{include file="seo_preview.tpl"
     	languages = $languages
    		preview_link = $rewritten_links|default:''
    		inputs = ['meta_title'=>$product->meta_title ,'meta_description' => $product->meta_description,'link_rewrite' => $product->link_rewrite, 'name' => $product->name, 'description_short' => $product->description_short]

@@ -401,7 +401,7 @@
 							{/foreach}
 						</div>
 					</div>
-					{include file="controllers/products/seo_preview.tpl"
+					{include file="seo_preview.tpl"
 						languages = $languages
 						preview_link = $rewrite_url|default:''
 						inputs = [
