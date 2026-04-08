@@ -48,42 +48,34 @@
 	function modules_management(action)
 	{
 		var modules = document.getElementsByName('modules');
-		var module_list = '';
+		var module_list = [];
 		for (var i = 0; i < modules.length; i++)
 		{
-			if (modules[i].checked == true)
+			if (modules[i].checked)
 			{
-				rel = modules[i].getAttribute('data-rel');
+				var rel = modules[i].getAttribute('data-rel');
 				if (rel != "false" && action == "uninstall")
 				{
 					if (!confirm(rel))
 						return false;
 				}
-				module_list += '|'+modules[i].value;
+				module_list.push(modules[i].value);
 			}
 		}
-		document.location.href=currentIndex+'&token='+token+'&'+action+'='+module_list.substring(1, module_list.length);
-	}
 
-	// Module bulk enable/disable
-	function update_modules_activation_bulk(action)
-	{
-		var modules = document.getElementsByName('modules');
-		var module_list = '';
-		var type = 'enabled';
-
-		for (var i = 0; i < modules.length; i++)
-		{
-			if (modules[i].checked == true)
-			{
-				module_list += '|'+modules[i].value;
-			}
-		}
-		if(action=='bulkDisable'){
-			type = 'disabled';
+		if (!module_list.length) {
+			return false;
 		}
 
-		document.location.href=currentIndex+'&token='+token+'&bulkEnable=1&type='+type+'&modules='+module_list.substring(1, module_list.length);
+		module_list = encodeURIComponent(module_list.join('|'));
+		if (action == 'bulk_enable' || action == 'bulk_disable') {
+			var type = action == 'bulk_disable' ? 'disabled' : 'enabled';
+			document.location.href = currentIndex+'&token='+token+'&bulk_enable=1&type='+type+'&modules='+module_list;
+			return false;
+		}
+
+		document.location.href = currentIndex+'&token='+token+'&'+action+'='+module_list;
+		return false;
 	}
 
 
