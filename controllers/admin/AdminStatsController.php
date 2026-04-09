@@ -1389,15 +1389,9 @@ class AdminStatsControllerCore extends AdminStatsTabController
             $dateTo = date('Y-m-d', strtotime('+1 day', strtotime($dateTo)));
         }
 
-        try {
-            $dtFrom = new DateTime($dateFrom);
-            $dtTo = new DateTime($dateTo);
-            $numNights = (int)$dtFrom->diff($dtTo)->days;
-        } catch (Exception $e) {
-            $tsFrom = strtotime((string)$dateFrom);
-            $tsTo = strtotime((string)$dateTo);
-            $numNights = ($tsFrom && $tsTo) ? (int)(($tsTo - $tsFrom) / 86400) : 1;
-        }
+        $dtFrom = new DateTime($dateFrom);
+        $dtTo = new DateTime($dateTo);
+        $numNights = (int)$dtFrom->diff($dtTo)->days;
         if ($numNights <= 0) {
             $numNights = 1;
         }
