@@ -2023,12 +2023,13 @@ class AdminProductsControllerCore extends AdminController
         if (($error = $this->object->validateFieldsLang(false, true)) !== true) {
             $this->errors[] = $error;
         }
-        if(!count($this->errors)){
+
+        if (!count($this->errors)) {
             $objHotelRoomType = new HotelRoomType();
-            if($roomTypeInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($this->object->id)){
+            if ($roomTypeInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($this->object->id)) {
                 $objHotelBranchInformation = new HotelBranchInformation((int)$roomTypeInfo['id_hotel']);
-                if(!$objHotelBranchInformation->active){
-                    $this->errors[] = $this->l('Please enable the hotel "'.$roomTypeInfo['hotel_name'].'" first in order to update the status.');
+                if (!$objHotelBranchInformation->active) {
+                    $this->errors[] = $this->l('Room type can not be active as long as hotel is disabled.');
                 }
             }
         }
@@ -2055,14 +2056,15 @@ class AdminProductsControllerCore extends AdminController
         if (is_array($this->boxes) && !empty($this->boxes)) {
             foreach ($this->boxes as $id) {
                 $objHotelRoomType = new HotelRoomType();
-                if($roomTypeInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($id)){
+                if ($roomTypeInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($id)) {
                     $objHotelBranchInformation = new HotelBranchInformation((int)$roomTypeInfo['id_hotel']);
-                    if(!$objHotelBranchInformation->active){
-                        $this->errors[] = $this->l('Please enable the hotel "'.$roomTypeInfo['hotel_name'].'" first in order to update the status.');
+                    if (!$objHotelBranchInformation->active) {
+                        $this->errors[] = $this->l('Room type can not be active as long as hotel is disabled.');
                     }
                 }
             }
         }
+
         if (!count($this->errors)) {
             parent::processBulkStatusSelection($status);
         }
@@ -2393,6 +2395,10 @@ class AdminProductsControllerCore extends AdminController
             } else if (!Validate::isLoadedObject($objHotel = new HotelBranchInformation($id_hotel))) {
                 $this->errors[] = Tools::displayError('Selected Hotel not found');
             } else {
+                // Prevent enabling a room type when its hotel is disabled
+                if ((int)Tools::getValue('active') === 1 && isset($objHotel) && !$objHotel->active) {
+                    $this->errors[] = Tools::displayError('Room type can not be active as long as hotel is disabled.');
+                }
                 $hotelIdCategory = $objHotel->id_category;
                 if (Validate::isLoadedObject($objCategory = new Category($hotelIdCategory))) {
                     foreach($objCategory->getParentsCategories() as $category) {
