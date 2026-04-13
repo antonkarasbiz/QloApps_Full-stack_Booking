@@ -2028,7 +2028,7 @@ class AdminProductsControllerCore extends AdminController
             $objHotelRoomType = new HotelRoomType();
             if ($roomTypeInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($this->object->id)) {
                 $objHotelBranchInformation = new HotelBranchInformation((int)$roomTypeInfo['id_hotel']);
-                if (!$objHotelBranchInformation->active) {
+                if (!$objHotelBranchInformation->active && !$this->object->active) {
                     $this->errors[] = $this->l('Room type can not be active as long as hotel is disabled.');
                 }
             }
