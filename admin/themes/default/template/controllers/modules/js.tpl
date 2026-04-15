@@ -63,10 +63,6 @@
 			}
 		}
 
-		if (!module_list.length) {
-			return false;
-		}
-
 		module_list = encodeURIComponent(module_list.join('|'));
 		if (action == 'bulk_enable' || action == 'bulk_disable') {
 			var type = action == 'bulk_disable' ? 'disabled' : 'enabled';

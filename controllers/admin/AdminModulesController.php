@@ -1080,6 +1080,7 @@ class AdminModulesControllerCore extends AdminController
             }
 
             if (empty($moduleNames)) {
+                $this->errors[] = Tools::displayError('You must select at least one module to perform a bulk action.');
                 return;
             }
 
@@ -1119,7 +1120,7 @@ class AdminModulesControllerCore extends AdminController
                     }
                 }
                 Configuration::updateValue('PS_SHOW_ENABLED_MODULES_' . (int)$this->id_employee, $moduleStatus);
-                Tools::redirectAdmin($this->getCurrentUrl(array('bulk_enable', 'type', 'modules')));
+                Tools::redirectAdmin($this->getCurrentUrl(array('bulk_enable', 'type', 'modules', 'conf')).'&conf='.($moduleStatus === 'enabled' ? '33' : '34'));
             }
             
         }else{
