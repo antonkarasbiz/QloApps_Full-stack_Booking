@@ -1765,25 +1765,14 @@ class HotelBookingDetail extends ObjectModel
         return $bookingData;
     }
 
-    /**
-     * [getAvailableRoomsForReallocation :: Get the available rooms For the reallocation of the selected room].
-     *
-     * @param [date] $date_from[Start date of booking of the room to be swapped with available rooms]
-     * @param [date] $date_to         [End date of booking of the room to be swapped with available rooms]
-     * @param [int]  $id_room_type       [Id of the product to which the room belongs to be swapped]
-     * @param [int]  $hotel_id        [Id of the Hotel to which the room belongs to be swapped]
-     *
-     * @return [array|false] [Returs array of the available rooms for swapping if rooms found else returnss false]
-     */
-    public function getAvailableRoomsForReallocation($date_from, $date_to, $id_room_type, $hotel_id, $room_types_to_upgrade = 0)
+    public function getAvailableRoomsForReallocation($dateFrom, $dateTo, $idRoomType, $idHotel, $roomTypesToUpgrade = 0)
     {
         $context = Context::getContext();
-        $availRooms = array();
         $bookingParams = array(
-            'date_from' => $date_from,
-            'date_to' => $date_to,
-            'hotel_id' => $hotel_id,
-            'id_room_type' => $id_room_type,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+            'hotel_id' => $idHotel,
+            'id_room_type' => $idRoomType,
             'search_available' => 1,
             'search_partial' => 0,
             'search_booked' => 0,
@@ -1794,40 +1783,48 @@ class HotelBookingDetail extends ObjectModel
         );
 
         $searchRoomsInfo = $this->getBookingData($bookingParams);
-
-        if (isset($searchRoomsInfo['rm_data']) && is_array($searchRoomsInfo['rm_data'])) {
-            foreach ($searchRoomsInfo['rm_data'] as $idProduct => $roomTypeInfo) {
-                foreach($roomTypeInfo['data']['available'] as $availableRoom) {
-                    $availRooms[] = array(
-                        'id_room' => $availableRoom['id_room'],
-                        'id_product' => $availableRoom['id_product'],
-                        'id_hotel' => $availableRoom['id_hotel'],
-                        'room_num' => $availableRoom['room_num'],
-                        'room_comment' => $availableRoom['room_comment'],
-                    );
-                }
+        if (empty($searchRoomsInfo['rm_data']) || !is_array($searchRoomsInfo['rm_data'])) {
+            return false;
+        }
+ 
+        $availableRooms = array();
+        $availableRoomTypes = array();
+        foreach ($searchRoomsInfo['rm_data'] as $roomTypeInfo) {
+            if (empty($roomTypeInfo['data']['available']) || !is_array($roomTypeInfo['data']['available'])) {
+                continue;
             }
 
-            if ($availRooms) {
-            // if requested for room type upgrade options also then get room type upgrade options
-                if ($room_types_to_upgrade) {
-                    $availableRoomTypes = array();
-                        foreach ($availRooms as $roomInfo) {
-                            $objProduct = new Product($roomInfo['id_product'], false, $context->language->id);
-                            $availableRoomTypes[$roomInfo['id_product']]['id_product'] = $roomInfo['id_product'];
-                            $availableRoomTypes[$roomInfo['id_product']]['room_type_name'] = $objProduct->name;
-                            $availableRoomTypes[$roomInfo['id_product']]['rooms'][] = $roomInfo;
-                        }
+            $roomTypeName = isset($roomTypeInfo['name']) ? $roomTypeInfo['name'] : '';
+            foreach ($roomTypeInfo['data']['available'] as $availableRoom) {
+                $roomInfo = array(
+                    'id_room' => $availableRoom['id_room'],
+                    'id_product' => $availableRoom['id_product'],
+                    'id_hotel' => $availableRoom['id_hotel'],
+                    'room_num' => $availableRoom['room_num'],
+                    'room_comment' => $availableRoom['room_comment'],
+                );
 
-                    return $availableRoomTypes;
+                if ($roomTypesToUpgrade) {
+                    $idProduct = (int) $roomInfo['id_product'];
+                    if (!isset($availableRoomTypes[$idProduct])) {
+                        $availableRoomTypes[$idProduct] = array(
+                            'id_product' => $idProduct,
+                            'room_type_name' => $roomTypeName,
+                        );
+                    }
+
+                    $availableRoomTypes[$idProduct]['rooms'][] = $roomInfo;
+                } else {
+                    $availableRooms[] = $roomInfo;
                 }
-
-                return $availRooms;
             }
-
         }
 
-        return false;
+        if ($roomTypesToUpgrade) {
+            return $availableRoomTypes ? $availableRoomTypes : false;
+        }
+
+        return $availableRooms ? $availableRooms : false;
     }
 
     /**
