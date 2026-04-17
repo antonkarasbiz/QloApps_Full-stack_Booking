@@ -2053,21 +2053,57 @@ class AdminProductsControllerCore extends AdminController
 
     public function processBulkStatusSelection($status)
     {
-        if (is_array($this->boxes) && !empty($this->boxes)) {
-            foreach ($this->boxes as $id) {
-                $objHotelRoomType = new HotelRoomType();
-                if ($roomTypeInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($id)) {
-                    $objHotelBranchInformation = new HotelBranchInformation((int)$roomTypeInfo['id_hotel']);
-                    if (!$objHotelBranchInformation->active) {
-                        $this->errors[] = $this->l('Room type can not be active as long as hotel is disabled.');
-                    }
+        if (!is_array($this->boxes) || empty($this->boxes)) {
+            return parent::processBulkStatusSelection($status);
+        }
+
+        $disabledHotelRoomTypes = array();
+        $objHotelRoomType = new HotelRoomType();
+        $result = true;
+        $hasSuccessfulUpdate = false;
+
+        foreach ($this->boxes as $id) {
+            $id = (int) $id;
+            $object = new $this->className($id);
+            if (!Validate::isLoadedObject($object)) {
+                $this->errors[] = sprintf($this->l('Invalid room type ID %d.'), $id);
+                $result = false;
+                continue;
+            }
+
+            if ($status && ($roomTypeInfo = $objHotelRoomType->getRoomTypeInfoByIdProduct($id))) {
+                $objHotelBranchInformation = new HotelBranchInformation((int) $roomTypeInfo['id_hotel']);
+                if (!$objHotelBranchInformation->active) {
+                    $disabledHotelRoomTypes[] = Product::getProductName($id, null, (int)$this->context->language->id);
+                    continue;
                 }
+            }
+
+            $object->setFieldsToUpdate(array('active' => true));
+            $object->active = (int) $status;
+            $isUpdated = (bool) $object->update();
+            $result = $result && $isUpdated;
+            $hasSuccessfulUpdate = $hasSuccessfulUpdate || $isUpdated;
+
+            if (!$isUpdated) {
+                $this->errors[] = sprintf($this->l('Can\'t update #%d status.'), $id);
             }
         }
 
-        if (!count($this->errors)) {
-            parent::processBulkStatusSelection($status);
+        if ($disabledHotelRoomTypes) {
+            $this->errors[] =
+                $this->l('Room types linked to inactive hotels cannot be enabled.');
         }
+
+        if ($result && $hasSuccessfulUpdate && !$disabledHotelRoomTypes) {
+            $this->redirect_after = self::$currentIndex.'&conf=5&token='.$this->token;
+        } elseif ($result && $hasSuccessfulUpdate) {
+            $this->confirmations[] = $this->l('The status has been updated for the room types linked to active hotels.');
+        } elseif (!$result) {
+            $this->errors[] = $this->l('An error occurred while updating the status.');
+        }
+
+        return $result;
     }
 
     public function processToggleShowAtFront()
