@@ -2608,21 +2608,6 @@ class HotelBookingDetail extends ObjectModel
         return Db::getInstance()->executeS($sql);
     }
 
-    public function getActiveRoomsCountByOrder($id_order)
-    {
-        $sql = 'SELECT COUNT(*)
-                FROM `'._DB_PREFIX_.'htl_booking_detail`
-                WHERE `id_order` = '.(int)$id_order.'
-                AND `is_refunded` = 0
-                AND `is_back_order` = 0
-                AND `id_status` IN ('
-                    .HotelBookingDetail::STATUS_CHECKED_IN.','.
-                    HotelBookingDetail::STATUS_ALLOTED.'
-                )';
-
-        return (int) Db::getInstance()->getValue($sql);
-    }
-
     public function updateHotelCartHotelOrderOnOrderEdit(
         $idOrder,
         $idRoom,
@@ -2694,14 +2679,31 @@ class HotelBookingDetail extends ObjectModel
 
     /**
      * [getOrderCurrentDataByOrderId :: To get booking information of the order by Order id].
-     * @param [int] $id_order [Id of the order]
+     * @param int   $idOrder         Id of the order
+     * @param array $idsStatus       Booking statuses to filter by
+     * @param bool  $isRefunded  refunded bookings from the result
+     * @param bool  $isBackOrder back-order bookings from the result
      * @return [array|false] [If data found Returns the array containing the information of the cart of the passed order id else returns false]
      */
-    public function getOrderCurrentDataByOrderId($id_order)
+    public function getOrderCurrentDataByOrderId(
+        $idOrder,
+        $idsStatus = array(),
+        $isRefunded = null,
+        $isBackOrder = null
+    )
     {
-        return Db::getInstance()->executeS(
-            'SELECT * FROM `'._DB_PREFIX_.'htl_booking_detail` WHERE `id_order`='.(int)$id_order
-        );
+        $sql = 'SELECT * FROM `'._DB_PREFIX_.'htl_booking_detail` WHERE `id_order`='.(int) $idOrder;
+        if (!empty($idsStatus)) {
+            $sql .= ' AND `id_status` IN ('.implode(',', array_map('intval', $idsStatus)).')';
+        }
+        if (!is_null($isRefunded)) {
+            $sql .= ' AND `is_refunded` = '.(int) $isRefunded;
+        }
+        if (!is_null($isBackOrder)) {
+            $sql .= ' AND `is_back_order` = '.(int) $isBackOrder;
+        }
+
+        return Db::getInstance()->executeS($sql);
     }
 
     /**
