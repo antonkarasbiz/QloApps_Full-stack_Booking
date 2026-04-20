@@ -62,11 +62,11 @@
 				module_list.push(modules[i].value);
 			}
 		}
-
+		
 		module_list = encodeURIComponent(module_list.join('|'));
-		if (action == 'bulk_enable' || action == 'bulk_disable') {
-			var type = action == 'bulk_disable' ? 'disabled' : 'enabled';
-			document.location.href = currentIndex+'&token='+token+'&bulk_enable=1&type='+type+'&modules='+module_list;
+		if (action == 'enable' || action == 'disable') {
+			var type = action == 'disable' ? 0 : 1;
+			document.location.href = currentIndex+'&token='+token+'&enable='+type+'&module_name='+module_list;
 			return false;
 		}
 
@@ -74,6 +74,40 @@
 		return false;
 	}
 
+	function filter_modules_by_name(table, moduleName)
+	{
+		var moduleNames = moduleName.split('|');
+		var filteredNames = [];
+		for (var i = 0; i < moduleNames.length; i++) {
+			moduleNames[i] = $.trim(moduleNames[i]);
+			if (moduleNames[i] !== '') {
+				filteredNames.push(moduleNames[i].toLowerCase());
+			}
+		}
+
+		if (!filteredNames.length) {
+			return;
+		}
+
+		if (filteredNames.length === 1) {
+			$.uiTableFilter(table, filteredNames[0]);
+			return;
+		}
+
+		table.find('tbody tr').each(function() {
+			var rowText = $(this).text().toLowerCase();
+			var isMatch = false;
+
+			for (var i = 0; i < filteredNames.length; i++) {
+				if (rowText.indexOf(filteredNames[i]) !== -1) {
+					isMatch = true;
+					break;
+				}
+			}
+
+			$(this).toggle(isMatch);
+		});
+	}
 
 	$('document').ready( function() {
 		// ScrollTo
@@ -81,7 +115,7 @@
 			$.uiTableFilter($('#moduleContainer').find('table'), anchor);
 
 		if (module_name != '')
-			$.uiTableFilter($('#moduleContainer').find('table'), module_name);
+			filter_modules_by_name($('#moduleContainer').find('table'), module_name);
 
 		$('#moduleQuicksearch').on('keyup', function(){
 			val = this.value;

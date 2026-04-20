@@ -191,13 +191,13 @@
 		</button>
 		<ul class="dropdown-menu">
 			<li>
-				<a href="#" onclick="modules_management('bulk_enable')">
+				<a href="#" onclick="modules_management('enable')">
 					<i class="icon-power-off text-success"></i>&nbsp;
 					{l s='Enable selection'}
 				</a>
 			</li>
 			<li>
-				<a href="#" onclick="modules_management('bulk_disable')">
+				<a href="#" onclick="modules_management('disable')">
 					<i class="icon-power-off text-danger"></i>&nbsp;
 					{l s='Disable selection'}
 				</a>

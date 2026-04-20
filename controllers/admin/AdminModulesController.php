@@ -624,21 +624,57 @@ class AdminModulesControllerCore extends AdminController
     public function postProcessEnable()
     {
         if ($this->tabAccess['edit'] === 1) {
-            $module = Module::getInstanceByName(Tools::getValue('module_name'));
-            if (Validate::isLoadedObject($module)) {
+
+            $moduleNames = array_unique(array_filter(
+                explode('|', strip_tags((string) Tools::getValue('module_name')))
+            ));
+
+            $enable = Tools::getValue('enable');
+
+            if (empty($moduleNames)) {
+                $this->errors[] = Tools::displayError('You must select at least one module.');
+                return;
+            }
+            $modules = array();
+
+            foreach ($moduleNames as $moduleName) {
+                if (!Validate::isModuleName($moduleName)) {
+                    $this->errors[] = Tools::displayError('Invalid module name ') . ': ' . $moduleName;
+                    continue;
+                }
+
+                if (!Module::isInstalled($moduleName)) {
+                    $this->errors[] = Tools::displayError('This module is not installed ') . ': ' . $moduleName;
+                    continue;
+                }
+
+                $module = Module::getInstanceByName($moduleName);
+                if (!Validate::isLoadedObject($module)) {
+                    $this->errors[] = Tools::displayError('Cannot load the module\'s object ') . ': ' . $moduleName;
+                    continue;
+                }
+
                 if (!$module->getPermission('configure')) {
-                    $this->errors[] = Tools::displayError('You do not have the permission to use this module.');
-                } else {
-                    if (Tools::getValue('enable')) {
+                    $this->errors[] = Tools::displayError('You do not have the permission to use this module ') . ': ' . $module->displayName;
+                    continue;
+                }
+
+                $modules[] = $module;
+            }
+
+            if (empty($this->errors)) {
+                foreach ($modules as $module) {
+                    if ($enable) {
                         $module->enable();
                     } else {
                         $module->disable();
                     }
-                    Tools::redirectAdmin($this->getCurrentUrl('enable'));
                 }
-            } else {
-                $this->errors[] = Tools::displayError('Cannot load the module\'s object.');
+
+
+                Tools::redirectAdmin($this->getCurrentUrl(array('enable','conf')).'&conf='.($enable ? 33 : 34));
             }
+
         } else {
             $this->errors[] = Tools::displayError('You do not have permission to add this.');
         }
@@ -1066,69 +1102,6 @@ class AdminModulesControllerCore extends AdminController
         }
     }
 
-    public function postProcessBulk_Enable()
-    {
-        if ($this->tabAccess['edit'] === 1) {
-            $moduleStatus = Tools::getValue('type');
-            $moduleNames = array_unique(array_filter(
-                explode('|', strip_tags((string) Tools::getValue('modules')))
-            ));
-
-            if (!in_array($moduleStatus, array('enabled', 'disabled'), true)) {
-                $this->errors[] = Tools::displayError('Invalid module status.');
-                return;
-            }
-
-            if (empty($moduleNames)) {
-                $this->errors[] = Tools::displayError('You must select at least one module to perform a bulk action.');
-                return;
-            }
-
-            $modules = array();
-
-            foreach ($moduleNames as $moduleName) {
-                if (!Validate::isModuleName($moduleName)) {
-                    $this->errors[] = Tools::displayError('Invalid module name ') . ': ' . $moduleName;
-                    continue;
-                }
-
-                if (!Module::isInstalled($moduleName)) {
-                    $this->errors[] = Tools::displayError('This module is not installed ') . ': ' . $moduleName;
-                    continue;
-                }
-
-                $module = Module::getInstanceByName($moduleName);
-                if (!Validate::isLoadedObject($module)) {
-                    $this->errors[] = Tools::displayError('Cannot load the module\'s object ') . ': ' . $moduleName;
-                    continue;
-                }
-
-                if (!$module->getPermission('configure')) {
-                    $this->errors[] = Tools::displayError('You do not have the permission to use this module ') . ': ' . $module->displayName;
-                    continue;
-                }
-
-                $modules[] = $module;
-            }
-
-            if (empty($this->errors)) {
-                foreach ($modules as $module) {
-                    if ($moduleStatus === 'enabled') {
-                        $module->enable();
-                    } else {
-                        $module->disable();
-                    }
-                }
-                Configuration::updateValue('PS_SHOW_ENABLED_MODULES_' . (int)$this->id_employee, $moduleStatus);
-                Tools::redirectAdmin($this->getCurrentUrl(array('bulk_enable', 'type', 'modules', 'conf')).'&conf='.($moduleStatus === 'enabled' ? '33' : '34'));
-            }
-            
-        }else{
-            $this->errors[] = Tools::displayError('You do not have permission to add this.');
-        }
-    }
-
-
     protected function getModulesByInstallation($tab_modules_list = null)
     {
         // $all_modules = Module::getModulesOnDisk(true, $this->logged_on_addons, $this->id_employee);
@@ -1192,7 +1165,7 @@ class AdminModulesControllerCore extends AdminController
 
         // Execute filter or callback methods
         $filter_methods = array('filterModules', 'resetFilterModules', 'filterCategory', 'unfilterCategory');
-        $callback_methods = array('reset', 'download', 'enable', 'delete', 'enable_device', 'disable_device', 'bulk_enable');
+        $callback_methods = array('reset', 'download', 'enable', 'delete', 'enable_device', 'disable_device');
         $post_process_methods_list = array_merge((array)$filter_methods, (array)$callback_methods);
         foreach ($post_process_methods_list as $ppm) {
             if (Tools::isSubmit($ppm)) {
