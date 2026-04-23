@@ -922,6 +922,7 @@ class AdminPerformanceControllerCore extends AdminController
     public function updateDebugMode($value)
     {
         $filename = _PS_ROOT_DIR_ . '/config/defines.inc.php';
+        
         if (is_readable($filename)) {
             $cleanedFileContent = php_strip_whitespace($filename);
             if (preg_match('/define\(\'_PS_MODE_DEV_\', ([a-zA-Z]+)\);/Ui', $cleanedFileContent)) {
