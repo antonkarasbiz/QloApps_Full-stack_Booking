@@ -29,11 +29,6 @@
  */
 class AdminPerformanceControllerCore extends AdminController
 {
-    public const DEBUG_MODE_SUCCEEDED = 0;
-    public const DEBUG_MODE_ERROR_NO_READ_ACCESS = 1;
-    public const DEBUG_MODE_ERROR_NO_WRITE_ACCESS = 2;
-    public const DEBUG_MODE_ERROR_NO_DEFINITION_FOUND = 3;
-
     public function __construct()
     {
         $this->bootstrap = true;
@@ -156,6 +151,24 @@ class AdminPerformanceControllerCore extends AdminController
             'input' => array(
                 array(
                     'type' => 'switch',
+                    'label' => $this->l('Debug mode'),
+                    'name' => 'debug_mode',
+                    'class' => 't',
+                    'is_bool' => true,
+                    'values' => array(
+                        array(
+                            'value' => 1,
+                            'label' => $this->l('Enabled')
+                        ),
+                        array(
+                            'value' => 0,
+                            'label' => $this->l('Disabled')
+                        )
+                    ),
+                    'hint' => $this->l('Enable or disable debug mode. Debug mode will enable extended error reporting.')
+                ),
+                array(
+                    'type' => 'switch',
                     'label' => $this->l('Disable non QloApps modules'),
                     'name' => 'native_module',
                     'class' => 't',
@@ -173,24 +186,6 @@ class AdminPerformanceControllerCore extends AdminController
                         )
                     ),
                     'hint' => $this->l('Enable or disable non QloApps Modules.')
-                ),
-                array(
-                    'type' => 'switch',
-                    'label' => $this->l('Debug mode'),
-                    'name' => 'debug_mode',
-                    'class' => 't',
-                    'is_bool' => true,
-                    'values' => array(
-                        array(
-                            'value' => 1,
-                            'label' => $this->l('Enabled')
-                        ),
-                        array(
-                            'value' => 0,
-                            'label' => $this->l('Disabled')
-                        )
-                    ),
-                    'hint' => $this->l('Enable or disable debug mode. Debug mode will enable extended error reporting.')
                 ),
                 array(
                     'type' => 'switch',
@@ -910,10 +905,8 @@ class AdminPerformanceControllerCore extends AdminController
             Configuration::updateGlobalValue('PS_DISABLE_NON_NATIVE_MODULE', (int)Tools::getValue('native_module'));
             Configuration::updateGlobalValue('PS_DISABLE_OVERRIDES', (int)Tools::getValue('overrides'));
 
-            $debugValue = ((int) Tools::getValue('debug_mode') === (int)1) ? 'true' : 'false';
-            $result = $this->changePsModeDevValue($debugValue);
-
-            if ($result !== self::DEBUG_MODE_SUCCEEDED) {
+            $debugValue = ((int) Tools::getValue('debug_mode') === 1) ? 'true' : 'false';
+            if (!$this->updateDebugMode($debugValue)) {
                 $this->errors[] = $this->l('Unable to update debug mode. Please check file permissions.');
             }
 
@@ -926,40 +919,31 @@ class AdminPerformanceControllerCore extends AdminController
         }
     }
 
-    public function changePsModeDevValue($value)
-    {
-        if ($this->isDefinesReadable()) {
-            return $this->updateDebugModeValueInMainFile($value);
-        }
-
-        return self::DEBUG_MODE_ERROR_NO_READ_ACCESS;
-    }
-
-    public function isDefinesReadable()
-    {
-        return is_readable(_PS_ROOT_DIR_ . '/config/defines.inc.php');
-    }
-
-    public function updateDebugModeValueInMainFile($value)
+    public function updateDebugMode($value)
     {
         $filename = _PS_ROOT_DIR_ . '/config/defines.inc.php';
+
+        if (!is_readable($filename)) {
+            return false;
+        }
+
         $cleanedFileContent = php_strip_whitespace($filename);
         $fileContent = Tools::file_get_contents($filename);
 
         if (!preg_match('/define\(\'_PS_MODE_DEV_\', ([a-zA-Z]+)\);/Ui', $cleanedFileContent)) {
-            return self::DEBUG_MODE_ERROR_NO_DEFINITION_FOUND;
+            return false;
         }
 
         $fileContent = preg_replace('/define\(\'_PS_MODE_DEV_\', ([a-zA-Z]+)\);/Ui', 'define(\'_PS_MODE_DEV_\', ' . $value . ');', $fileContent);
         if (!@file_put_contents($filename, $fileContent)) {
-            return self::DEBUG_MODE_ERROR_NO_WRITE_ACCESS;
+            return false;
         }
 
         if (function_exists('opcache_invalidate')) {
             @opcache_invalidate($filename);
         }
 
-        return self::DEBUG_MODE_SUCCEEDED;
+        return true;
     }
 
     public function displayAjaxTestServer()
