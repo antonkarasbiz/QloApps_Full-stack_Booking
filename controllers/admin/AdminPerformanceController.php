@@ -922,28 +922,20 @@ class AdminPerformanceControllerCore extends AdminController
     public function updateDebugMode($value)
     {
         $filename = _PS_ROOT_DIR_ . '/config/defines.inc.php';
-
-        if (!is_readable($filename)) {
-            return false;
+        if (is_readable($filename)) {
+            $cleanedFileContent = php_strip_whitespace($filename);
+            if (preg_match('/define\(\'_PS_MODE_DEV_\', ([a-zA-Z]+)\);/Ui', $cleanedFileContent)) {
+                $fileContent = Tools::file_get_contents($filename);
+                $fileContent = preg_replace('/define\(\'_PS_MODE_DEV_\', ([a-zA-Z]+)\);/Ui', 'define(\'_PS_MODE_DEV_\', ' . $value . ');', $fileContent);
+                if (@file_put_contents($filename, $fileContent)) {
+                    if (function_exists('opcache_invalidate')) {
+                        @opcache_invalidate($filename);
+                    }
+                    return true;
+                }
+            }
         }
-
-        $cleanedFileContent = php_strip_whitespace($filename);
-        $fileContent = Tools::file_get_contents($filename);
-
-        if (!preg_match('/define\(\'_PS_MODE_DEV_\', ([a-zA-Z]+)\);/Ui', $cleanedFileContent)) {
-            return false;
-        }
-
-        $fileContent = preg_replace('/define\(\'_PS_MODE_DEV_\', ([a-zA-Z]+)\);/Ui', 'define(\'_PS_MODE_DEV_\', ' . $value . ');', $fileContent);
-        if (!@file_put_contents($filename, $fileContent)) {
-            return false;
-        }
-
-        if (function_exists('opcache_invalidate')) {
-            @opcache_invalidate($filename);
-        }
-
-        return true;
+        return false;
     }
 
     public function displayAjaxTestServer()
