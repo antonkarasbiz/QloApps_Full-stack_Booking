@@ -273,7 +273,7 @@
                                                 <button type="submit" name="submitState" class="btn btn-primary">
                                                     {l s='Update status'}
                                                 </button>
-                                                <button type="button" id="order_status_disable_info" class="btn btn-default" data-toggle="modal" data-target="#orderStatusDisableReasonModal" title="{l s='Why are some statuses disabled?'}" aria-label="{l s='Why are some statuses disabled?'}">
+                                                <button type="button" id="order_status_disable_info" class="btn btn-default" data-toggle="modal" data-target="#order_status_disable_reason" title="{l s='Click here to see why certain statuses can’t be selected'}" aria-label="{l s='Why are some staClick here to see why certain statuses can’t be selected'}">
                                                     <i class="icon-info-circle"></i>
                                                 </button>
                                             </div>
@@ -1312,18 +1312,18 @@
         #order-status-disable-reason-body p { margin: 0 0 15px; }
         #order-status-disable-reason-body p:last-child { margin-bottom: 0; }
     </style>
-    <div class="modal fade" id="orderStatusDisableReasonModal" tabindex="-1" role="dialog" aria-labelledby="orderStatusDisableReasonModalLabel">
+    <div class="modal fade" id="order_status_disable_reason" tabindex="-1" role="dialog" aria-labelledby="order_status_disable_reason_label">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="{l s='Close'}"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="orderStatusDisableReasonModalLabel">{l s='Disabled status conditions'}</h4>
+                    <h4 class="modal-title" id="order_status_disable_reason_label"><i class="icon icon-ban"></i> {l s='Order Status Disable Criteria'}</h4>
                 </div>
                 <div class="modal-body" id="order-status-disable-reason-body">
-                    <p><strong>{l s='Current status:'}</strong> {l s='The current order status cannot be selected again.'}</p>
-                    <p><strong>{l s='Refund status:'}</strong> {l s='Disabled when total paid amount is 0 and no discount is applied.'}</p>
-                    <p><strong>{l s='Cancelled status:'}</strong> {l s='Disabled when refunded rooms exist, or discounts are applied, or paid amount is greater than 0.'}</p>
-                    <p><strong>{l s='Overbooking statuses:'}</strong> {l s='Disabled when the order has no overbooked rooms.'}</p>
+                    <p><strong>{l s='Refunded:'}</strong> {l s='Disabled when total paid amount is 0 and no discount is applied.'}</p>
+                    <p><strong>{l s='Cancelled:'}</strong> {l s='Disabled when the paid amount is greater than 0 or when discounts are applied.'}</p>
+                    <p><strong>{l s='Overbooking:'}</strong> {l s='Disabled when the order has no overbooked rooms.'}</p>
+                    <p><strong>{l s='Current:'}</strong> {l s='The current order status cannot be selected again.'}</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">{l s='Close'}</button>
