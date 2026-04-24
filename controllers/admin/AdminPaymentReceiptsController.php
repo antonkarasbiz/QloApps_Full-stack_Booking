@@ -1,28 +1,26 @@
 <?php
-/*
-* 2007-2017 PrestaShop
-*
+/**
 * NOTICE OF LICENSE
 *
-* This source file is subject to the Open Software License (OSL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
+* This source file is subject to the Open Software License version 3.0
+* that is bundled with this package in the file LICENSE.md
 * It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/osl-3.0.php
+* https://opensource.org/license/osl-3-0-php
 * If you did not receive a copy of the license and are unable to
 * obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
+* to support@qloapps.com so we can send you a copy immediately.
 *
 * DISCLAIMER
 *
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
+* Do not edit or add to this file if you wish to upgrade this module to a newer
+* versions in the future. If you wish to customize this module for your needs
+* please refer to https://store.webkul.com/customisation-guidelines for more information.
 *
-*  @author PrestaShop SA <contact@prestashop.com>
-*  @copyright  2007-2017 PrestaShop SA
-*  @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
+* @author Webkul IN
+* @copyright Since 2010 Webkul
+* @license https://opensource.org/license/osl-3-0-php Open Software License version 3.0
 */
+
 class AdminPaymentReceiptsControllerCore extends AdminControllerCore
 {
     public function __construct()
@@ -61,7 +59,7 @@ class AdminPaymentReceiptsControllerCore extends AdminControllerCore
                     ),
                     'PS_PAYMENT_RECEIPTS_START_NUMBER' => array(
                         'title' => $this->l('Receipt number'),
-                        'desc' => sprintf($this->l('The next receipt will begin with this number, and then increase with each additional receipt. Set to 0 if you want to keep the current number (which is #%s).'), Order::getLastPaymentNumber() + 1),
+                        'desc' => sprintf($this->l('The next receipt will begin with this number, and then increase with each additional receipt. Set to 0 if you want to keep the current number (which is #%s).'), OrderPaymentDetail::getLastPaymentReceiptNumber() + 1),
                         'size' => 6,
                         'type' => 'text',
                         'cast' => 'intval'
@@ -77,13 +75,6 @@ class AdminPaymentReceiptsControllerCore extends AdminControllerCore
                         'desc' => $this->l('This text will appear at the bottom of the receipt, below your company details.'),
                         'size' => 50,
                         'type' => 'textLang',
-                    ),
-                    'PS_PDF_USE_CACHE' => array(
-                        'title' => $this->l('Use the disk as cache for PDF receipts'),
-                        'desc' => $this->l('Saves memory but slows down the PDF generation.'),
-                        'validation' => 'isBool',
-                        'cast' => 'intval',
-                        'type' => 'bool'
                     )
                 ),
                 'submit' => array('title' => $this->l('Save'))
@@ -98,6 +89,8 @@ class AdminPaymentReceiptsControllerCore extends AdminControllerCore
         $this->initToolbar();
         $this->initPageHeaderToolbar();
         $this->table = 'order_payment';
+        $this->content .= $this->initFormByDate();
+
         $this->content .= $this->renderOptions();
 
         $this->context->smarty->assign(array(
@@ -107,6 +100,50 @@ class AdminPaymentReceiptsControllerCore extends AdminControllerCore
             'page_header_toolbar_title' => $this->page_header_toolbar_title,
             'page_header_toolbar_btn' => $this->page_header_toolbar_btn
         ));
+    }
+
+    public function initFormByDate()
+    {
+        $this->fields_form = array(
+            'legend' => array(
+                'title' => $this->l('By date'),
+                'icon' => 'icon-calendar'
+            ),
+            'input' => array(
+                array(
+                    'type' => 'date',
+                    'label' => $this->l('From'),
+                    'name' => 'date_from',
+                    'maxlength' => 10,
+                    'required' => true,
+                    'hint' => $this->l('Format: 2011-12-31 (inclusive).')
+                ),
+                array(
+                    'type' => 'date',
+                    'label' => $this->l('To'),
+                    'name' => 'date_to',
+                    'maxlength' => 10,
+                    'required' => true,
+                    'hint' => $this->l('Format: 2012-12-31 (inclusive).')
+                )
+            ),
+            'submit' => array(
+                'title' => $this->l('Generate PDF file by date'),
+                'id' => 'submitPrint',
+                'icon' => 'process-icon-download-alt'
+            )
+        );
+
+        $this->fields_value = array(
+            'date_from' => date('Y-m-d'),
+            'date_to' => date('Y-m-d')
+        );
+
+        $this->table = 'order_payment';
+        $this->show_toolbar = false;
+        $this->show_form_cancel_button = false;
+        $this->toolbar_title = $this->l('Print PDF invoices');
+        return parent::renderForm();
     }
 
     public function initToolbarTitle()
@@ -122,13 +159,33 @@ class AdminPaymentReceiptsControllerCore extends AdminControllerCore
 
     public function postProcess()
     {
-        parent::postProcess();
+        if(Tools::isSubmit('submitAddorder_payment')) {
+            if (!Validate::isDate(Tools::getValue('date_from'))) {
+                $this->errors[] = $this->l('Invalid "From" date');
+            }
+
+            if (!Validate::isDate(Tools::getValue('date_to'))) {
+                $this->errors[] = $this->l('Invalid "To" date');
+            }
+            if(Tools::getValue('date_from') > Tools::getValue('date_to')) {
+                $this->errors[] = $this->l('"From" date must be earlier than "To" date');
+            }
+            if (!count($this->errors)) {
+                if (count(OrderPaymentDetail::getByDateInterval(Tools::getValue('date_from'), Tools::getValue('date_to')))) {
+                   Tools::redirectAdmin($this->context->link->getAdminLink('AdminPdf').'&submitAction=generatePaymentReceiptsPDF&date_from='.urlencode(Tools::getValue('date_from')).'&date_to='.urlencode(Tools::getValue('date_to')));
+                }
+
+                $this->errors[] = $this->l('No payment receipt has been found for this period.');
+            }
+        }else{
+            parent::postProcess();
+        }
     }
 
     public function beforeUpdateOptions()
     {
-        if ((int)Tools::getValue('PS_PAYMENT_RECEIPTS_START_NUMBER') != 0 && (int)Tools::getValue('PS_PAYMENT_RECEIPTS_START_NUMBER') <= Order::getLastPaymentNumber()) {
-            $this->errors[] = $this->l('Invalid receipt number.').Order::getLastPaymentNumber().')';
+        if ((int)Tools::getValue('PS_PAYMENT_RECEIPTS_START_NUMBER') != 0 && (int)Tools::getValue('PS_PAYMENT_RECEIPTS_START_NUMBER') <= OrderPaymentDetail::getLastPaymentReceiptNumber()) {
+            $this->errors[] = $this->l('Invalid receipt number.').OrderPaymentDetail::getLastPaymentReceiptNumber().')';
         }
     }
 }

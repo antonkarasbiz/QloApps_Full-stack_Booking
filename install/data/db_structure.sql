@@ -1496,7 +1496,6 @@ CREATE TABLE `PREFIX_order_payment` (
 	`order_reference` VARCHAR(9),
 	`id_currency` INT UNSIGNED NOT NULL,
 	`amount` DECIMAL(10,2) NOT NULL,
-	`number` varchar(255) NOT NULL,
 	`payment_method` varchar(255) NOT NULL,
 	`payment_type` INT UNSIGNED NOT NULL,
 	`conversion_rate` decimal(13,6) NOT NULL DEFAULT 1,
@@ -1515,6 +1514,7 @@ CREATE TABLE `PREFIX_order_payment_detail` (
 	`id_order_payment` INT(10) unsigned NOT NULL,
 	`id_order` INT(10) unsigned NOT NULL,
 	`amount` DECIMAL(10,2) NOT NULL,
+  `receipt_number` INT(10) NOT NULL,
 	`date_add` DATETIME NOT NULL,
 	PRIMARY KEY (`id_order_payment_detail`)
 ) ENGINE=ENGINE_TYPE DEFAULT CHARSET=utf8 COLLATION;

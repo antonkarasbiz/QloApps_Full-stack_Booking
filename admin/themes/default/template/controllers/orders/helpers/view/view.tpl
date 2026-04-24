@@ -419,11 +419,6 @@
                 <div id="form_add_payment_panel" class="panel">
                     <div class="panel-heading">
                         <i class="icon-credit-card"></i> &nbsp;{l s="Payment"} <span class="badge">{$order->getOrderPayments()|@count}</span>
-                        {if count($order->getOrderPayments()) > 0 && $receipt_management_active}
-                            <a target="_blank" id="view_payment_details" class="btn btn-primary pull-right " href="{$link->getAdminLink('AdminPdf')}&submitAction=generatePaymentReceipt&id_order={$order->id}&id_order_payment=0">
-                                <i class="icon-file-text"></i> {l s='View Payments '}
-                            </a>
-                        {/if}
                     </div>
                     {if count($order->getOrderPayments()) > 0}
                         <p class="alert alert-danger"{if round($order->total_paid_tax_incl, 2) == round($total_paid, 2) || (isset($currentState) && $currentState->id == 6)} style="display: none;"{/if}>
@@ -470,7 +465,7 @@
                                             <td>{if isset($payment['invoice_number'])}{$payment['invoice_number']}{else}--{/if}</td>
                                             {if isset($receipt_management_active) && $receipt_management_active}
                                                 <td class="actions">
-                                                    <a target="_blank" class="btn btn-default" href="{$link->getAdminLink('AdminPdf')}&submitAction=generatePaymentReceipt&id_order={$order->id}&id_order_payment={$payment['id_order_payment']}"><i class="icon-file-text"></i> {l s='View'}</a>
+                                                    <a target="_blank" class="btn btn-default" href="{$link->getAdminLink('AdminPdf')}&submitAction=generatePaymentReceipt&id_order_payment_detail={$payment['id_order_payment_detail']}"><i class="icon-file-text"></i> {l s='View'}</a>
                                                 </td>
                                             {/if}
                                             <td class="actions">

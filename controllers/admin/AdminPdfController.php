@@ -156,29 +156,28 @@ class AdminPdfControllerCore extends AdminController
         $this->generatePDF($supply_order, PDF::TEMPLATE_SUPPLY_ORDER_FORM);
     }  
 
+    public function processGeneratePaymentReceiptsPDF()
+    {
+        $order_payment_collection = OrderPaymentDetail::getByDateInterval(
+            Tools::getValue('date_from'),
+            Tools::getValue('date_to')
+        );
+
+        if (!count($order_payment_collection)) {
+            die(Tools::displayError('No payment receipt was found.'));
+        }
+
+        $this->generatePDF($order_payment_collection, PDF::TEMPLATE_PAYMENT_RECEIPT);
+    }
+
     public function processGeneratePaymentReceipt()
     {
-        $idOrderPayment = (int) Tools::getValue('id_order_payment');
-        $idOrder        = (int) Tools::getValue('id_order');
-
-        if ($idOrderPayment <= 0 && $idOrder <= 0) {
-            die(Tools::displayError('The order or order payment id is missing.'));
+        $idOrderPaymentDetail = (int) Tools::getValue('id_order_payment_detail');
+        $orderPaymentDetail = new OrderPaymentDetail($idOrderPaymentDetail);
+        if (!Validate::isLoadedObject($orderPaymentDetail)) {
+            die(Tools::displayError('The order payment detail cannot be found.'));
         }
-
-        if ($idOrderPayment > 0) {
-            $orderPayment = new OrderPayment($idOrderPayment);
-
-            if (!Validate::isLoadedObject($orderPayment)) {
-                die(Tools::displayError('The order payment cannot be found.'));
-            }
-        } else {
-            $orderPayment = OrderPayment::getTransactionDetailByOrderid($idOrder);
-            if (!$orderPayment || !count($orderPayment)) {
-                die(Tools::displayError('No payment found for this order.'));
-            }
-        }
-
-        $this->generatePDF($orderPayment, PDF::TEMPLATE_PAYMENT_RECEIPT);
+        $this->generatePDF($orderPaymentDetail, PDF::TEMPLATE_PAYMENT_RECEIPT);
     }
 
 

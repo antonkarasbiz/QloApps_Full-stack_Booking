@@ -1,53 +1,60 @@
 <?php
 /**
- * 2007-2017 PrestaShop
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Open Software License (OSL 3.0)
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/osl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@prestashop.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
- * versions in the future. If you wish to customize PrestaShop for your
- * needs please refer to http://www.prestashop.com for more information.
- *
- *  @author    PrestaShop SA <contact@prestashop.com>
- *  @copyright 2007-2017 PrestaShop SA
- *  @license   http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
- *  International Registered Trademark & Property of PrestaShop SA
- */
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Open Software License version 3.0
+* that is bundled with this package in the file LICENSE.md
+* It is also available through the world-wide-web at this URL:
+* https://opensource.org/license/osl-3-0-php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to support@qloapps.com so we can send you a copy immediately.
+*
+* DISCLAIMER
+*
+* Do not edit or add to this file if you wish to upgrade this module to a newer
+* versions in the future. If you wish to customize this module for your needs
+* please refer to https://store.webkul.com/customisation-guidelines for more information.
+*
+* @author Webkul IN
+* @copyright Since 2010 Webkul
+* @license https://opensource.org/license/osl-3-0-php Open Software License version 3.0
+*/
 
 /**
  * @since 1.5
  */
 class HTMLTemplatePaymentReceiptCore extends HTMLTemplate
 {
+    public $paymentReceipt;
     public $orderPayment;
     public $order;
     /**
-     * @param OrderPayment $orderPayment
+     * @param OrderPaymentDetail $paymentReceipt
      * @param $smarty
      * @throws PrestaShopException
      */
-    public function __construct(OrderPayment $orderPayment, $smarty, $bulk_mode = false)
+    public function __construct(OrderPaymentDetail $paymentReceipt, $smarty, $bulk_mode = false)
     {
-        $id_order = (int) Tools::getValue('id_order');
-        $this->orderPayment = $orderPayment;
-        $this->order = new Order((int)$id_order);
+        $this->paymentReceipt = $paymentReceipt;
         $this->smarty = $smarty;
-        // header informations
-        $this->date = Tools::displayDate($this->orderPayment->date_add);
+        $this->date = Tools::displayDate($this->paymentReceipt->date_add);
         $id_lang = Context::getContext()->language->id;
-        $this->shop = new Shop((int)$this->order->id_shop);
-        $this->title = $this->orderPayment->getPaymentReceiptNumberFormated($id_lang, (int)$this->order->id_shop);
-        
+        $this->orderPayment = new OrderPayment((int)$this->paymentReceipt->id_order_payment);
+        if (!Validate::isLoadedObject($this->orderPayment)) {
+            throw new PrestaShopException('Cannot load the payment associated with this payment receipt.');
+        }
+
+        $this->order = new Order((int)$this->paymentReceipt->id_order);
+
+        if (!Validate::isLoadedObject($this->order)) {
+            throw new PrestaShopException('Cannot load the order associated with this payment receipt.');
+        }
+
+        $id_shop = (int)$this->order->id_shop;
+        $this->shop = new Shop($id_shop);
+        $this->orderPayment->amount = $this->paymentReceipt->amount;
+        $this->title = $this->paymentReceipt->getPaymentReceiptNumberFormated($id_lang, $id_shop);
     }
 
     /**
@@ -122,19 +129,19 @@ class HTMLTemplatePaymentReceiptCore extends HTMLTemplate
             'legal_free_text' => $legal_free_text,
         ));
         
-        $tpls = array(
-            'style_tab' => $this->smarty->fetch($this->getTemplate('receipt.style-tab')),
-            'addresses_tab' => $this->smarty->fetch($this->getTemplate('receipt.addresses-tab')),
-            'payment_info_tab' => $this->smarty->fetch($this->getTemplate('receipt.payment-info-tab')),
+        $smarty_tpls = array(
+            'style_tab' => $this->smarty->fetch($this->getTemplate('payment.receipt.receipt.style-tab')),
+            'addresses_tab' => $this->smarty->fetch($this->getTemplate('payment.receipt.receipt.addresses-tab')),
+            'payment_info_tab' => $this->smarty->fetch($this->getTemplate('payment.receipt.receipt.payment-info-tab')),
         );
-        $this->smarty->assign($tpls);
-        $html = $this->smarty->fetch($this->getTemplate('payment-receipt'));
-        return($html);
+        $this->smarty->assign($smarty_tpls);
+        return $this->smarty->fetch($this->getTemplate('payment-receipt'));
+        
     }
 
     public function getFilename()
     {
-        return 'payment-receipt-'.sprintf('%06d', $this->orderPayment->id).'.pdf';
+        return 'payment-receipt-'.sprintf('%06d', $this->paymentReceipt->id).'.pdf';
     }  
 
     public function getBulkFilename()
