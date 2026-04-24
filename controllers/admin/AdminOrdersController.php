@@ -786,6 +786,8 @@ class AdminOrdersControllerCore extends AdminController
                     'order' => $objOrder,
                     'current_index' => self::$currentIndex,
                     'hotel_order_status' => $htlOrderStatus,
+                    'ROOM_STATUS_ALLOTED' => HotelBookingDetail::STATUS_ALLOTED,
+                    'current_room_status' => Tools::getValue('current_room_status')
                 )
             );
             $modal = array(
