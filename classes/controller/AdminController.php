@@ -3033,7 +3033,8 @@ class AdminControllerCore extends Controller
             $upgradeInfo = simplexml_load_string($content);
 
             $this->context->smarty->assign(array(
-                'upgrade_info' => $upgradeInfo
+                'upgrade_info' => $upgradeInfo,
+                'debug_mode' => (bool) _PS_MODE_DEV_,
             ));
         }
 
