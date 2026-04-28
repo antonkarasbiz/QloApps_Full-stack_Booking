@@ -390,8 +390,8 @@ class CustomerCore extends ObjectModel
             return false;
         }
         if (isset($passwd)) {
-            $crypto = new Hashing();
-            if (!$crypto->checkHash($passwd, $result['passwd'])) {
+            $objHash = new PasswordHashing();
+            if (!$objHash->validateHash($passwd, $result['passwd'])) {
                 return false;
             }
         }
@@ -401,8 +401,8 @@ class CustomerCore extends ObjectModel
                 $this->{$key} = $value;
             }
         }
-        if (isset($passwd) && !$crypto->isFirstHash($passwd, $result['passwd'])) {
-            $this->passwd = $crypto->hash($passwd);
+        if (isset($passwd) && !$objHash->isPrimaryHash($passwd, $result['passwd'])) {
+            $this->passwd = $objHash->passwordHash($passwd);
             $this->update();
         }
         return $this;
@@ -861,8 +861,8 @@ class CustomerCore extends ObjectModel
         }
 
         $this->is_guest = 0;
-        $crypto = new Hashing();
-        $this->passwd = $crypto->hash($password);
+        $objHash = new PasswordHashing();
+        $this->passwd = $objHash->passwordHash($password);
         $this->cleanGroups();
         $this->addGroups(array(Configuration::get('PS_CUSTOMER_GROUP'))); // add default customer group
         $this->id_default_group = (int) Configuration::get('PS_CUSTOMER_GROUP');
@@ -897,8 +897,8 @@ class CustomerCore extends ObjectModel
     public function setWsPasswd($passwd)
     {
         if ($this->id == 0 || $this->passwd != $passwd) {
-            $crypto = new Hashing();
-            $this->passwd = $crypto->hash($passwd);
+            $objHash = new PasswordHashing();
+            $this->passwd = $objHash->passwordHash($passwd);
         }
         return true;
     }

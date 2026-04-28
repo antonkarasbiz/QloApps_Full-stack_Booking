@@ -1181,8 +1181,8 @@ abstract class AdminTabCore
                 }
                 /* Automatically hash password */
                 if ($key == 'passwd' && !empty($value)) {
-                    $crypto = new Hashing();
-                    $value = $crypto->hash($value);
+                    $objHash = new PasswordHashing();
+                    $value = $objHash->passwordHash($value);
                 }
                 $object->{$key} = $value;
             }

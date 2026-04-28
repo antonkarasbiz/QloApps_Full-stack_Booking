@@ -1188,8 +1188,8 @@ abstract class ObjectModelCore implements Core_Foundation_Database_EntityInterfa
                     }
                     if ($field == 'passwd') {
                         if ($value = Tools::getValue($field)) {
-                            $crypto = new Hashing();
-                            $this->{$field} = $crypto->hash($value);
+                            $objHash = new PasswordHashing();
+                            $this->{$field} = $objHash->passwordHash($value);
                         }
                     } else {
                         $this->{$field} = $value;

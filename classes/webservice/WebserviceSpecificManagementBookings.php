@@ -1378,8 +1378,8 @@ class WebserviceSpecificManagementBookingsCore Extends ObjectModel implements We
             $objCustomer->firstname = $customerDetails['firstname'];
             $objCustomer->lastname = $customerDetails['lastname'];
             $objCustomer->email = $customerDetails['email'];
-            $crypto = new Hashing();
-            $objCustomer->passwd = $crypto->hash(Tools::passwdGen(32, 'RANDOM'));
+            $objHash = new PasswordHashing();
+            $objCustomer->passwd = $objHash->passwordHash(Tools::passwdGen(32, 'RANDOM'));
             $objCustomer->phone = (isset($customerDetails['phone']) ? $customerDetails['phone'] : '');
             $objCustomer->cleanGroups();
             $objCustomer->add();

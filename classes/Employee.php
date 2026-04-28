@@ -287,8 +287,8 @@ class EmployeeCore extends ObjectModel
         }
 
         if ($passwd !== null) {
-            $crypto = new Hashing();
-            if (!$crypto->checkHash($passwd, $result['passwd'])) {
+            $objHash = new PasswordHashing();
+            if (!$objHash->validateHash($passwd, $result['passwd'])) {
                 return false;
             }
         }
@@ -300,8 +300,8 @@ class EmployeeCore extends ObjectModel
             }
         }
 
-        if ($passwd !== null && !$crypto->isFirstHash($passwd, $result['passwd'])) {
-            $this->passwd = $crypto->hash($passwd);
+        if ($passwd !== null && !$objHash->isPrimaryHash($passwd, $result['passwd'])) {
+            $this->passwd = $objHash->passwordHash($passwd);
             $this->update();
         }
         return $this;
@@ -375,20 +375,20 @@ class EmployeeCore extends ObjectModel
     // validate and set password for the employee
     public function setWsPasswd($passwd)
     {
-        $crypto = new Hashing();
+        $objHash = new PasswordHashing();
         if ($this->id != 0) {
             if ($this->passwd != $passwd) {
                 if (!Validate::isHashedPassword($passwd, Validate::ADMIN_PASSWORD_LENGTH)) {
                     WebserviceRequest::getInstance()->setError(400, 'The password must be at least '.Validate::ADMIN_PASSWORD_LENGTH.' characters long.', 134);
                 } else {
-                    $this->passwd = $crypto->hash($passwd);
+                    $this->passwd = $objHash->passwordHash($passwd);
                 }
             }
         } else {
             if (!Validate::isHashedPassword($passwd, Validate::ADMIN_PASSWORD_LENGTH)) {
                 WebserviceRequest::getInstance()->setError(400, 'The password must be at least '.Validate::ADMIN_PASSWORD_LENGTH.' characters long.', 134);
             } else {
-                $this->passwd = $crypto->hash($passwd);
+                $this->passwd = $objHash->passwordHash($passwd);
             }
         }
 

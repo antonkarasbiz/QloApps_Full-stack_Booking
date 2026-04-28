@@ -566,8 +566,8 @@ class InstallModelInstall extends InstallAbstractModel
             $employee->firstname = Tools::ucfirst($data['admin_firstname']);
             $employee->lastname = Tools::ucfirst($data['admin_lastname']);
             $employee->email = $data['admin_email'];
-            $crypto = new Hashing();
-            $employee->passwd = $crypto->hash($data['admin_password']);
+            $objHash = new PasswordHashing();
+            $employee->passwd = $objHash->passwordHash($data['admin_password']);
             $employee->last_passwd_gen = date('Y-m-d h:i:s', strtotime('-360 minutes'));
             $employee->bo_theme = 'default';
             $employee->default_tab = 1;

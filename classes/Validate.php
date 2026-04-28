@@ -91,7 +91,7 @@ class ValidateCore
     /**
      * Check for password hash validity (legacy MD5 or bcrypt), or plaintext password.
      *
-     * @param string $hash
+     * @param string $hashedPasswd
      * @return bool Validity is ok or not
      */
     public static function isHashedPassword($hashedPasswd)
