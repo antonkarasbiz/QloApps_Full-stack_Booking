@@ -1840,7 +1840,12 @@ class CartCore extends ObjectModel
                         null,
                         0,
                         (int)$product['auto_add_to_cart'],
-                        (int)$product['price_addition_type']
+                        (int)$product['price_addition_type'],
+                        0,
+                        0,
+                        0,
+                        0,
+                        isset($product['id_hotel']) ? $product['id_hotel'] : null
                     )) {
                         foreach ($servicesWithRoom as $service) {
                             if ($with_taxes) {
