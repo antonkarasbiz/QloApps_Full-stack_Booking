@@ -368,7 +368,7 @@
 								name="meta_description_{$language.id_lang}"
 								value="{if isset($smarty.post.$meta_description)}{$smarty.post.$meta_description|escape:'htmlall':'UTF-8'}{elseif isset($edit)}{$meta_description_info[{$language.id_lang}]|escape:'htmlall':'UTF-8'}{/if}"
 								class="form-control wk_text_field_all wk_text_field_{$language.id_lang}"
-								maxlength="225"
+								maxlength="512"
 								{if $currentLang.id_lang != $language.id_lang}style="display:none;"{/if} />
 							{/foreach}
 						</div>

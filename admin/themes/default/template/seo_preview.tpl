@@ -167,6 +167,10 @@
             }
         }
 
+        function truncatePreview(text, limit) {
+            return text.length > limit ? text.substring(0, limit) + '...' : text;
+        }
+
         function updateSeoPreview(idLang) {
             var title = $('#meta_title_' + idLang).val();
             var description = $('#meta_description_' + idLang).val();
@@ -178,13 +182,13 @@
                 var titlePreview = $('#meta-title_' + idLang);
                 var defaultTitle = $('#seo-preview-title-default_' + idLang).text() || '';
                 var valueTitle = (title || '').trim();
-                titlePreview.text(valueTitle.length ? valueTitle : defaultTitle);
+                titlePreview.text(truncatePreview(valueTitle.length ? valueTitle : defaultTitle, 70));
             }
             if (description !== undefined) {
                 var descriptionPreview = $('#meta-description_' + idLang);
                 var defaultDescription = $('#seo-preview-description-default_' + idLang).text() || '';
                 var valueDescription = (description || '').trim();
-                descriptionPreview.text(valueDescription.length ? valueDescription : defaultDescription);
+                descriptionPreview.text(truncatePreview(valueDescription.length ? valueDescription : defaultDescription, 160));
             }
             if (link !== undefined) {
                 $('#friendly-url_' + idLang).text(link.trim());
@@ -219,10 +223,16 @@
         color: #1a0dab;
         font-size: 18px;
         font-weight: normal;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
     }
 
     .seo-meta-description {
         font-size: 14px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
     }
 
     .seo-preview-url-link {
