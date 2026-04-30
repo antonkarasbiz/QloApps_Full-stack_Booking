@@ -157,8 +157,7 @@ class ServiceProductCartDetail extends ObjectModel
         $groupByProductId = 0,
         $detailedInfo = 0,
         $idLang = 0,
-        $idServiceProductCartDetail = 0,
-        $idRoomTypeHotel = null
+        $idServiceProductCartDetail = 0
     ) {
         if ($useTax === null) {
             $useTax = Product::$_taxCalculationMethod == PS_TAX_EXC ? false : true;
@@ -207,9 +206,6 @@ class ServiceProductCartDetail extends ObjectModel
         }
         if (!is_null($idHotel)) {
             $sql .= ' AND spc.`id_hotel`='.(int) $idHotel;
-        }
-        if(!is_null($idRoomTypeHotel)) {
-            $sql .= ' AND hcbd.`id_hotel`='.(int) $idRoomTypeHotel;
         }
         if (!is_null($idProduct)) {
             $sql .= ' AND spc.`id_product`='.(int) $idProduct;
