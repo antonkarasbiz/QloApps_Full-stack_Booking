@@ -196,6 +196,12 @@
 						</div>
 					</div>
 					<div class="form-group">
+						<label class="col-sm-3 control-label" for="vat_number">{l s='VAT Number' mod='hotelreservationsystem'}</label>
+						<div class="col-sm-6">
+							<input autocomplete="off" type="text" class="form-control" id="vat_number" name="vat_number" value="{if isset($smarty.post.vat_number)}{$smarty.post.vat_number|escape:'htmlall':'UTF-8'}{elseif isset($edit)}{$address_info.vat_number|escape:'htmlall':'UTF-8'}{/if}" />
+						</div>
+					</div>
+					<div class="form-group">
 						<label class="col-sm-3 control-label required">{l s='Address :' mod='hotelreservationsystem'}</label>
 						<div class="col-sm-6">
 							<textarea name="address" rows="4" cols="35" >{if isset($smarty.post.address)}{$smarty.post.address}{elseif isset($edit)}{$address_info.address1|escape:'htmlall':'UTF-8'}{/if}</textarea>
