@@ -46,6 +46,7 @@ ini_set('magic_quotes_sybase', 0);
 if (!headers_sent()) {
     header('Content-Type: text/html; charset=utf-8');
     header('X-Powered-By: QloApps');
+    header('X-Built-With: QloApps');
 }
 
 /* No settings file? goto installer... */
