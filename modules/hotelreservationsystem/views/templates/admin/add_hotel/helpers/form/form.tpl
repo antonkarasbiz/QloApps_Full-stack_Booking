@@ -345,14 +345,19 @@
 						<div class="col-lg-6">
 						{foreach from=$languages item=language}
 							{assign var="meta_title" value="meta_title_`$language.id_lang`"}
+							<div class="input-group wk_text_field_all wk_text_field_{$language.id_lang}" {if $currentLang.id_lang != $language.id_lang}style="display:none;"{/if}>
+								<span id="meta_title_{$language.id_lang}_counter" class="input-group-addon">
+									<span class="text-count-down">128</span>
+								</span>
 								<input type="text"
 								id="meta_title_{$language.id_lang}"
 								name="meta_title_{$language.id_lang}"
-								value="{if isset($smarty.post.$meta_title)}{$smarty.post.$meta_title|escape:'htmlall':'UTF-8'}{elseif isset($edit)}{$meta_title_info[$language.id_lang]|escape:'htmlall':'UTF-8'}{/if}""
-								class="form-control wk_text_field_all wk_text_field_{$language.id_lang}"
+								value="{if isset($smarty.post.$meta_title)}{$smarty.post.$meta_title|truncate:128:'':true|escape:'htmlall':'UTF-8'}{elseif isset($edit)}{$meta_title_info[$language.id_lang]|truncate:128:'':true|escape:'htmlall':'UTF-8'}{/if}""
+								class="form-control"
 								maxlength="128"
-								{if $currentLang.id_lang != $language.id_lang}style="display:none;"{/if} />
-							{/foreach}
+								data-maxchar="128" />
+							</div>
+						{/foreach}
 						</div>
 					</div>
 					<div class="form-group">
@@ -363,13 +368,18 @@
 						<div class="col-lg-6">
 							{foreach from=$languages item=language}
 								{assign var="meta_description" value="meta_description_`$language.id_lang`"}
-								<input type="text"
-								id="meta_description_{$language.id_lang}"
-								name="meta_description_{$language.id_lang}"
-								value="{if isset($smarty.post.$meta_description)}{$smarty.post.$meta_description|escape:'htmlall':'UTF-8'}{elseif isset($edit)}{$meta_description_info[{$language.id_lang}]|escape:'htmlall':'UTF-8'}{/if}"
-								class="form-control wk_text_field_all wk_text_field_{$language.id_lang}"
-								maxlength="512"
-								{if $currentLang.id_lang != $language.id_lang}style="display:none;"{/if} />
+								<div class="input-group wk_text_field_all wk_text_field_{$language.id_lang}" {if $currentLang.id_lang != $language.id_lang}style="display:none;"{/if}>
+									<span id="meta_description_{$language.id_lang}_counter" class="input-group-addon">
+										<span class="text-count-down">255</span>
+									</span>
+									<textarea
+									id="meta_description_{$language.id_lang}"
+									name="meta_description_{$language.id_lang}"
+									class="form-control textarea-autosize"
+									rows="1"
+									maxlength="255"
+									data-maxchar="255">{if isset($smarty.post.$meta_description)}{$smarty.post.$meta_description|truncate:255:'':true|escape:'htmlall':'UTF-8'}{elseif isset($edit)}{$meta_description_info[{$language.id_lang}]|truncate:255:'':true|escape:'htmlall':'UTF-8'}{/if}</textarea>
+								</div>
 							{/foreach}
 						</div>
 					</div>
@@ -404,6 +414,8 @@
 					{include file="seo_preview.tpl"
 						languages = $languages
 						preview_link = $rewrite_url|default:''
+						show_label_tooltip = false
+						show_flag = true
 						inputs = [
     						'meta_title' => $meta_title_info,
     						'meta_description' => $meta_description_info,
@@ -669,6 +681,21 @@
 			});
 		{/block}
 
+		{foreach from=$languages item=language}
+			countDown($("#meta_title_{$language.id_lang}"), $("#meta_title_{$language.id_lang}_counter"));
+			countDown($("#meta_description_{$language.id_lang}"), $("#meta_description_{$language.id_lang}_counter"));
+		{/foreach}
+
+		$('a[href="#hotel-seo"]').on('shown.bs.tab', function() {
+			$('#hotel-seo .textarea-autosize').autosize();
+			$('#hotel-seo .textarea-autosize').trigger('input');
+		});
+
+		// handle case where SEO tab is already active on load
+		if ($('#hotel-seo').hasClass('active')) {
+			$('#hotel-seo .textarea-autosize').trigger('input');
+		}
 	});
+	$(".textarea-autosize").autosize();
 </script>
 {/block}

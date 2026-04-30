@@ -23,10 +23,17 @@
     <div class="form-group seo-preview-group">
         <div class="col-lg-1"></div>
         <label class="control-label col-lg-2 seo-label">
-            <span class="label-tooltip" data-toggle="tooltip"
-                title="{l s='Preview how this page may appear in search results.'}">
+            {if !isset($show_label_tooltip) || $show_label_tooltip}
+                <span class="label-tooltip" data-toggle="tooltip"
+                    title="{l s='Preview how this page may appear in search results.'}">
+                    {l s='SEO Preview'}
+                </span>
+            {else}
                 {l s='SEO Preview'}
-            </span>
+                {if isset($show_flag) && $show_flag && count($languages) > 1}
+                    <img class="all_lang_icon" data-lang-id="{$currentLang.id_lang}" src="{$ps_img_dir}{$currentLang.id_lang}.jpg">
+                {/if}
+            {/if}
         </label>
         <div class="col-lg-8">
             {foreach from=$languages item=language}
@@ -135,6 +142,7 @@
                     .on('keyup change', function() {
                         updateSeoPreview(idLang);
                     });
+                updateSeoPreview(idLang);
             });
         });
 

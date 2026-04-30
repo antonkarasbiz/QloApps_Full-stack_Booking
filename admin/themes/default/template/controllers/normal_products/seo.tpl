@@ -53,7 +53,7 @@
 				languages=$languages
 				input_name='meta_description'
 				input_value=$product->meta_description
-				maxchar=512
+				maxchar=255
 			}
 		</div>
 	</div>
