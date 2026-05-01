@@ -62,9 +62,13 @@
                         class="seo-preview-default">{$seoPreviewDescriptionDefault|escape:'html':'UTF-8'}</span>
                     <div class="seo-preview-url">
                         {if isset($preview_link[$id_lang])}
+                            {assign var=rewriteActive value=(is_array($preview_link[$id_lang]) && isset($preview_link[$id_lang][1]))}
                             <a id="seo-preview-url-link_{$id_lang}" class="seo-preview-url-text seo-preview-url-link"
-                                {if is_array($preview_link[$id_lang])}
-                                    href="{$preview_link[$id_lang][0]|escape:'html':'UTF-8'}{$inputs.link_rewrite[$id_lang]|default:''|escape:'html':'UTF-8'}{$preview_link[$id_lang][1]|default:''|escape:'html':'UTF-8'}"
+                                data-has-rewrite="{if $rewriteActive}1{else}0{/if}"
+                                {if $rewriteActive}
+                                    href="{$preview_link[$id_lang][0]|escape:'html':'UTF-8'}{$inputs.link_rewrite[$id_lang]|default:''|escape:'html':'UTF-8'}{$preview_link[$id_lang][1]|escape:'html':'UTF-8'}"
+                                {elseif is_array($preview_link[$id_lang])}
+                                    href="{$preview_link[$id_lang][0]|escape:'html':'UTF-8'}"
                                 {else}
                                     href="{$preview_link[$id_lang]|escape:'html':'UTF-8'}{$inputs.link_rewrite[$id_lang]|default:''|escape:'html':'UTF-8'}"
                                 {/if} target="_blank" rel="noopener" title="{l s='Open preview link'}">
@@ -72,24 +76,17 @@
                                 <div class="seo-preview-url-text">
                                 {/if}
                                 {strip}
-                                    {if isset($preview_link[$id_lang]) && is_array($preview_link[$id_lang])}
-                                        <span class="preview-base">
-                                            {$preview_link[$id_lang][0]|escape:'html':'UTF-8'}
-                                        </span>
-                                        <span id="friendly-url_{$id_lang}">
-                                            {$inputs.link_rewrite[$id_lang]|default:''|escape:'html':'UTF-8'}
-                                        </span>
-                                        <span class="preview-extension">
-                                            {$preview_link[$id_lang][1]|default:''|escape:'html':'UTF-8'}
-                                        </span>
+                                    {if isset($preview_link[$id_lang]) && $rewriteActive}
+                                        <span class="preview-base" style="display:none">{$preview_link[$id_lang][0]|escape:'html':'UTF-8'}</span>
+                                        <span id="friendly-url_{$id_lang}" style="display:none">{$inputs.link_rewrite[$id_lang]|default:''|escape:'html':'UTF-8'}</span>
+                                        <span class="preview-extension" style="display:none">{$preview_link[$id_lang][1]|escape:'html':'UTF-8'}</span>
+                                    {elseif isset($preview_link[$id_lang]) && is_array($preview_link[$id_lang])}
+                                        <span class="preview-base" style="display:none">{$preview_link[$id_lang][0]|escape:'html':'UTF-8'}</span>
                                     {elseif isset($preview_link[$id_lang])}
-                                        <span class="preview-base">
-                                            {$preview_link[$id_lang]|escape:'html':'UTF-8'}
-                                        </span>
-                                        <span id="friendly-url_{$id_lang}">
-                                            {$inputs.link_rewrite[$id_lang]|default:''|escape:'html':'UTF-8'}
-                                        </span>
+                                        <span class="preview-base" style="display:none">{$preview_link[$id_lang]|escape:'html':'UTF-8'}</span>
+                                        <span id="friendly-url_{$id_lang}" style="display:none">{$inputs.link_rewrite[$id_lang]|default:''|escape:'html':'UTF-8'}</span>
                                     {/if}
+                                    {if isset($preview_link[$id_lang])}<span class="seo-url-breadcrumb"></span>{/if}
                                 {/strip}
                                 {if isset($preview_link[$id_lang])}
                             </a>
@@ -204,6 +201,18 @@
             updateSeoPreviewLink(idLang);
         }
 
+        function formatUrlBreadcrumb(url) {
+            var withoutQuery = url.split('?')[0].split('#')[0].replace(/\/$/, '');
+            var match = withoutQuery.match(/^(https?:\/\/[^\/]+)(\/.*)?$/);
+            if (!match) return url;
+            var parts = [match[1]];
+            if (match[2]) {
+                var segments = match[2].replace(/^\//, '').split('/').filter(function(s) { return s.length > 0; });
+                parts = parts.concat(segments);
+            }
+            return parts.join(' › ');
+        }
+
         function updateSeoPreviewLink(idLang) {
             var urlLink = $('#seo-preview-url-link_' + idLang);
             if (!urlLink.length) {
@@ -211,13 +220,20 @@
             }
 
             var container = $('.wk_text_field_' + idLang);
-            var base = container.find('.preview-base').text() || '';
-            var slug = container.find('#friendly-url_' + idLang).text() || '';
-            var ext = container.find('.preview-extension').text() || '';
-            var href = (base + slug + ext).trim();
+            var href;
+
+            if (urlLink.data('has-rewrite')) {
+                var base = container.find('.preview-base').text() || '';
+                var slug = container.find('#friendly-url_' + idLang).text() || '';
+                var ext = container.find('.preview-extension').text() || '';
+                href = (base + slug + ext).trim();
+            } else {
+                href = (urlLink.attr('href') || '').trim();
+            }
 
             if (href.length) {
                 urlLink.attr('href', href);
+                urlLink.find('.seo-url-breadcrumb').text(formatUrlBreadcrumb(href));
             }
         }
     </script>
@@ -246,6 +262,12 @@
     .seo-preview-url-link {
         color: inherit !important;
         text-decoration: none;
+    }
+
+    .seo-url-breadcrumb {
+        font-size: 12px;
+        color: #4d5156;
+        word-break: break-all;
     }
 
     .seo-preview-default {

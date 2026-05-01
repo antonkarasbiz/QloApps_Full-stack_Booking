@@ -47,7 +47,7 @@
 		<div class="col-lg-1"><span class="pull-right">{include file="controllers/products/multishop/checkbox.tpl" field="meta_description" type="default" multilang="true"}</span></div>
 		<label class="control-label col-lg-2" for="meta_description_{$id_lang}">
 			<span class="label-tooltip" data-toggle="tooltip"
-				title="{l s='This description will appear in search engines. You need a single sentence, shorter than 160 characters (including spaces). Leave blank to use the room type short description.'}">
+				title="{l s='This description will appear in search engines. You need a single sentence, shorter than 255 characters (including spaces). Leave blank to use the room type short description.'}">
 				{l s='Meta description'}
 			</span>
 		</label>
@@ -108,4 +108,12 @@
 <script type="text/javascript">
 	if (tabs_manager.allow_hide_other_languages)
 		hideOtherLanguage({$default_form_language});
+	// Recalculate autosize heights when language is switched (hidden textareas gain correct width)
+	(function() {
+		var _orig = window.hideOtherLanguage;
+		window.hideOtherLanguage = function(id) {
+			_orig && _orig.call(this, id);
+			$(window).trigger('resize.autosize');
+		};
+	})();
 </script>

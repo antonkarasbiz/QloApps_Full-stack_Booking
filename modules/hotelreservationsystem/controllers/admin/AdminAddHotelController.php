@@ -206,33 +206,23 @@ class AdminAddHotelController extends ModuleAdminController
                 $treeContent = $tree->render();
                 $smartyVars['hotel_feature_tree'] = $treeContent;
             }
-        } else {
-            $idCountry = Tools::getValue('hotel_country');
-        }
-        // Rewrite Url
-        if (Configuration::get('PS_REWRITING_SETTINGS')) {
+
             $smartyVars['rewrite_url'] = [];
-
-            $hotelId = (int) Tools::getValue('id');
-            if ($hotelId > 0 && !empty($smartyVars['languages'])) {
-                $objHotelInfo = new HotelBranchInformation($hotelId);
-                if (Validate::isLoadedObject($objHotelInfo)) {
-                    $idHotelCategory = (int) $objHotelInfo->id_category;
-                    if ($idHotelCategory > 0) {
-                        foreach ($smartyVars['languages'] as $lang) {
-                            $idLang = (int) $lang['id_lang'];
-                            $category = new Category($idHotelCategory, $idLang);
-                            if (!Validate::isLoadedObject($category)) {
-                                continue;
-                            }
-
-                            $fullUrl = $this->context->link->getCategoryLink($category, null, $idLang);
-                            $trimmedUrl = preg_replace('/(\/\d+-).*/', '$1', $fullUrl);
-                            $smartyVars['rewrite_url'][$idLang] = $trimmedUrl;
-                        }
+            $idHotelCategory = (int) $hotelBranchInfo->id_category;
+            if ($idHotelCategory > 0 && !empty($smartyVars['languages'])) {
+                foreach ($smartyVars['languages'] as $lang) {
+                    $idLang = (int) $lang['id_lang'];
+                    $category = new Category($idHotelCategory, $idLang);
+                    if (!Validate::isLoadedObject($category)) {
+                        continue;
                     }
+
+                    $fullUrl = $this->context->link->getCategoryLink($category, '[REWRITE]', $idLang);
+                    $smartyVars['rewrite_url'][$idLang] = explode('[REWRITE]', $fullUrl);
                 }
             }
+        } else {
+            $idCountry = Tools::getValue('hotel_country');
         }
         // manage state option
         $stateOptions = null;

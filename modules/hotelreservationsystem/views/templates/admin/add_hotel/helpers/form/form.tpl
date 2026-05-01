@@ -352,7 +352,7 @@
 								<input type="text"
 								id="meta_title_{$language.id_lang}"
 								name="meta_title_{$language.id_lang}"
-								value="{if isset($smarty.post.$meta_title)}{$smarty.post.$meta_title|truncate:128:'':true|escape:'htmlall':'UTF-8'}{elseif isset($edit)}{$meta_title_info[$language.id_lang]|truncate:128:'':true|escape:'htmlall':'UTF-8'}{/if}""
+								value="{if isset($smarty.post.$meta_title)}{$smarty.post.$meta_title|truncate:128:'':true|escape:'htmlall':'UTF-8'}{elseif isset($edit)}{$meta_title_info[$language.id_lang]|truncate:128:'':true|escape:'htmlall':'UTF-8'}{/if}"
 								class="form-control"
 								maxlength="128"
 								data-maxchar="128" />
@@ -687,15 +687,27 @@
 		{/foreach}
 
 		$('a[href="#hotel-seo"]').on('shown.bs.tab', function() {
-			$('#hotel-seo .textarea-autosize').autosize();
-			$('#hotel-seo .textarea-autosize').trigger('input');
+			$(window).trigger('resize.autosize');
 		});
 
 		// handle case where SEO tab is already active on load
 		if ($('#hotel-seo').hasClass('active')) {
-			$('#hotel-seo .textarea-autosize').trigger('input');
+			$(window).trigger('resize.autosize');
 		}
+
+		// Trigger autosize width recalculation when language is switched
+		$(document).on('wk.lang.changed', function(e, idLang) {
+			$(window).trigger('resize.autosize');
+		});
 	});
 	$(".textarea-autosize").autosize();
+	// After full page load, reinit visible textareas so they start at the correct height
+	$(window).on('load', function() {
+		$(".textarea-autosize:visible").each(function() {
+			var $ta = $(this), val = $ta.val();
+			$ta.val('').trigger('autosize.destroy').removeData('autosize').autosize();
+			if (val) { $ta.val(val).trigger('input'); }
+		});
+	});
 </script>
 {/block}
