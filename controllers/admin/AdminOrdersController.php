@@ -391,13 +391,6 @@ class AdminOrdersControllerCore extends AdminController
                     );
                 }
 
-                $this->page_header_toolbar_btn['print'] = array(
-                    'short' => $this->l('Print'),
-                    'href' => 'javascript:window.print()',
-                    'desc' => $this->l('Print order'),
-                    'class' => 'icon-print',
-                );
-
                 if ($this->tabAccess['edit'] === 1) {
                     if (((int) $order->isReturnable())
                         && !$order->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG, 0, 0)
