@@ -130,9 +130,9 @@ class HTMLTemplatePaymentReceiptCore extends HTMLTemplate
         ));
         
         $smarty_tpls = array(
-            'style_tab' => $this->smarty->fetch($this->getTemplate('payment.receipt.receipt.style-tab')),
-            'addresses_tab' => $this->smarty->fetch($this->getTemplate('payment.receipt.receipt.addresses-tab')),
-            'payment_info_tab' => $this->smarty->fetch($this->getTemplate('payment.receipt.receipt.payment-info-tab')),
+            'style_tab' => $this->smarty->fetch($this->getTemplate('payment.receipt.style-tab')),
+            'addresses_tab' => $this->smarty->fetch($this->getTemplate('payment.receipt.addresses-tab')),
+            'payment_info_tab' => $this->smarty->fetch($this->getTemplate('payment.receipt.payment-info-tab')),
         );
         $this->smarty->assign($smarty_tpls);
         return $this->smarty->fetch($this->getTemplate('payment-receipt'));
