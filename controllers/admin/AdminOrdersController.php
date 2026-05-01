@@ -391,6 +391,16 @@ class AdminOrdersControllerCore extends AdminController
                     );
                 }
 
+                if (HotelBookingDetail::getIdHotelByIdOrder($order->id, false) && !$this->lite_display) {
+                    $this->page_header_toolbar_btn['booking_voucher'] = array(
+                        'short' => $this->l('Booking Voucher'),
+                        'href' => $this->context->link->getAdminLink('AdminPdf').'&submitAction=generateBookingVoucherPDF&id_order='.$order->id,
+                        'desc' => $this->l('View booking voucher'),
+                        'class' => 'icon-file-text',
+                        'target' => true,
+                    );
+                }
+
                 if ($this->tabAccess['edit'] === 1) {
                     if (((int) $order->isReturnable())
                         && !$order->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG, 0, 0)
@@ -518,58 +528,6 @@ class AdminOrdersControllerCore extends AdminController
 
     public function initToolbar()
     {
-        if ($this->display == 'view') {
-            /** @var Order $order */
-            if (Validate::isLoadedObject($order = $this->loadObject())) {
-                // hotel link in header
-                if ($idHotel = HotelBookingDetail::getIdHotelByIdOrder($order->id)) {
-                    $this->toolbar_btn['hotel'] = array(
-                        'href' => $this->context->link->getAdminLink('AdminAddHotel').'&id='.$idHotel.'&updatehtl_branch_info',
-                        'desc' => $this->l('View Hotel'),
-                        'class' => 'icon-building',
-                        'target' => true,
-                    );
-                }
-
-                if (Configuration::get('PS_INVOICE') && $order->hasInvoice() && !$this->lite_display) {
-                    $this->toolbar_btn['file'] = array(
-                        'short' => $this->l('Invoice'),
-                        'href' => $this->context->link->getAdminLink('AdminPdf').'&submitAction=generateInvoicePDF&id_order='.$order->id,
-                        'desc' => $this->l('View invoice'),
-                        'class' => 'icon-file-text',
-                        'target' => true,
-                    );
-                }
-
-                if (HotelBookingDetail::getIdHotelByIdOrder($order->id, false) && !$this->lite_display) {
-                    $this->toolbar_btn['booking_voucher'] = array(
-                        'short' => $this->l('Booking Voucher'),
-                        'href' => $this->context->link->getAdminLink('AdminPdf').'&submitAction=generateBookingVoucherPDF&id_order='.$order->id,
-                        'desc' => $this->l('View booking voucher'),
-                        'class' => 'icon-file-text',
-                        'target' => true,
-                    );
-                }
-
-                if ($this->tabAccess['edit'] === 1) {
-                    if (((int) $order->isReturnable())
-                        && !$order->hasCompletelyRefunded(Order::ORDER_COMPLETE_CANCELLATION_OR_REFUND_REQUEST_FLAG, 0, 0)
-                    ) {
-                        $orderTotalPaid = $order->getTotalPaid();
-                        $orderDiscounts = $order->getCartRules();
-                        $hasOrderDiscountOrPayment = ((float)$orderTotalPaid > 0 || $orderDiscounts) ? true : false;
-                        $this->toolbar_btn['cancel'] = array(
-                            'short' => ($hasOrderDiscountOrPayment) ? $this->l('Refund') : $this->l('Cancel'),
-                            'id' => 'desc-order-standard_refund',
-                            'desc' => ($hasOrderDiscountOrPayment) ? $this->l('Initiate refund') : $this->l('Cancel bookings'),
-                            'class' => 'icon-exchange',
-                            'target' => true,
-                        );
-                    }
-                }
-            }
-        }
-
         $res = parent::initToolbar();
         if (Context::getContext()->shop->getContext() != Shop::CONTEXT_SHOP && isset($this->toolbar_btn['new']) && Shop::isFeatureActive()) {
             unset($this->toolbar_btn['new']);
