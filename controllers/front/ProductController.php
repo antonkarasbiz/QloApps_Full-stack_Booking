@@ -675,7 +675,7 @@ class ProductControllerCore extends FrontController
             'id_room_type' => $idProduct,
             'id_cart' => $idCart,
             'id_guest' => $idGuest,
-            'search_unavai' => 1, // Need to search unavailable rooms to check LOS restriction
+            'search_unavai' => 1,
         );
         if (Configuration::get('PS_FRONT_ROOM_UNIT_SELECTION_TYPE') == HotelBookingDetail::PS_ROOM_UNIT_SELECTION_TYPE_OCCUPANCY) {
             $bookingParams['occupancy'] = $occupancy;
@@ -700,8 +700,8 @@ class ProductControllerCore extends FrontController
         // Initialize LOS values for the selected room type/date
         $objRoomTypeRestrictionDateRange = new HotelRoomTypeRestrictionDateRange();
         $losRestriction = $objRoomTypeRestrictionDateRange->getRoomTypeLengthOfStay($idProduct, $dateFrom);
-        $losMinDays = (int) (($losRestriction && isset($losRestriction['min_los'])) ? $losRestriction['min_los'] : 0);
-        $losMaxDays = (int) (($losRestriction && isset($losRestriction['max_los'])) ? $losRestriction['max_los'] : 0);
+        $losMinDays = (int) ($losRestriction ? $losRestriction['min_los'] : 1);
+        $losMaxDays = (int) ($losRestriction ? $losRestriction['max_los'] : 0);
         if ($hotelRoomData = $objBookingDetail->dataForFrontSearch($bookingParams)) {
             $totalAvailableRooms = $hotelRoomData['stats']['num_avail'];
             $quantity = ($quantity > $totalAvailableRooms) ? $totalAvailableRooms : $quantity;
@@ -721,7 +721,7 @@ class ProductControllerCore extends FrontController
             }
             if ($losRestrictionFailed) {
                 // Determine which restriction failed
-                if ($losMinDays > 0 && $numDays < $losMinDays) {
+                if ($numDays < $losMinDays) {
                     $losMinFailed = true;
                 } elseif ($losMaxDays > 0 && $numDays > $losMaxDays) {
                     $losMaxFailed = true;
