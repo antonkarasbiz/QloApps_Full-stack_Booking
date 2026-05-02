@@ -189,14 +189,12 @@
 {assign var=payment_method_rendered value=false}
 {assign var=payment_status_rendered value=false}
 <table class="bordered-table" width="100%" cellpadding="5" cellspacing="0" nobr="true">
-    <thead>
+    <tbody>
         <tr>
             <th colspan="2" class="header-left small" width="48%">{l s='PAYMENT INFORMATION' pdf='true'}</th>
             <th class="small white" width="2%" style="border:none !important;"></th>
             <th colspan="2" class="header-left small" width="50%">{l s='TOTAL AMOUNT' pdf='true'}</th>
         </tr>
-    </thead>
-    <tbody>
         {if isset($footer.room_price_tax_excl) && $footer.room_price_tax_excl}
             <tr>
                {if !$payment_method_rendered}

@@ -22,6 +22,10 @@
  * @license https://opensource.org/license/osl-3.0-php Open Software License version 3.0
  */
 
+/**
+ * Builds and renders the Booking Voucher PDF for a given Order.
+ * Data assembly follows the same inline pattern as HTMLTemplateInvoice::getContent().
+ */
 class HTMLTemplateBookingVoucherCore extends HTMLTemplate
 {
     /** @var Order */
@@ -95,6 +99,7 @@ class HTMLTemplateBookingVoucherCore extends HTMLTemplate
                     $hotelEmail = $objHotel->email ? $objHotel->email : $hotelEmail;
                     $checkInTime = $objHotel->check_in ?: '--';
                     $checkOutTime = $objHotel->check_out ?: '--';
+
                     $policies = is_array($objHotel->policies) ? '' : (string)$objHotel->policies;
                     if ($policies) {
                         $policyText = html_entity_decode($policies, ENT_QUOTES, 'UTF-8');
@@ -103,7 +108,31 @@ class HTMLTemplateBookingVoucherCore extends HTMLTemplate
                         $policyText = preg_replace("/[\r\n]+/", "\n", $policyText);
                         $paymentPolicy = nl2br(trim($policyText));
                     }
-                    $cancellationPolicy = $this->getFormattedCancellationPolicy($idHotel);
+
+                    if ($idHotel) {
+                        $objBranchRefundRules = new HotelBranchRefundRules();
+                        $refundRules = $objBranchRefundRules->getHotelRefundRules(
+                            $idHotel, 0, 1, (int)$this->order->id_lang, 1
+                        );
+                        if (is_array($refundRules) && !empty($refundRules)) {
+                            $policyBlocks = array();
+                            foreach ($refundRules as $rule) {
+                                $ruleName = isset($rule['name']) ? trim(strip_tags($rule['name'])) : '';
+                                $ruleDescription = isset($rule['description']) ? trim($rule['description']) : '';
+                                if ($ruleName === '' && $ruleDescription === '') {
+                                    continue;
+                                }
+                                $block = $ruleName !== '' ? '<strong>'.Tools::safeOutput($ruleName).'</strong>' : '';
+                                if ($ruleDescription !== '') {
+                                    $block .= ($block !== '' ? ': ' : '').$ruleDescription;
+                                }
+                                $policyBlocks[] = $block;
+                            }
+                            if (!empty($policyBlocks)) {
+                                $cancellationPolicy = implode('<br /><br />', $policyBlocks);
+                            }
+                        }
+                    }
 
                     if ($idHotelAddress = $objHotel->getHotelIdAddress()) {
                         $objHotelAddress = new Address((int)$idHotelAddress);
@@ -128,8 +157,136 @@ class HTMLTemplateBookingVoucherCore extends HTMLTemplate
             }
         }
 
-        // --- Room and service data ---
-        $roomAndServiceData = $this->getRoomAndServiceData($bookings);
+        // --- Rooms, services, occupancy ---
+        $totalRooms = 0;
+        $serviceRows = array();
+        $roomTypeRows = array();
+        $totalRoomNights = 0;
+        $totalGuests = 0;
+
+        foreach ($bookings as $booking) {
+            $nights = (int)HotelHelper::getNumberOfDays($booking['date_from'], $booking['date_to']);
+            if ($nights <= 0) {
+                $nights = 1;
+            }
+
+            $roomReference = !empty($booking['room_num']) ? $booking['room_num'] : 'BK-'.(int)$booking['id'];
+            $adults = (int)$booking['adults'];
+            $children = (int)$booking['children'];
+            $totalGuests += $adults + $children;
+            $totalRoomNights += $nights;
+
+            $dateFrom = ($booking['date_from'] && $booking['date_from'] !== '0000-00-00 00:00:00')
+                ? Tools::displayDate($booking['date_from'], null, false) : '--';
+            $dateTo = ($booking['date_to'] && $booking['date_to'] !== '0000-00-00 00:00:00')
+                ? Tools::displayDate($booking['date_to'], null, false) : '--';
+
+            // Extra demands for this room
+            $autoAddedWithRoomPriceTaxExcl = 0;
+            $roomServiceRows = array();
+
+            $objBookingDemand = new HotelBookingDemands();
+            $extraDemands = $objBookingDemand->getRoomTypeBookingExtraDemands(
+                (int)$this->order->id, 0, 0, 0, 0, 0, 0, 0,
+                (int)$booking['id'], (int)$booking['id_order_detail']
+            );
+            if (is_array($extraDemands)) {
+                foreach ($extraDemands as $demand) {
+                    $roomServiceRows[] = array(
+                        'room_ref' => $roomReference,
+                        'check_in_date' => $dateFrom,
+                        'check_out_date' => $dateTo,
+                        'name' => $demand['name'],
+                        'quantity' => 1,
+                    );
+                }
+            }
+
+            // Auto-added services bundled with room price
+            $objServiceProductOrderDetail = new ServiceProductOrderDetail();
+            $autoAddedWithRoomPriceTaxExcl = (float)$objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                (int)$this->order->id, 0, 0,
+                isset($booking['id_product']) ? (int)$booking['id_product'] : 0,
+                isset($booking['date_from']) ? $booking['date_from'] : 0,
+                isset($booking['date_to']) ? $booking['date_to'] : 0,
+                isset($booking['id_room']) ? (int)$booking['id_room'] : 0,
+                1, 0, 1, Product::PRICE_ADDITION_TYPE_WITH_ROOM
+            );
+
+            // Additional services chosen by guest
+            $additionalServices = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
+                0, 0, 0, 0, 0, 0, 0, 0, 1, 0, null, 0, (int)$booking['id']
+            );
+            if (isset($additionalServices[(int)$booking['id']]['additional_services'])) {
+                foreach ($additionalServices[(int)$booking['id']]['additional_services'] as $service) {
+                    $roomServiceRows[] = array(
+                        'room_ref' => $roomReference,
+                        'check_in_date' => $dateFrom,
+                        'check_out_date' => $dateTo,
+                        'name' => $service['name'],
+                        'quantity' => (int)$service['quantity'],
+                    );
+                }
+            }
+
+            $serviceRows = array_merge($serviceRows, $roomServiceRows);
+
+            $roomTotalTaxExcl = (float)$booking['total_price_tax_excl'];
+            $roomTotalWithAutoServicesTaxExcl = $roomTotalTaxExcl + $autoAddedWithRoomPriceTaxExcl;
+
+            // Aggregate per room type + date range
+            $roomTypeRowKey = implode('|', array(
+                (int)$booking['id_order_detail'],
+                isset($booking['room_type_name']) ? $booking['room_type_name'] : '',
+                isset($booking['date_from']) ? $booking['date_from'] : '',
+                isset($booking['date_to']) ? $booking['date_to'] : '',
+            ));
+
+            if (!isset($roomTypeRows[$roomTypeRowKey])) {
+                $idOrderDetail = (int)$booking['id_order_detail'];
+                $detailTaxes = $idOrderDetail ? OrderDetail::getTaxListStatic($idOrderDetail) : null;
+                $orderDetailTaxLabel = self::l('No tax');
+                if ($detailTaxes) {
+                    $taxTemp = array();
+                    foreach ($detailTaxes as $tax) {
+                        $objTax = new Tax($tax['id_tax']);
+                        $taxTemp[] = sprintf(self::l('%1$s%2$s%%'), $objTax->rate + 0, '&nbsp;');
+                    }
+                    $orderDetailTaxLabel = implode(', ', $taxTemp);
+                }
+
+                $roomTypeRows[$roomTypeRowKey] = array(
+                    'room_type_name' => isset($booking['room_type_name']) ? $booking['room_type_name'] : '',
+                    'order_detail_tax_label' => $orderDetailTaxLabel,
+                    'rooms' => 0,
+                    'adults' => 0,
+                    'children' => 0,
+                    'nights' => $nights,
+                    'check_in_date' => $dateFrom,
+                    'check_out_date' => $dateTo,
+                    'unit_price_tax_excl' => 0,
+                    'total_price_tax_excl' => 0,
+                );
+            }
+
+            $roomTypeRows[$roomTypeRowKey]['rooms'] += 1;
+            $roomTypeRows[$roomTypeRowKey]['adults'] += $adults;
+            $roomTypeRows[$roomTypeRowKey]['children'] += $children;
+            $roomTypeRows[$roomTypeRowKey]['total_price_tax_excl'] += $roomTotalWithAutoServicesTaxExcl;
+            $totalRooms++;
+        }
+
+        foreach ($roomTypeRows as &$roomTypeRow) {
+            $denominator = (int)$roomTypeRow['nights'] * (int)$roomTypeRow['rooms'];
+            if ($denominator > 0) {
+                $roomTypeRow['unit_price_tax_excl'] = Tools::ps_round(
+                    $roomTypeRow['total_price_tax_excl'] / $denominator,
+                    6,
+                    $this->order->round_mode
+                );
+            }
+        }
+        unset($roomTypeRow);
 
         // --- Guest details ---
         $guestName = '';
@@ -161,7 +318,8 @@ class HTMLTemplateBookingVoucherCore extends HTMLTemplate
             }
         }
 
-        $footer = $this->getTotalsData($roomAndServiceData);
+        // --- Totals ---
+        $footer = $this->getTotalsData($totalRooms, $totalRoomNights, $totalGuests);
 
         // --- Payment ---
         $paymentMethods = array();
@@ -198,18 +356,17 @@ class HTMLTemplateBookingVoucherCore extends HTMLTemplate
             'guest_email' => $guestEmail,
             'guest_phone' => $guestPhone,
             'guest_address' => $guestAddress,
-            'total_guests' => (int)$roomAndServiceData['total_guests'],
+            'total_guests' => (int)$totalGuests,
             // booking summary
-            'total_rooms' => (int)$roomAndServiceData['total_rooms'],
-            'total_room_nights' => (int)$roomAndServiceData['total_room_nights'],
+            'total_rooms' => (int)$totalRooms,
+            'total_room_nights' => (int)$totalRoomNights,
             // room and service tables
-            'room_type_rows' => $roomAndServiceData['room_type_rows'],
-            'service_rows' => $roomAndServiceData['service_rows'],
+            'room_type_rows' => array_values($roomTypeRows),
+            'service_rows' => $serviceRows,
             // payment
             'payment_method' => $paymentMethod,
             'payment_status' => $orderState['name'],
-            'is_advance_payment' => (int)$this->order->is_advance_payment,
-            // totals
+            // totals — key named $footer to match invoice convention
             'footer' => $footer,
             // policies
             'check_in_time' => ($checkInTime && $checkInTime !== '--')
@@ -221,8 +378,6 @@ class HTMLTemplateBookingVoucherCore extends HTMLTemplate
                 : self::l('Please contact the property for policy details.'),
             'cancellation_policy' => $cancellationPolicy,
             'has_cancellation_policy' => (bool)trim(strip_tags($cancellationPolicy)),
-            // tax
-            'tax_breakdown' => $this->getTaxBreakdownData(),
         );
 
         if (Tools::getValue('debug')) {
@@ -234,231 +389,16 @@ class HTMLTemplateBookingVoucherCore extends HTMLTemplate
     }
 
     /**
-     * Builds per-room and per-room-type rows, services, price breakdown, and occupancy totals.
-     *
-     * @param array $bookings
-     * @return array
-     */
-    protected function getRoomAndServiceData($bookings)
-    {
-        $rooms = array();
-        $serviceRows = array();
-        $servicesByRoom = array();
-        $priceBreakdown = array();
-        $roomTypeRows = array();
-        $totalRoomNights = 0;
-        $totalGuests = 0;
-
-        foreach ($bookings as $booking) {
-            $nights = (int)HotelHelper::getNumberOfDays($booking['date_from'], $booking['date_to']);
-            if ($nights <= 0) {
-                $nights = 1;
-            }
-
-            $roomReference = !empty($booking['room_num']) ? $booking['room_num'] : 'BK-'.(int)$booking['id'];
-            $adults = (int)$booking['adults'];
-            $children = (int)$booking['children'];
-            $totalGuests += $adults + $children;
-            $totalRoomNights += $nights;
-
-            $serviceData = $this->getRoomServiceData($booking, $roomReference);
-            $servicesByRoom[$roomReference] = $serviceData['services'];
-            $serviceRows = array_merge($serviceRows, $serviceData['rows']);
-
-            $roomTotalTaxExcl = (float)$booking['total_price_tax_excl'];
-            $roomTotalWithAutoServicesTaxExcl = $roomTotalTaxExcl + $serviceData['auto_added_room_total_tax_excl'];
-            $unitPriceTaxExcl = $nights ? Tools::ps_round(
-                $roomTotalWithAutoServicesTaxExcl / $nights,
-                _PS_PRICE_COMPUTE_PRECISION_,
-                $this->order->round_mode
-            ) : 0;
-
-            // Group by room type + date range to aggregate multi-room rows
-            $roomTypeRowKey = implode('|', array(
-                (int)$booking['id_order_detail'],
-                isset($booking['room_type_name']) ? $booking['room_type_name'] : '',
-                isset($booking['date_from']) ? $booking['date_from'] : '',
-                isset($booking['date_to']) ? $booking['date_to'] : '',
-            ));
-
-            if (!isset($roomTypeRows[$roomTypeRowKey])) {
-                $idOrderDetail = (int)$booking['id_order_detail'];
-                $detailTaxes = $idOrderDetail ? OrderDetail::getTaxListStatic($idOrderDetail) : null;
-                $orderDetailTaxLabel = self::l('No tax');
-                if ($detailTaxes) {
-                    $taxTemp = array();
-                    foreach ($detailTaxes as $tax) {
-                        $objTax = new Tax($tax['id_tax']);
-                        $taxTemp[] = sprintf(self::l('%1$s%2$s%%'), $objTax->rate + 0, '&nbsp;');
-                    }
-                    $orderDetailTaxLabel = implode(', ', $taxTemp);
-                }
-
-                $roomTypeRows[$roomTypeRowKey] = array(
-                    'room_type_name' => isset($booking['room_type_name']) ? $booking['room_type_name'] : '',
-                    'order_detail_tax_label' => $orderDetailTaxLabel,
-                    'rooms' => 0,
-                    'adults' => 0,
-                    'children' => 0,
-                    'nights' => $nights,
-                    'check_in_date' => $this->formatDisplayDate($booking['date_from']),
-                    'check_out_date' => $this->formatDisplayDate($booking['date_to']),
-                    'unit_price_tax_excl' => 0,
-                    'total_price_tax_excl' => 0,
-                );
-            }
-
-            $roomTypeRows[$roomTypeRowKey]['rooms'] += 1;
-            $roomTypeRows[$roomTypeRowKey]['adults'] += $adults;
-            $roomTypeRows[$roomTypeRowKey]['children'] += $children;
-            $roomTypeRows[$roomTypeRowKey]['total_price_tax_excl'] += $roomTotalWithAutoServicesTaxExcl;
-
-            $rooms[] = array(
-                'room_ref' => $roomReference,
-                'room_num' => isset($booking['room_num']) ? $booking['room_num'] : '',
-                'room_type_name' => isset($booking['room_type_name']) ? $booking['room_type_name'] : '',
-                'check_in_date' => $this->formatDisplayDate($booking['date_from']),
-                'check_out_date' => $this->formatDisplayDate($booking['date_to']),
-                'nights' => $nights,
-                'adults' => $adults,
-                'children' => $children,
-                'unit_price_tax_excl' => $unitPriceTaxExcl,
-                'total_price_tax_excl' => $roomTotalWithAutoServicesTaxExcl,
-            );
-
-            $priceBreakdown[] = array(
-                'room_ref' => $roomReference,
-                'room_type_name' => isset($booking['room_type_name']) ? $booking['room_type_name'] : '',
-                'nights' => $nights,
-                'unit_price_tax_excl' => $unitPriceTaxExcl,
-                'room_total_tax_excl' => $roomTotalWithAutoServicesTaxExcl,
-                'services_total_tax_excl' => $serviceData['total_price_tax_excl'],
-                'subtotal_tax_excl' => $roomTotalWithAutoServicesTaxExcl + $serviceData['total_price_tax_excl'],
-            );
-        }
-
-        foreach ($roomTypeRows as &$roomTypeRow) {
-            $denominator = (int)$roomTypeRow['nights'] * (int)$roomTypeRow['rooms'];
-            if ($denominator > 0) {
-                $roomTypeRow['unit_price_tax_excl'] = Tools::ps_round(
-                    $roomTypeRow['total_price_tax_excl'] / $denominator,
-                    6,
-                    $this->order->round_mode
-                );
-            }
-        }
-        unset($roomTypeRow);
-
-        return array(
-            'rooms' => $rooms,
-            'room_type_rows' => array_values($roomTypeRows),
-            'service_rows' => $serviceRows,
-            'services_by_room' => $servicesByRoom,
-            'price_breakdown' => $priceBreakdown,
-            'total_rooms' => count($rooms),
-            'total_room_nights' => $totalRoomNights,
-            'total_guests' => $totalGuests,
-        );
-    }
-
-    protected function getRoomServiceData($booking, $roomReference)
-    {
-        $rows = array();
-        $services = array();
-        $totalPriceTaxExcl = 0;
-
-        $objBookingDemand = new HotelBookingDemands();
-        $extraDemands = $objBookingDemand->getRoomTypeBookingExtraDemands(
-            (int)$this->order->id,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            (int)$booking['id'],
-            (int)$booking['id_order_detail']
-        );
-
-        if (is_array($extraDemands)) {
-            foreach ($extraDemands as $demand) {
-                $services[] = array(
-                    'room_ref' => $roomReference,
-                    'check_in_out' => $this->formatDisplayDate($booking['date_from']).' - '.$this->formatDisplayDate($booking['date_to']),
-                    'name' => $demand['name'],
-                    'quantity' => 1,
-                    'total_price_tax_excl' => (float)$demand['total_price_tax_excl'],
-                );
-                $rows[] = array(
-                    'room_ref' => $roomReference,
-                    'check_in_date' => $this->formatDisplayDate($booking['date_from']),
-                    'check_out_date' => $this->formatDisplayDate($booking['date_to']),
-                    'name' => $demand['name'],
-                    'quantity' => 1,
-                );
-                $totalPriceTaxExcl += (float)$demand['total_price_tax_excl'];
-            }
-        }
-
-        $objServiceProductOrderDetail = new ServiceProductOrderDetail();
-        $autoAddedWithRoomPriceTaxExcl = (float)$objServiceProductOrderDetail->getRoomTypeServiceProducts(
-            (int)$this->order->id,
-            0,
-            0,
-            isset($booking['id_product']) ? (int)$booking['id_product'] : 0,
-            isset($booking['date_from']) ? $booking['date_from'] : 0,
-            isset($booking['date_to']) ? $booking['date_to'] : 0,
-            isset($booking['id_room']) ? (int)$booking['id_room'] : 0,
-            1,
-            0,
-            1,
-            Product::PRICE_ADDITION_TYPE_WITH_ROOM
-        );
-
-        $additionalServices = $objServiceProductOrderDetail->getRoomTypeServiceProducts(
-            0, 0, 0, 0, 0, 0, 0, 0, 1, 0, null, 0, (int)$booking['id']
-        );
-
-        if (isset($additionalServices[(int)$booking['id']]['additional_services'])) {
-            foreach ($additionalServices[(int)$booking['id']]['additional_services'] as $service) {
-                $services[] = array(
-                    'room_ref' => $roomReference,
-                    'check_in_out' => $this->formatDisplayDate($booking['date_from']).' - '.$this->formatDisplayDate($booking['date_to']),
-                    'name' => $service['name'],
-                    'quantity' => (int)$service['quantity'],
-                    'total_price_tax_excl' => (float)$service['total_price_tax_excl'],
-                    'product_tax_label' => isset($service['product_tax_label']) ? $service['product_tax_label'] : self::l('No tax'),
-                );
-                $rows[] = array(
-                    'room_ref' => $roomReference,
-                    'check_in_date' => $this->formatDisplayDate($booking['date_from']),
-                    'check_out_date' => $this->formatDisplayDate($booking['date_to']),
-                    'name' => $service['name'],
-                    'quantity' => (int)$service['quantity'],
-                    'total_price_tax_excl' => (float)$service['total_price_tax_excl'],
-                    'product_tax_label' => isset($service['product_tax_label']) ? $service['product_tax_label'] : self::l('No tax'),
-                );
-                $totalPriceTaxExcl += (float)$service['total_price_tax_excl'];
-            }
-        }
-
-        return array(
-            'services' => $services,
-            'rows' => $rows,
-            'total_price_tax_excl' => $totalPriceTaxExcl,
-            'auto_added_room_total_tax_excl' => $autoAddedWithRoomPriceTaxExcl,
-        );
-    }
-
-    /**
-     * Computes all cost totals using Order's existing methods.
+     * Computes all cost totals using Order's own methods.
      * Mirrors the $footer calculation in HTMLTemplateInvoice::getContent().
+     * Extracted because it is 100+ lines of calculation that would obscure the data assembly above.
      *
-     * @param array $roomAndServiceData
+     * @param int $totalRooms
+     * @param int $totalRoomNights
+     * @param int $totalGuests
      * @return array
      */
-    protected function getTotalsData($roomAndServiceData)
+    protected function getTotalsData($totalRooms, $totalRoomNights, $totalGuests)
     {
         $objBookingDemand = new HotelBookingDemands();
         $totalDemandsPriceTE = (float)$objBookingDemand->getRoomTypeBookingExtraDemands(
@@ -468,7 +408,10 @@ class HTMLTemplateBookingVoucherCore extends HTMLTemplate
             (int)$this->order->id, 0, 0, 0, 0, 1, 1, 1
         );
 
-        $idsOrderDetail = $this->getOrderDetailIds();
+        $orderDetails = OrderDetail::getList((int)$this->order->id);
+        $idsOrderDetail = is_array($orderDetails)
+            ? array_unique(array_map('intval', array_column($orderDetails, 'id_order_detail')))
+            : array();
 
         $roomsCost = 0;
         $roomsCostTaxIncl = 0;
@@ -478,19 +421,14 @@ class HTMLTemplateBookingVoucherCore extends HTMLTemplate
         $additionalServicesCostTaxIncl = 0;
         $convenienceFee = 0;
         $convenienceFeeTaxIncl = 0;
-        $productDiscountsTaxExcl = (float)$this->order->total_discounts_tax_excl;
         $productDiscountsTaxIncl = (float)$this->order->total_discounts_tax_incl;
 
         foreach ($this->order->getCartRules() as $cartRule) {
             if (!empty($cartRule['free_shipping'])) {
-                $productDiscountsTaxExcl -= (float)$this->order->total_shipping_tax_excl;
                 $productDiscountsTaxIncl -= (float)$this->order->total_shipping_tax_incl;
             }
         }
 
-        if ($productDiscountsTaxExcl < 0) {
-            $productDiscountsTaxExcl = 0;
-        }
         if ($productDiscountsTaxIncl < 0) {
             $productDiscountsTaxIncl = 0;
         }
@@ -552,280 +490,16 @@ class HTMLTemplateBookingVoucherCore extends HTMLTemplate
         }
 
         return array(
-            'total_rooms' => (int)$roomAndServiceData['total_rooms'],
-            'total_room_nights' => (int)$roomAndServiceData['total_room_nights'],
-            'total_guests' => (int)$roomAndServiceData['total_guests'],
-            'rooms_cost' => $roomsCost,
             'room_price_tax_excl' => $roomsCost,
-            'room_price_tax_incl' => $roomsCostTaxIncl,
             'service_products_price_tax_excl' => $serviceProductsCost,
-            'service_products_price_tax_incl' => $serviceProductsCostTaxIncl,
             'additional_service_price_tax_excl' => $additionalServicesCost,
-            'additional_service_price_tax_incl' => $additionalServicesCostTaxIncl,
-            'extra_services_cost' => $additionalServicesCost + $serviceProductsCost,
-            'convenience_fee' => $convenienceFee,
             'total_convenience_fee_te' => $convenienceFee,
-            'total_convenience_fee_ti' => $convenienceFeeTaxIncl,
-            'total_paid_tax_excl' => (float)$this->order->total_paid_tax_excl,
-            'total_taxes' => $totalTaxes,
-            'total_rooms_tax' => $totalTaxes,
-            'extra_services_tax' => 0,
             'total_without_discount_te' => $totalWithoutDiscountTaxExcl,
-            'total_without_discount_ti' => $totalWithoutDiscountTaxIncl,
             'total_tax_without_discount' => $totalTaxes,
-            'product_discounts_tax_excl' => $productDiscountsTaxExcl,
             'product_discounts_tax_incl' => $productDiscountsTaxIncl,
-            'grand_total' => $grandTotal,
-            'total_paid' => $totalPaidReal,
-            'total_paid_real' => $totalPaidReal,
             'total_paid_tax_incl' => $grandTotal,
             'amount_due' => Tools::ps_round($amountDue, _PS_PRICE_COMPUTE_PRECISION_, $this->order->round_mode),
         );
-    }
-
-    /**
-     * Builds tax breakdown by product type, handling both order detail taxes and extra demand taxes separately.
-     * Extracted: two-pass algorithm with per-type bucketing.
-     *
-     * @return array
-     */
-    protected function getTaxBreakdownData()
-    {
-        $breakdowns = array(
-            'room_tax' => array(),
-            'additional_services_tax' => array(),
-            'convenience_fee_tax' => array(),
-            'extra_demands_tax' => array(),
-            'service_products_tax' => array(),
-        );
-
-        $orderDetails = OrderDetail::getList((int)$this->order->id);
-        if (is_array($orderDetails)) {
-            foreach ($orderDetails as $orderDetail) {
-                $breakdownType = $this->getTaxBreakdownType($orderDetail);
-                if (!$breakdownType) {
-                    continue;
-                }
-
-                $taxes = OrderDetail::getTaxListStatic((int)$orderDetail['id_order_detail']);
-                if (!$taxes) {
-                    $taxAmount = (float)$orderDetail['total_price_tax_incl'] - (float)$orderDetail['total_price_tax_excl'];
-                    if ($taxAmount <= 0) {
-                        continue;
-                    }
-                    $taxes = array(array(
-                        'id_tax' => 0,
-                        'rate' => (float)$orderDetail['total_price_tax_excl'] > 0
-                            ? (($taxAmount / (float)$orderDetail['total_price_tax_excl']) * 100) : 0,
-                        'total_amount' => $taxAmount,
-                    ));
-                }
-
-                foreach ($taxes as $taxDetail) {
-                    $objTax = new Tax((int)$taxDetail['id_tax']);
-                    $rate = Validate::isLoadedObject($objTax)
-                        ? (float)$objTax->rate
-                        : (isset($taxDetail['rate']) ? (float)$taxDetail['rate'] : 0);
-                    $key = sprintf('%.3f', $rate);
-
-                    if (!isset($breakdowns[$breakdownType][$key])) {
-                        $breakdowns[$breakdownType][$key] = array(
-                            'total_price_tax_excl' => 0,
-                            'total_tax_excl' => 0,
-                            'total_amount' => 0,
-                            'id_tax' => (int)$taxDetail['id_tax'],
-                            'rate' => sprintf('%.3f', $rate),
-                            'name' => Validate::isLoadedObject($objTax)
-                                ? $objTax->name[(int)$this->order->id_lang] : '',
-                        );
-                    }
-
-                    $breakdowns[$breakdownType][$key]['total_price_tax_excl'] += (float)$orderDetail['total_price_tax_excl'];
-                    $breakdowns[$breakdownType][$key]['total_tax_excl'] += (float)$orderDetail['total_price_tax_excl'];
-                    $breakdowns[$breakdownType][$key]['total_amount'] += (float)$taxDetail['total_amount'];
-                }
-            }
-        }
-
-        $objBookingDemand = new HotelBookingDemands();
-        $extraDemandTaxes = $objBookingDemand->getExtraDemandsTaxesDetails(
-            (int)$this->order->id,
-            $this->getOrderDetailIds()
-        );
-
-        if (is_array($extraDemandTaxes)) {
-            foreach ($extraDemandTaxes as $taxDetail) {
-                $rate = isset($taxDetail['rate']) ? (float)$taxDetail['rate'] : 0;
-                $key = sprintf('%.3f', $rate);
-
-                if (!isset($breakdowns['extra_demands_tax'][$key])) {
-                    $breakdowns['extra_demands_tax'][$key] = array(
-                        'total_price_tax_excl' => 0,
-                        'total_tax_excl' => 0,
-                        'total_amount' => 0,
-                        'id_tax' => (int)$taxDetail['id_tax'],
-                        'rate' => sprintf('%.3f', $rate),
-                        'name' => isset($taxDetail['name']) ? $taxDetail['name'] : '',
-                    );
-                }
-
-                $taxBase = isset($taxDetail['total_tax_base'])
-                    ? (float)$taxDetail['total_tax_base']
-                    : (float)$taxDetail['total_price_tax_excl'];
-                $breakdowns['extra_demands_tax'][$key]['total_price_tax_excl'] += $taxBase;
-                $breakdowns['extra_demands_tax'][$key]['total_tax_excl'] += $taxBase;
-                $breakdowns['extra_demands_tax'][$key]['total_amount'] += (float)$taxDetail['total_amount'];
-            }
-        }
-
-        foreach ($breakdowns as $type => &$breakdown) {
-            if (empty($breakdown)) {
-                unset($breakdowns[$type]);
-                continue;
-            }
-            foreach ($breakdown as &$line) {
-                $line['total_price_tax_excl'] = Tools::ps_round(
-                    $line['total_price_tax_excl'],
-                    _PS_PRICE_COMPUTE_PRECISION_,
-                    $this->order->round_mode
-                );
-                $line['total_tax_excl'] = $line['total_price_tax_excl'];
-                $line['total_amount'] = Tools::ps_round(
-                    $line['total_amount'],
-                    _PS_PRICE_COMPUTE_PRECISION_,
-                    $this->order->round_mode
-                );
-            }
-            unset($line);
-        }
-        unset($breakdown);
-
-        return $breakdowns;
-    }
-
-    /**
-     * Classifies an OrderDetail row into a tax breakdown bucket.
-     * Extracted: complex multi-condition classification called inside a loop.
-     *
-     * @param array $orderDetail
-     * @return string|false
-     */
-    protected function getTaxBreakdownType($orderDetail)
-    {
-        if (!empty($orderDetail['is_booking_product'])
-            || ((int)$orderDetail['product_auto_add']
-                && (int)$orderDetail['selling_preference_type'] === (int)Product::SELLING_PREFERENCE_WITH_ROOM_TYPE
-                && (int)$orderDetail['product_price_addition_type'] === (int)Product::PRICE_ADDITION_TYPE_WITH_ROOM)
-        ) {
-            return 'room_tax';
-        }
-
-        if (!(int)$orderDetail['is_booking_product']
-            && !(int)$orderDetail['product_auto_add']
-            && (int)$orderDetail['selling_preference_type'] === (int)Product::SELLING_PREFERENCE_WITH_ROOM_TYPE
-        ) {
-            return 'additional_services_tax';
-        }
-
-        if (!(int)$orderDetail['is_booking_product']
-            && (int)$orderDetail['product_auto_add']
-            && (int)$orderDetail['selling_preference_type'] === (int)Product::SELLING_PREFERENCE_WITH_ROOM_TYPE
-            && (int)$orderDetail['product_price_addition_type'] === (int)Product::PRICE_ADDITION_TYPE_INDEPENDENT
-        ) {
-            return 'convenience_fee_tax';
-        }
-
-        if (!(int)$orderDetail['is_booking_product']
-            && ((int)$orderDetail['selling_preference_type'] === (int)Product::SELLING_PREFERENCE_STANDALONE
-                || (int)$orderDetail['selling_preference_type'] === (int)Product::SELLING_PREFERENCE_HOTEL_STANDALONE)
-        ) {
-            return 'service_products_tax';
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns order detail IDs for this order.
-     * Reused by getTotalsData() and getTaxBreakdownData().
-     *
-     * @return array
-     */
-    protected function getOrderDetailIds()
-    {
-        $orderDetails = OrderDetail::getList((int)$this->order->id);
-
-        if (!is_array($orderDetails)) {
-            return array();
-        }
-
-        return array_unique(array_map('intval', array_column($orderDetails, 'id_order_detail')));
-    }
-
-    /**
-     * Formats a date for display; returns '--' for empty/zero dates.
-     * Reused across getRoomAndServiceData and getRoomServiceData loops.
-     *
-     * @param string $date
-     * @return string
-     */
-    protected function formatDisplayDate($date)
-    {
-        if (!$date || $date === '0000-00-00 00:00:00') {
-            return '--';
-        }
-
-        return Tools::displayDate($date, null, false);
-    }
-
-    /**
-     * Fetches and formats the hotel's cancellation/refund rules as HTML.
-     *
-     * @param int $idHotel
-     * @return string
-     */
-    protected function getFormattedCancellationPolicy($idHotel)
-    {
-        if (!(int)$idHotel) {
-            return '';
-        }
-
-        $objBranchRefundRules = new HotelBranchRefundRules();
-        $refundRules = $objBranchRefundRules->getHotelRefundRules(
-            (int)$idHotel, 0, 1, (int)$this->order->id_lang, 1
-        );
-
-        if (!is_array($refundRules) || empty($refundRules)) {
-            return '';
-        }
-
-        $policyBlocks = array();
-        foreach ($refundRules as $rule) {
-            $ruleName = isset($rule['name']) ? trim(strip_tags($rule['name'])) : '';
-            $ruleDescription = isset($rule['description']) ? trim($rule['description']) : '';
-
-            if ($ruleName === '' && $ruleDescription === '') {
-                continue;
-            }
-
-            $block = '';
-            if ($ruleName !== '') {
-                $block .= '<strong>'.Tools::safeOutput($ruleName).'</strong>';
-            }
-            if ($ruleDescription !== '') {
-                if ($block !== '') {
-                    $block .= ': ';
-                }
-                $block .= $ruleDescription;
-            }
-            $policyBlocks[] = $block;
-        }
-
-        if (empty($policyBlocks)) {
-            return '';
-        }
-
-        return implode('<br /><br />', $policyBlocks);
     }
 
     /**
