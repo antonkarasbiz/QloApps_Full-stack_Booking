@@ -37,7 +37,7 @@ class AdminPaymentReceiptsControllerCore extends AdminControllerCore
                 'fields' =>    array(
                     'PS_PAYMENT_RECEIPTS' => array(
                         'title' => $this->l('Enable Receipts'),
-                        'desc' => $this->l('If enabled, your customers will receive a receipt for their purchase(s).'),
+                        'desc' => $this->l('If enabled, receipts will be generated for orders.'),
                         'cast' => 'intval',
                         'type' => 'bool'
                     ),
