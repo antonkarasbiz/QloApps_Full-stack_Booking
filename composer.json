@@ -48,6 +48,11 @@
         "ext-soap": "*",
         "ext-zip": "*"
     },
+    "require-dev": {
+    },
+    "autoload": {
+        "classmap": ["classes/", "Core/", "Adapter/"]
+    },
     "minimum-stability": "stable",
     "prefer-stable": true,
     "config": {
