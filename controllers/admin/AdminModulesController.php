@@ -1298,6 +1298,13 @@ class AdminModulesControllerCore extends AdminController
             if (Configuration::get('PS_SHOW_CAT_MODULES_'.(int)$this->id_employee)) {
                 $filter_categories = explode('|', Configuration::get('PS_SHOW_CAT_MODULES_'.(int)$this->id_employee));
             }
+            if (count($filter_categories) > 0) {
+                foreach ($filter_categories as $fc) {
+                    if (!empty($fc)) {
+                        $category_filtered[$fc] = 1;
+                    }
+                }
+            }
             if (count($category_filtered) > 0 && !isset($category_filtered[$module->tab])) {
                 return true;
             }
@@ -1478,8 +1485,8 @@ class AdminModulesControllerCore extends AdminController
             $modules_preferences[$v['module']] = $v;
         }
 
-        // Retrieve Modules List
-        $modules = Module::getInstalledModulesOnDisk(true, $this->logged_on_addons, $this->id_employee);
+        // Retrieve Modules List (installed + disabled + uninstalled)
+        $modules = Module::getModulesOnDisk(true, $this->logged_on_addons, $this->id_employee);
         $this->initModulesList($modules);
         $this->nb_modules_total = count($modules);
         $module_errors = array();

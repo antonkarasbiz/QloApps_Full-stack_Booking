@@ -557,8 +557,8 @@ class AdminControllerCore extends Controller
             }
             if ($this->access_query) {
                 if (Tools::getValue($this->identifier)) {
-                    $this->access_query .= ' AND a.'.$this->identifier.'='.(int) Tools::getValue($this->identifier);
-                    if (!Db::getInstance()->executeS($this->access_query)) {
+                    $access_query = $this->access_query.' AND a.'.$this->identifier.'='.(int) Tools::getValue($this->identifier);
+                    if (!Db::getInstance()->executeS($access_query)) {
                         $this->tabAccess['view'] = 0;
                         $this->tabAccess['add'] = 0;
                         $this->tabAccess['edit'] = 0;
@@ -878,14 +878,18 @@ class AdminControllerCore extends Controller
         $prefix = $this->getCookieFilterPrefix();
         $filters = array();
         if (isset($this->list_id)) {
+            $postPrefixPattern = '#^('.
+                $this->list_id.'Filter_|'.
+                'submitFilter'.
+            ')#i';
             foreach ($_POST as $key => $value) {
                 // only process the filter fields.
-                if (stripos($key, $this->list_id.'Filter_') !== 0) {
+                if (!preg_match($postPrefixPattern, $key)) {
                     continue;
                 }
 
                 if (is_array($value)) {
-                    if ($value[0] === '' && $value[1] === '') {
+                    if (isset($value[0], $value[1]) && $value[0] === '' && $value[1] === '') {
                         $value = '';
                     } else {
                         $value = json_encode($value);
@@ -901,14 +905,20 @@ class AdminControllerCore extends Controller
                 }
             }
 
+            $getPrefixPattern = '#^(' .
+                'submitFilter|'.
+                $this->list_id.'Filter_|'.
+                $this->list_id.'Orderby|'.
+                $this->list_id.'Orderway'.
+            ')#i';
             foreach ($_GET as $key => $value) {
-                // only process the filter fields.
-                if (stripos($key, $this->list_id.'Filter_') !== 0) {
+                // only process the filter and order by, order way fields.
+                if (!preg_match($getPrefixPattern, $key)) {
                     continue;
                 }
 
                 if (is_array($value)) {
-                    if ($value[0] === '' && $value[1] === '') {
+                    if (isset($value[0], $value[1]) && $value[0] === '' && $value[1] === '') {
                         $value = '';
                     } else {
                         $value = json_encode($value);
@@ -2390,7 +2400,7 @@ class AdminControllerCore extends Controller
             $must_have_module_list = file_get_contents(_PS_ROOT_DIR_.Module::CACHE_FILE_MUST_HAVE_MODULES_LIST);
             if (!empty($must_have_module_list) && $must_have_module_list_xml = @simplexml_load_string($must_have_module_list)) {
                 $must_have_module_list_array = array();
-                if (is_object($country_module_list_xml->module)) {
+                if (is_object($must_have_module_list_xml->module)) {
                     foreach ($must_have_module_list_xml->module as $l => $mo) {
                         $all_module_list[] = (string)$mo->name;
                     }
@@ -3026,7 +3036,8 @@ class AdminControllerCore extends Controller
             $upgradeInfo = simplexml_load_string($content);
 
             $this->context->smarty->assign(array(
-                'upgrade_info' => $upgradeInfo
+                'upgrade_info' => $upgradeInfo,
+                'debug_mode' => (bool) _PS_MODE_DEV_,
             ));
         }
 
