@@ -3158,4 +3158,26 @@ class OrderCore extends ObjectModel
 
         return $totalOrder;
     }
+
+    public function getPaymentsTypes()
+    {
+        $module = Module::getInstanceByName('hotelreservationsystem');
+        return array(
+            OrderPayment::PAYMENT_TYPE_PAY_AT_HOTEL => array(
+                'key' => 'PAYMENT_TYPE_PAY_AT_HOTEL',
+                'value' => OrderPayment::PAYMENT_TYPE_PAY_AT_HOTEL,
+                'name' => $module->l('Pay at hotel')
+            ),
+            OrderPayment::PAYMENT_TYPE_ONLINE => array(
+                'key' => 'PAYMENT_TYPE_ONLINE',
+                'value' => OrderPayment::PAYMENT_TYPE_ONLINE,
+                'name' => $module->l('Online')
+            ),
+            OrderPayment::PAYMENT_TYPE_REMOTE_PAYMENT => array(
+                'key' => 'PAYMENT_TYPE_REMOTE_PAYMENT',
+                'value' => OrderPayment::PAYMENT_TYPE_REMOTE_PAYMENT,
+                'name' => $module->l('Remote payment')
+            ),
+        );
+    }
 }

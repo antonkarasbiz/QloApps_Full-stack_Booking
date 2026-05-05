@@ -465,7 +465,7 @@
                                             <td>{if isset($payment['invoice_number'])}{$payment['invoice_number']}{else}--{/if}</td>
                                             {if isset($receipt_management_active) && $receipt_management_active}
                                                 <td class="actions">
-                                                    <a target="_blank" class="btn btn-default" href="{$link->getAdminLink('AdminPdf')}&submitAction=generatePaymentReceipt&id_order_payment_detail={$payment['id_order_payment_detail']}"><i class="icon-file-text"></i> {l s='View'}</a>
+                                                    <a target="_blank" class="btn btn-default" href="{$link->getAdminLink('AdminPdf')}&submitAction=generatePaymentReceipt&id_order_payment_detail={$payment['id_order_payment_detail']}"><i class="icon-file-text"></i> {l s='Receipt'}</a>
                                                 </td>
                                             {/if}
                                             <td class="actions">

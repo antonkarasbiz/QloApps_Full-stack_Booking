@@ -21,30 +21,30 @@
 *}
 
 {if isset($payment_list) && $payment_list}
-	<table class="bordered-table" width="100%" cellpadding="4" cellspacing="0">
-		<thead>
+    <table class="bordered-table" width="100%" cellpadding="4" cellspacing="0">
+        <thead>
             <tr>
                 <th class="header" colspan="5">{l s='Payment Details' pdf='true'}</th>
-			</tr>
-			<tr class="header left">
+            </tr>
+            <tr class="header left">
                 <th class="product header-left small ">{l s='Payment Method' pdf='true'}</th>
                 <th class="product header-left small ">{l s='Payment Type' pdf='true'}</th>
                 <th class="product header-left small ">{l s='Transaction ID' pdf='true'}</th>
                 <th class="product header-left small ">{l s='Amount' pdf='true'}</th>
                 <th class="product header-left small">{l s='Payment Date' pdf='true'}</th>
-			</tr>
-		</thead>
-		<tbody>
-                {foreach from=$payment_list key=rm_k item=payment}
-                    {cycle values=["color_line_even", "color_line_odd"] assign=bgcolor_class}
-                    <tr class="white  {$bgcolor_class}">
-                        <td class="product left ">{$payment->payment_method}</td>
-                        <td class="product left ">{$payment->payment_type}</td>
-                        <td class="product left ">{$payment->transaction_id}</td>
-                        <td class="product left ">{displayPrice currency=$payment->id_currency price=$payment->amount}</td>
-                        <td class="product left ">{dateFormat date=$payment->date_add full=true}</td>
-                    </tr>
-                {/foreach}
-		</tbody>
-	</table>
+            </tr>
+        </thead>
+        <tbody>
+            {foreach from=$payment_list key=rm_k item=payment}
+                {cycle values=["color_line_even", "color_line_odd"] assign=bgcolor_class}
+                <tr class="white {$bgcolor_class}">
+                    <td class="product {if $payment->payment_method|default:'-' == '-'}center{else}left{/if}">{$payment->payment_method|default:'-'}</td>
+                    <td class="product {if $payment->payment_type|default:'-' == '-'}center{else}left{/if}">{$payment->payment_type.name|default:'-'}</td>
+                    <td class="product {if $payment->transaction_id|default:'-' == '-'}center{else}left{/if}">{$payment->transaction_id|default:'-'}</td>
+                    <td class="product {if $payment->amount|default:'-' == '-'}center{else}left{/if}">{displayPrice currency=$payment->id_currency price=$payment->amount}</td>
+                    <td class="product {if $payment->date_add|default:'-' == '-'}center{else}left{/if}">{dateFormat date=$payment->date_add full=true}</td>
+                </tr>
+            {/foreach}
+        </tbody>
+    </table>
 {/if}

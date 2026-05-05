@@ -113,9 +113,9 @@ class HTMLTemplatePaymentReceiptCore extends HTMLTemplate
             }
         }
         $customer = new Customer((int)$this->order->id_customer);
-
-        $this->orderPayment->payment_type = $this->getPaymentType($this->orderPayment->payment_type);
-
+        $getPaymentTypes = $this->order->getPaymentsTypes();
+        $this->orderPayment->payment_type = isset($getPaymentTypes[$this->orderPayment->payment_type]) ? $getPaymentTypes[$this->orderPayment->payment_type] : null;
+    
         $legal_free_text = Configuration::get('PS_PAYMENT_RECEIPTS_LEGAL_FREE_TEXT', (int)Context::getContext()->language->id, null, (int)$this->order->id_shop);
 
         $this->smarty->assign(array(
@@ -130,9 +130,9 @@ class HTMLTemplatePaymentReceiptCore extends HTMLTemplate
         ));
         
         $smarty_tpls = array(
-            'style_tab' => $this->smarty->fetch($this->getTemplate('payment.receipt.style-tab')),
-            'addresses_tab' => $this->smarty->fetch($this->getTemplate('payment.receipt.addresses-tab')),
-            'payment_info_tab' => $this->smarty->fetch($this->getTemplate('payment.receipt.payment-info-tab')),
+            'style_tab' => $this->smarty->fetch($this->getTemplate('payment-receipt.style-tab')),
+            'addresses_tab' => $this->smarty->fetch($this->getTemplate('payment-receipt.addresses-tab')),
+            'payment_info_tab' => $this->smarty->fetch($this->getTemplate('payment-receipt.payment-info-tab')),
         );
         $this->smarty->assign($smarty_tpls);
         return $this->smarty->fetch($this->getTemplate('payment-receipt'));
