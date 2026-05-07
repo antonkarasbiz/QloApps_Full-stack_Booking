@@ -3113,9 +3113,6 @@ class AdminOrdersControllerCore extends AdminController
             $this->kpis[] = $helper;
         }
 
-        Hook::exec('action'.$this->controller_name.'KPIListingModifier', array(
-            'kpis' => &$kpis,
-        ));
 
         return parent::renderKpis();
     }
