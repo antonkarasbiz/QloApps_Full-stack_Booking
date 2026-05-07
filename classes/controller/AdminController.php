@@ -527,7 +527,10 @@ class AdminControllerCore extends Controller
             29 => $this->l('Successful upgrade'),
             30 => $this->l('A partial refund was successfully created.'),
             31 => $this->l('The discount was successfully generated.'),
-            32 => $this->l('Successfully signed in to PrestaShop Addons')
+            32 => $this->l('Successfully signed in to PrestaShop Addons'),
+            33 => $this->l('The selected module(s) have been successfully enabled.'),
+            34 => $this->l('The selected module(s) have been successfully disabled.'),
+
         );
 
         if (!$this->identifier) {
