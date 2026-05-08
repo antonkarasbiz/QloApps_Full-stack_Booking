@@ -707,7 +707,7 @@
                 {if isset($messages) && $messages}
                     <div class="panel order-notes">
                         <div class="panel-heading">
-                            <i class="icon-undo"></i> &nbsp;{l s='Order Private Notes'}
+                            <i class="icon-undo"></i> &nbsp;{l s='Order Notes'}
                         </div>
                         <div class="panel-content">
                             {foreach from=$messages item=message name=customerMessage}

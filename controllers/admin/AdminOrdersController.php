@@ -1622,18 +1622,22 @@ class AdminOrdersControllerCore extends AdminController
                 if (!count($this->errors)) {
                     // Finally, reallocate the room
 	                    if ($objBookingDetail->reallocateBooking($idHtlBookingFrom, $idRoomToReallocate, $priceDiff)) {
+	                        $order = new Order((int) $idOrder);
+	                        $fromRoomType = Product::getProductName($objHotelBooking->id_product, null, $this->context->language->id);
+	                        $toRoomType = Product::getProductName($objRoomInfo->id_product, null, $this->context->language->id);
+	                        $dateFrom = date('d/m/Y', strtotime($objHotelBooking->date_from));
+	                        $dateTo = date('d/m/Y', strtotime($objHotelBooking->date_to));
+	                        $autoMsg = $this->l('Room Reallocate').': '.$objHotelBooking->room_num.' - '.$fromRoomType.' '.$this->l('to').' '.$objRoomInfo->room_num.' - '.$toRoomType.': ('.$dateFrom.' - '.$dateTo.')';
+	                        $userRemark = Tools::getValue('message');
+	                        $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$userRemark : '');
 	                        $message = new Message();
-	                        if ($message_content = Tools::getValue('message')) {
-	                            if (Validate::isMessage($message_content)) {
-	                                $order = new Order((int) $idOrder);
-	                                $message->message = $message_content;
-	                                $message->id_cart = (int) $order->id_cart;
-	                                $message->id_customer = (int) $order->id_customer;
-	                                $message->id_order = (int)$idOrder;
-	                                $message->private = 1;
-	                                $message->save();
-	                            }
-	                        }
+	                        $message->message = $noteMessage;
+	                        $message->id_cart = (int)$order->id_cart;
+	                        $message->id_customer = (int)$order->id_customer;
+	                        $message->id_order = (int)$idOrder;
+	                        $message->id_employee = (int)$this->context->employee->id;
+	                        $message->private = 1;
+	                        $message->save();
                         Tools::redirectAdmin(self::$currentIndex.'&id_order='.(int) $idOrder.'&vieworder&conf=52&token='.$this->token);
                     } else {
                         $this->errors[] = $this->l('Some error occured. Please try again.');
@@ -1676,18 +1680,21 @@ class AdminOrdersControllerCore extends AdminController
                 if (!count($this->errors)) {
                     $objBookingDetail = new HotelBookingDetail();
 	                    if ($objBookingDetail->swapBooking($idHtlBookingFrom, $idHtlBookingToSwap)) {
+	                        $order = new Order((int) $idOrder);
+	                        $room1Type = Product::getProductName($objHotelBooking->id_product, null, $this->context->language->id);
+	                        $dateFrom = date('d/m/Y', strtotime($objHotelBooking->date_from));
+	                        $dateTo = date('d/m/Y', strtotime($objHotelBooking->date_to));
+	                        $autoMsg = $this->l('Room Swap').': ('.$room1Type.') '.$objHotelBooking->room_num.' '.$this->l('with').' '.$objHotelBookingTo->room_num.': ('.$dateFrom.' - '.$dateTo.')';
+	                        $userRemark = Tools::getValue('message');
+	                        $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$userRemark : '');
 	                        $message = new Message();
-	                        if ($message_content = Tools::getValue('message')) {
-	                            if (Validate::isMessage($message_content)) {
-	                                $order = new Order((int) $idOrder);
-	                                $message->message = $message_content;
-	                                $message->id_cart = (int) $order->id_cart;
-	                                $message->id_customer = (int) $order->id_customer;
-	                                $message->id_order = (int)$idOrder;
-	                                $message->private = 1;
-	                                $message->save();
-	                            }
-	                        }
+	                        $message->message = $noteMessage;
+	                        $message->id_cart = (int)$order->id_cart;
+	                        $message->id_customer = (int)$order->id_customer;
+	                        $message->id_order = (int)$idOrder;
+	                        $message->id_employee = (int)$this->context->employee->id;
+	                        $message->private = 1;
+	                        $message->save();
                         Tools::redirectAdmin(self::$currentIndex.'&id_order='.(int)$idOrder.'&vieworder&conf=53&token='.$this->token);
                     } else {
                         $this->errors[] = $this->l('Some error occured. Please try again.');
@@ -1833,7 +1840,7 @@ class AdminOrdersControllerCore extends AdminController
                         $id_customer_thread = CustomerThread::getIdCustomerThreadByEmailAndIdOrder($customer->email, $order->id);
                         if (!$id_customer_thread) {
                             $customer_thread = new CustomerThread();
-                            $customer_thread->id_contact = (int)Configuration::get('PS_MAIL_EMAIL_MESSAGE');
+                            $customer_thread->id_contact = (int)Configuration::get('PS_CUSTOMER_SERVICE_CONTACT');
                             $customer_thread->id_customer = (int)$order->id_customer;
                             $customer_thread->user_name = $customer->firstname.' '.$customer->lastname;
                             $customer_thread->phone = $customer->phone;
@@ -1887,6 +1894,7 @@ class AdminOrdersControllerCore extends AdminController
                                 true,
                                 (int)$order->id_shop
                             );
+                            Tools::redirectAdmin(self::$currentIndex.'&id_order='.(int)$order->id.'&vieworder&conf=11&token='.$this->token);
                         }
                         Tools::dieOrLog(Tools::displayError('An error occurred while sending an email to the customer.'),false);
                     }
@@ -3667,7 +3675,7 @@ class AdminOrdersControllerCore extends AdminController
         }
 
         $objCustomerThread = new CustomerThread();
-        $messages = Message::getMessagesByOrderId($order->id, true);
+        $messages = Message::getMessagesByOrderId($order->id, null);
         if ($customerMessages = CustomerMessage::getMessagesByOrderId($order->id, true)) {
             foreach ($messages as $messageKey => $message) {
                 foreach ($customerMessages as $customerMessageKey => $customerMessage) {
@@ -5225,17 +5233,20 @@ class AdminOrdersControllerCore extends AdminController
 
         // Save changes of order
         if($order->update()){
-        $message = new Message();
-            if ($message_content = Tools::getValue('message')) {
-                if (Validate::isMessage($message_content)) {
-                    $message->message = $message_content;
-                    $message->id_cart = (int)$this->context->cart->id;
-                    $message->id_customer = (int)$this->context->cart->id_customer;
-                    $message->id_order = (int)$order->id;
-                    $message->private = 1;
-                    $message->save();
-                }
-            }
+            $roomType = Product::getProductName($product->id, null, $this->context->language->id);
+            $dateFromFormatted = date('d/m/Y', strtotime($date_from));
+            $dateToFormatted = date('d/m/Y', strtotime($date_to));
+            $autoMsg = $this->l('Room Add').': '.$roomType.': ('.$dateFromFormatted.' - '.$dateToFormatted.')';
+            $userRemark = Tools::getValue('message');
+            $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$userRemark : '');
+            $message = new Message();
+            $message->message = $noteMessage;
+            $message->id_cart = (int)$this->context->cart->id;
+            $message->id_customer = (int)$this->context->cart->id_customer;
+            $message->id_order = (int)$order->id;
+            $message->id_employee = (int)$this->context->employee->id;
+            $message->private = 1;
+            $message->save();
         }
 
         // Update weight SUM
@@ -6297,17 +6308,22 @@ class AdminOrdersControllerCore extends AdminController
         $order->total_paid_tax_incl = Tools::ps_round($order->getOrderTotal(), _PS_PRICE_COMPUTE_PRECISION_);
         $order->total_paid_tax_excl = Tools::ps_round($order->getOrderTotal(false), _PS_PRICE_COMPUTE_PRECISION_);
         if($order->save()){
+            $roomType = Product::getProductName($id_product, null, $this->context->language->id);
+            $oldDateFromFormatted = date('d/m/Y', strtotime($old_date_from));
+            $oldDateToFormatted = date('d/m/Y', strtotime($old_date_to));
+            $newDateFromFormatted = date('d/m/Y', strtotime($new_date_from));
+            $newDateToFormatted = date('d/m/Y', strtotime($new_date_to));
+            $autoMsg = $this->l('Room Edit').': '.$obj_booking_detail->room_num.' - '.$roomType.': ('.$oldDateFromFormatted.' - '.$oldDateToFormatted.') '.$this->l('to').' ('.$newDateFromFormatted.' - '.$newDateToFormatted.')';
+            $userRemark = Tools::getValue('message');
+            $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$userRemark : '');
             $message = new Message();
-            if ($message_content = Tools::getValue('message')) {
-                if (Validate::isMessage($message_content)) {
-                    $message->message = $message_content;
-                    $message->id_cart = (int)$this->context->cart->id;
-                    $message->id_customer = (int)$this->context->cart->id_customer;
-                    $message->id_order = (int)$order->id;
-                    $message->private = 1;
-                    $message->save();
-                }
-            }
+            $message->message = $noteMessage;
+            $message->id_cart = (int)$this->context->cart->id;
+            $message->id_customer = (int)$this->context->cart->id_customer;
+            $message->id_order = (int)$order->id;
+            $message->id_employee = (int)$this->context->employee->id;
+            $message->private = 1;
+            $message->save();
         }
 
         // Save order invoice
@@ -6748,17 +6764,20 @@ class AdminOrdersControllerCore extends AdminController
         );
 
         if($objBookingDetail->delete()){
+            $roomType = Product::getProductName($objBookingDetail->id_product, null, $this->context->language->id);
+            $dateFrom = date('d/m/Y', strtotime($objBookingDetail->date_from));
+            $dateTo = date('d/m/Y', strtotime($objBookingDetail->date_to));
+            $autoMsg = $this->l('Room Delete').': '.$objBookingDetail->room_num.' - '.$roomType.': ('.$dateFrom.' - '.$dateTo.')';
+            $userRemark = Tools::getValue('message');
+            $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$userRemark : '');
             $message = new Message();
-            if ($message_content = Tools::getValue('message')) {
-                if (Validate::isMessage($message_content)) {
-                    $message->message = $message_content;
-                    $message->id_cart = (int) $objBookingDetail->id_cart;
-                    $message->id_customer = (int) $order->id_customer;
-                    $message->id_order = (int)$order->id;
-                    $message->private = 1;
-                    $message->save();
-                }
-            }
+            $message->message = $noteMessage;
+            $message->id_cart = (int)$objBookingDetail->id_cart;
+            $message->id_customer = (int)$order->id_customer;
+            $message->id_order = (int)$order->id;
+            $message->id_employee = (int)$this->context->employee->id;
+            $message->private = 1;
+            $message->save();
         }
 
         // delete refund request of the room if exists.

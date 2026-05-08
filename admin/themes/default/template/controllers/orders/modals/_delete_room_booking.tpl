@@ -30,7 +30,7 @@
     <input type="hidden" name="date_to" value="{$date_to|escape:'html':'UTF-8'}">
     <div class="form-group">
         <div class="form-group" id="remarkGroup">
-            <label class="control-label" for="room_remark">
+            <label class="control-label required" for="room_remark">
                 {l s='Remark'}
             </label>
             <textarea id="room_remark" class="form-control" name="message"
