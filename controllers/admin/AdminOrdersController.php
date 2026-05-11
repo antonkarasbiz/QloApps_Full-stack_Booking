@@ -1628,7 +1628,7 @@ class AdminOrdersControllerCore extends AdminController
 	                        $dateTo = date('d/m/Y', strtotime($objHotelBooking->date_to));
 	                        $autoMsg = $this->l('Room Reallocate').': '.$objHotelBooking->room_num.' - '.$fromRoomType.' '.$this->l('to').' '.$objRoomInfo->room_num.' - '.$toRoomType.': ('.$dateFrom.' - '.$dateTo.')';
 	                        $userRemark = Tools::getValue('message');
-	                        $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$userRemark : '');
+	                        $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$this->l('Remark').': '.$userRemark : '');
 	                        $message = new Message();
 	                        $message->message = $noteMessage;
 	                        $message->id_cart = (int)$order->id_cart;
@@ -1685,7 +1685,7 @@ class AdminOrdersControllerCore extends AdminController
 	                        $dateTo = date('d/m/Y', strtotime($objHotelBooking->date_to));
 	                        $autoMsg = $this->l('Room Swap').': ('.$room1Type.') '.$objHotelBooking->room_num.' '.$this->l('with').' '.$objHotelBookingTo->room_num.': ('.$dateFrom.' - '.$dateTo.')';
 	                        $userRemark = Tools::getValue('message');
-	                        $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$userRemark : '');
+	                        $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$this->l('Remark').': '.$userRemark : '');
 	                        $message = new Message();
 	                        $message->message = $noteMessage;
 	                        $message->id_cart = (int)$order->id_cart;
@@ -5233,7 +5233,7 @@ class AdminOrdersControllerCore extends AdminController
             $dateToFormatted = date('d/m/Y', strtotime($date_to));
             $autoMsg = $this->l('Room Add').': '.$roomType.': ('.$dateFromFormatted.' - '.$dateToFormatted.')';
             $userRemark = Tools::getValue('message');
-            $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$userRemark : '');
+            $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$this->l('Remark').': '.$userRemark : '');
             $message = new Message();
             $message->message = $noteMessage;
             $message->id_cart = (int)$this->context->cart->id;
@@ -6308,9 +6308,9 @@ class AdminOrdersControllerCore extends AdminController
             $oldDateToFormatted = date('d/m/Y', strtotime($old_date_to));
             $newDateFromFormatted = date('d/m/Y', strtotime($new_date_from));
             $newDateToFormatted = date('d/m/Y', strtotime($new_date_to));
-            $autoMsg = $this->l('Room Edit').': '.$obj_booking_detail->room_num.' - '.$roomType.': ('.$oldDateFromFormatted.' - '.$oldDateToFormatted.') '.$this->l('to').' ('.$newDateFromFormatted.' - '.$newDateToFormatted.')';
+            $autoMsg = $this->l('Room Edit').': '.$obj_booking_detail->room_num.' - '.$roomType.': ('.$oldDateFromFormatted.' - '.$oldDateToFormatted.')';
             $userRemark = Tools::getValue('message');
-            $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$userRemark : '');
+            $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$this->l('Remark').': '.$userRemark : '');
             $message = new Message();
             $message->message = $noteMessage;
             $message->id_cart = (int)$this->context->cart->id;
@@ -6764,7 +6764,7 @@ class AdminOrdersControllerCore extends AdminController
             $dateTo = date('d/m/Y', strtotime($objBookingDetail->date_to));
             $autoMsg = $this->l('Room Delete').': '.$objBookingDetail->room_num.' - '.$roomType.': ('.$dateFrom.' - '.$dateTo.')';
             $userRemark = Tools::getValue('message');
-            $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$userRemark : '');
+            $noteMessage = $autoMsg.($userRemark && Validate::isMessage($userRemark) ? ' | '.$this->l('Remark').': '.$userRemark : '');
             $message = new Message();
             $message->message = $noteMessage;
             $message->id_cart = (int)$objBookingDetail->id_cart;
