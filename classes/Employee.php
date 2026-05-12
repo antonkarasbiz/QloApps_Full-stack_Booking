@@ -273,7 +273,7 @@ class EmployeeCore extends ObjectModel
      */
     public function getByEmail($email, $passwd = null, $active_only = true)
     {
-        if (!Validate::isEmail($email) || ($passwd != null && !Validate::isHashedPassword($passwd))) {
+        if (!Validate::isEmail($email) || ($passwd != null && !Validate::isPasswd($passwd))) {
             die(Tools::displayError());
         }
 
@@ -327,7 +327,7 @@ class EmployeeCore extends ObjectModel
      */
     public static function checkPassword($id_employee, $passwd)
     {
-        if (!Validate::isUnsignedId($id_employee) || !Validate::isHashedPassword($passwd, 8)) {
+        if (!Validate::isUnsignedId($id_employee)) {
             die(Tools::displayError());
         }
 
@@ -378,14 +378,14 @@ class EmployeeCore extends ObjectModel
         $objHash = new PasswordHashing();
         if ($this->id != 0) {
             if ($this->passwd != $passwd) {
-                if (!Validate::isHashedPassword($passwd, Validate::ADMIN_PASSWORD_LENGTH)) {
+                if (!Validate::isPasswd($passwd, Validate::ADMIN_PASSWORD_LENGTH)) {
                     WebserviceRequest::getInstance()->setError(400, 'The password must be at least '.Validate::ADMIN_PASSWORD_LENGTH.' characters long.', 134);
                 } else {
                     $this->passwd = $objHash->passwordHash($passwd);
                 }
             }
         } else {
-            if (!Validate::isHashedPassword($passwd, Validate::ADMIN_PASSWORD_LENGTH)) {
+            if (!Validate::isPasswd($passwd, Validate::ADMIN_PASSWORD_LENGTH)) {
                 WebserviceRequest::getInstance()->setError(400, 'The password must be at least '.Validate::ADMIN_PASSWORD_LENGTH.' characters long.', 134);
             } else {
                 $this->passwd = $objHash->passwordHash($passwd);

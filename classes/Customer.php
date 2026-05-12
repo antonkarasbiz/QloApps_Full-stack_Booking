@@ -167,7 +167,7 @@ class CustomerCore extends ObjectModel
             'lastname' =>                    array('type' => self::TYPE_STRING, 'validate' => 'isName', 'required' => true, 'size' => 32),
             'firstname' =>                    array('type' => self::TYPE_STRING, 'validate' => 'isName', 'required' => true, 'size' => 32),
             'email' =>                        array('type' => self::TYPE_STRING, 'validate' => 'isEmail', 'required' => true, 'size' => 128),
-            'passwd' =>                    array('type' => self::TYPE_STRING, 'validate' => 'isHashedPassword', 'required' => true, 'size' => 60),
+            'passwd' =>                    array('type' => self::TYPE_STRING, 'validate' => 'isPasswd', 'required' => true, 'size' => 60),
             'last_passwd_gen' =>            array('type' => self::TYPE_STRING, 'copy_post' => false),
             'id_gender' =>                    array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
             'birthday' =>                    array('type' => self::TYPE_DATE, 'validate' => 'isBirthDate'),
@@ -374,7 +374,7 @@ class CustomerCore extends ObjectModel
      */
     public function getByEmail($email, $passwd = null, $ignore_guest = true)
     {
-        if (!Validate::isEmail($email) || ($passwd && !Validate::isHashedPassword($passwd))) {
+        if (!Validate::isEmail($email) || ($passwd && !Validate::isPasswd($passwd))) {
             die(Tools::displayError());
         }
 
@@ -569,7 +569,7 @@ class CustomerCore extends ObjectModel
      */
     public static function checkPassword($id_customer, $passwd)
     {
-        if (!Validate::isUnsignedId($id_customer) || !Validate::isHashedPassword($passwd)) {
+        if (!Validate::isUnsignedId($id_customer)) {
             die(Tools::displayError());
         }
         $cache_id = 'Customer::checkPassword'.(int)$id_customer.'-'.$passwd;
@@ -856,7 +856,7 @@ class CustomerCore extends ObjectModel
         if (empty($password)) {
             $password = Tools::passwdGen(8, 'RANDOM');
         }
-        if (!Validate::isHashedPassword($password)) {
+        if (!Validate::isPasswd($password)) {
             return false;
         }
 
