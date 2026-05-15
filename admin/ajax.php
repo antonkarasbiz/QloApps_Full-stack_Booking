@@ -125,6 +125,9 @@ if (Tools::isSubmit('getZones')) {
 }
 
 if (Tools::isSubmit('getEmailHTML') && $email = Tools::getValue('email')) {
+    if (strpos($email, '..') !== false) {
+        die('');
+    }
     $email_html = AdminTranslationsController::getEmailHTML($email);
     die($email_html);
 }

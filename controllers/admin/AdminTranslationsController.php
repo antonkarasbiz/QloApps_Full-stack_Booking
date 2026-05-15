@@ -3045,8 +3045,13 @@ class AdminTranslationsControllerCore extends AdminController
             $email_file = _PS_ROOT_DIR_.$email;
         }
 
-        $email_html = file_get_contents($email_file);
+        $sanitizedFilePath = realpath($email_file);
+        $permittedMailDir  = realpath(_PS_MAIL_DIR_);
 
-        return $email_html;
+        if ($sanitizedFilePath === false || $permittedMailDir === false || strpos($sanitizedFilePath, $permittedMailDir) !== 0) {
+            return false;
+        }
+
+        return file_get_contents($sanitizedFilePath);
     }
 }
