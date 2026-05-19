@@ -934,6 +934,10 @@ $(document).ready(function() {
             });
         });
 
+        $('select#id_hotel_button').on('chosen:showing_dropdown', function() {
+            setBookingSearchPositions();
+        });
+
         $('#daterange_value').click(function () {
             setBookingSearchPositions();
         });
@@ -979,9 +983,9 @@ function setBookingSearchPositions() {
     let searchForm = $('#search_hotel_block_form');
 
     let inputFieldsAndDropdowns = [
-        { input: $('#hotel_location'), dropdown: $('.location_search_results_ul')},
+        { input: $('#hotel_location'),      dropdown: $('.location_search_results_ul')},
         { input: $('.hotel-selector-wrap'), dropdown: $('#id_hotel_button_chosen .chosen-drop')},
-        { input: $('#guest_occupancy'), dropdown: $('#search_occupancy_wrapper')},
+        { input: $('#guest_occupancy'),     dropdown: $('#search_occupancy_wrapper')},
     ];
 
     let positionClass = 'bottom';
@@ -993,9 +997,8 @@ function setBookingSearchPositions() {
         // calculate max height for dropdowns
         let maxHeightNeeded = 0;
         $(inputFieldsAndDropdowns).each(function (i, inputFieldAndDropdown) {
-            if (!inputFieldAndDropdown.input.length) return false;
+            if (!inputFieldAndDropdown.input.length || !inputFieldAndDropdown.input.is(':visible')) return true;
 
-            // find needed space height
             let cssMaxHeight = parseInt(inputFieldAndDropdown.dropdown.css('max-height'));
             if (Number.isInteger(cssMaxHeight)) {
                 maxHeightNeeded = Math.max(maxHeightNeeded, cssMaxHeight);
@@ -1003,7 +1006,7 @@ function setBookingSearchPositions() {
         });
 
         // determine position class
-        if (spaceBottom < maxHeightNeeded && spaceTop > spaceBottom) {
+        if (spaceTop > spaceBottom && (maxHeightNeeded === 0 || spaceBottom < maxHeightNeeded)) {
             positionClass = 'top';
         }
     }
