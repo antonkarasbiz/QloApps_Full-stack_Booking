@@ -748,6 +748,11 @@ class AdminTranslationsControllerCore extends AdminController
                 $files_list = AdminTranslationsController::filterTranslationFiles($gz->listContent());
                 $files_paths = AdminTranslationsController::filesListToPaths($files_list);
 
+                if (empty($files_list)) {
+                    $this->errors[] = Tools::displayError('No valid translation files found in the archive.');
+                    return false;
+                }
+
                 $uniqid = uniqid();
                 $sandbox = _PS_CACHE_DIR_.'sandbox'.DIRECTORY_SEPARATOR.$uniqid.DIRECTORY_SEPARATOR;
                 if (!$gz->extractList($files_paths, $sandbox)) {
@@ -843,14 +848,24 @@ class AdminTranslationsControllerCore extends AdminController
         $kept = array();
         $allowedExtensions = array('php', 'html', 'tpl', 'txt');
         foreach ($list as $file) {
-            if ('index.php' == basename($file['filename'])) {
-                continue;
-            }
-            $extension = strtolower(pathinfo($file['filename'], PATHINFO_EXTENSION));
+            $filename  = $file['filename'];
+            $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
             if (!in_array($extension, $allowedExtensions)) {
                 continue;
             }
-            if (preg_match('#^modules/([^/]+)/#', $file['filename'], $m)) {
+
+            if ('index.php' == basename($filename)) {
+                continue;
+            }
+
+            if ($extension === 'php'
+                && !preg_match('#^modules/([^/]+)/#', $filename)
+                && !preg_match('@^translations/[a-z]{2,3}/[a-z0-9_-]+\.php$@i', $filename)) {
+                continue;
+            }
+
+            if (preg_match('#^modules/([^/]+)/#', $filename, $m)) {
                 if (is_dir(_PS_MODULE_DIR_.$m[1])) {
                     $kept[] = $file;
                 }
@@ -3055,7 +3070,7 @@ class AdminTranslationsControllerCore extends AdminController
         }
 
         $sanitizedFilePath = realpath($email_file);
-        $permittedMailDir  = realpath(_PS_MAIL_DIR_);
+        $permittedMailDir  = realpath(_PS_MAIL_DIR_) . DIRECTORY_SEPARATOR;
 
         if ($sanitizedFilePath === false || $permittedMailDir === false || strpos($sanitizedFilePath, $permittedMailDir) !== 0) {
             return false;
