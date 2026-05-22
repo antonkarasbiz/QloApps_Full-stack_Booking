@@ -923,6 +923,8 @@ $(document).ready(function() {
 
     // set positions of popups when required
     if (page_name == 'index') {
+        setBookingSearchPositions();
+
         $('#hotel_location, #id_hotel_button_chosen, #guest_occupancy').focus(function () {
             setBookingSearchPositions();
         });
@@ -983,9 +985,9 @@ function setBookingSearchPositions() {
     let searchForm = $('#search_hotel_block_form');
 
     let inputFieldsAndDropdowns = [
-        { input: $('#hotel_location'),      dropdown: $('.location_search_results_ul')},
+        { input: $('#hotel_location'), dropdown: $('.location_search_results_ul')},
         { input: $('.hotel-selector-wrap'), dropdown: $('#id_hotel_button_chosen .chosen-drop')},
-        { input: $('#guest_occupancy'),     dropdown: $('#search_occupancy_wrapper')},
+        { input: $('#guest_occupancy'), dropdown: $('#search_occupancy_wrapper')},
     ];
 
     let positionClass = 'bottom';
