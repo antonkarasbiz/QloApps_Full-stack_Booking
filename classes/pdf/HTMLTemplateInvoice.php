@@ -363,6 +363,17 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
                         $objBookingDemand = new HotelBookingDemands();
                         foreach ($order_bk_data as $data_k => $data_v) {
                             $date_join = strtotime($data_v['date_from']).strtotime($data_v['date_to']);
+                            $display_date_from = $data_v['date_from'];
+                            $display_date_to   = $data_v['date_to'];
+                            $objHotelBranchInformation = new HotelBranchInformation($data_v['id_hotel']);
+                            if ($objHotelBranchInformation->check_in) {
+                                $display_date_from = date('Y-m-d', strtotime($data_v['date_from']))
+                                    . ' ' . date('H:i:s', strtotime($objHotelBranchInformation->check_in));
+                            }
+                            if ($objHotelBranchInformation->check_out) {
+                                $display_date_to = date('Y-m-d', strtotime($data_v['date_to']))
+                                    . ' ' . date('H:i:s', strtotime($objHotelBranchInformation->check_out));
+                            }
 
                             /*Product price when order was created*/
                             $order_details_obj = new OrderDetail($data_v['id_order_detail']);
@@ -474,8 +485,8 @@ class HTMLTemplateInvoiceCore extends HTMLTemplate
 
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['num_rm'] = 1;
                                 $fullDate = (isset($context->controller->show_full_date) && $context->controller->show_full_date && (date('Y-m-d', strtotime($data_v['date_from'])) == date('Y-m-d', strtotime($data_v['date_to'])))) ? true : false;
-                                $cart_htl_data[$type_key]['date_diff'][$date_join]['data_form'] = Tools::displayDate($data_v['date_from'], null, $fullDate);
-                                $cart_htl_data[$type_key]['date_diff'][$date_join]['data_to'] = Tools::displayDate($data_v['date_to'], null, $fullDate);
+                                $cart_htl_data[$type_key]['date_diff'][$date_join]['data_form'] = Tools::displayDate($display_date_from, null, $fullDate);
+                                $cart_htl_data[$type_key]['date_diff'][$date_join]['data_to'] = Tools::displayDate($display_date_to, null, $fullDate);
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['num_days'] = $num_days;
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['adults'] = $data_v['adults'];
                                 $cart_htl_data[$type_key]['date_diff'][$date_join]['children'] = $data_v['children'];
