@@ -3395,16 +3395,6 @@ class AdminOrdersControllerCore extends AdminController
             $objBookingDemand = new HotelBookingDemands();
             $objHotelRoomType = new HotelRoomType();
             foreach ($order_detail_data as $key => $value) {
-                $objHotelBranchInformation = new HotelBranchInformation($value['id_hotel']);
-                if ($objHotelBranchInformation->check_in) {
-                    $order_detail_data[$key]['date_from'] = date('Y-m-d', strtotime($value['date_from']))
-                        . ' ' . date('H:i:s', strtotime($objHotelBranchInformation->check_in));
-                }
-                if ($objHotelBranchInformation->check_out) {
-                    $order_detail_data[$key]['date_to'] = date('Y-m-d', strtotime($value['date_to']))
-                        . ' ' . date('H:i:s', strtotime($objHotelBranchInformation->check_out));
-                }
-
                 $order_detail_data[$key]['total_room_price_te'] = $value['total_price_tax_excl'];
                 $order_detail_data[$key]['total_room_price_ti'] = $value['total_price_tax_incl'];
 
@@ -3634,16 +3624,6 @@ class AdminOrdersControllerCore extends AdminController
         // get booking information by order
         $bookingOrderInfo = $objBookingDetail->getBookingDataByOrderId($order->id);
         foreach ($bookingOrderInfo as &$bookingOrderRoomInfo) {
-            $objHotelBranchInformation = new HotelBranchInformation($bookingOrderRoomInfo['id_hotel']);
-            if ($objHotelBranchInformation->check_in) {
-                $bookingOrderRoomInfo['date_from'] = date('Y-m-d', strtotime($bookingOrderRoomInfo['date_from']))
-                    . ' ' . date('H:i:s', strtotime($objHotelBranchInformation->check_in));
-            }
-            if ($objHotelBranchInformation->check_out) {
-                $bookingOrderRoomInfo['date_to'] = date('Y-m-d', strtotime($bookingOrderRoomInfo['date_to']))
-                    . ' ' . date('H:i:s', strtotime($objHotelBranchInformation->check_out));
-            }
-
             // Get last refund request for booking
             if ($bookingRefundDetail = OrderReturn::getOrdersReturnDetail($bookingOrderRoomInfo['id_order'], 0, $bookingOrderRoomInfo['id'])) {
                 $bookingRefundDetail = reset($bookingRefundDetail);
