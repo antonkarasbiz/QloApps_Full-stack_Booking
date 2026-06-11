@@ -302,19 +302,29 @@
 <table class="bordered-table" width="100%" cellpadding="5" cellspacing="0" nobr="true">
     <tbody>
         <tr>
-            <th colspan="2" class="header-left small">{l s='PROPERTY POLICIES' pdf='true'}</th>
+            <th class="header-left small">{l s='PROPERTY POLICIES' pdf='true'}</th>
         </tr>
         <tr>
-            <td class="small white" width="30%"><span class="bold">{l s='Check-in time' pdf='true'}</span></td>
-            <td class="small white" width="70%">{if $hotel && $hotel->check_in}{$hotel->check_in|escape:'html':'UTF-8'}{/if}</td>
+            <td class="small white">
+                <span class="bold">{l s='Check-in Time:' pdf='true'}</span> 
+                {if $hotel && $hotel->check_in && $hotel->check_in != '00:00:00'}{$hotel->check_in|escape:'html':'UTF-8'}{else}__________{/if}
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="bold">{l s='Check-out Time:' pdf='true'}</span> 
+                {if $hotel && $hotel->check_out && $hotel->check_out != '00:00:00'}{$hotel->check_out|escape:'html':'UTF-8'}{else}__________{/if}
+            </td>
         </tr>
         <tr>
-            <td class="small white" width="30%"><span class="bold">{l s='Check-out time' pdf='true'}</span></td>
-            <td class="small white" width="70%">{if $hotel && $hotel->check_out}{$hotel->check_out|escape:'html':'UTF-8'}{/if}</td>
-        </tr>
-        <tr>
-            <td class="small white" width="30%"><span class="bold">{l s='Policies' pdf='true'}</span></td>
-            <td class="small white" width="70%">{$payment_policy nofilter}</td>
+            <td class="small white">
+                <span class="bold">{l s='Hotel Policies:' pdf='true'}</span><br />
+                <br />
+                {if isset($payment_policy) && $payment_policy|strip_tags|trim}
+                    {$payment_policy nofilter}
+                {else}
+                    ______________________________<br />
+                    ______________________________<br />
+                    ______________________________
+                {/if}
+            </td>
         </tr>
     </tbody>
 </table>
