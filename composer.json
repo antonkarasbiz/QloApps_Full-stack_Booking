@@ -5,14 +5,13 @@
     "homepage": "https://qloapps.com",
     "license": "OSL-3.0",
     "keywords": [
-        "hotel",
-        "hotel-management",
-        "booking",
-        "booking-engine",
-        "reservation",
-        "hospitality",
-        "property-management",
         "qloapps",
+        "hospitality",
+        "booking-engine",
+        "hotel-booking-website",
+        "hotel-management-system",
+        "hotel-reservation-system",
+        "property-management-system",
         "cms"
     ],
     "authors": [
