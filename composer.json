@@ -30,7 +30,6 @@
         "docs": "https://qloapps.com/docs/",
         "email": "support@qloapps.com",
         "forum": "https://forums.qloapps.com/",
-        "issues": "https://github.com/Qloapps/QloApps/issues",
         "source": "https://github.com/Qloapps/QloApps"
     },
     "require": {
@@ -38,20 +37,13 @@
         "ext-curl": "*",
         "ext-dom": "*",
         "ext-gd": "*",
-        "ext-intl": "*",
-        "ext-json": "*",
-        "ext-mbstring": "*",
+        "ext-mcrypt": "*",
         "ext-openssl": "*",
-        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
         "ext-phar": "*",
         "ext-simplexml": "*",
         "ext-soap": "*",
         "ext-zip": "*"
-    },
-    "require-dev": {
-    },
-    "autoload": {
-        "classmap": ["classes/", "Core/", "Adapter/"]
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
